@@ -1,0 +1,199 @@
+/* === E2: Apple Vision Gradient Premium === */
+
+:root {
+    --bg-1: #0a0a0f;
+    --bg-2: #0c0c14;
+
+    /* Световые шары (орбы) */
+    --orb-1: rgba(255, 180, 255, 0.35);
+    --orb-2: rgba(120, 180, 255, 0.35);
+    --orb-3: rgba(255, 220, 160, 0.28);
+
+    /* Текст и стекло */
+    --text: #f5f5f7;
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.15);
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    overflow: hidden;
+
+    /* Мягкий Vision-фон */
+    background:
+        radial-gradient(circle at 30% 20%, var(--orb-1), transparent 55%),
+        radial-gradient(circle at 70% 75%, var(--orb-2), transparent 55%),
+        radial-gradient(circle at 50% 60%, var(--orb-3), transparent 55%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+/* === Аватар по центру === */
+.center-photo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    text-decoration: none;
+}
+
+.center-photo img {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+
+    border: 4px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 0 35px rgba(255,255,255,0.18),
+        0 0 60px rgba(255,255,255,0.12);
+
+    transition: 0.25s ease;
+}
+
+.center-photo:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 0 45px rgba(255,255,255,0.3);
+}
+
+
+/* === Кнопки по кругу === */
+.menu-item {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+
+    border-radius: 22px;
+    overflow: hidden;
+
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border);
+
+    box-shadow:
+        0 8px 28px rgba(255,255,255,0.14),
+        inset 0 0 12px rgba(255,255,255,0.06);
+
+    cursor: pointer;
+    transition: 0.25s ease;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    padding-bottom: 10px;
+}
+
+.menu-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.9;
+}
+
+.menu-item span {
+    position: relative;
+    z-index: 3;
+    font-size: 15px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+
+/* Hover */
+.menu-item:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow:
+        0 12px 40px rgba(255,255,255,0.25),
+        inset 0 0 16px rgba(255,255,255,0.09);
+}
+
+
+/* === Сайдбар === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100vh;
+
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(16px);
+    border-left: 1px solid rgba(255,255,255,0.15);
+
+    box-shadow: -8px 0 25px rgba(255,255,255,0.06);
+    transition: 0.35s ease;
+
+    padding-top: 70px;
+}
+
+.sidebar.visible {
+    right: 0;
+}
+
+.sidebar-title-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 22px 22px;
+}
+
+.sidebar-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.sidebar-close {
+    font-size: 22px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.25s ease;
+}
+
+.sidebar-close:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+#sidebar-content {
+    padding-top: 10px;
+}
+
+.submenu-item {
+    padding: 14px 24px;
+    font-size: 15px;
+    cursor: pointer;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    transition: 0.2s ease;
+}
+
+.submenu-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+
+/* === Mobile === */
+@media (max-width: 480px) {
+    .center-photo img {
+        width: 130px;
+        height: 130px;
+    }
+    .menu-item {
+        width: 90px;
+        height: 90px;
+    }
+}

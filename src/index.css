@@ -1,0 +1,45 @@
+/* === E2: Apple Vision Gradient Premium === */
+
+:root {
+    --bg-1: #0a0a0f;
+    --bg-2: #0c0c14;
+
+    /* Световые шары (орбы) */
+    --orb-1: rgba(255, 180, 255, 0.35);
+    --orb-2: rgba(120, 180, 255, 0.35);
+    --orb-3: rgba(255, 220, 160, 0.28);
+
+    /* Текст и стекло */
+    --text: #f5f5f7;
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    overflow: hidden;
+
+    /* Мягкий Vision-фон */
+    background:
+        radial-gradient(circle at 30% 20%, var(--orb-1), transparent 55%),
+        radial-gradient(circle at 70% 75%, var(--orb-2), transparent 55%),
+        radial-gradient(circle at 50% 60%, var(--orb-3), transparent 55%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+}
+
+#root {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+

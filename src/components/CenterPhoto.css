@@ -1,0 +1,42 @@
+/* === Аватар по центру === */
+.center-photo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    text-decoration: none;
+}
+
+.center-photo img {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+
+    border: 4px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 0 35px rgba(255,255,255,0.18),
+        0 0 60px rgba(255,255,255,0.12);
+
+    transition: 0.25s ease;
+}
+
+.center-photo:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 0 45px rgba(255,255,255,0.3);
+}
+
+/* === Mobile === */
+@media (max-width: 480px) {
+    .center-photo img {
+        width: 130px;
+        height: 130px;
+    }
+}
+
+
+
+

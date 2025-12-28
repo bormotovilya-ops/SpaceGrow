@@ -1,0 +1,66 @@
+/* === Кнопки по кругу === */
+.menu-item {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+
+    border-radius: 22px;
+    overflow: hidden;
+
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border);
+
+    box-shadow:
+        0 8px 28px rgba(255,255,255,0.14),
+        inset 0 0 12px rgba(255,255,255,0.06);
+
+    cursor: pointer;
+    transition: 0.25s ease;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    padding-bottom: 10px;
+    transform: translate(-50%, -50%);
+}
+
+.menu-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.9;
+}
+
+.menu-item span {
+    position: relative;
+    z-index: 3;
+    font-size: 15px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+
+/* Hover */
+.menu-item:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow:
+        0 12px 40px rgba(255,255,255,0.25),
+        inset 0 0 16px rgba(255,255,255,0.09);
+}
+
+/* === Mobile === */
+@media (max-width: 480px) {
+    .menu-item {
+        width: 90px;
+        height: 90px;
+    }
+}
+
+
+
+
