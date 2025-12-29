@@ -1,26 +1,30 @@
 import React from 'react'
+import Header from './Header'
 import './Profile.css'
 
-function Profile({ onBack }) {
+function Profile({ onBack, onAvatarClick }) {
   const handleConsultation = () => {
     window.open('https://t.me/ilyaborm', '_blank')
   }
 
+  const handleHeaderAvatarClick = () => {
+    // Если передан обработчик, вызываем его, иначе просто возвращаемся назад
+    if (onAvatarClick) {
+      onAvatarClick()
+    } else {
+      onBack()
+    }
+  }
+
   return (
     <div className="profile-container">
-      <button className="profile-back-btn" onClick={onBack}>
-        ← Назад
-      </button>
+      <Header 
+        onAvatarClick={handleHeaderAvatarClick}
+        onConsultation={handleConsultation}
+        onBack={onBack}
+      />
       
       <div className="profile-content">
-        <div className="profile-header">
-          <img src="/images/me.jpg" alt="Илья Бормотов" className="profile-main-avatar" />
-          <div className="profile-header-text">
-            <h1>Илья Бормотов</h1>
-            <p className="profile-subtitle">Архитектор автоматизированных цепочек продаж</p>
-          </div>
-        </div>
-
         <div className="profile-sections">
           {/* Компетенции */}
           <section className="profile-section">

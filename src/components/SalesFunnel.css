@@ -20,103 +20,31 @@
   display: none;
 }
 
-/* Статичный блок вверху */
-.header-block {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 30px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-}
-
-.header-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.header-avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-}
-
-.header-title {
-  color: #ffffff;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: left;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.header-consultation-btn {
-  background: linear-gradient(135deg, #5cb85c, #4a9e4a);
-  border: none;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 14px 32px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(92, 184, 92, 0.3);
-}
-
-.header-consultation-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(92, 184, 92, 0.4);
-  background: linear-gradient(135deg, #6cc86c, #5aae5a);
-}
 
 .funnel-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 40px 20px 150px;
+  padding: 60px 20px 150px;
   min-height: calc(100vh + 500px);
+  margin-top: 50px;
 }
 
 .funnel-blocks {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   position: relative;
-  padding: 20px 0;
+  padding: 10px 0;
 }
 
 /* Блоки воронки - прямоугольная форма */
 .funnel-block {
   position: relative;
   width: var(--block-width, 140px);
-  height: 140px;
+  height: 100px;
   background: linear-gradient(135deg, var(--block-color, #5cb85c), rgba(0, 0, 0, 0.3));
   display: flex;
   flex-direction: column;
@@ -125,11 +53,11 @@
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  padding: 15px;
+  padding: 10px;
   z-index: 10;
   backdrop-filter: blur(20px);
   border: 2px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   animation: fadeInUp 0.5s ease-out backwards;
 }
@@ -190,15 +118,15 @@
 
 .block-image {
   width: 100%;
-  height: 80px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 8px;
+  border-radius: 10px;
+  margin-bottom: 6px;
 }
 
 .block-name {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   text-align: center;
   line-height: 1.2;
@@ -211,11 +139,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   position: relative;
   z-index: 5;
-  margin: 2px 0;
+  margin: 1px 0;
 }
 
 .funnel-arrow svg {
@@ -400,63 +328,47 @@
 
 /* Адаптивность для мобильных */
 @media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .header-text {
-    align-items: center;
-  }
-
-  .header-title {
-    text-align: center;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .footer-text {
-    align-items: center;
-  }
-
-  .footer-title {
-    text-align: center;
+  .funnel-wrapper {
+    padding: 50px 10px 100px;
+    margin-top: 45px;
   }
 
   .funnel-blocks {
-    gap: 6px;
-    padding: 10px;
+    gap: 2px;
+    padding: 5px 0;
   }
 
   .funnel-block {
-    width: 120px;
-    height: 120px;
-    padding: 12px;
+    /* Используем пропорциональное уменьшение: коэффициент ~0.32 от исходной ширины */
+    width: calc(var(--block-width, 140px) * 0.32);
+    height: 60px;
+    padding: 5px;
+    border-radius: 10px;
   }
 
   .block-name {
-    font-size: 12px;
+    font-size: 9px;
+    line-height: 1.1;
   }
 
   .block-image {
-    height: 70px;
+    height: 38px;
+    border-radius: 6px;
+    margin-bottom: 4px;
   }
 
   .funnel-arrow {
-    height: 25px;
+    height: 12px;
+    width: 15px;
   }
 
-  .tech-block {
-    width: 100%;
-    max-width: 90vw;
-    padding: 20px;
+  .funnel-arrow svg {
+    width: 15px;
+    height: 12px;
   }
 
-  .tech-block-header h3 {
-    font-size: 20px;
+  .result-blocks-container {
+    gap: 10px;
   }
 }
 

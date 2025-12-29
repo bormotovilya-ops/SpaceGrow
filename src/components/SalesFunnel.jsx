@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import Portfolio from './Portfolio'
 import Profile from './Profile'
+import BlockDetail from './BlockDetail'
+import Header from './Header'
 import './SalesFunnel.css'
 
 const funnelData = [
@@ -86,7 +88,7 @@ function SalesFunnel() {
     }, 300)
   }
 
-  const handleCloseTech = () => {
+  const handleCloseBlockDetail = () => {
     setIsAnimating(true)
     setTimeout(() => {
       setSelectedBlock(null)
@@ -107,28 +109,26 @@ function SalesFunnel() {
   }
 
   if (showProfile) {
-    return <Profile onBack={() => setShowProfile(false)} />
+    return <Profile onBack={() => setShowProfile(false)} onAvatarClick={() => setShowProfile(false)} />
+  }
+
+  if (selectedBlock) {
+    return (
+      <BlockDetail 
+        block={selectedBlock}
+        onBack={handleCloseBlockDetail}
+        onConsultation={handleConsultation}
+        onAvatarClick={handleAvatarClick}
+      />
+    )
   }
 
   return (
     <div className="sales-funnel-container">
-      {/* Статичный блок вверху */}
-      <div className="header-block">
-        <div className="header-content">
-          <img 
-            src="/images/me.jpg" 
-            alt="Илья Бормотов" 
-            className="header-avatar" 
-            onClick={handleAvatarClick}
-          />
-          <div className="header-text">
-            <h1 className="header-title">Архитектор цепочек продаж вашего продукта</h1>
-            <button className="header-consultation-btn" onClick={handleConsultation}>
-              Получить бесплатную диагностику
-            </button>
-          </div>
-        </div>
-      </div>
+      <Header 
+        onAvatarClick={handleAvatarClick}
+        onConsultation={handleConsultation}
+      />
 
       <div className="funnel-wrapper">
         <div className="funnel-blocks" id="funnel-blocks">
@@ -151,27 +151,27 @@ function SalesFunnel() {
               {/* Стрелка (вертикальная) */}
               {index < 4 && (
                 <div className="funnel-arrow">
-                  <svg width="3" height="30" viewBox="0 0 3 30">
+                  <svg width="20" height="20" viewBox="0 0 20 20" className="arrow-svg">
                     <line 
-                      x1="1.5" 
+                      x1="10" 
                       y1="0" 
-                      x2="1.5" 
-                      y2="30" 
+                      x2="10" 
+                      y2="15" 
                       stroke="#ffffff" 
-                      strokeWidth="3"
+                      strokeWidth="2"
                       strokeOpacity="0.8"
-                      markerEnd="url(#arrowhead-vertical)"
+                      markerEnd={`url(#arrowhead-vertical-${index})`}
                     />
                     <defs>
                       <marker 
-                        id="arrowhead-vertical" 
-                        markerWidth="12" 
-                        markerHeight="12" 
-                        refX="4" 
-                        refY="10" 
+                        id={`arrowhead-vertical-${index}`}
+                        markerWidth="10" 
+                        markerHeight="10" 
+                        refX="10" 
+                        refY="5" 
                         orient="auto"
                       >
-                        <polygon points="0 0, 8 0, 4 12" fill="#ffffff" fillOpacity="0.8" />
+                        <polygon points="0 0, 10 5, 0 10" fill="#ffffff" fillOpacity="0.8" />
                       </marker>
                     </defs>
                   </svg>
@@ -182,27 +182,27 @@ function SalesFunnel() {
           
           {/* Стрелка к результатам */}
           <div className="funnel-arrow">
-            <svg width="3" height="30" viewBox="0 0 3 30">
+            <svg width="20" height="20" viewBox="0 0 20 20" className="arrow-svg">
               <line 
-                x1="1.5" 
+                x1="10" 
                 y1="0" 
-                x2="1.5" 
-                y2="30" 
+                x2="10" 
+                y2="15" 
                 stroke="#ffffff" 
-                strokeWidth="3"
+                strokeWidth="2"
                 strokeOpacity="0.8"
                 markerEnd="url(#arrowhead-result)"
               />
               <defs>
                 <marker 
                   id="arrowhead-result" 
-                  markerWidth="12" 
-                  markerHeight="12" 
-                  refX="4" 
-                  refY="10" 
+                  markerWidth="10" 
+                  markerHeight="10" 
+                  refX="10" 
+                  refY="5" 
                   orient="auto"
                 >
-                  <polygon points="0 0, 8 0, 4 12" fill="#ffffff" fillOpacity="0.8" />
+                  <polygon points="0 0, 10 5, 0 10" fill="#ffffff" fillOpacity="0.8" />
                 </marker>
               </defs>
             </svg>
@@ -228,45 +228,6 @@ function SalesFunnel() {
         </div>
       </div>
 
-      {/* Технический блок справа */}
-      {selectedBlock && (
-        <div className={`tech-block ${isAnimating ? 'animating' : 'visible'}`}>
-          <div className="tech-block-header">
-            <h3>{selectedBlock.name}</h3>
-            <button className="close-btn" onClick={handleCloseTech}>×</button>
-          </div>
-          <div className="tech-block-content">
-            {/* Автор с фото в формате чата */}
-            <div className="chat-message">
-              <img 
-                src="/images/me.jpg" 
-                alt="Илья Бормотов" 
-                className="chat-avatar" 
-                onClick={handleAvatarClick}
-              />
-              <div className="chat-bubble">
-                <div className="chat-author">Илья Бормотов</div>
-                <p className="chat-text">{selectedBlock.description}</p>
-              </div>
-            </div>
-            
-            {selectedBlock.tech && selectedBlock.tech.length > 0 && (
-              <div className="tech-tools">
-                <h4>Технические решения:</h4>
-                <div className="tech-tools-list">
-                  {selectedBlock.tech.map((tool, idx) => (
-                    <span key={idx} className="tech-tool-badge">{tool}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            <button className="consultation-btn" onClick={handleConsultation}>
-              Получить бесплатную консультацию
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Портфолио модальное окно */}
       {showPortfolio && (

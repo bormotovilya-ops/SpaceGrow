@@ -13,6 +13,7 @@
   -ms-overflow-style: none;
   height: 100vh;
   padding-bottom: 100px;
+  padding-top: 50px;
 }
 
 .profile-container::-webkit-scrollbar {
@@ -49,44 +50,6 @@
   padding: 40px 20px;
 }
 
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  margin-bottom: 60px;
-  padding-bottom: 40px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  flex-wrap: wrap;
-}
-
-.profile-main-avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  flex-shrink: 0;
-}
-
-.profile-header-text {
-  flex: 1;
-  min-width: 200px;
-}
-
-.profile-header h1 {
-  color: #ffffff;
-  font-size: 42px;
-  font-weight: 700;
-  margin: 0 0 10px;
-}
-
-.profile-subtitle {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 20px;
-  margin: 0;
-}
-
 .profile-sections {
   display: flex;
   flex-direction: column;
@@ -115,6 +78,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
 }
 
 .skill-card {
@@ -151,6 +121,13 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .cases-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
 }
 
 .case-card-link {
@@ -233,6 +210,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .achievements-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
 }
 
 .achievement-card {
@@ -442,20 +426,6 @@
 
   .profile-section {
     padding: 25px;
-  }
-
-  .profile-header {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .profile-header h1 {
-    font-size: 32px;
-  }
-
-  .profile-main-avatar {
-    width: 100px;
-    height: 100px;
   }
 
   .contacts-grid {
