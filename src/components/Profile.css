@@ -140,7 +140,19 @@
 @media (max-width: 768px) {
   .skills-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 10px;
+  }
+  
+  .skill-card {
+    padding: 15px;
+  }
+  
+  .skill-card h3 {
+    font-size: 16px;
+  }
+  
+  .skill-card p {
+    font-size: 12px;
   }
 }
 
@@ -183,7 +195,28 @@
 @media (max-width: 768px) {
   .cases-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 10px;
+  }
+  
+  .case-card {
+    padding: 20px 15px;
+  }
+  
+  .case-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+  }
+  
+  .case-card h3 {
+    font-size: 16px;
+  }
+  
+  .case-card p {
+    font-size: 12px;
+  }
+  
+  .case-link-text {
+    font-size: 12px;
   }
 }
 
@@ -272,7 +305,23 @@
 @media (max-width: 768px) {
   .achievements-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 10px;
+  }
+  
+  .achievement-card {
+    padding: 20px 15px;
+  }
+  
+  .achievement-number {
+    font-size: 36px;
+  }
+  
+  .achievement-card h3 {
+    font-size: 16px;
+  }
+  
+  .achievement-card p {
+    font-size: 12px;
   }
 }
 
@@ -319,8 +368,27 @@
 
 @media (max-width: 768px) {
   .approach-list {
-    grid-template-columns: 1fr;
-    gap: 25px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .approach-item {
+    padding: 15px;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .approach-icon {
+    font-size: 32px;
+  }
+  
+  .approach-item h3 {
+    font-size: 16px;
+  }
+  
+  .approach-item p {
+    font-size: 12px;
   }
 }
 
@@ -488,20 +556,79 @@
   }
 
   .profile-content {
-    padding: 20px;
+    padding: 20px 10px;
   }
 
   .profile-section {
-    padding: 25px;
+    padding: 20px 15px;
+  }
+  
+  .profile-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
   }
 
   .contacts-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .contact-card {
+    padding: 15px 10px;
+    min-height: 150px;
+  }
+  
+  .contact-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+  
+  .contact-card h3 {
+    font-size: 16px;
+  }
+  
+  .contact-card p {
+    font-size: 14px;
+  }
+  
+  .contact-hint {
+    font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
+  .profile-content {
+    padding: 15px 8px;
+  }
+  
+  .profile-section {
+    padding: 15px 10px;
+  }
+  
+  .profile-section h2 {
+    font-size: 20px;
+  }
+  
   .contacts-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .contact-card {
+    padding: 12px 8px;
+    min-height: 140px;
+  }
+  
+  .contact-icon {
+    font-size: 28px;
+  }
+  
+  .contact-card h3 {
+    font-size: 14px;
+  }
+  
+  .contact-card p {
+    font-size: 12px;
   }
 }
