@@ -28,8 +28,8 @@
 
 .header-back-btn {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 50%;
+  top: calc(20px + 80px + 8px);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -45,11 +45,13 @@
   white-space: nowrap;
   letter-spacing: 0.3px;
   align-self: flex-start;
+  transform: translateX(-50%);
+  width: auto;
 }
 
 .header-back-btn:hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
-  transform: translateX(-2px);
+  transform: translateX(-50%) translateY(-2px);
   border-color: rgba(255, 255, 255, 0.25);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.15) inset;
 }
@@ -255,11 +257,12 @@
   .header-back-btn {
     font-size: 11px;
     padding: 5px 10px;
-    left: 8px;
+    left: calc(50% - 32px);
     border-radius: 8px;
-    top: calc(14px + 2px);
+    top: calc(14px + 64px + 8px);
     position: absolute;
     align-self: flex-start;
+    transform: translateX(-50%);
   }
 
   .header-avatar {
