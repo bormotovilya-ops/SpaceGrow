@@ -328,47 +328,100 @@
 
 /* Адаптивность для мобильных */
 @media (max-width: 768px) {
+  .sales-funnel-container {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
   .funnel-wrapper {
-    padding: 50px 10px 100px;
-    margin-top: 45px;
+    flex: 1;
+    padding: 8px 10px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: hidden;
+    /* Вычитаем высоту Header (примерно 65-70px на мобильной версии) */
+    height: calc(100vh - 65px);
+    max-height: calc(100vh - 65px);
   }
 
   .funnel-blocks {
-    gap: 2px;
-    padding: 5px 0;
+    gap: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Без промежутков между элементами - только стрелки */
+    justify-content: flex-start;
   }
 
   .funnel-block {
-    /* Используем пропорциональное уменьшение: коэффициент ~0.32 от исходной ширины */
-    width: calc(var(--block-width, 140px) * 0.32);
-    height: 60px;
-    padding: 5px;
-    border-radius: 10px;
+    /* Увеличиваем ширину блоков для заполнения экрана */
+    width: calc(var(--block-width, 140px) * 0.5);
+    flex: 0 0 auto;
+    padding: 8px;
+    border-radius: 12px;
+    /* Увеличиваем высоту блоков: (доступная высота - 5 стрелок по 4px) / 6 блоков */
+    height: calc((100% - 20px) / 6);
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .block-name {
-    font-size: 9px;
-    line-height: 1.1;
+    font-size: 11px;
+    line-height: 1.2;
+    flex-shrink: 0;
   }
 
   .block-image {
-    height: 38px;
+    flex: 1;
+    width: 100%;
     border-radius: 6px;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
+    object-fit: cover;
+    min-height: 0;
   }
 
   .funnel-arrow {
-    height: 12px;
+    height: 4px;
     width: 15px;
+    flex-shrink: 0;
+    margin: 0;
+    flex: 0 0 4px;
   }
 
   .funnel-arrow svg {
     width: 15px;
-    height: 12px;
+    height: 4px;
   }
 
   .result-blocks-container {
     gap: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Такая же высота как у основных блоков */
+    height: calc((100% - 20px) / 6);
+    min-height: 70px;
+    flex-shrink: 0;
+    flex: 0 0 auto;
+  }
+
+  .result-block {
+    height: 100%;
+    width: calc(var(--block-width, 140px) * 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px;
   }
 }
 
