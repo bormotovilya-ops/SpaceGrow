@@ -221,9 +221,8 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick }) {
 
         {activeTab === 'test' && (
           <div className="tab-description">
-            <p><strong>Цель:</strong> проверить продуктовую гипотезу и принять управленческое решение до инвестиций в разработку — выявить реальный спрос и экономический смысл проекта (необходим при запуске нового продукта или выходе на новую аудиторию).</p>
-            <p><strong>Режим:</strong> исследовательский.</p>
-            <p><strong>Итог:</strong> вывод по гипотезе (подтверждена / частично / не подтверждена).</p>
+            <p>Цель этапа: проверить продуктовую гипотезу и принять управленческое решение до инвестиций в разработку — выявить реальный спрос и экономический смысл проекта (необходим при запуске нового продукта или выходе на новую аудиторию).</p>
+            <p>Ниже показана схема подэтапа — путь, который проходит аудитория от входа трафика до управленческого вывода по гипотезе.</p>
           </div>
         )}
 
@@ -302,82 +301,183 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick }) {
               </div>
             )}
             
-            {/* Десктопная версия - таблица */}
-            <table className="audience-table audience-table-desktop">
-              <thead>
-                <tr>
-                  {selectedTableData.id === 'traffic' && <th>Источник трафика</th>}
-                  <th>Что анализируем<br />(наблюдаем)</th>
-                  <th>Варианты результатов<br />(с критериями)</th>
-                  <th>Что это значит</th>
-                  <th>Решение</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedTableData.table.map((row, idx) => (
-                  <tr key={idx}>
-                    {selectedTableData.id === 'traffic' && <td>{row.source || ''}</td>}
-                    <td>{row.what}</td>
-                    <td style={{ whiteSpace: 'pre-line' }}>{row.results}</td>
-                    <td>{row.meaning}</td>
-                    <td>{row.decision}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Мобильная версия - карточки */}
-            <div className="audience-table-cards">
-              {selectedTableData.table.map((row, idx) => {
-                // Определяем поля для карточки
-                const fields = []
-                if (selectedTableData.id === 'traffic' && row.source) {
-                  fields.push({ label: 'Источник трафика', value: row.source, key: 'source' })
+            {/* Карточка с уникальными значениями */}
+            {(() => {
+              // Собираем уникальные значения для каждого столбца
+              const hasSource = selectedTableData.id === 'traffic'
+              
+              // Функция для объединения похожих элементов по ключевым словам (сокращение до 3-4 строк с полным описанием)
+              const mergeSimilar = (arr, fieldType = '') => {
+                const uniqueArr = Array.from(new Set(arr))
+                if (uniqueArr.length <= 4) return uniqueArr
+                
+                // Группируем похожие элементы
+                const grouped = new Map()
+                
+                uniqueArr.forEach(item => {
+                  const lowerItem = item.toLowerCase()
+                  let key = null // Ключ для группировки
+                  
+                  // Логика объединения для поля "what" (Что анализируем)
+                  // Более специфичные проверки должны быть раньше
+                  if (lowerItem.includes('глубина') && lowerItem.includes('взаимодействия')) {
+                    key = 'group_depth'
+                  } else if (lowerItem.includes('поведение') || lowerItem.includes('адекватность')) {
+                    key = 'group_behavior'
+                  } else if (lowerItem.includes('реакция')) {
+                    key = 'group_reaction'
+                  } else if (lowerItem.includes('намерение')) {
+                    key = 'group_intention'
+                  } else if (lowerItem.includes('соответствие') || lowerItem.includes('ожиданий')) {
+                    key = 'group_expectation'
+                  } else if (lowerItem.includes('понимание')) {
+                    key = 'group_understanding'
+                  } else if (lowerItem.includes('готовность')) {
+                    key = 'group_readiness'
+                  } else if (lowerItem.includes('формат')) {
+                    key = 'group_format'
+                  } else if (lowerItem.includes('доверие') || lowerItem.includes('скепсис')) {
+                    key = 'group_trust'
+                  } else if (lowerItem.includes('осознанность')) {
+                    key = 'group_awareness'
+                  } else if (lowerItem.includes('уровень') || (lowerItem.includes('боли') && lowerItem.includes('интерес'))) {
+                    key = 'group_level'
+                  } else if (lowerItem.includes('способ') && lowerItem.includes('мышления')) {
+                    key = 'group_thinking'
+                  } else if (lowerItem.includes('язык') || lowerItem.includes('формулировки')) {
+                    key = 'group_language'
+                  } else if (lowerItem.includes('качество')) {
+                    key = 'group_quality'
+                  } else if (lowerItem.includes('повторяемость') || lowerItem.includes('паттерн')) {
+                    key = 'group_patterns'
+                  }
+                  
+                  // Если не найдено совпадение, создаем отдельную группу
+                  if (!key) {
+                    key = `group_${item.toLowerCase().replace(/\s+/g, '_')}`
+                  }
+                  
+                  if (!grouped.has(key)) {
+                    grouped.set(key, [])
+                  }
+                  grouped.get(key).push(item)
+                })
+                
+                // Объединяем элементы в группах через запятую
+                const merged = Array.from(grouped.values()).map(group => {
+                  return group.join(', ')
+                })
+                
+                // Если все еще больше 4 строк, дополнительно объединяем
+                if (merged.length > 4) {
+                  // Берем первые 3 группы и объединяем остальные
+                  const result = merged.slice(0, 3)
+                  const rest = merged.slice(3).join(', ')
+                  if (rest) {
+                    result.push(rest)
+                  }
+                  return result
                 }
-                fields.push(
-                  { label: 'Что анализируем (наблюдаем)', value: row.what, key: 'what' },
-                  { label: 'Варианты результатов (с критериями)', value: row.results, key: 'results', preLine: true },
-                  { label: 'Что это значит', value: row.meaning, key: 'meaning' },
-                  { label: 'Решение', value: row.decision, key: 'decision', isDecision: true }
-                )
                 
-                // Первые 4 поля в сетке 2x2, остальные - на всю ширину
-                const gridFields = fields.slice(0, 4)
-                const fullWidthFields = fields.slice(4)
-                
-                return (
-                  <div key={idx} className="audience-table-card">
+                return merged.sort()
+              }
+              
+              // Для source (только для traffic)
+              const sourceSet = hasSource 
+                ? new Set(selectedTableData.table.map(row => row.source).filter(Boolean))
+                : new Set()
+              const sourceValues = mergeSimilar(Array.from(sourceSet)).sort()
+              
+              // Для what
+              const whatSet = new Set(selectedTableData.table.map(row => row.what))
+              const whatValues = mergeSimilar(Array.from(whatSet), 'what')
+              
+              // Для results (сохраняем переносы строк)
+              const resultsSet = new Set(selectedTableData.table.map(row => row.results))
+              const resultsValues = mergeSimilar(Array.from(resultsSet), 'results')
+              
+              // Для meaning
+              const meaningSet = new Set(selectedTableData.table.map(row => row.meaning))
+              const meaningValues = mergeSimilar(Array.from(meaningSet), 'meaning')
+              
+              // Для decision - объединяем уникальные слова через "/"
+              const decisionSet = new Set(selectedTableData.table.map(row => row.decision))
+              const decisionText = (() => {
+                // Извлекаем все слова из решений
+                const words = new Set()
+                decisionSet.forEach(decision => {
+                  // Разбиваем по разделителям: /, пробел, запятая
+                  const parts = decision.split(/[/,\s]+/).map(p => p.trim()).filter(p => p.length > 0)
+                  parts.forEach(word => words.add(word))
+                })
+                // Сортируем и объединяем через "/"
+                return Array.from(words).sort().join(' / ')
+              })()
+              
+              // Формируем поля
+              const fields = []
+              if (hasSource) {
+                fields.push({ 
+                  label: 'Источник трафика', 
+                  values: sourceValues, 
+                  key: 'source' 
+                })
+              }
+              fields.push(
+                { 
+                  label: 'Что анализируем (наблюдаем)', 
+                  values: whatValues, 
+                  key: 'what' 
+                },
+                { 
+                  label: 'Варианты результатов (с критериями)', 
+                  values: resultsValues, 
+                  key: 'results', 
+                  preLine: true 
+                },
+                { 
+                  label: 'Что это значит', 
+                  values: meaningValues, 
+                  key: 'meaning' 
+                }
+              )
+              
+              // Первые 4 поля в сетке 2x2, остальные - на всю ширину
+              const gridFields = fields.slice(0, 4)
+              
+              return (
+                <div className="audience-table-cards">
+                  <div className="audience-table-card">
                     {/* Сетка 2x2 для первых 4 полей */}
                     <div className="table-card-grid">
                       {gridFields.map((field) => (
                         <div key={field.key} className="table-card-field">
                           <div className="table-card-label">{field.label}</div>
                           <div 
-                            className={`table-card-value ${field.isDecision ? 'table-card-decision' : ''}`}
+                            className="table-card-value"
                             style={field.preLine ? { whiteSpace: 'pre-line' } : {}}
                           >
-                            {field.value}
+                            <ul className="table-card-list">
+                              {field.values.map((value, idx) => (
+                                <li key={idx}>{value}</li>
+                              ))}
+                            </ul>
                           </div>
                         </div>
                       ))}
                     </div>
                     
-                    {/* Остальные поля на всю ширину */}
-                    {fullWidthFields.map((field) => (
-                      <div key={field.key} className="table-card-field table-card-field-full">
-                        <div className="table-card-label">{field.label}</div>
-                        <div 
-                          className={`table-card-value ${field.isDecision ? 'table-card-decision' : ''}`}
-                          style={field.preLine ? { whiteSpace: 'pre-line' } : {}}
-                        >
-                          {field.value}
-                        </div>
+                    {/* Поле "Решение" на всю ширину - сплошной текст */}
+                    <div className="table-card-field table-card-field-full table-card-decision-field">
+                      <div className="table-card-label">Решение</div>
+                      <div className="table-card-value table-card-decision">
+                        {decisionText}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                )
-              })}
-            </div>
+                </div>
+              )
+            })()}
             
             {/* Кнопка "К диаграмме" под таблицами */}
             <button 
