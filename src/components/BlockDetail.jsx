@@ -572,9 +572,6 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick }) {
                   </div>
                 )
               }
-                  </div>
-                </div>
-              )
             })()}
             
             {/* Кнопка "К диаграмме" под таблицами */}
