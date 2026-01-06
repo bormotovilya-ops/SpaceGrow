@@ -23,7 +23,10 @@ function Header({ onAvatarClick, onConsultation, onBack }) {
           </div>
         </div>
         <button className="header-consultation-btn" onClick={onConsultation}>
-          Диагностика вашей воронки
+          <span className="consultation-btn-text">
+            <span className="consultation-btn-line">🔍 Диагностика</span>
+            <span className="consultation-btn-line">вашей воронки</span>
+          </span>
         </button>
         <div className="header-spacer-right"></div>
       </div>
