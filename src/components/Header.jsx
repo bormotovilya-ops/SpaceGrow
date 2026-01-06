@@ -8,8 +8,9 @@ function Header({ onAvatarClick, onConsultation, onBack }) {
         <button 
           className={`header-back-btn ${onBack ? 'visible' : 'hidden'}`} 
           onClick={onBack}
+          aria-label="Назад"
         >
-          ← Назад
+          ←
         </button>
         <div className="header-profile-block" onClick={onAvatarClick}>
           <img 
@@ -17,18 +18,19 @@ function Header({ onAvatarClick, onConsultation, onBack }) {
             alt="Илья Бормотов" 
             className="header-avatar" 
           />
-          <div className="header-name-wrapper">
-            <div className="header-name">Бормотов Илья</div>
-            <h1 className="header-title">Архитектор АИЦП</h1>
-          </div>
         </div>
         <button className="header-consultation-btn" onClick={onConsultation}>
           <span className="consultation-btn-text">
-            <span className="consultation-btn-line">🔍 Диагностика</span>
+            <span className="consultation-btn-line">✨ Диагностика</span>
             <span className="consultation-btn-line">вашей воронки</span>
           </span>
         </button>
         <div className="header-spacer-right"></div>
+      </div>
+      <div className="header-name-bottom">
+        <span className="header-name">Бормотов Илья</span>
+        <span className="header-separator">·</span>
+        <span className="header-title">Архитектор АИЦП</span>
       </div>
     </div>
   )
