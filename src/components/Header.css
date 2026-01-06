@@ -5,7 +5,7 @@
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 20px 20px;
+  padding: 20px 24px;
   position: fixed;
   top: 0;
   left: 0;
@@ -20,23 +20,13 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 24px;
   position: relative;
 }
 
-.header-avatar-wrapper {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
+/* Кнопка "Назад" всегда занимает одинаковое место в потоке, независимо от видимости */
 .header-back-btn {
-  position: absolute;
-  left: 50%;
-  top: calc(80px + 8px);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -46,210 +36,142 @@
   padding: 8px 16px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  z-index: 10;
   white-space: nowrap;
   letter-spacing: 0.3px;
-  transform: translateX(-50%);
-  width: auto;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 100px;
+  min-width: 100px;
+  box-sizing: border-box;
 }
 
-.header-back-btn:hover {
+/* Скрытая кнопка - невидима, но занимает то же место */
+.header-back-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Видимая кнопка */
+.header-back-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.header-back-btn.visible:hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.25);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.15) inset;
 }
 
-.header-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* Объединенный блок профиля (аватар + имя + должность) */
+.header-profile-block {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
   flex-shrink: 0;
-  position: relative;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  height: 80px;
 }
 
-
-.header-avatar::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  padding: 2px;
-  background: linear-gradient(135deg, rgba(92, 184, 92, 0.3), rgba(74, 144, 226, 0.3));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.header-profile-block:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
-.header-avatar:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  border-color: rgba(255, 255, 255, 0.3);
+/* Прямоугольная аватарка */
+.header-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.header-avatar:hover::before {
-  opacity: 1;
+.header-profile-block:hover .header-avatar {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.header-name-block {
+/* Обертка для имени и должности */
+.header-name-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  flex-shrink: 0;
-  padding: 4px 12px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-sizing: border-box;
   justify-content: center;
-  height: 80px;
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
 }
 
 .header-name {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   text-align: left;
   margin: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   line-height: 1.3;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   letter-spacing: 0.2px;
-  background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.9));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .header-title {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
   font-weight: 500;
   text-align: left;
   margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   line-height: 1.4;
   white-space: nowrap;
   letter-spacing: 0.1px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.header-name-block:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset;
-}
-
-.header-name-block:hover .header-name {
-  background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.95));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.2));
-}
-
-.header-name-block:hover .header-title {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.header-contact-block {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
-  flex-shrink: 0;
-  padding: 0;
-  justify-content: center;
-  height: 80px;
-  box-sizing: border-box;
-}
-
-.header-phone {
+.header-profile-block:hover .header-name {
   color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  flex: 1 1 auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.1) inset;
-  letter-spacing: 0.2px;
-  width: 100%;
-  box-sizing: border-box;
-  text-align: center;
-  line-height: 1.4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
 }
 
-.header-phone:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+.header-profile-block:hover .header-title {
+  color: rgba(255, 255, 255, 0.85);
 }
 
+/* Кнопка диагностики */
 .header-consultation-btn {
   background: linear-gradient(135deg, #5cb85c 0%, #4a9e4a 50%, #5cb85c 100%);
   background-size: 200% 200%;
   border: none;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 3px 12px rgba(92, 184, 92, 0.35), 0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  box-shadow: 0 3px 12px rgba(92, 184, 92, 0.35);
   white-space: nowrap;
-  flex: 1 1 auto;
   letter-spacing: 0.2px;
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 6px;
-  width: 100%;
-  box-sizing: border-box;
   justify-content: center;
-  line-height: 1.4;
-  min-height: 0;
-}
-
-.telegram-icon {
+  height: 80px;
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
 }
 
 .header-consultation-btn::before {
@@ -265,7 +187,7 @@
 
 .header-consultation-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(92, 184, 92, 0.45), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  box-shadow: 0 5px 20px rgba(92, 184, 92, 0.45);
   background-position: 100% 0;
 }
 
@@ -278,93 +200,77 @@
   box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
 }
 
+/* Резервное место справа для симметрии */
+.header-spacer-right {
+  flex-shrink: 0;
+  width: 60px;
+  min-width: 60px;
+}
+
 @media (max-width: 768px) {
   .header-block {
-    padding: 14px 12px;
+    padding: 14px 16px;
   }
 
   .header-content {
-    gap: 10px;
-    justify-content: center;
-    padding-left: 0;
-    align-items: center;
+    gap: 16px;
+    justify-content: space-between;
   }
 
   .header-back-btn {
     font-size: 11px;
-    padding: 5px 10px;
-    left: 50%;
-    border-radius: 8px;
-    top: calc(64px + 8px);
-    position: absolute;
-    transform: translateX(-50%);
+    padding: 6px 12px;
+    height: 36px;
+    width: 80px;
+    min-width: 80px;
+  }
+
+  .header-spacer-right {
+    width: 50px;
+    min-width: 50px;
+  }
+
+  .header-back-btn.visible:hover {
+    transform: translateY(-1px);
+  }
+
+  .header-profile-block {
+    gap: 12px;
+    padding: 6px 12px;
+    height: 64px;
+    flex: 1;
+    min-width: 0;
   }
 
   .header-avatar {
-    width: 64px;
-    height: 64px;
-    border-width: 2px;
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
   }
 
-  .header-name-block {
+  .header-name-wrapper {
     gap: 3px;
     min-width: 0;
-    flex: 0 1 auto;
-    padding: 4px 10px;
-    border-radius: 7px;
-    height: 64px;
-    justify-content: center;
   }
 
   .header-name {
-    font-size: 11px;
-    letter-spacing: 0.1px;
+    font-size: 13px;
+    white-space: normal;
+    line-height: 1.2;
   }
 
   .header-title {
-    font-size: 9px;
+    font-size: 10px;
     white-space: normal;
     line-height: 1.2;
-    letter-spacing: 0;
-  }
-
-  .header-contact-block {
-    gap: 3px;
-    min-width: 0;
-    flex: 0 1 auto;
-    padding: 0;
-    height: 64px;
-    justify-content: center;
-    align-items: stretch;
-  }
-
-  .header-phone {
-    font-size: 9px;
-    padding: 5px 10px;
-    border-radius: 7px;
-    letter-spacing: 0.1px;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-    flex: 1 1 auto;
-    min-height: 0;
   }
 
   .header-consultation-btn {
-    font-size: 9px;
-    padding: 5px 12px;
-    line-height: 1.2;
-    border-radius: 7px;
-    letter-spacing: 0.1px;
-    width: 100%;
-    box-sizing: border-box;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-
-  .telegram-icon {
-    width: 12px;
-    height: 12px;
+    font-size: 11px;
+    padding: 8px 16px;
+    height: 64px;
+    white-space: normal;
+    text-align: center;
+    flex-shrink: 0;
   }
 }
-
