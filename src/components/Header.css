@@ -151,21 +151,32 @@
 }
 
 
-/* Кнопка диагностики */
+/* Кнопка диагностики - Glassmorphism CTA */
 .header-consultation-btn {
-  background: linear-gradient(135deg, #5cb85c 0%, #4a9e4a 50%, #5cb85c 100%);
-  background-size: 200% 200%;
-  border: none;
+  /* Glassmorphism фон */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  /* Неоновый градиент рамка */
+  border: 1.5px solid transparent;
+  position: relative;
+  
   color: #ffffff;
   font-size: 12px;
   font-weight: 600;
   padding: 10px 18px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(92, 184, 92, 0.35);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Свечение (Glow) */
+  box-shadow: 
+    0 0 20px rgba(0, 209, 255, 0.3),
+    0 0 40px rgba(0, 122, 255, 0.2),
+    0 4px 15px rgba(0, 0, 0, 0.3);
+  
   letter-spacing: 0.2px;
-  position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -175,6 +186,20 @@
   flex-shrink: 0;
 }
 
+/* Градиентная рамка через псевдоэлемент */
+.header-consultation-btn::after {
+  content: '';
+  position: absolute;
+  top: -1.5px;
+  left: -1.5px;
+  right: -1.5px;
+  bottom: -1.5px;
+  background: linear-gradient(135deg, #00D1FF, #007AFF);
+  border-radius: 8px;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .consultation-btn-text {
   display: flex;
   flex-direction: column;
@@ -182,6 +207,8 @@
   justify-content: center;
   gap: 2px;
   line-height: 1.3;
+  position: relative;
+  z-index: 1;
 }
 
 .consultation-btn-line {
@@ -198,30 +225,54 @@
   }
 }
 
+/* Анимированный блик (Shine Effect) */
 .header-consultation-btn::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  animation: shine 3.5s infinite;
+  z-index: 0;
 }
 
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+/* Hover состояние */
 .header-consultation-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(92, 184, 92, 0.45);
-  background-position: 100% 0;
-}
-
-.header-consultation-btn:hover::before {
-  left: 100%;
+  transform: scale(1.05);
+  /* Усиленное свечение при hover */
+  box-shadow: 
+    0 0 30px rgba(0, 209, 255, 0.5),
+    0 0 60px rgba(0, 122, 255, 0.35),
+    0 6px 20px rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .header-consultation-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(92, 184, 92, 0.3);
+  transform: scale(1.02);
+  box-shadow: 
+    0 0 15px rgba(0, 209, 255, 0.4),
+    0 0 30px rgba(0, 122, 255, 0.25),
+    0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Резервное место справа для симметрии */
@@ -303,6 +354,19 @@
     text-align: center;
     flex-shrink: 0;
     min-width: 0;
+    /* Сохраняем все эффекты на мобильных */
+    border: 1.5px solid transparent;
+    box-shadow: 
+      0 0 15px rgba(0, 209, 255, 0.25),
+      0 0 30px rgba(0, 122, 255, 0.15),
+      0 3px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .header-consultation-btn:hover {
+    box-shadow: 
+      0 0 25px rgba(0, 209, 255, 0.4),
+      0 0 50px rgba(0, 122, 255, 0.3),
+      0 5px 18px rgba(0, 0, 0, 0.4);
   }
 
   .consultation-btn-text {
