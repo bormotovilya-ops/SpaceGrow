@@ -368,8 +368,8 @@
     padding: 7px;
     border-radius: 12px;
     /* Высота блока рассчитывается динамически для заполнения пространства */
-    /* Теперь 4 основных блока + 1 блок результата = 5 элементов */
-    height: calc((100% - 30px) / 5);
+    /* Теперь 5 основных блоков + 1 блок результата + 5 стрелок = распределение на 6 блоков */
+    height: calc((100% - 30px) / 6);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -408,8 +408,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Такая же высота как у основных блоков */
-    height: calc((100% - 30px) / 5);
+    /* Такая же высота как у основных блоков - теперь 6 блоков */
+    height: calc((100% - 30px) / 6);
     flex-shrink: 0;
     flex: 0 0 auto;
   }
@@ -424,14 +424,14 @@
     border-radius: 12px;
   }
 
-  /* Скрываем блок "Продукт" в мобильной версии */
+  /* Блок "Продукт" теперь виден на мобильной версии */
   .product-block {
-    display: none !important;
+    display: flex !important;
   }
 
-  /* Скрываем стрелку перед блоком "Продукт" в мобильной версии */
+  /* Стрелка перед блоком "Продукт" теперь видна на мобильной версии */
   .product-arrow {
-    display: none !important;
+    display: flex !important;
   }
 }
 
