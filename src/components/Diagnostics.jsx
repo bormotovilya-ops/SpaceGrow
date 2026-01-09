@@ -36,12 +36,6 @@ const stages = [
     question: 'Сформулирован ли твой продукт так, что понятно: какую конкретную трансформацию получает клиент и за что он платит?'
   },
   {
-    id: 'value',
-    name: 'Ценность продукта',
-    image: '/images/7_ценность.png',
-    question: 'Насколько твой продукт даёт реальную ценность, ради которой клиент готов расстаться с деньгами без уговоров и давления?'
-  },
-  {
     id: 'money',
     name: 'Деньги',
     image: '/images/6_оплата.png',
@@ -217,7 +211,7 @@ function Diagnostics({ onBack, onAvatarClick }) {
           <div className="diagnostics-intro-content">
             <h1 className="diagnostics-intro-title">Диагностика системы продаж</h1>
             <p className="diagnostics-intro-subtitle">
-              Ответьте на 7 вопросов и получите наглядную картину своей воронки:
+              Ответьте на 6 вопросов и получите наглядную картину своей воронки:
               где деньги теряются, а где система уже работает.
             </p>
             <button className="diagnostics-start-btn" onClick={handleStart}>
