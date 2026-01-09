@@ -3,10 +3,10 @@ import Header from './Header'
 import './Profile.css'
 
 // Импорт изображений технологического стека
-import img11 from '../assets/images/11.jpg'
-import img22 from '../assets/images/22.jpg'
-import img33 from '../assets/images/33.jpg'
-import img44 from '../assets/images/44.jpg'
+import img11 from '../assets/images/11.png'
+import img22 from '../assets/images/22.png'
+import img33 from '../assets/images/33.png'
+import img44 from '../assets/images/44.png'
 
 function Profile({ onBack, onAvatarClick, onDiagnostics }) {
   const [typingMessages, setTypingMessages] = useState([false, false, false]) // Показывать многоточие
