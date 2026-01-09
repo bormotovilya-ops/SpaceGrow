@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react'
 import Header from './Header'
 import './Profile.css'
 
+// Импорт изображений технологического стека
+import img11 from '../assets/images/11.jpg'
+import img22 from '../assets/images/22.jpg'
+import img33 from '../assets/images/33.jpg'
+import img44 from '../assets/images/44.jpg'
+
 function Profile({ onBack, onAvatarClick, onDiagnostics }) {
   const [typingMessages, setTypingMessages] = useState([false, false, false]) // Показывать многоточие
   const [visibleMessages, setVisibleMessages] = useState([false, false, false]) // Показывать текст
@@ -274,7 +280,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
             <div className="tech-stack-grid">
               <div className={`tech-stack-card ${expandedTechStack[0] ? 'expanded' : ''}`}>
                 <div className="tech-stack-icon" onClick={() => toggleTechStack(0)}>
-                  <img src="/images/11.jpg" alt="Web-разработка" />
+                  <img src={img11} alt="Web-разработка" />
                 </div>
                 <div className="tech-stack-header" onClick={() => toggleTechStack(0)}>
                   <h3>Web-разработка</h3>
@@ -298,7 +304,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
               </div>
               <div className={`tech-stack-card ${expandedTechStack[1] ? 'expanded' : ''}`}>
                 <div className="tech-stack-icon" onClick={() => toggleTechStack(1)}>
-                  <img src="/images/22.jpg" alt="Чат-боты и Mini Apps" />
+                  <img src={img22} alt="Чат-боты и Mini Apps" />
                 </div>
                 <div className="tech-stack-header" onClick={() => toggleTechStack(1)}>
                   <h3>Чат-боты и Mini Apps</h3>
@@ -322,7 +328,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
               </div>
               <div className={`tech-stack-card ${expandedTechStack[2] ? 'expanded' : ''}`}>
                 <div className="tech-stack-icon" onClick={() => toggleTechStack(2)}>
-                  <img src="/images/33.jpg" alt="Автоматизация EdTech" />
+                  <img src={img33} alt="Автоматизация EdTech" />
                 </div>
                 <div className="tech-stack-header" onClick={() => toggleTechStack(2)}>
                   <h3>Автоматизация EdTech</h3>
@@ -350,7 +356,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
               </div>
               <div className={`tech-stack-card ${expandedTechStack[3] ? 'expanded' : ''}`}>
                 <div className="tech-stack-icon" onClick={() => toggleTechStack(3)}>
-                  <img src="/images/44.jpg" alt="Системная интеграция" />
+                  <img src={img44} alt="Системная интеграция" />
                 </div>
                 <div className="tech-stack-header" onClick={() => toggleTechStack(3)}>
                   <h3>Системная интеграция</h3>
