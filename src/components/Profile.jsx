@@ -89,37 +89,46 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
                 </div>
                 <div className="profile-dialog-messages">
                   <div className={`dialog-message ${(typingMessages[0] || visibleMessages[0]) ? 'visible' : ''}`}>
-                    {typingMessages[0] ? (
-                      <p className="typing-indicator">
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                      </p>
-                    ) : visibleMessages[0] ? (
-                      <p>Меня зовут Бормотов Илья, я архитектор АИЦП.</p>
-                    ) : null}
+                    <img src="/images/me.jpg" alt="Илья Бормотов" className="dialog-message-avatar" />
+                    <div className="dialog-message-bubble">
+                      {typingMessages[0] ? (
+                        <p className="typing-indicator">
+                          <span className="typing-dot">.</span>
+                          <span className="typing-dot">.</span>
+                          <span className="typing-dot">.</span>
+                        </p>
+                      ) : visibleMessages[0] ? (
+                        <p>Меня зовут Бормотов Илья, я архитектор АИЦП.</p>
+                      ) : null}
+                    </div>
                   </div>
                   <div className={`dialog-message ${(typingMessages[1] || visibleMessages[1]) ? 'visible' : ''}`}>
-                    {typingMessages[1] ? (
-                      <p className="typing-indicator">
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                      </p>
-                    ) : visibleMessages[1] ? (
-                      <p>Работаю с экспертами и онлайн-школами с доходом от 200 тысяч и довожу до 1–2 миллионов в месяц.</p>
-                    ) : null}
+                    <img src="/images/me.jpg" alt="Илья Бормотов" className="dialog-message-avatar" />
+                    <div className="dialog-message-bubble">
+                      {typingMessages[1] ? (
+                        <p className="typing-indicator">
+                          <span className="typing-dot">.</span>
+                          <span className="typing-dot">.</span>
+                          <span className="typing-dot">.</span>
+                        </p>
+                      ) : visibleMessages[1] ? (
+                        <p>Работаю с экспертами и онлайн-школами с доходом от 200 тысяч и довожу до 1–2 миллионов в месяц.</p>
+                      ) : null}
+                    </div>
                   </div>
                   <div className={`dialog-message ${(typingMessages[2] || visibleMessages[2]) ? 'visible' : ''}`}>
-                    {typingMessages[2] ? (
-                      <p className="typing-indicator">
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                      </p>
-                    ) : visibleMessages[2] ? (
-                      <p>Ниже подробнее описаны мои компетенции, кейсы, достижения, подход и контакты</p>
-                    ) : null}
+                    <img src="/images/me.jpg" alt="Илья Бормотов" className="dialog-message-avatar" />
+                    <div className="dialog-message-bubble">
+                      {typingMessages[2] ? (
+                        <p className="typing-indicator">
+                          <span className="typing-dot">.</span>
+                          <span className="typing-dot">.</span>
+                          <span className="typing-dot">.</span>
+                        </p>
+                      ) : visibleMessages[2] ? (
+                        <p>Ниже подробнее описаны мои компетенции, кейсы, достижения, подход и контакты</p>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>

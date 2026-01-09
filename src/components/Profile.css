@@ -124,17 +124,13 @@
 }
 
 .dialog-message {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 18px;
-  padding: 16px 20px;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
   opacity: 0;
   transform: translateX(-10px);
   transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-  min-height: 50px;
+  margin-bottom: 12px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -145,28 +141,35 @@
   animation: messageAppear 0.4s ease-out;
 }
 
-.dialog-message::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 24px;
-  width: 0;
-  height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 8px solid rgba(255, 255, 255, 0.1);
+.dialog-message-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  display: none;
 }
 
-.dialog-message::after {
-  content: '';
-  position: absolute;
-  left: -7px;
-  top: 24px;
-  width: 0;
-  height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 8px solid rgba(255, 255, 255, 0.2);
+.dialog-message-bubble {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  padding: 16px 20px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  min-height: 50px;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.dialog-message-bubble::before {
+  display: none;
+}
+
+.dialog-message-bubble::after {
+  display: none;
 }
 
 .dialog-message p {
@@ -407,6 +410,81 @@
 }
 
 @media (max-width: 768px) {
+  /* Dialog messages - Telegram style for mobile */
+  .profile-dialog-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .profile-avatar-wrapper {
+    display: none;
+  }
+
+  .profile-avatar-large {
+    display: none;
+  }
+
+  .profile-dialog-messages {
+    width: 100%;
+  }
+
+  .dialog-message {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .dialog-message-avatar {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+  }
+
+  .dialog-message-bubble {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 12px 16px;
+    position: relative;
+    flex: 1;
+    min-height: auto;
+    backdrop-filter: blur(20px);
+  }
+
+  .dialog-message-bubble::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 15px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .dialog-message-bubble::after {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 15px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dialog-message p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
   .tech-stack-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
