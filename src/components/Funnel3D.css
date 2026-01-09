@@ -43,7 +43,7 @@
   width: 100%;
   max-width: 1000px;
   height: auto;
-  min-height: 400px;
+  min-height: 800px;
   filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.3));
   overflow: visible;
   display: block;
@@ -78,7 +78,7 @@
   width: 100%;
   max-width: 600px;
   animation: pulse-glow 3s ease-in-out infinite;
-  margin-top: -60px;
+  margin-top: 20px;
 }
 
 @keyframes pulse-glow {
@@ -149,11 +149,11 @@
   }
 
   .funnel-segment-label {
-    font-size: 12px;
+    font-size: 24px;
   }
 
   .funnel-segment-score {
-    font-size: 16px;
+    font-size: 32px;
   }
 
   .lost-profit-counter {
@@ -193,14 +193,14 @@
     width: 100%;
     max-width: 100%;
     transform: none;
-    min-height: 300px;
+    min-height: 600px;
   }
 
   .lost-profit-counter {
     width: 100%;
     max-width: 100%;
     padding: 15px;
-    margin-top: -40px;
+    margin-top: 20px;
   }
 
   .lost-profit-label {

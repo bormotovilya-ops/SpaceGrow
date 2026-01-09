@@ -29,7 +29,7 @@ const Funnel3D = ({ results }) => {
     const svgWidth = 1000 // Ширина SVG
     const padding = 10 // Минимальные отступы слева и справа
     const maxWidth = svgWidth - (padding * 2) // Ширина верхнего сегмента на весь экран с минимальными отступами
-    const segmentHeight = 90 // Высота каждого сегмента
+    const segmentHeight = 180 // Высота каждого сегмента (увеличена в 2 раза)
     const standardNarrowing = 0.95 // Стандартное сужение при 100% (5% на этап)
     const widths = []
     let currentTopWidth = maxWidth
@@ -159,7 +159,7 @@ const Funnel3D = ({ results }) => {
   }
 
   // Позиции и размеры
-  const segmentHeight = 90
+  const segmentHeight = 180 // Увеличена в 2 раза
   const totalHeight = 50 + segments.length * segmentHeight + 20
 
   // Проверка на пустые данные
@@ -260,10 +260,10 @@ const Funnel3D = ({ results }) => {
                   {/* Картинка этапа */}
                   {segment.image && (
                     <foreignObject
-                      x={centerX - 30}
-                      y={yOffset + 8}
-                      width="60"
-                      height="40"
+                      x={centerX - 60}
+                      y={yOffset + 16}
+                      width="120"
+                      height="80"
                     >
                       <div style={{
                         width: '100%',
@@ -290,10 +290,10 @@ const Funnel3D = ({ results }) => {
                   {/* Название этапа */}
                   <text
                     x={centerX}
-                    y={yOffset + height / 2 + 8}
+                    y={yOffset + height / 2 + 16}
                     textAnchor="middle"
                     fill="#ffffff"
-                    fontSize="13"
+                    fontSize="26"
                     fontWeight="600"
                     className="funnel-segment-label"
                     style={{ textShadow: '0 2px 8px rgba(0, 0, 0, 0.9)' }}
@@ -304,10 +304,10 @@ const Funnel3D = ({ results }) => {
                   {/* Процент эффективности */}
                   <text
                     x={centerX}
-                    y={yOffset + height / 2 + 26}
+                    y={yOffset + height / 2 + 52}
                     textAnchor="middle"
                     fill={borderColor}
-                    fontSize="22"
+                    fontSize="44"
                     fontWeight="700"
                     className="funnel-segment-score"
                     style={{ textShadow: '0 0 12px currentColor, 0 2px 4px rgba(0, 0, 0, 0.8)' }}
