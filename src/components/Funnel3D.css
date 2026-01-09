@@ -128,7 +128,7 @@
 
 @media (max-width: 768px) {
   .funnel-3d-container {
-    padding: 10px 5px;
+    padding: 3px 2px;
     gap: 5px;
     width: 100%;
     min-height: 100%;
@@ -178,7 +178,7 @@
 
 @media (max-width: 480px) {
   .funnel-3d-container {
-    padding: 5px;
+    padding: 2px;
     width: 100%;
     min-height: 100%;
     margin-bottom: 20px;

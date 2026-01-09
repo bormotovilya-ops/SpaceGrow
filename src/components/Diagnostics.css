@@ -811,7 +811,6 @@
     padding: 100px 10px 32px;
     width: 100%;
     min-height: calc(100vh - 120px);
-    height: 100%;
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -824,7 +823,6 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    height: 100%;
   }
 
   .diagnostics-results-title {
@@ -856,12 +854,31 @@
     font-size: 14px;
   }
 
+  .diagnostics-analysis {
+    margin-bottom: 24px;
+    padding: 20px;
+  }
+
+  .analysis-item {
+    padding: 12px;
+  }
+
   .analysis-text {
     font-size: 14px;
   }
 
+  .diagnostics-conclusion {
+    margin-bottom: 24px;
+    padding: 20px;
+  }
+
   .conclusion-text {
     font-size: 16px;
+  }
+
+  .diagnostics-consultation {
+    margin-top: 24px;
+    margin-bottom: 20px;
   }
 
   .diagnostics-consultation-btn {
@@ -871,8 +888,11 @@
   }
 
   .diagnostics-final-block {
-    padding: 30px 20px;
-    margin: 32px auto 24px;
+    padding: 24px 16px;
+    margin: 24px auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .final-block-icon {
@@ -888,6 +908,14 @@
   .final-block-text {
     font-size: 16px;
     margin-bottom: 24px;
+    display: block;
+  }
+
+  .final-block-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
   }
 
   .benefit-item {
