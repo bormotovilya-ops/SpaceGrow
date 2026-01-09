@@ -208,7 +208,8 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
                     <strong>Воронки:</strong>
                     <ul>
                       <li><a href="https://telegram.me/weinihaoru_bot" target="_blank" rel="noopener noreferrer">Школа китайского (1000+ чел)</a></li>
-                      <li><a href="https://telegram.me/SafeSaleLawBot" target="_blank" rel="noopener noreferrer">Юридические услуги</a></li>
+                      <li><a href="https://telegram.me/SafeSaleLawBot" target="_blank" rel="noopener noreferrer">Юридические эксперты</a></li>
+                      <li><a href="https://telegram.me/logachev_legal_bot" target="_blank" rel="noopener noreferrer">Юридические услуги для бизнеса</a></li>
                     </ul>
                   </div>
                   <div className="case-link-group">

@@ -92,7 +92,8 @@ const portfolioData = {
             group: 'Воронки:',
             items: [
               { text: 'Школа китайского (1000+ чел)', url: 'https://telegram.me/weinihaoru_bot' },
-              { text: 'Юридические услуги', url: 'https://telegram.me/SafeSaleLawBot' }
+              { text: 'Юридические эксперты', url: 'https://telegram.me/SafeSaleLawBot' },
+              { text: 'Юридические услуги для бизнеса', url: 'https://telegram.me/logachev_legal_bot' }
             ]
           },
           {
