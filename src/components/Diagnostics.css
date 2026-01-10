@@ -1,5 +1,6 @@
 .diagnostics-container {
   width: 100%;
+  height: 100vh;
   min-height: 100vh;
   padding: 0;
   background-image: 
@@ -13,6 +14,8 @@
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Для страницы результатов разрешаем скроллинг */
@@ -36,9 +39,6 @@
 
 
 /* Убираем скроллбар для вариантов ответов (скроллинг не нужен) */
-.answer-options {
-  overflow-y: visible !important;
-}
 
 /* Вводный экран */
 .diagnostics-intro {
@@ -123,17 +123,21 @@
 /* Экран вопроса */
 .diagnostics-question {
   width: 100%;
-  height: calc(100vh - 120px);
-  max-height: calc(100vh - 120px);
-  padding: 80px 20px 20px;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  padding-top: 120px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  overflow-x: hidden;
   box-sizing: border-box;
   margin: 0;
+  position: relative;
 }
 
 .diagnostics-progress {
@@ -141,31 +145,37 @@
   max-width: 800px;
   margin-bottom: 12px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+  padding: 8px 0;
+  box-sizing: border-box;
 }
 
 .progress-bar {
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #5cb85c, #4a9e4a);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.4s ease;
-  box-shadow: 0 0 10px rgba(92, 184, 92, 0.5);
+  box-shadow: 0 0 12px rgba(92, 184, 92, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .progress-text {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .question-content {
@@ -177,120 +187,408 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  overflow-x: hidden;
   box-sizing: border-box;
-  padding: 0;
+  padding: 0 10px;
   margin: 0;
-  justify-content: space-between;
+  gap: 8px;
+  justify-content: flex-start;
 }
 
 .question-content-wrapper {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
   overflow: hidden;
+  padding-left: 0;
+  padding-right: 0;
+  gap: 6px;
 }
 
 .question-stage {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+  margin-bottom: 0;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, 
+    rgba(92, 184, 92, 0.2) 0%, 
+    rgba(74, 144, 226, 0.2) 50%, 
+    rgba(92, 184, 92, 0.15) 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(0, 255, 136, 0.3);
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 136, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  animation: questionStageGlow 3s ease-in-out infinite;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.question-stage > div:not(.question-stage-image) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.question-stage::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, transparent 70%);
+  animation: questionStageRotate 8s linear infinite;
+  pointer-events: none;
+}
+
+.question-stage::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%);
+  pointer-events: none;
+  animation: questionStageShine 4s ease-in-out infinite;
+}
+
+@keyframes questionStageGlow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(0, 255, 136, 0.2),
+      0 4px 20px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(0, 255, 136, 0.4),
+      0 6px 30px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-color: rgba(0, 255, 136, 0.5);
+  }
+}
+
+@keyframes questionStageRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes questionStageShine {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
 }
 
 .question-stage-image {
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 2px solid rgba(0, 255, 136, 0.4);
   flex-shrink: 0;
+  box-shadow: 
+    0 0 15px rgba(0, 255, 136, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.question-stage:hover .question-stage-image {
+  border-color: rgba(0, 255, 136, 0.6);
+  box-shadow: 
+    0 0 20px rgba(0, 255, 136, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: scale(1.02);
 }
 
 .question-stage-name {
   color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  text-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(0, 255, 136, 0.3);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(0, 255, 136, 0.9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.question-stage-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  font-weight: 400;
   margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  font-style: italic;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
 }
 
-.question-text {
-  color: #ffffff;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1.3;
-  margin: 0 0 12px;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+/* Обертка для сообщений с аватаркой */
+.message-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 0;
   flex-shrink: 0;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+.message-wrapper-left {
+  justify-content: flex-start;
+}
+
+.message-wrapper-right {
+  justify-content: flex-end;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Стиль сообщения с вопросом (от меня, слева) */
+.question-message {
+  background: linear-gradient(135deg, rgba(92, 184, 92, 0.25), rgba(74, 144, 226, 0.25));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(92, 184, 92, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 0;
+  margin-left: 12px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  opacity: 1;
+  transform: translateX(0);
+  flex-shrink: 0;
+  max-width: 75%;
+  overflow: visible;
+  margin-top: 0;
+}
+
+/* Стрелка влево для вопроса - элемент в JSX - бледная, прозрачная, приплюснутая по вертикали */
+.message-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scaleX(0.6) scaleY(1.8);
+  font-size: 24px;
+  font-weight: 700;
+  z-index: 20;
+  line-height: 1;
+  pointer-events: none;
+  display: inline-block;
+  opacity: 0.3;
+}
+
+.message-arrow-left {
+  left: -16px;
+  color: rgba(92, 184, 92, 0.4);
+}
+
+.message-arrow-right {
+  right: -16px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.answer-message.poll-option.selected .message-arrow-right {
+  color: rgba(51, 144, 236, 0.4);
+  opacity: 0.35;
+}
+
+.question-message p {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+
+/* Варианты ответов в стиле голосования Telegram (справа, компактно) */
 .answer-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 2px;
+  align-items: flex-end;
   flex: 0 0 auto;
-  overflow-y: visible;
-  overflow-x: hidden;
+  overflow: visible;
   padding: 0;
   margin: 0;
+  margin-bottom: 0;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
-.answer-option {
-  width: 100%;
-  max-width: 100%;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+.answer-message.poll-option {
+  width: 75%;
+  min-width: 250px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   text-align: left;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
   box-sizing: border-box;
   position: relative;
   margin: 0;
+  margin-right: 16px;
+  margin-top: 0;
+  opacity: 1;
+  transform: translateX(0);
+  overflow: visible;
 }
 
-.answer-option:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+.answer-message.poll-option:first-child {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
-.answer-option.selected {
-  background: linear-gradient(135deg, rgba(92, 184, 92, 0.3), rgba(74, 158, 74, 0.25));
-  border-color: #5cb85c;
-  box-shadow: 0 6px 24px rgba(92, 184, 92, 0.5), 0 0 0 2px rgba(92, 184, 92, 0.3);
+.answer-message.poll-option:last-child {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.answer-message.poll-option:not(:first-child) {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.answer-message.poll-option:not(:last-child) {
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.answer-message.poll-option:only-child {
+  border-radius: 12px;
+}
+
+/* Убираем все псевдоэлементы - стрелки теперь в JSX */
+.question-message::before,
+.question-message::after,
+.answer-message.poll-option::before,
+.answer-message.poll-option::after {
+  display: none !important;
+  content: none !important;
+}
+
+.answer-message.poll-option:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.answer-message.poll-option.selected {
+  background: linear-gradient(135deg, rgba(51, 144, 236, 0.35), rgba(33, 150, 243, 0.3));
+  border-color: rgba(51, 144, 236, 0.5);
+  box-shadow: 0 4px 16px rgba(51, 144, 236, 0.4);
+}
+
+
+.poll-checkmark {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  z-index: 14;
+}
+
+/* Убираем галочку у последнего элемента, если он выбран - там стрелка */
+.answer-message.poll-option.selected:last-child .poll-checkmark {
+  display: none;
 }
 
 .answer-option-label {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 0;
+  line-height: 1.3;
+  padding-right: 30px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.answer-message.poll-option.selected .answer-option-label {
   color: #ffffff;
-  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 5px;
-  line-height: 1.25;
 }
 
 .answer-option-description {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.3;
+  padding-right: 30px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.answer-message.poll-option.selected .answer-option-description {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Экран результатов */
@@ -420,39 +718,126 @@
 .diagnostics-analysis {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
   margin-bottom: 32px;
-  padding: 24px;
+}
+
+.analysis-section {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.analysis-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.analysis-section-header.analysis-critical {
+  background: linear-gradient(135deg, rgba(217, 83, 79, 0.15), rgba(217, 83, 79, 0.05));
+  border-bottom-color: rgba(217, 83, 79, 0.3);
+}
+
+.analysis-section-header.analysis-unstable {
+  background: linear-gradient(135deg, rgba(240, 173, 78, 0.15), rgba(240, 173, 78, 0.05));
+  border-bottom-color: rgba(240, 173, 78, 0.3);
+}
+
+.analysis-section-header.analysis-strong {
+  background: linear-gradient(135deg, rgba(92, 184, 92, 0.15), rgba(92, 184, 92, 0.05));
+  border-bottom-color: rgba(92, 184, 92, 0.3);
+}
+
+.analysis-section-title {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analysis-count {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.analysis-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.analysis-section-items {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
 }
 
 .analysis-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.analysis-item:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
 }
 
-.analysis-icon {
-  font-size: 24px;
-  flex-shrink: 0;
+.analysis-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
 }
 
-.analysis-text {
+.analysis-item-name {
   color: #ffffff;
   font-size: 16px;
   line-height: 1.5;
+  flex: 1;
 }
 
-.analysis-text strong {
+.analysis-item-score {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
   font-weight: 600;
+  flex-shrink: 0;
+}
+
+.analysis-item.analysis-critical .analysis-item-name {
+  color: rgba(255, 200, 200, 0.95);
+}
+
+.analysis-item.analysis-critical .analysis-item-score {
+  color: rgba(217, 83, 79, 0.9);
+}
+
+.analysis-item.analysis-unstable .analysis-item-name {
+  color: rgba(255, 230, 180, 0.95);
+}
+
+.analysis-item.analysis-unstable .analysis-item-score {
+  color: rgba(240, 173, 78, 0.9);
+}
+
+.analysis-item.analysis-strong .analysis-item-name {
+  color: rgba(200, 255, 200, 0.95);
+}
+
+.analysis-item.analysis-strong .analysis-item-score {
+  color: rgba(92, 184, 92, 0.9);
 }
 
 .diagnostics-conclusion {
@@ -465,19 +850,73 @@
   box-shadow: 0 4px 16px rgba(92, 184, 92, 0.2);
 }
 
+.conclusion-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.conclusion-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 .conclusion-text {
-  color: #ffffff;
-  font-size: 18px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 16px;
   line-height: 1.6;
   margin: 0;
-  text-align: center;
-  font-weight: 500;
+  text-align: left;
+  font-weight: 400;
+  flex: 1;
+  letter-spacing: 0.01em;
+}
+
+.conclusion-text strong {
+  font-weight: 600;
+  color: #ffffff;
+  display: inline;
+  font-size: 16px;
+}
+
+.conclusion-text br {
+  display: block;
+  content: "";
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.conclusion-text br + br {
+  margin-bottom: 12px;
+}
+
+.conclusion-text .list-marker {
+  color: rgba(92, 184, 92, 0.85);
+  font-weight: 600;
+  margin-right: 8px;
+  display: inline-block;
+  font-size: 16px;
+  vertical-align: baseline;
+}
+
+.conclusion-text .list-number {
+  color: rgba(92, 184, 92, 0.85);
+  font-weight: 600;
+  margin-right: 8px;
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 .diagnostics-consultation {
   display: flex;
   justify-content: center;
   margin-top: 40px;
+  margin-bottom: 40px;
 }
 
 .diagnostics-consultation-btn {
@@ -734,77 +1173,161 @@
   }
 
   .diagnostics-question {
-    padding: 80px 12px 12px;
-    height: calc(100vh - 80px);
-    max-height: calc(100vh - 80px);
+    padding-top: 100px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 0;
+    height: 100%;
+    flex: 1;
+    min-height: 0;
     margin: 0;
+    overflow: hidden;
   }
   
   .question-content {
     padding: 0;
     margin: 0;
+    gap: 8px;
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .question-content-wrapper {
+    gap: 6px;
   }
   
   .answer-options {
     padding: 0;
     margin: 0;
+    gap: 1px;
   }
 
   .diagnostics-progress {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    padding: 6px 0;
+    max-width: 100%;
   }
-
+  
   .progress-text {
-    font-size: 12px;
+    font-size: 11px;
+  }
+  
+  .progress-bar {
+    height: 4px;
+    margin-bottom: 4px;
   }
 
   .question-stage {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     text-align: center;
-    padding: 10px 12px;
-    margin-bottom: 12px;
-    gap: 8px;
+    padding: 8px 12px;
+    margin-bottom: 0;
+    gap: 10px;
+    border-width: 2px;
+    border-radius: 10px;
   }
 
   .question-stage-image {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
+    border-width: 2px;
+    border-radius: 8px;
   }
 
   .question-stage-name {
-    font-size: 16px;
+    font-size: 15px;
+    text-align: center;
+    letter-spacing: 0.2px;
+    margin-bottom: 2px;
+    line-height: 1.2;
   }
 
-  .question-text {
-    font-size: 16px;
-    margin-bottom: 12px;
-    line-height: 1.2;
+  .question-stage-subtitle {
+    font-size: 10px;
+    line-height: 1.1;
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-wrapper {
+    gap: 4px;
+    margin-bottom: 0;
+  }
+
+  .question-message {
+    padding: 8px 12px;
+    max-width: 85%;
+    margin-left: 10px;
+    border-radius: 8px;
+  }
+
+  .message-arrow {
+    transform: translateY(-50%) scaleX(0.5) scaleY(1.6) !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    opacity: 0.3 !important;
+  }
+  
+  .message-arrow-left {
+    left: -12px !important;
+    color: rgba(92, 184, 92, 0.4) !important;
+  }
+  
+  .message-arrow-right {
+    right: -12px !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  .answer-message.poll-option.selected .message-arrow-right {
+    color: rgba(51, 144, 236, 0.4) !important;
+    opacity: 0.35 !important;
+  }
+  
+  .poll-checkmark {
+    right: 8px !important;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+  }
+
+  .question-message p {
+    font-size: 12px;
+    line-height: 1.3;
   }
 
   .answer-options {
-    gap: 8px;
-  }
-
-  .answer-option {
-    padding: 12px 14px;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin: 0;
+    gap: 1px;
+    margin-top: 0;
   }
   
-  .answer-option:hover,
-  .answer-option.selected {
-    transform: none;
+  .answer-message.poll-option {
+    width: 85%;
+    min-width: 0;
+    max-width: 85%;
+    padding: 8px 12px;
+    margin-right: 14px !important;
+    border-radius: 8px;
+  }
+
+  .answer-message.poll-option:hover {
+    transform: translateX(-1px);
   }
 
   .answer-option-label {
-    font-size: 13px;
-    margin-bottom: 4px;
-    line-height: 1.2;
+    font-size: 12px;
+    margin-bottom: 0;
+    line-height: 1.25;
+    padding-right: 26px;
   }
 
   .answer-option-description {
     font-size: 10px;
+    line-height: 1.1;
+    padding-right: 26px;
   }
 
   .diagnostics-results {
@@ -856,24 +1379,104 @@
 
   .diagnostics-analysis {
     margin-bottom: 24px;
-    padding: 20px;
+    gap: 16px;
+  }
+
+  .analysis-section {
+    border-radius: 12px;
+  }
+
+  .analysis-section-header {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .analysis-section-title {
+    font-size: 16px;
+    flex-wrap: wrap;
+  }
+
+  .analysis-icon {
+    font-size: 24px;
+  }
+
+  .analysis-count {
+    font-size: 12px;
+  }
+
+  .analysis-section-items {
+    padding: 6px;
   }
 
   .analysis-item {
-    padding: 12px;
+    padding: 10px 12px;
+    margin: 3px;
   }
 
-  .analysis-text {
+  .analysis-item-content {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .analysis-item-name {
     font-size: 14px;
+    flex: 1;
+    min-width: 60%;
+  }
+
+  .analysis-item-score {
+    font-size: 13px;
   }
 
   .diagnostics-conclusion {
     margin-bottom: 24px;
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .conclusion-wrapper {
+    gap: 12px;
+  }
+
+  .conclusion-avatar {
+    width: 48px;
+    height: 48px;
+    border-width: 2px;
   }
 
   .conclusion-text {
-    font-size: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  .conclusion-text strong {
+    font-size: 15px;
+  }
+  
+  .conclusion-text br {
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+
+  .conclusion-text br + br {
+    margin-bottom: 12px;
+  }
+
+  .conclusion-text .list-marker {
+    color: rgba(92, 184, 92, 0.85);
+    font-weight: 600;
+    margin-right: 8px;
+    display: inline-block;
+    font-size: 15px;
+    vertical-align: baseline;
+  }
+
+  .conclusion-text .list-number {
+    color: rgba(92, 184, 92, 0.85);
+    font-weight: 600;
+    margin-right: 8px;
+    display: inline-block;
+    vertical-align: baseline;
   }
 
   .diagnostics-consultation {
