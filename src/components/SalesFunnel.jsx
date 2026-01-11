@@ -98,6 +98,10 @@ function SalesFunnel() {
   }
 
   const handleAvatarClick = () => {
+    // Закрываем Diagnostics если открыт, открываем Profile
+    if (showDiagnostics) {
+      setShowDiagnostics(false)
+    }
     setShowProfile(true)
   }
 
