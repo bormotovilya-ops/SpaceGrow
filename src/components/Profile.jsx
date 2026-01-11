@@ -417,31 +417,39 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
             <h2>Мой подход</h2>
             <div className="approach-list">
               <div className="approach-item">
-                <div className="approach-icon">🎯</div>
+                <div className="approach-icon">
+                  <img src="/images/цель.png" alt="Цели" />
+                </div>
                 <div>
-                  <h3>От бизнес-целей к архитектуре</h3>
-                  <p>Сначала понимаю ваши цели, затем проектирую систему, и только потом выбираю инструменты</p>
+                  <h3>Цели — фундамент</h3>
+                  <p>Сначала проектирую логику и KPI, и только потом внедряю софт. Инструменты служат задачам бизнеса, а не наоборот.</p>
                 </div>
               </div>
               <div className="approach-item">
-                <div className="approach-icon">🔗</div>
+                <div className="approach-icon">
+                  <img src="/images/цепочка.png" alt="Экосистема" />
+                </div>
                 <div>
-                  <h3>Единая система, а не инструменты</h3>
-                  <p>Создаю целостную архитектуру, где все элементы работают вместе</p>
+                  <h3>Единая экосистема</h3>
+                  <p>Никаких разрозненных ботов и «костылей». Связываю трафик, CRM и аналитику в систему, работающую как часы.</p>
                 </div>
               </div>
               <div className="approach-item">
-                <div className="approach-icon">📊</div>
+                <div className="approach-icon">
+                  <img src="/images/roi.png" alt="ROI" />
+                </div>
                 <div>
-                  <h3>Ответственность за результат</h3>
-                  <p>Отвечаю за рост показателей: лиды → заявки → продажи</p>
+                  <h3>Работа на ROI</h3>
+                  <p>Я не зарабатываю на вас, я зарабатываю вместе с вами. Мой главный приоритет — превратить ваш бюджет в чистую прибыль.</p>
                 </div>
               </div>
               <div className="approach-item">
-                <div className="approach-icon">⚡</div>
+                <div className="approach-icon">
+                  <img src="/images/Прозрачно.png" alt="Прозрачность" />
+                </div>
                 <div>
-                  <h3>Прозрачность и скорость</h3>
-                  <p>Без бюрократии, все процессы на виду, быстрая реакция</p>
+                  <h3>Прозрачный темп</h3>
+                  <p>Работаю без бюрократии и длинных цепочек. Все процессы на виду, быстрая реакция и запуск MVP в кратчайшие сроки.</p>
                 </div>
               </div>
             </div>
@@ -450,40 +458,37 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
           {/* Контакты */}
           <section className="profile-section">
             <h2>Контакты</h2>
-            <div className="contacts-grid">
-              <a href="tel:+79991237788" className="contact-card">
-                <div className="contact-icon">📞</div>
-                <h3>Телефон</h3>
-                <p>+7 (999) 123-77-88</p>
-                <div className="contact-hint">Нажмите для звонка</div>
+            <div className="contacts-list">
+              <a href="tel:+79991237788" className="contact-line">
+                <span className="contact-icon">📞</span>
+                <span className="contact-label">Телефон:</span>
+                <span className="contact-value">+7 (999) 123-77-88</span>
               </a>
               
-              <a href="mailto:bormotovilya@gmail.com" className="contact-card">
-                <div className="contact-icon">📧</div>
-                <h3>Email</h3>
-                <p>bormotovilya@gmail.com</p>
-                <div className="contact-hint">Нажмите для отправки письма</div>
+              <a href="mailto:bormotovilya@gmail.com" className="contact-line">
+                <span className="contact-icon">📧</span>
+                <span className="contact-label">Email:</span>
+                <span className="contact-value">bormotovilya@gmail.com</span>
               </a>
               
-              <a href="https://t.me/ilyaborm" target="_blank" rel="noopener noreferrer" className="contact-card">
-                <div className="contact-icon">💬</div>
-                <h3>Telegram</h3>
-                <p>@ilyaborm</p>
-                <div className="contact-hint">Перейти в Telegram</div>
+              <a href="https://t.me/ilyaborm" target="_blank" rel="noopener noreferrer" className="contact-line">
+                <span className="contact-icon">
+                  <img src="/images/telegram-icon.png" alt="Telegram" className="telegram-icon-img" />
+                </span>
+                <span className="contact-label">Telegram:</span>
+                <span className="contact-value">@ilyaborm</span>
               </a>
               
-              <a href="https://t.me/SoulGuideIT" target="_blank" rel="noopener noreferrer" className="contact-card">
-                <div className="contact-icon">📢</div>
-                <h3>Канал</h3>
-                <p>@SoulGuideIT</p>
-                <div className="contact-hint">Подписаться на канал</div>
+              <a href="https://t.me/SoulGuideIT" target="_blank" rel="noopener noreferrer" className="contact-line">
+                <span className="contact-icon">📢</span>
+                <span className="contact-label">Канал:</span>
+                <span className="contact-value">@SoulGuideIT</span>
               </a>
               
-              <a href="https://t.me/VisitCardIlyaBormotov_Bot" target="_blank" rel="noopener noreferrer" className="contact-card">
-                <div className="contact-icon">🤖</div>
-                <h3>Бот</h3>
-                <p>Визитная карточка</p>
-                <div className="contact-hint">Открыть бота</div>
+              <a href="https://t.me/VisitCardIlyaBormotov_Bot" target="_blank" rel="noopener noreferrer" className="contact-line">
+                <span className="contact-icon">🤖</span>
+                <span className="contact-label">Бот:</span>
+                <span className="contact-value">Визитная карточка</span>
               </a>
             </div>
           </section>
@@ -498,11 +503,11 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
               </div>
               <div className="requisite-item">
                 <span className="requisite-label">ИНН:</span>
-                <span className="requisite-value">Укажите ваш ИНН</span>
+                <span className="requisite-value">590313353407</span>
               </div>
               <div className="requisite-item">
                 <span className="requisite-label">ОГРНИП:</span>
-                <span className="requisite-value">Укажите ваш ОГРНИП</span>
+                <span className="requisite-value">318595800124661</span>
               </div>
             </div>
             <div className="requisites-note">
