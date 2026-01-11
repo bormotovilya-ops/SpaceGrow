@@ -159,25 +159,44 @@
   }
 
   .lost-profit-counter {
+    text-align: center;
     padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.15), rgba(255, 0, 0, 0.1));
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 68, 68, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     animation: pulse-glow 3s ease-in-out infinite;
-    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
     margin-top: 20px;
   }
 
   .lost-profit-label {
+    color: rgba(255, 255, 255, 0.9);
     font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   .lost-profit-value {
+    color: #ff4444;
     font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+    filter: drop-shadow(0 0 10px rgba(255, 68, 68, 0.6));
   }
 
   .lost-profit-description {
+    color: rgba(255, 255, 255, 0.7);
     font-size: 12px;
+    line-height: 1.5;
   }
 }
 
@@ -202,24 +221,44 @@
   }
 
   .lost-profit-counter {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.15), rgba(255, 0, 0, 0.1));
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 68, 68, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 100%;
-    padding: 15px;
-    margin-top: 20px;
+    box-sizing: border-box;
     animation: pulse-glow 3s ease-in-out infinite;
-    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
+    margin-top: 20px;
   }
 
   .lost-profit-label {
+    color: rgba(255, 255, 255, 0.9);
     font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   .lost-profit-value {
+    color: #ff4444;
     font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+    filter: drop-shadow(0 0 10px rgba(255, 68, 68, 0.6));
   }
 
   .lost-profit-description {
+    color: rgba(255, 255, 255, 0.7);
     font-size: 11px;
+    line-height: 1.5;
   }
 }
 
