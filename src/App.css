@@ -4,12 +4,10 @@
     position: relative;
 }
 
-/* Для мобильной версии разрешаем прокрутку */
+/* Для мобильной версии убираем прокрутку */
 @media (max-width: 768px) {
     .container {
-        overflow-y: auto;
-        overflow-x: hidden;
-        min-height: 100vh;
+        overflow: hidden;
     }
 }
 

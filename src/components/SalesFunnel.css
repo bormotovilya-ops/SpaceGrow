@@ -332,8 +332,7 @@
 @media (max-width: 768px) {
   .sales-funnel-container {
     height: 100vh;
-    overflow-y: auto; /* Разрешаем прокрутку, чтобы блок "Деньги" был виден */
-    overflow-x: hidden;
+    overflow: hidden; /* Убираем прокрутку */
     display: flex;
     flex-direction: column;
   }
@@ -343,7 +342,7 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 150px; /* БОЛЬШОЙ ОТСТУП СНИЗУ С ЗАПАСОМ */
+    padding-bottom: 75px; /* Отступ уменьшен на 50% (было 150px) */
     display: flex;
     align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
@@ -356,7 +355,7 @@
   .funnel-blocks {
     gap: 2px; /* Небольшой отступ между элементами */
     padding: 0;
-    padding-bottom: 100px; /* ОТСТУП СНИЗУ С ЗАПАСОМ - чтобы блок "Деньги" полностью входил */
+    padding-bottom: 50px; /* Отступ уменьшен на 50% (было 100px) */
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -423,8 +422,8 @@
     /* Убеждаемся, что блок виден */
     position: relative;
     z-index: 10;
-    /* ОТСТУП СНИЗУ С ЗАПАСОМ - равен высоте блока + дополнительный запас */
-    margin-bottom: 100px;
+    /* ОТСТУП СНИЗУ С ЗАПАСОМ - уменьшен на 50% (было 100px) */
+    margin-bottom: 50px;
   }
 
   .result-block {

@@ -41,11 +41,10 @@ body {
     overflow: hidden;
 }
 
-/* Для мобильной версии разрешаем прокрутку */
+/* Для мобильной версии убираем прокрутку */
 @media (max-width: 768px) {
     #root {
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: hidden;
     }
 }
 
