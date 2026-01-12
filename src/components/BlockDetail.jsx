@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import Header from './Header'
 import './BlockDetail.css'
 
@@ -132,7 +133,7 @@ const workDiagramStructure = {
   ]
 }
 
-function BlockDetail({ block, onBack, onConsultation, onAvatarClick }) {
+function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock }) {
   const isAudienceBlock = block.id === 'audience'
   const [activeTab, setActiveTab] = useState('test') // 'test' или 'work'
   const [selectedBlockId, setSelectedBlockId] = useState(null)
@@ -171,583 +172,276 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick }) {
   const currentDiagram = activeTab === 'test' ? testDiagramStructure : workDiagramStructure
 
   const audienceContent = (
-    <div className="block-detail-sections">
-      {/* Общее описание */}
-      <section className="block-detail-section">
-        <div className="audience-intro-layout">
-          <div className="audience-intro-text">
-            <h2>Этап «Аудитория» — стартовый аналитический этап всей системы продаж</h2>
-            <p>
-              🧩 На этом этапе продукт существует только как гипотеза: идея, ожидаемый результат, формат, ценовой ориентир и предполагаемая аудитория — без записи уроков, лендингов и воронок.
+    <div className="audience-new-container">
+      {/* Hero-секция */}
+      <motion.section 
+        className="audience-hero"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="audience-hero-header">
+          <img src={block.image} alt={block.name} className="audience-hero-image" />
+          <div className="audience-hero-text">
+            <h1 className="audience-hero-title">
+              Аудитория.<br />
+              <span className="audience-hero-subtitle">Технологическая разведка рынка</span>
+            </h1>
+            <p className="audience-hero-offer">
+              Запускаем систему сбора данных раньше, чем вы запишете первый урок.
             </p>
-            <p>
-              🎯 Цель этапа — понять, существует ли рынок, кто именно наша аудитория и имеет ли проект экономический смысл.
-            </p>
-            <p>
-              Этап «Аудитория» состоит из двух логических подэтапов:
-            </p>
-            <p>
-              <strong>1️⃣ Тестовый</strong> — проверяем гипотезы и принимаем управленческое решение;<br />
-              <strong>2️⃣ Рабочий</strong> — фиксируем подтверждённые сегменты и готовим переход к воронке.
-            </p>
-          </div>
-          <div className="audience-image-wrapper" style={{ display: 'none' }}>
-            <img src={block.image} alt={block.name} className="audience-side-image" />
-            <h1 className="audience-side-title">{block.name}</h1>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Вкладки и диаграммы */}
-      <section className="block-detail-section block-detail-section-fullwidth audience-diagrams-section">
-        <div className="audience-tabs">
-          <button 
-            className={`audience-tab ${activeTab === 'test' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('test')
-              setSelectedBlockId(null)
-            }}
+      {/* Блок "Что на входе" */}
+      <motion.section 
+        className="audience-input-section"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <h2 className="audience-section-title">Что на входе</h2>
+        <div className="audience-input-cards">
+          <motion.div 
+            className="audience-input-card"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            whileHover={{ scale: 1.02 }}
           >
-            Тестовый
-          </button>
-          <button 
-            className={`audience-tab ${activeTab === 'work' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('work')
-              setSelectedBlockId(null)
-            }}
+            <div className="input-card-icon">💡</div>
+            <h3 className="input-card-title">Гипотеза</h3>
+            <div className="input-card-content">
+              <p className="input-card-description">
+                На этом этапе у вас есть идея продукта, но ещё нет готового решения. Мы фиксируем:
+              </p>
+              <ul className="input-card-list">
+                <li><strong>Описание оффера:</strong> что именно вы предлагаете решить, какой результат получит клиент</li>
+                <li><strong>Боли аудитории:</strong> какие конкретные проблемы испытывает ваш потенциальный клиент, что его беспокоит</li>
+                <li><strong>Ценовой сегмент:</strong> в каком диапазоне вы планируете продавать, какой бюджет готовы выделить клиенты</li>
+              </ul>
+              <p className="input-card-note">
+                Это не финальная упаковка, а гипотеза, которую мы будем проверять данными, а не ощущениями.
+              </p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="audience-input-card"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            whileHover={{ scale: 1.02 }}
           >
-            Рабочий
-          </button>
+            <div className="input-card-icon">📊</div>
+            <h3 className="input-card-title">Трафик</h3>
+            <div className="input-card-content">
+              <p className="input-card-description">
+                Получаем трафик с предыдущего этапа, где специалисты по рекламе уже запустили тестовые кампании:
+              </p>
+              <ul className="input-card-list">
+                <li><strong>Входящий поток:</strong> к нам приходят люди из разных каналов (TG Ads, Яндекс.Директ, посевы в каналах), которые уже были настроены специалистами по трафику</li>
+                <li><strong>Сквозная UTM-разметка:</strong> каждый клик помечен метками от предыдущего этапа, чтобы мы точно знали, откуда пришёл клиент и как он себя ведёт</li>
+                <li><strong>Сегментация источников:</strong> анализируем, какие каналы дают заинтересованных людей, а какие — просто трафик, чтобы дать обратную связь по качеству источников</li>
+              </ul>
+              <p className="input-card-note">
+                Мы не настраиваем рекламу — мы получаем готовый трафик и анализируем его качество, чтобы понять реальную стоимость клика и интерес аудитории к вашему предложению.
+              </p>
+            </div>
+          </motion.div>
         </div>
+      </motion.section>
 
-        {activeTab === 'test' && (
-          <div className="tab-description">
-            <p>Цель этапа: проверить продуктовую гипотезу и принять управленческое решение до инвестиций в разработку — выявить реальный спрос и экономический смысл проекта (необходим при запуске нового продукта или выходе на новую аудиторию).</p>
-            <p>Ниже показана схема подэтапа — путь, который проходит аудитория от входа трафика до управленческого вывода по гипотезе.</p>
+      {/* Блок "Процесс (The Logic)" */}
+      <motion.section 
+        className="audience-process-section"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
+        <h2 className="audience-section-title">Процесс (The Logic)</h2>
+        <div className="audience-process-content">
+          <motion.div 
+            className="audience-process-card"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <h3 className="process-card-title">Data-Driven Validation</h3>
+            <p className="process-card-text">
+              Создаём прелендинги (быстрые точки захвата) и соединяем их через API/Webhooks (Make/n8n) с аналитическими таблицами.
+            </p>
+          </motion.div>
+
+          {/* Визуализация потока данных */}
+          <motion.div 
+            className="audience-data-flow"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
+            <div className="data-flow-item">
+              <div className="flow-icon">📱</div>
+              <span className="flow-label">Трафик</span>
           </div>
-        )}
-
-        {activeTab === 'work' && (
-          <div className="tab-description">
-            <p><strong>Цель:</strong> использовать подтверждённые данные для подготовки масштабируемой системы продаж — структурировать сегменты, оптимизировать маршрутизацию и подготовить систему к созданию лендинга и воронки (необходима для систематизации работы с подтверждённой аудиторией).</p>
-            <p><strong>Режим:</strong> эксплуатационный.</p>
-            <p><strong>Итог:</strong> готовность к этапу «Лендинг / Воронка».</p>
+            <div className="flow-arrow">→</div>
+            <div className="data-flow-item flow-item-highlight">
+              <div className="flow-icon">⚙️</div>
+              <span className="flow-label">Make/n8n</span>
           </div>
-        )}
-
-        {/* Диаграмма */}
-        <div className="audience-diagram">
-          {currentDiagram.nodes.map((node, index) => {
-            const isLast = index === currentDiagram.nodes.length - 1
-            
-            return (
-              <React.Fragment key={node.id}>
-                {/* Основной блок */}
-                <div className="audience-diagram-node-wrapper">
-                  <div
-                    ref={(el) => {
-                      if (el) diagramBlockRefs.current[node.id] = el
-                    }}
-                    className={`audience-diagram-block ${selectedBlockId === node.id ? 'selected' : ''}`}
-                    onClick={() => handleBlockClick(node.id)}
-                  >
-                    <div className="diagram-block-icon">{node.icon}</div>
-                    <div className="diagram-block-name">{node.name}</div>
+            <div className="flow-arrow">→</div>
+            <div className="data-flow-item">
+              <div className="flow-icon">📊</div>
+              <span className="flow-label">Таблица</span>
                   </div>
-                  
-                  {/* Стрелка к следующему узлу */}
-                  {!isLast && (
-                    <div className="audience-diagram-arrow">
-                      <svg width="20" height="30" viewBox="0 0 20 30">
-                        <line 
-                          x1="10" 
-                          y1="0" 
-                          x2="10" 
-                          y2="25" 
-                          stroke="#ffffff" 
-                          strokeWidth="2"
-                          strokeOpacity="0.8"
-                          markerEnd={`url(#arrowhead-audience-${index})`}
-                        />
-                        <defs>
-                          <marker 
-                            id={`arrowhead-audience-${index}`}
-                            markerWidth="10" 
-                            markerHeight="10" 
-                            refX="10" 
-                            refY="5" 
-                            orient="auto"
-                          >
-                            <polygon points="0 0, 10 5, 0 10" fill="#ffffff" fillOpacity="0.8" />
-                          </marker>
-                        </defs>
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </React.Fragment>
-            )
-          })}
-        </div>
+          </motion.div>
 
-        {/* Таблица при выборе блока */}
-        {selectedTableData && (
-          <div className="audience-table-container" ref={tableRef}>
-            <h3 className="audience-table-title">{selectedTableData.title}</h3>
-            
-            {/* Вывод по таблице - перед таблицами */}
-            {selectedTableData.conclusion && (
-              <div className="table-conclusion table-conclusion-before">
-                <p>{selectedTableData.conclusion}</p>
+          {/* Expert Note */}
+          <motion.div 
+            className="audience-expert-note"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+          >
+            <img src="/images/me.jpg" alt="Илья Бормотов" className="expert-note-avatar" />
+            <div className="expert-note-content">
+              Make/n8n — это «центральный процессор», который мгновенно ловит сигнал о клике и сегментирует клиента в CRM ещё до того, как он оставил заявку.
+                    </div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Блок "Технологический стек" */}
+      <motion.section 
+        className="audience-tech-stack-section"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+      >
+        <h2 className="audience-section-title">Технологический стек</h2>
+        <div className="audience-tech-badges">
+          <motion.div 
+            className="tech-badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.8 }}
+            whileHover={{ scale: 1.1, y: -5 }}
+          >
+            <div className="tech-badge-icon">🚀</div>
+            <div className="tech-badge-label">Fast-Deployment</div>
+            <div className="tech-badge-tools">Tilda / Taplink</div>
+          </motion.div>
+          
+          <motion.div 
+            className="tech-badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.9 }}
+            whileHover={{ scale: 1.1, y: -5 }}
+          >
+            <div className="tech-badge-icon">🔗</div>
+            <div className="tech-badge-label">No-code Automation</div>
+            <div className="tech-badge-tools">Make / n8n</div>
+          </motion.div>
+          
+          <motion.div 
+            className="tech-badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 1.0 }}
+            whileHover={{ scale: 1.1, y: -5 }}
+          >
+            <div className="tech-badge-icon">📈</div>
+            <div className="tech-badge-label">Analytics</div>
+            <div className="tech-badge-tools">Pixel / Metrics</div>
+          </motion.div>
+          
+          <motion.div 
+            className="tech-badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 1.1 }}
+            whileHover={{ scale: 1.1, y: -5 }}
+          >
+            <div className="tech-badge-icon">🗄️</div>
+            <div className="tech-badge-label">Data Management</div>
+            <div className="tech-badge-tools">Google Sheets</div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Выход и Результат */}
+      <motion.section 
+        className="audience-output-section"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.2 }}
+      >
+        <h2 className="audience-section-title">Выход и Результат</h2>
+        <motion.div 
+          className="audience-output-card"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 1.3 }}
+          whileHover={{ scale: 1.02 }}
+        >
+          <div className="output-card-header">
+            <div className="output-card-icon">📊</div>
+            <h3 className="output-card-title">Dashboard с реальными данными</h3>
+          </div>
+          <div className="output-card-content">
+            <p className="output-card-text">
+              На выходе вы получаете <strong>Dashboard</strong> с конкретными метриками:
+            </p>
+            <div className="output-card-features">
+              <div className="output-feature">
+                <span className="feature-check">✓</span>
+                <span><strong>Стоимость клика</strong> по каждому источнику</span>
               </div>
-            )}
-            
-            {/* Карточка с уникальными значениями */}
-            {(() => {
-              // Собираем уникальные значения для каждого столбца
-              const hasSource = selectedTableData.id === 'traffic'
-              
-              // Функция для объединения похожих элементов по ключевым словам (сокращение до 3-4 строк с полным описанием)
-              const mergeSimilar = (arr, fieldType = '') => {
-                const uniqueArr = Array.from(new Set(arr))
-                if (uniqueArr.length <= 4) return uniqueArr
-                
-                // Группируем похожие элементы
-                const grouped = new Map()
-                
-                uniqueArr.forEach(item => {
-                  const lowerItem = item.toLowerCase()
-                  let key = null // Ключ для группировки
-                  
-                  // Логика объединения для поля "what" (Что анализируем)
-                  // Более специфичные проверки должны быть раньше
-                  if (lowerItem.includes('глубина') && lowerItem.includes('взаимодействия')) {
-                    key = 'group_depth'
-                  } else if (lowerItem.includes('поведение') || lowerItem.includes('адекватность')) {
-                    key = 'group_behavior'
-                  } else if (lowerItem.includes('реакция')) {
-                    key = 'group_reaction'
-                  } else if (lowerItem.includes('намерение')) {
-                    key = 'group_intention'
-                  } else if (lowerItem.includes('соответствие') || lowerItem.includes('ожиданий')) {
-                    key = 'group_expectation'
-                  } else if (lowerItem.includes('понимание')) {
-                    key = 'group_understanding'
-                  } else if (lowerItem.includes('готовность')) {
-                    key = 'group_readiness'
-                  } else if (lowerItem.includes('формат')) {
-                    key = 'group_format'
-                  } else if (lowerItem.includes('доверие') || lowerItem.includes('скепсис')) {
-                    key = 'group_trust'
-                  } else if (lowerItem.includes('осознанность')) {
-                    key = 'group_awareness'
-                  } else if (lowerItem.includes('уровень') || (lowerItem.includes('боли') && lowerItem.includes('интерес'))) {
-                    key = 'group_level'
-                  } else if (lowerItem.includes('способ') && lowerItem.includes('мышления')) {
-                    key = 'group_thinking'
-                  } else if (lowerItem.includes('язык') || lowerItem.includes('формулировки')) {
-                    key = 'group_language'
-                  } else if (lowerItem.includes('качество')) {
-                    key = 'group_quality'
-                  } else if (lowerItem.includes('повторяемость') || lowerItem.includes('паттерн')) {
-                    key = 'group_patterns'
-                  }
-                  
-                  // Если не найдено совпадение, создаем отдельную группу
-                  if (!key) {
-                    key = `group_${item.toLowerCase().replace(/\s+/g, '_')}`
-                  }
-                  
-                  if (!grouped.has(key)) {
-                    grouped.set(key, [])
-                  }
-                  grouped.get(key).push(item)
-                })
-                
-                // Объединяем элементы в группах через запятую
-                const merged = Array.from(grouped.values()).map(group => {
-                  return group.join(', ')
-                })
-                
-                // Если все еще больше 4 строк, дополнительно объединяем
-                if (merged.length > 4) {
-                  // Берем первые 3 группы и объединяем остальные
-                  const result = merged.slice(0, 3)
-                  const rest = merged.slice(3).join(', ')
-                  if (rest) {
-                    result.push(rest)
-                  }
-                  return result
-                }
-                
-                return merged.sort()
-              }
-              
-              // Для source (только для traffic)
-              const sourceSet = hasSource 
-                ? new Set(selectedTableData.table.map(row => row.source).filter(Boolean))
-                : new Set()
-              const sourceValues = mergeSimilar(Array.from(sourceSet)).sort()
-              
-              // Для what
-              const whatSet = new Set(selectedTableData.table.map(row => row.what))
-              const whatValues = mergeSimilar(Array.from(whatSet), 'what')
-              
-              // Для results (сохраняем переносы строк)
-              const resultsSet = new Set(selectedTableData.table.map(row => row.results))
-              const resultsValues = mergeSimilar(Array.from(resultsSet), 'results')
-              
-              // Для meaning
-              const meaningSet = new Set(selectedTableData.table.map(row => row.meaning))
-              const meaningValues = mergeSimilar(Array.from(meaningSet), 'meaning')
-              
-              // Функция для определения типа решения
-              const getPartType = (part) => {
-                const trimmedPart = part.trim()
-                const lowerPart = trimmedPart.toLowerCase()
-                
-                // Красные (отфильтровывают)
-                // Проверяем эмодзи в начале строки
-                if (trimmedPart.startsWith('⛔')) {
-                  return 'danger'
-                }
-                // Проверяем точные совпадения ключевых слов
-                if (/\bстоп\b/i.test(trimmedPart) || 
-                    /\bотсечь\b/i.test(trimmedPart) || 
-                    /\bостановка\b/i.test(trimmedPart) || 
-                    /\bфильтр\b/i.test(trimmedPart) ||
-                    /\bисключить\b/i.test(trimmedPart) ||
-                    /\bограничить\b/i.test(trimmedPart)) {
-                  return 'danger'
-                }
-                // Желтые (требуют доработки)
-                if (trimmedPart.startsWith('↺') || 
-                    /\bтестировать\b/i.test(trimmedPart) || 
-                    /\bсменить\b/i.test(trimmedPart) || 
-                    /\bпонизить\b/i.test(trimmedPart) || 
-                    /\bусилить\b/i.test(trimmedPart) || 
-                    /\bпрогрев\b/i.test(trimmedPart) || 
-                    /\bупростить\b/i.test(trimmedPart) || 
-                    /\bпереформулировать\b/i.test(trimmedPart) || 
-                    /\bадаптировать\b/i.test(trimmedPart) || 
-                    /\bизменить\b/i.test(trimmedPart) ||
-                    /\bдоработка\b/i.test(trimmedPart) ||
-                    /\bоптимизировать\b/i.test(trimmedPart) ||
-                    /\bперепроект\b/i.test(trimmedPart) ||
-                    /\bукрупнить\b/i.test(trimmedPart) ||
-                    /\bсократить\b/i.test(trimmedPart) ||
-                    /\bвыравнивать\b/i.test(trimmedPart) ||
-                    /\bпротестировать\b/i.test(trimmedPart)) {
-                  return 'warning'
-                }
-                // Зеленые (ведут к следующему этапу)
-                if (trimmedPart.startsWith('➡️') || 
-                    /\bприоритет\b/i.test(trimmedPart) || 
-                    /\bпродолжить\b/i.test(trimmedPart) || 
-                    /\bпереход\b/i.test(trimmedPart) ||
-                    /\bмасштабировать\b/i.test(trimmedPart) ||
-                    /\bзакрепить\b/i.test(trimmedPart) ||
-                    /\bфиксировать\b/i.test(trimmedPart) ||
-                    /\bв продажу\b/i.test(trimmedPart) ||
-                    /\bветка а\b/i.test(trimmedPart) ||
-                    /\bветка b\b/i.test(trimmedPart) ||
-                    /\bнорма\b/i.test(trimmedPart) ||
-                    /\bвторичный\b/i.test(trimmedPart) ||
-                    /\bосновной\b/i.test(trimmedPart) ||
-                    /\bмасштаб\b/i.test(trimmedPart) ||
-                    /\bфокус\b/i.test(trimmedPart)) {
-                  return 'success'
-                }
-                return 'warning' // По умолчанию
-              }
-              
-              // Для decision - группируем по цветам: красные, желтые, зеленые
-              const decisionSet = new Set(selectedTableData.table.map(row => row.decision))
-              const decisionText = (() => {
-                // Группируем решения по типам
-                const dangerParts = new Set()
-                const warningParts = new Set()
-                const successParts = new Set()
-                
-                decisionSet.forEach(decision => {
-                  // Разбиваем по разделителям: /, но сохраняем эмодзи
-                  const parts = decision.split(/\s*\/\s*/).map(p => p.trim()).filter(p => p.length > 0)
-                  parts.forEach(part => {
-                    // Проверяем, есть ли эмодзи в начале
-                    let partWithEmoji = part
-                    const hasEmoji = part.startsWith('➡️') || part.startsWith('↺') || part.startsWith('⛔') || 
-                                     part.startsWith('➡️ ') || part.startsWith('↺ ') || part.startsWith('⛔ ')
-                    if (!hasEmoji) {
-                      // Добавляем эмодзи в зависимости от контекста
-                      const lowerPart = part.toLowerCase()
-                      if (lowerPart.includes('приоритет') || lowerPart.includes('продолжить') || lowerPart.includes('переход') ||
-                          lowerPart.includes('масштабировать') || lowerPart.includes('закрепить') || lowerPart.includes('фиксировать') ||
-                          lowerPart.includes('в продажу') || lowerPart.includes('ветка а') || lowerPart.includes('ветка b') ||
-                          lowerPart.includes('норма') || lowerPart.includes('вторичный') || lowerPart.includes('основной') ||
-                          lowerPart.includes('масштаб') || lowerPart.includes('фокус')) {
-                        partWithEmoji = '➡️ ' + part
-                      } else if (lowerPart.includes('стоп') || lowerPart.includes('отсечь') || lowerPart.includes('остановка') || 
-                                 lowerPart.includes('фильтр') || lowerPart.includes('исключить') || lowerPart.includes('ограничить') ||
-                                 lowerPart.includes('оставить')) {
-                        partWithEmoji = '⛔ ' + part
-                      } else if (lowerPart.includes('тестировать') || lowerPart.includes('сменить') || lowerPart.includes('понизить') || 
-                                 lowerPart.includes('усилить') || lowerPart.includes('прогрев') || lowerPart.includes('упростить') || 
-                                 lowerPart.includes('переформулировать') || lowerPart.includes('адаптировать') || lowerPart.includes('изменить') ||
-                                 lowerPart.includes('доработка') || lowerPart.includes('оптимизировать') || lowerPart.includes('перепроект') ||
-                                 lowerPart.includes('укрупнить') || lowerPart.includes('сократить') || lowerPart.includes('выравнивать') ||
-                                 lowerPart.includes('протестировать')) {
-                        partWithEmoji = '↺ ' + part
-                      }
-                    }
-                    
-                    // Определяем тип и добавляем в соответствующую группу
-                    const type = getPartType(partWithEmoji)
-                    if (type === 'danger') {
-                      dangerParts.add(partWithEmoji)
-                    } else if (type === 'warning') {
-                      warningParts.add(partWithEmoji)
-                    } else {
-                      successParts.add(partWithEmoji)
-                    }
-                  })
-                })
-                
-                // Возвращаем группы отдельно для отображения разными цветами
-                return {
-                  danger: dangerParts.size > 0 ? Array.from(dangerParts).sort().join(' / ') : null,
-                  warning: warningParts.size > 0 ? Array.from(warningParts).sort().join(' / ') : null,
-                  success: successParts.size > 0 ? Array.from(successParts).sort().join(' / ') : null
-                }
-              })()
-              
-              // Формируем массив строк решений с типами для отображения
-              // Всегда показываем 3 строки: Далее, Доработать, Стоп
-              const decisionLines = [
-                { text: '➡️ Далее', type: 'success' },
-                { text: '↺ Доработать', type: 'warning' },
-                { text: '⛔ Стоп', type: 'danger' }
-              ]
-              
-              // Формируем поля с правильными заголовками в зависимости от типа таблицы
-              const fields = []
-              
-              // Определяем заголовки в зависимости от типа таблицы
-              let whatLabel = 'Что анализируем (наблюдаем)'
-              let resultsLabel = 'Варианты результатов (с критериями)'
-              let meaningLabel = 'Что это значит'
-              
-              if (selectedTableData.id === 'traffic') {
-                whatLabel = 'Что анализируем (как входит)'
-                resultsLabel = 'Варианты результатов (наблюдаемые паттерны)'
-                meaningLabel = 'Что это значит для гипотезы'
-              } else if (selectedTableData.id === 'prelanding') {
-                whatLabel = 'Что анализируем (что проверяем)'
-                resultsLabel = 'Варианты результатов (наблюдаемые реакции)'
-                meaningLabel = 'Что это значит для гипотезы'
-              } else if (selectedTableData.id === 'analysis') {
-                whatLabel = 'Что анализируем (что проверяем)'
-                resultsLabel = 'Варианты результатов (наблюдаемые паттерны)'
-                meaningLabel = 'Что это значит для гипотезы'
-              } else if (selectedTableData.id === 'hypothesis') {
-                whatLabel = 'Что сводим вместе (источники данных)'
-                resultsLabel = 'Варианты выводов по гипотезе'
-                meaningLabel = 'Что это значит стратегически'
-              }
-              
-              if (hasSource) {
-                fields.push({ 
-                  label: 'Источник трафика (откуда пришёл)', 
-                  values: sourceValues, 
-                  key: 'source' 
-                })
-              }
-              fields.push(
-                { 
-                  label: whatLabel, 
-                  values: whatValues, 
-                  key: 'what' 
-                },
-                { 
-                  label: resultsLabel, 
-                  values: resultsValues, 
-                  key: 'results', 
-                  preLine: true 
-                },
-                { 
-                  label: meaningLabel, 
-                  values: meaningValues, 
-                  key: 'meaning' 
-                }
-              )
-              
-              // Функция для определения типа решения (green, yellow, red)
-              // Приоритет: зеленый > желтый > красный (продвижение важнее остановки)
-              const getDecisionType = (text) => {
-                if (!text || text.trim().length === 0) {
-                  return 'warning'
-                }
-                
-                const trimmedText = text.trim()
-                
-                // Проверяем наличие всех типов эмодзи в тексте
-                const hasDanger = trimmedText.includes('⛔')
-                const hasWarning = trimmedText.includes('↺')
-                const hasSuccess = trimmedText.includes('➡️')
-                
-                // Приоритет: зеленый (продвижение) > желтый (доработка) > красный (стоп)
-                // Если есть зеленые решения, используем зеленый цвет
-                if (hasSuccess) {
-                  return 'success'
-                }
-                // Если есть желтые решения, используем желтый цвет
-                if (hasWarning) {
-                  return 'warning'
-                }
-                // Если есть только красные решения, используем красный цвет
-                if (hasDanger) {
-                  return 'danger'
-                }
-                
-                // Если нет эмодзи, проверяем через getPartType
-                const firstPart = trimmedText.substring(0, 100)
-                const type = getPartType(firstPart)
-                return type
-              }
-              
-              // Для карточек с 5 полями (с source) - первые 4 в сетке, решение отдельно
-              // Для карточек с 4 полями (без source) - все 4 в сетке, решение в правом нижнем углу
-              const isFourFields = !hasSource
-              
-              if (isFourFields) {
-                // Добавляем решение как 4-е поле в сетку
-                fields.push({
-                  label: 'Решение',
-                  values: [decisionText],
-                  key: 'decision',
-                  isDecision: true
-                })
-                const gridFields = fields.slice(0, 4)
-                
-                return (
-                  <div className="audience-table-cards">
-                    <div className="audience-table-card">
-                      {/* Сетка 2x2 для всех 4 полей, включая решение */}
-                      <div className="table-card-grid">
-                        {gridFields.map((field) => (
-                          <div 
-                            key={field.key} 
-                            className={`table-card-field ${field.isDecision ? 'table-card-decision-field' : ''}`}
-                          >
-                            <div className="table-card-label">{field.label}</div>
-                            <div 
-                              className={field.isDecision ? "table-card-value" : "table-card-value"}
-                              style={field.preLine ? { whiteSpace: 'pre-line' } : {}}
-                            >
-                              {field.isDecision ? (
-                                <div className="decision-lines">
-                                  {decisionLines.map((line, idx) => (
-                                    <div key={idx} className={`table-card-decision table-card-decision-${line.type}`}>
-                                      {line.text}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <ul className="table-card-list">
-                                  {field.values.map((value, idx) => (
-                                    <li key={idx}>{value}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )
-              } else {
-                // Для карточек с 5 полями - первые 4 в сетке, решение отдельно
-                const gridFields = fields.slice(0, 4)
-                
-                return (
-                  <div className="audience-table-cards">
-                    <div className="audience-table-card">
-                      {/* Сетка 2x2 для первых 4 полей */}
-                      <div className="table-card-grid">
-                        {gridFields.map((field) => (
-                          <div key={field.key} className="table-card-field">
-                            <div className="table-card-label">{field.label}</div>
-                            <div 
-                              className="table-card-value"
-                              style={field.preLine ? { whiteSpace: 'pre-line' } : {}}
-                            >
-                              <ul className="table-card-list">
-                                {field.values.map((value, idx) => (
-                                  <li key={idx}>{value}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Поле "Решение" на всю ширину - разбито на строки по цветам */}
-                      <div className="table-card-field table-card-field-full table-card-decision-field">
-                        <div className="table-card-label">Решение</div>
-                        <div className="table-card-value">
-                          <div className="decision-lines">
-                            {decisionLines.map((line, idx) => (
-                              <div key={idx} className={`table-card-decision table-card-decision-${line.type}`}>
-                                {line.text}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              }
-            })()}
-            
-            {/* Кнопка "К диаграмме" под таблицами */}
+              <div className="output-feature">
+                <span className="feature-check">✓</span>
+                <span><strong>Интерес аудитории</strong> — процент реального взаимодействия</span>
+              </div>
+              <div className="output-feature">
+                <span className="feature-check">✓</span>
+                <span><strong>Валидация гипотезы</strong> — есть ли рынок и готовность платить</span>
+              </div>
+              <div className="output-feature">
+                <span className="feature-check">✓</span>
+                <span><strong>Сегментация</strong> — какие группы наиболее заинтересованы</span>
+              </div>
+              <div className="output-feature">
+                <span className="feature-check">✓</span>
+                <span><strong>Экономика входа</strong> — реальная стоимость привлечения</span>
+              </div>
+            </div>
+            <p className="output-card-next">
+              С этими данными переходим к <strong>созданию лендинга и воронки</strong> с пониманием стоимости клика и характеристик аудитории.
+            </p>
+          </div>
+          <div className="output-card-buttons">
             <button 
-              className="back-to-diagram-btn"
-              onClick={() => scrollToDiagramBlock(selectedTableData.id)}
-              title="Вернуться к блоку в диаграмме"
+              className="output-next-stage-btn"
+              onClick={() => {
+                if (onNextBlock) {
+                  onNextBlock()
+                } else {
+                  onBack()
+                }
+              }}
             >
-              <span className="btn-icon">↗</span>
-              <span className="btn-text">К диаграмме</span>
+              Перейти к этапу «Лендинг»
+            </button>
+            <button 
+              className="consultation-btn"
+              onClick={onConsultation}
+            >
+              Получить бесплатную консультацию
             </button>
           </div>
-        )}
-
-        {/* Вывод по подэтапу ниже таблиц */}
-        {activeTab === 'test' && (
-          <div className="substage-conclusion">
-            <h3>Вывод по подэтапу «Тестовый»</h3>
-            <p>
-              Подэтап «Тестовый» завершается управленческим решением о валидности продуктовой гипотезы. 
-              На основе анализа трафика, поведения на прелендинге, характеристик аудитории и маршрутизации принимается 
-              решение о подтверждении, отклонении или частичном подтверждении гипотезы. Только при положительном выводе 
-              возможен переход к подэтапу «Рабочий» и дальнейшим этапам разработки продукта и воронки.
-            </p>
-          </div>
-        )}
-
-        {activeTab === 'work' && (
-          <div className="substage-conclusion">
-            <h3>Вывод по подэтапу «Рабочий»</h3>
-            <p>
-              Подэтап «Рабочий» завершает этап «Аудитория» и подготавливает систему к созданию лендинга и воронки. 
-              На основе работы с подтверждёнными источниками трафика, сегментами аудитории и их маршрутизацией формируется 
-              структурированная система продаж. При достижении готовности всех параметров (готовность к продаже, ясность УТП, 
-              соответствие ожиданий) система готова к переходу на следующий этап — создание лендинга и воронки продаж.
-            </p>
-          </div>
-        )}
-      </section>
+        </motion.div>
+      </motion.section>
     </div>
   )
 

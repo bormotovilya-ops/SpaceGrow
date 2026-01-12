@@ -127,6 +127,17 @@ function SalesFunnel() {
     setShowProfile(true)
   }
 
+  const handleNextBlock = (blockId) => {
+    const nextBlock = funnelData.find(b => b.id === blockId)
+    if (nextBlock) {
+      setIsAnimating(true)
+      setSelectedBlock(nextBlock)
+      setTimeout(() => {
+        setIsAnimating(false)
+      }, 300)
+    }
+  }
+
   if (showDiagnostics) {
     return (
       <Diagnostics 
@@ -165,6 +176,7 @@ function SalesFunnel() {
         onBack={handleCloseBlockDetail}
         onConsultation={handleConsultation}
         onAvatarClick={handleAvatarClick}
+        onNextBlock={selectedBlock.id === 'audience' ? () => handleNextBlock('landing') : undefined}
       />
     )
   }
