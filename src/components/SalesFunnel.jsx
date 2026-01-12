@@ -97,7 +97,13 @@ function SalesFunnel() {
 
     const updateScale = () => {
       // Только для десктопной версии
-      if (window.innerWidth <= 768) return
+      if (window.innerWidth <= 768) {
+        const funnelWrapper = document.querySelector('.funnel-wrapper')
+        if (funnelWrapper) {
+          funnelWrapper.style.zoom = '1'
+        }
+        return
+      }
 
       const funnelWrapper = document.querySelector('.funnel-wrapper')
       const funnelBlocks = document.getElementById('funnel-blocks')
@@ -106,32 +112,25 @@ function SalesFunnel() {
       const header = document.querySelector('.header-block')
       const headerHeight = header ? header.offsetHeight : 0
       
-      // Получаем реальную высоту всего контента включая блок "Деньги"
-      // Используем getBoundingClientRect для более точного измерения
-      const blocksRect = funnelBlocks.getBoundingClientRect()
-      const wrapperRect = funnelWrapper.getBoundingClientRect()
-      const contentHeight = blocksRect.height
+      // Получаем реальную высоту всего контента
+      const contentHeight = funnelBlocks.scrollHeight
       
-      // Доступная высота с большим запасом снизу (280px) чтобы гарантировать полный вход блока "Деньги"
-      const availableHeight = window.innerHeight - headerHeight - 280
+      // Доступная высота с запасом снизу (300px) чтобы гарантировать полный вход блока "Деньги"
+      const availableHeight = window.innerHeight - headerHeight - 300
 
       if (contentHeight > availableHeight) {
-        // Вычисляем масштаб с запасом 0.8 для гарантии полного входа
-        const scale = Math.min(0.8, (availableHeight / contentHeight) * 0.8)
-        funnelWrapper.style.transform = `scale(${scale})`
-        funnelWrapper.style.transformOrigin = 'top center'
-        // Компенсируем ширину при масштабировании
-        funnelWrapper.style.width = `${100 / scale}%`
+        // Вычисляем zoom с запасом
+        const zoom = Math.min(0.75, (availableHeight / contentHeight) * 0.75)
+        funnelWrapper.style.zoom = zoom.toString()
       } else {
-        funnelWrapper.style.transform = 'scale(1)'
-        funnelWrapper.style.width = '100%'
+        funnelWrapper.style.zoom = '1'
       }
     }
 
     // Выполняем после рендера с несколькими попытками для точности
     const timer1 = setTimeout(updateScale, 100)
     const timer2 = setTimeout(updateScale, 300)
-    const timer3 = setTimeout(updateScale, 500)
+    const timer3 = setTimeout(updateScale, 600)
     const timer4 = setTimeout(updateScale, 1000)
     window.addEventListener('resize', updateScale)
 

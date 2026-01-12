@@ -435,10 +435,73 @@
   }
 }
 
-/* Десктопная версия - увеличенный padding для нижнего блока */
+/* Десктопная версия - увеличенный padding для нижнего блока и уменьшение размеров при малой высоте */
 @media (min-width: 769px) {
   .funnel-wrapper {
     padding-bottom: 300px;
+  }
+
+  /* Если высота viewport меньше 900px, уменьшаем размеры элементов */
+  @media (max-height: 900px) {
+    .funnel-block {
+      width: calc(var(--block-width, 140px) * 0.85) !important;
+      height: 102px !important;
+      padding: 8px !important;
+    }
+
+    .funnel-arrow {
+      transform: scale(0.85);
+    }
+
+    .block-image {
+      height: 50px !important;
+    }
+
+    .block-name {
+      font-size: 11px !important;
+    }
+  }
+
+  /* Если высота viewport меньше 800px, еще больше уменьшаем */
+  @media (max-height: 800px) {
+    .funnel-block {
+      width: calc(var(--block-width, 140px) * 0.75) !important;
+      height: 90px !important;
+      padding: 7px !important;
+    }
+
+    .funnel-arrow {
+      transform: scale(0.75);
+    }
+
+    .block-image {
+      height: 45px !important;
+    }
+
+    .block-name {
+      font-size: 10px !important;
+    }
+  }
+
+  /* Если высота viewport меньше 700px, максимально уменьшаем */
+  @media (max-height: 700px) {
+    .funnel-block {
+      width: calc(var(--block-width, 140px) * 0.65) !important;
+      height: 78px !important;
+      padding: 6px !important;
+    }
+
+    .funnel-arrow {
+      transform: scale(0.65);
+    }
+
+    .block-image {
+      height: 40px !important;
+    }
+
+    .block-name {
+      font-size: 9px !important;
+    }
   }
 }
 
