@@ -102,7 +102,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
                         <span className="typing-dot">.</span>
                       </p>
                     ) : visibleMessages[0] ? (
-                      <p>Меня зовут Бормотов Илья, я архитектор АИЦП.</p>
+                      <p>Меня зовут Бормотов Илья, я интегратор АИЦП.</p>
                     ) : null}
                   </div>
                   <div className={`dialog-message ${(typingMessages[1] || visibleMessages[1]) ? 'visible' : ''}`}>

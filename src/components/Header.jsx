@@ -30,7 +30,7 @@ function Header({ onAvatarClick, onConsultation, onBack }) {
           <div className="header-name-bottom" onClick={onAvatarClick}>
             <span className="header-name">Бормотов Илья</span>
             <span className="header-separator">·</span>
-            <span className="header-title">Архитектор АИЦП</span>
+            <span className="header-title">Интегратор АИЦП</span>
           </div>
         </div>
         <div className="header-spacer-right"></div>
