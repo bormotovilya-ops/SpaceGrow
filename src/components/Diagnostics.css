@@ -474,6 +474,9 @@
 .answer-message.poll-option {
   width: 60%;
   min-width: 250px;
+  height: 80px;
+  min-height: 80px;
+  max-height: 80px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
@@ -490,7 +493,9 @@
   margin-top: 0;
   opacity: 1;
   transform: translateX(0);
-  overflow: visible;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
 .answer-message.poll-option:first-child {
@@ -1313,9 +1318,15 @@
     width: 65%;
     min-width: 0;
     max-width: 65%;
+    height: 75px;
+    min-height: 75px;
+    max-height: 75px;
     padding: 10px 14px;
     margin-right: 14px !important;
     border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
   }
 
   .answer-message.poll-option:hover {
