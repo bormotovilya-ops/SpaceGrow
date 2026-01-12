@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Portfolio from './Portfolio'
 import Profile from './Profile'
 import BlockDetail from './BlockDetail'
@@ -70,6 +70,27 @@ function SalesFunnel() {
   const [showProfile, setShowProfile] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
 
+  // Обработка hash в URL для прямой ссылки на профиль
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash === '#profile') {
+      setShowProfile(true)
+    } else if (hash === '#diagnostics') {
+      setShowDiagnostics(true)
+    }
+  }, [])
+
+  // Обновление hash при изменении состояния
+  useEffect(() => {
+    if (showProfile) {
+      window.location.hash = 'profile'
+    } else if (showDiagnostics) {
+      window.location.hash = 'diagnostics'
+    } else if (!selectedBlock) {
+      window.location.hash = ''
+    }
+  }, [showProfile, showDiagnostics, selectedBlock])
+
   const handleBlockClick = (block) => {
     if (isAnimating) return
     
@@ -108,7 +129,10 @@ function SalesFunnel() {
   if (showDiagnostics) {
     return (
       <Diagnostics 
-        onBack={() => setShowDiagnostics(false)} 
+        onBack={() => {
+          setShowDiagnostics(false)
+          window.location.hash = ''
+        }} 
         onAvatarClick={handleAvatarClick}
       />
     )
@@ -117,8 +141,14 @@ function SalesFunnel() {
   if (showProfile) {
     return (
       <Profile 
-        onBack={() => setShowProfile(false)} 
-        onAvatarClick={() => setShowProfile(false)}
+        onBack={() => {
+          setShowProfile(false)
+          window.location.hash = ''
+        }} 
+        onAvatarClick={() => {
+          setShowProfile(false)
+          window.location.hash = ''
+        }}
         onDiagnostics={() => {
           setShowProfile(false)
           setShowDiagnostics(true)
