@@ -343,26 +343,27 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 0;
+    padding-bottom: 20px; /* Отступ снизу с запасом */
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
     min-height: 0;
-    overflow: visible; /* Меняем на visible, чтобы блок "Деньги" был виден */
+    overflow-y: auto; /* Разрешаем прокрутку если нужно */
+    overflow-x: hidden;
     /* Занимает всю оставшуюся область под Header */
     height: 100%;
   }
 
   .funnel-blocks {
-    gap: 0;
+    gap: 2px; /* Небольшой отступ между элементами */
     padding: 0;
-    height: 100%;
+    padding-bottom: 100px; /* ОТСТУП СНИЗУ С ЗАПАСОМ - чтобы блок "Деньги" полностью входил */
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Равномерное распределение всех элементов по высоте */
-    justify-content: space-between;
+    /* Убираем space-between, используем обычное распределение */
+    justify-content: flex-start;
     /* Убеждаемся, что контент не обрезается */
     min-height: 0;
     overflow: visible;
@@ -374,9 +375,9 @@
     flex: 0 0 auto;
     padding: 7px;
     border-radius: 12px;
-    /* Высота блока рассчитывается динамически для заполнения пространства */
-    /* Теперь 5 основных блоков + 1 блок результата + 5 стрелок = распределение на 6 блоков */
-    height: calc((100% - 30px) / 6);
+    /* Фиксированная высота для мобильной версии */
+    height: 70px;
+    min-height: 70px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -415,17 +416,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Такая же высота как у основных блоков - теперь 6 блоков */
-    height: calc((100% - 30px) / 6);
+    /* Такая же высота как у основных блоков */
+    height: 70px;
+    min-height: 70px;
     flex-shrink: 0;
     flex: 0 0 auto;
     /* Убеждаемся, что блок виден */
-    min-height: 60px;
-    /* ЗАЗОР СНИЗУ РАВЕН ВЫСОТЕ БЛОКА "ДЕНЬГИ" - чтобы он полностью входил в viewport */
-    margin-bottom: calc((100% - 30px) / 6);
-    /* Позволяем контейнеру быть видимым */
     position: relative;
     z-index: 10;
+    /* ОТСТУП СНИЗУ С ЗАПАСОМ - равен высоте блока + дополнительный запас */
+    margin-bottom: 100px;
   }
 
   .result-block {
@@ -436,8 +436,7 @@
     justify-content: space-between;
     padding: 7px;
     border-radius: 12px;
-    /* Убеждаемся, что блок виден */
-    min-height: 60px;
+    min-height: 70px;
   }
 
   /* Блок "Продукт" теперь виден на мобильной версии */
