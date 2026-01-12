@@ -342,7 +342,7 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 75px; /* Отступ уменьшен на 50% (было 150px) */
+    padding-bottom: 10px; /* Минимальный отступ снизу */
     display: flex;
     align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
@@ -355,7 +355,7 @@
   .funnel-blocks {
     gap: 2px; /* Небольшой отступ между элементами */
     padding: 0;
-    padding-bottom: 50px; /* Отступ уменьшен на 50% (было 100px) */
+    padding-bottom: 0; /* Убираем отступ снизу */
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -422,8 +422,8 @@
     /* Убеждаемся, что блок виден */
     position: relative;
     z-index: 10;
-    /* ОТСТУП СНИЗУ С ЗАПАСОМ - уменьшен на 50% (было 100px) */
-    margin-bottom: 50px;
+    /* Минимальный отступ снизу */
+    margin-bottom: 10px;
   }
 
   .result-block {
