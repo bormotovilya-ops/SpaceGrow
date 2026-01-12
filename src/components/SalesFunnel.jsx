@@ -91,6 +91,41 @@ function SalesFunnel() {
     }
   }, [showProfile, showDiagnostics, selectedBlock])
 
+  // Автоматическое масштабирование для десктопной версии
+  useEffect(() => {
+    if (showProfile || showDiagnostics || selectedBlock) return
+
+    const updateScale = () => {
+      // Только для десктопной версии
+      if (window.innerWidth <= 768) return
+
+      const funnelBlocks = document.getElementById('funnel-blocks')
+      if (!funnelBlocks) return
+
+      const header = document.querySelector('.header-block')
+      const headerHeight = header ? header.offsetHeight : 0
+      const availableHeight = window.innerHeight - headerHeight - 120 // 120px для padding
+      const contentHeight = funnelBlocks.scrollHeight
+
+      if (contentHeight > availableHeight) {
+        const scale = Math.min(0.95, (availableHeight / contentHeight) * 0.95)
+        funnelBlocks.style.transform = `scale(${scale})`
+        funnelBlocks.style.transformOrigin = 'top center'
+      } else {
+        funnelBlocks.style.transform = 'scale(1)'
+      }
+    }
+
+    // Выполняем после рендера
+    const timer = setTimeout(updateScale, 100)
+    window.addEventListener('resize', updateScale)
+
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', updateScale)
+    }
+  }, [showProfile, showDiagnostics, selectedBlock])
+
   const handleBlockClick = (block) => {
     if (isAnimating) return
     
