@@ -343,7 +343,7 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 10px; /* Добавляем отступ снизу для блока "Деньги" */
+    padding-bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -421,7 +421,8 @@
     flex: 0 0 auto;
     /* Убеждаемся, что блок виден */
     min-height: 60px;
-    margin-bottom: 0;
+    /* ЗАЗОР СНИЗУ РАВЕН ВЫСОТЕ БЛОКА "ДЕНЬГИ" - чтобы он полностью входил в viewport */
+    margin-bottom: calc((100% - 30px) / 6);
     /* Позволяем контейнеру быть видимым */
     position: relative;
     z-index: 10;
