@@ -26,7 +26,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 60px 20px 200px;
+  padding: 60px 20px 250px;
   min-height: calc(100vh + 500px);
   margin-top: 50px;
 }
@@ -438,7 +438,7 @@
 /* Десктопная версия - увеличенный padding для нижнего блока */
 @media (min-width: 769px) {
   .funnel-wrapper {
-    padding-bottom: 250px;
+    padding-bottom: 300px;
   }
 }
 

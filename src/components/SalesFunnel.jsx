@@ -104,11 +104,13 @@ function SalesFunnel() {
 
       const header = document.querySelector('.header-block')
       const headerHeight = header ? header.offsetHeight : 0
-      const availableHeight = window.innerHeight - headerHeight - 120 // 120px для padding
+      // Увеличиваем запас снизу до 200px, чтобы гарантировать, что блок "Деньги" входит целиком
+      const availableHeight = window.innerHeight - headerHeight - 200
       const contentHeight = funnelBlocks.scrollHeight
 
       if (contentHeight > availableHeight) {
-        const scale = Math.min(0.95, (availableHeight / contentHeight) * 0.95)
+        // Используем более агрессивное масштабирование с запасом 0.9 вместо 0.95
+        const scale = Math.min(0.9, (availableHeight / contentHeight) * 0.9)
         funnelBlocks.style.transform = `scale(${scale})`
         funnelBlocks.style.transformOrigin = 'top center'
       } else {
@@ -116,12 +118,16 @@ function SalesFunnel() {
       }
     }
 
-    // Выполняем после рендера
-    const timer = setTimeout(updateScale, 100)
+    // Выполняем после рендера с несколькими попытками для точности
+    const timer1 = setTimeout(updateScale, 100)
+    const timer2 = setTimeout(updateScale, 300)
+    const timer3 = setTimeout(updateScale, 500)
     window.addEventListener('resize', updateScale)
 
     return () => {
-      clearTimeout(timer)
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+      clearTimeout(timer3)
       window.removeEventListener('resize', updateScale)
     }
   }, [showProfile, showDiagnostics, selectedBlock])
