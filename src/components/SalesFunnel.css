@@ -91,6 +91,7 @@
   gap: 20px;
   align-items: center;
   justify-content: center;
+  margin-bottom: 120px; /* Отступ снизу равен высоте блока "Деньги" */
 }
 
 .funnel-block.selected {
@@ -438,7 +439,12 @@
 /* Десктопная версия - увеличенный padding для нижнего блока и уменьшение размеров при малой высоте */
 @media (min-width: 769px) {
   .funnel-wrapper {
-    padding-bottom: 300px;
+    padding-bottom: 0;
+  }
+
+  /* Отступ снизу равен высоте блока "Деньги" (120px) плюс небольшой запас */
+  .result-blocks-container {
+    margin-bottom: 140px !important;
   }
 
   /* Если высота viewport меньше 900px, уменьшаем размеры элементов */
@@ -459,6 +465,11 @@
 
     .block-name {
       font-size: 11px !important;
+    }
+
+    /* Отступ снизу равен уменьшенной высоте блока */
+    .result-blocks-container {
+      margin-bottom: 120px !important;
     }
   }
 
@@ -481,6 +492,11 @@
     .block-name {
       font-size: 10px !important;
     }
+
+    /* Отступ снизу равен уменьшенной высоте блока */
+    .result-blocks-container {
+      margin-bottom: 100px !important;
+    }
   }
 
   /* Если высота viewport меньше 700px, максимально уменьшаем */
@@ -501,6 +517,11 @@
 
     .block-name {
       font-size: 9px !important;
+    }
+
+    /* Отступ снизу равен уменьшенной высоте блока */
+    .result-blocks-container {
+      margin-bottom: 85px !important;
     }
   }
 }
