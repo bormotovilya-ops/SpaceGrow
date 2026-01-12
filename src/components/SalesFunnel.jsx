@@ -91,57 +91,6 @@ function SalesFunnel() {
     }
   }, [showProfile, showDiagnostics, selectedBlock])
 
-  // Автоматическое масштабирование для десктопной версии
-  useEffect(() => {
-    if (showProfile || showDiagnostics || selectedBlock) return
-
-    const updateScale = () => {
-      // Только для десктопной версии
-      if (window.innerWidth <= 768) {
-        const funnelWrapper = document.querySelector('.funnel-wrapper')
-        if (funnelWrapper) {
-          funnelWrapper.style.zoom = '1'
-        }
-        return
-      }
-
-      const funnelWrapper = document.querySelector('.funnel-wrapper')
-      const funnelBlocks = document.getElementById('funnel-blocks')
-      if (!funnelWrapper || !funnelBlocks) return
-
-      const header = document.querySelector('.header-block')
-      const headerHeight = header ? header.offsetHeight : 0
-      
-      // Получаем реальную высоту всего контента
-      const contentHeight = funnelBlocks.scrollHeight
-      
-      // Доступная высота с запасом снизу (300px) чтобы гарантировать полный вход блока "Деньги"
-      const availableHeight = window.innerHeight - headerHeight - 300
-
-      if (contentHeight > availableHeight) {
-        // Вычисляем zoom с запасом
-        const zoom = Math.min(0.75, (availableHeight / contentHeight) * 0.75)
-        funnelWrapper.style.zoom = zoom.toString()
-      } else {
-        funnelWrapper.style.zoom = '1'
-      }
-    }
-
-    // Выполняем после рендера с несколькими попытками для точности
-    const timer1 = setTimeout(updateScale, 100)
-    const timer2 = setTimeout(updateScale, 300)
-    const timer3 = setTimeout(updateScale, 600)
-    const timer4 = setTimeout(updateScale, 1000)
-    window.addEventListener('resize', updateScale)
-
-    return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
-      clearTimeout(timer3)
-      clearTimeout(timer4)
-      window.removeEventListener('resize', updateScale)
-    }
-  }, [showProfile, showDiagnostics, selectedBlock])
 
   const handleBlockClick = (block) => {
     if (isAnimating) return
