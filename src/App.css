@@ -4,6 +4,15 @@
     position: relative;
 }
 
+/* Для мобильной версии разрешаем прокрутку */
+@media (max-width: 768px) {
+    .container {
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-height: 100vh;
+    }
+}
+
 
 
 

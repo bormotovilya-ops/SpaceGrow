@@ -41,5 +41,13 @@ body {
     overflow: hidden;
 }
 
+/* Для мобильной версии разрешаем прокрутку */
+@media (max-width: 768px) {
+    #root {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
 
 

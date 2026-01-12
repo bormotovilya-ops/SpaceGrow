@@ -339,19 +339,18 @@
   }
 
   .funnel-wrapper {
-    flex: 1;
+    flex: none; /* Убираем flex: 1, чтобы контент не сжимался */
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 20px; /* Отступ снизу с запасом */
+    padding-bottom: 150px; /* БОЛЬШОЙ ОТСТУП СНИЗУ С ЗАПАСОМ */
     display: flex;
     align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
-    min-height: 0;
-    overflow-y: auto; /* Разрешаем прокрутку если нужно */
-    overflow-x: hidden;
-    /* Занимает всю оставшуюся область под Header */
-    height: 100%;
+    min-height: auto; /* Убираем ограничение */
+    overflow: visible; /* Разрешаем видимость всего контента */
+    /* Убираем height: 100%, чтобы контент мог быть больше экрана */
+    height: auto;
   }
 
   .funnel-blocks {
