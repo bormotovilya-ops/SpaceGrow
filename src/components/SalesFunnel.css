@@ -332,7 +332,8 @@
 @media (max-width: 768px) {
   .sales-funnel-container {
     height: 100vh;
-    overflow: hidden;
+    overflow-y: auto; /* Разрешаем прокрутку, чтобы блок "Деньги" был виден */
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
   }
@@ -342,11 +343,12 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
+    padding-bottom: 10px; /* Добавляем отступ снизу для блока "Деньги" */
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible; /* Меняем на visible, чтобы блок "Деньги" был виден */
     /* Занимает всю оставшуюся область под Header */
     height: 100%;
   }
@@ -361,6 +363,9 @@
     align-items: center;
     /* Равномерное распределение всех элементов по высоте */
     justify-content: space-between;
+    /* Убеждаемся, что контент не обрезается */
+    min-height: 0;
+    overflow: visible;
   }
 
   .funnel-block {
@@ -414,6 +419,12 @@
     height: calc((100% - 30px) / 6);
     flex-shrink: 0;
     flex: 0 0 auto;
+    /* Убеждаемся, что блок виден */
+    min-height: 60px;
+    margin-bottom: 0;
+    /* Позволяем контейнеру быть видимым */
+    position: relative;
+    z-index: 10;
   }
 
   .result-block {
@@ -424,6 +435,8 @@
     justify-content: space-between;
     padding: 7px;
     border-radius: 12px;
+    /* Убеждаемся, что блок виден */
+    min-height: 60px;
   }
 
   /* Блок "Продукт" теперь виден на мобильной версии */
