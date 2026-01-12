@@ -99,22 +99,32 @@ function SalesFunnel() {
       // Только для десктопной версии
       if (window.innerWidth <= 768) return
 
+      const funnelWrapper = document.querySelector('.funnel-wrapper')
       const funnelBlocks = document.getElementById('funnel-blocks')
-      if (!funnelBlocks) return
+      if (!funnelWrapper || !funnelBlocks) return
 
       const header = document.querySelector('.header-block')
       const headerHeight = header ? header.offsetHeight : 0
-      // Увеличиваем запас снизу до 200px, чтобы гарантировать, что блок "Деньги" входит целиком
-      const availableHeight = window.innerHeight - headerHeight - 200
-      const contentHeight = funnelBlocks.scrollHeight
+      
+      // Получаем реальную высоту всего контента включая блок "Деньги"
+      // Используем getBoundingClientRect для более точного измерения
+      const blocksRect = funnelBlocks.getBoundingClientRect()
+      const wrapperRect = funnelWrapper.getBoundingClientRect()
+      const contentHeight = blocksRect.height
+      
+      // Доступная высота с большим запасом снизу (280px) чтобы гарантировать полный вход блока "Деньги"
+      const availableHeight = window.innerHeight - headerHeight - 280
 
       if (contentHeight > availableHeight) {
-        // Используем более агрессивное масштабирование с запасом 0.9 вместо 0.95
-        const scale = Math.min(0.9, (availableHeight / contentHeight) * 0.9)
-        funnelBlocks.style.transform = `scale(${scale})`
-        funnelBlocks.style.transformOrigin = 'top center'
+        // Вычисляем масштаб с запасом 0.8 для гарантии полного входа
+        const scale = Math.min(0.8, (availableHeight / contentHeight) * 0.8)
+        funnelWrapper.style.transform = `scale(${scale})`
+        funnelWrapper.style.transformOrigin = 'top center'
+        // Компенсируем ширину при масштабировании
+        funnelWrapper.style.width = `${100 / scale}%`
       } else {
-        funnelBlocks.style.transform = 'scale(1)'
+        funnelWrapper.style.transform = 'scale(1)'
+        funnelWrapper.style.width = '100%'
       }
     }
 
@@ -122,12 +132,14 @@ function SalesFunnel() {
     const timer1 = setTimeout(updateScale, 100)
     const timer2 = setTimeout(updateScale, 300)
     const timer3 = setTimeout(updateScale, 500)
+    const timer4 = setTimeout(updateScale, 1000)
     window.addEventListener('resize', updateScale)
 
     return () => {
       clearTimeout(timer1)
       clearTimeout(timer2)
       clearTimeout(timer3)
+      clearTimeout(timer4)
       window.removeEventListener('resize', updateScale)
     }
   }, [showProfile, showDiagnostics, selectedBlock])
