@@ -468,13 +468,13 @@
   /* Если высота viewport меньше 900px, уменьшаем размеры элементов */
   @media (max-height: 900px) {
     .funnel-block {
-      width: calc(var(--block-width, 140px) * 0.85) !important;
-      height: 128px !important; /* Увеличено пропорционально (150px * 0.85) */
+      width: calc(var(--block-width, 140px) * 0.8075) !important;
+      height: 121px !important; /* Уменьшено на 5% (150px * 0.85 * 0.95) */
       padding: 8px !important;
     }
 
     .funnel-arrow {
-      transform: scale(0.85);
+      transform: scale(0.8075);
     }
 
     .block-image {
@@ -494,13 +494,13 @@
   /* Если высота viewport меньше 800px, еще больше уменьшаем */
   @media (max-height: 800px) {
     .funnel-block {
-      width: calc(var(--block-width, 140px) * 0.75) !important;
-      height: 113px !important; /* Увеличено пропорционально (150px * 0.75) */
+      width: calc(var(--block-width, 140px) * 0.7125) !important;
+      height: 107px !important; /* Уменьшено на 5% (150px * 0.75 * 0.95) */
       padding: 7px !important;
     }
 
     .funnel-arrow {
-      transform: scale(0.75);
+      transform: scale(0.7125);
     }
 
     .block-image {
@@ -520,13 +520,13 @@
   /* Если высота viewport меньше 700px, максимально уменьшаем */
   @media (max-height: 700px) {
     .funnel-block {
-      width: calc(var(--block-width, 140px) * 0.65) !important;
-      height: 98px !important; /* Увеличено пропорционально (150px * 0.65) */
+      width: calc(var(--block-width, 140px) * 0.6175) !important;
+      height: 93px !important; /* Уменьшено на 5% (150px * 0.65 * 0.95) */
       padding: 6px !important;
     }
 
     .funnel-arrow {
-      transform: scale(0.65);
+      transform: scale(0.6175);
     }
 
     .block-image {

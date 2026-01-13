@@ -36,7 +36,7 @@ const funnelData = [
   },
   {
     id: 'tripwire',
-    name: 'Трипвайер',
+    name: 'Трипваер',
     image: '/images/3-5.png',
     color: '#ffd700',
     description: 'Первая денежная транзакция. Автоматизация импульсивных покупок',
@@ -215,7 +215,7 @@ function SalesFunnel() {
 
       <div className="funnel-wrapper">
         <div className="funnel-blocks" id="funnel-blocks">
-          {/* Основные блоки: Аудитория, Лендинг, Лидмагнит, Трипвайер, Автоворонки, Продукт */}
+          {/* Основные блоки: Аудитория, Лендинг, Лидмагнит, Трипваер, Автоворонки, Продукт */}
           {funnelData.slice(0, 6).map((block, index) => (
             <React.Fragment key={block.id}>
               {/* Блок воронки */}

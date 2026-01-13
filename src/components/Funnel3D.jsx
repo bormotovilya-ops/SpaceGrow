@@ -17,7 +17,7 @@ const Funnel3D = ({ results }) => {
       'audience': { name: 'Аудитория', image: '/images/1_трафик.png' },
       'landing': { name: 'Лендинг', image: '/images/2_лендинг.png' },
       'leadmagnet': { name: 'Лидмагнит', image: '/images/3_Лидмагнит.png' },
-      'tripwire': { name: 'Трипвайер', image: '/images/3-5.png' },
+      'tripwire': { name: 'Трипваер', image: '/images/3-5.png' },
       'autofunnel': { name: 'Автоворонка', image: '/images/4_Прогрев.png' },
       'product': { name: 'Продукт', image: '/images/5_Курс.png' },
       'money': { name: 'Деньги', image: '/images/6_оплата.png' }
