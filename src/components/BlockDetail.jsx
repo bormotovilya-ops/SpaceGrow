@@ -147,6 +147,18 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock
   const diagramBlockRefs = useRef({})
   const productHeroRef = useRef(null)
 
+  // Скролл к верху страницы при открытии нового блока (та же логика, что и при открытии из главной)
+  useEffect(() => {
+    // Сразу скроллим к верху
+    window.scrollTo(0, 0)
+    // И через небольшую задержку еще раз для надежности
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
+    
+    return () => clearTimeout(timer)
+  }, [block.id])
+
   // Параллакс-эффект для блока Продукт
   useEffect(() => {
     if (!isProductBlock) return
