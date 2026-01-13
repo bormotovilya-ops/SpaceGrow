@@ -6379,6 +6379,19 @@
 
 /* Адаптивность */
 @media (max-width: 768px) {
+  .money-hero-header {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .money-hero-image {
+    margin: 0 auto;
+    display: block;
+  }
+
   .money-hero-title {
     font-size: 36px;
   }
