@@ -345,7 +345,7 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 30px; /* Увеличен отступ снизу для зазора, чтобы диаграмма полностью входила */
+    padding-bottom: 120px; /* Отступ равен высоте блока "Деньги" на мобильных (90px) + запас (30px) */
     display: flex;
     align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
@@ -423,8 +423,8 @@
     /* Убеждаемся, что блок виден */
     position: relative;
     z-index: 10;
-    /* Увеличен отступ снизу, чтобы диаграмма полностью входила на экран */
-    margin-bottom: 20px;
+    /* Отступ снизу равен высоте блока "Деньги" на мобильных (90px) */
+    margin-bottom: 90px;
     width: 100%;
   }
 
