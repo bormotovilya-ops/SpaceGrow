@@ -345,7 +345,7 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 115px; /* Отступ равен высоте блока "Деньги" на мобильных (86px) + запас (29px) */
+    padding-bottom: 115px; /* Отступ равен высоте блока "Деньги" на мобильных (90px * 0.95 = 85.5px) + запас */
     display: flex;
     align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
@@ -356,7 +356,7 @@
   }
 
   .funnel-blocks {
-    gap: 2px; /* Небольшой отступ между элементами, уменьшено на 5% */
+    gap: 2px; /* Небольшой отступ между элементами */
     padding: 0;
     padding-bottom: 0; /* Убираем отступ снизу */
     width: 100%;
@@ -368,24 +368,27 @@
     /* Убеждаемся, что контент не обрезается */
     min-height: 0;
     overflow: visible;
+    /* Уменьшаем масштаб всей диаграммы на 5% */
+    transform: scale(0.95);
+    transform-origin: top center;
   }
 
   .funnel-block {
-    /* Увеличиваем ширину блоков пропорционально экрану, уменьшено на 5% */
-    width: calc(var(--block-width, 140px) * 0.456);
+    /* Увеличиваем ширину блоков пропорционально экрану */
+    width: calc(var(--block-width, 140px) * 0.48);
     flex: 0 0 auto;
-    padding: 6.5px;
+    padding: 7px;
     border-radius: 12px;
-    /* Увеличена высота для мобильной версии для лучшего отображения картинок, уменьшено на 5% */
-    height: 86px;
-    min-height: 86px;
+    /* Увеличена высота для мобильной версии для лучшего отображения картинок */
+    height: 90px;
+    min-height: 90px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
 
   .block-name {
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.2;
     flex-shrink: 0;
   }
@@ -400,16 +403,16 @@
   }
 
   .funnel-arrow {
-    height: 4.5px;
-    width: 17px;
+    height: 5px;
+    width: 18px;
     flex-shrink: 0;
     margin: 0;
-    flex: 0 0 4.5px;
+    flex: 0 0 5px;
   }
 
   .funnel-arrow svg {
-    width: 17px;
-    height: 4.5px;
+    width: 18px;
+    height: 5px;
   }
 
   .result-blocks-container {
@@ -423,20 +426,20 @@
     /* Убеждаемся, что блок виден */
     position: relative;
     z-index: 10;
-    /* Отступ снизу равен высоте блока "Деньги" на мобильных (86px после уменьшения на 5%) */
+    /* Отступ снизу равен высоте блока "Деньги" на мобильных (90px * 0.95 = 85.5px, округляем до 86px) */
     margin-bottom: 86px;
     width: 100%;
   }
 
   .result-block {
     height: 100%;
-    width: calc(var(--block-width, 140px) * 0.456);
+    width: calc(var(--block-width, 140px) * 0.48);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 6.5px;
+    padding: 7px;
     border-radius: 12px;
-    min-height: 86px;
+    min-height: 90px;
   }
 
   /* Блок "Продукт" теперь виден на мобильной версии */

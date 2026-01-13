@@ -139,11 +139,15 @@ function SalesFunnel() {
   const handleNextBlock = (blockId) => {
     const nextBlock = funnelData.find(b => b.id === blockId)
     if (nextBlock) {
+      // Сначала скроллим к верху страницы
+      window.scrollTo({ top: 0, behavior: 'instant' })
       setIsAnimating(true)
       setSelectedBlock(nextBlock)
       
       setTimeout(() => {
         setIsAnimating(false)
+        // Дополнительный скролл к верху после анимации
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }, 300)
     }
   }
