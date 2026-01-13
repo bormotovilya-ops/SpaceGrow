@@ -213,7 +213,7 @@ function SalesFunnel() {
 
       <div className="funnel-wrapper">
         <div className="funnel-blocks" id="funnel-blocks">
-          {/* Основные блоки до Продукта */}
+          {/* Основные блоки: Аудитория, Лендинг, Лидмагнит, Трипвайер, Автоворонки, Продукт */}
           {funnelData.slice(0, 6).map((block, index) => (
             <React.Fragment key={block.id}>
               {/* Блок воронки */}
