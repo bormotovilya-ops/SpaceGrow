@@ -149,10 +149,29 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock
 
   // Скролл к верху страницы при открытии нового блока (та же логика, что и при открытии из главной)
   useEffect(() => {
+    // Находим контейнер блока и скроллим его
+    const scrollToTop = () => {
+      // Пробуем разные способы скролла
+      const container = document.querySelector('.block-detail-container')
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'instant' })
+      }
+      // Также скроллим window на случай, если скролл там
+      window.scrollTo({ top: 0, behavior: 'instant' })
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+    
     // Сразу скроллим к верху
-    window.scrollTo(0, 0)
+    scrollToTop()
+    
     // И через небольшую задержку еще раз для надежности
     const timer = setTimeout(() => {
+      scrollToTop()
+      const container = document.querySelector('.block-detail-container')
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' })
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }, 100)
     

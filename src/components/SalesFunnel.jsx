@@ -139,14 +139,30 @@ function SalesFunnel() {
   const handleNextBlock = (blockId) => {
     const nextBlock = funnelData.find(b => b.id === blockId)
     if (nextBlock) {
+      // Функция для скролла к верху
+      const scrollToTop = () => {
+        const container = document.querySelector('.block-detail-container')
+        if (container) {
+          container.scrollTo({ top: 0, behavior: 'instant' })
+        }
+        window.scrollTo({ top: 0, behavior: 'instant' })
+        document.documentElement.scrollTop = 0
+        document.body.scrollTop = 0
+      }
+      
       // Сначала скроллим к верху страницы
-      window.scrollTo({ top: 0, behavior: 'instant' })
+      scrollToTop()
       setIsAnimating(true)
       setSelectedBlock(nextBlock)
       
       setTimeout(() => {
         setIsAnimating(false)
         // Дополнительный скролл к верху после анимации
+        scrollToTop()
+        const container = document.querySelector('.block-detail-container')
+        if (container) {
+          container.scrollTo({ top: 0, behavior: 'smooth' })
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }, 300)
     }
