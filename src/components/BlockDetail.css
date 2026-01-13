@@ -4304,6 +4304,25 @@
   .result-metric {
     flex-direction: column;
     text-align: center;
+    align-items: center;
+  }
+
+  .result-metric .metric-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .result-metric .metric-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .result-metric .metric-label {
+    text-align: center;
   }
 
   .tripwire-security-visualization {
@@ -5879,6 +5898,30 @@
     width: 100%;
     min-width: auto;
   }
+
+  .result-metric {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .result-metric .metric-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .result-metric .metric-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .result-metric .metric-label {
+    text-align: center;
+  }
 }
 
 /* ============================================
@@ -6439,5 +6482,29 @@
     flex-direction: column;
     gap: 12px;
     margin-top: 30px;
+  }
+
+  .result-metric {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .result-metric .metric-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .result-metric .metric-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .result-metric .metric-label {
+    text-align: center;
   }
 }
