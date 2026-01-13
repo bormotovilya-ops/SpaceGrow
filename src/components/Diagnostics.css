@@ -1371,13 +1371,14 @@
   }
 
   .diagnostics-results {
-    padding: 100px 10px 32px;
+    padding: 100px 10px 80px;
     width: 100%;
     min-height: calc(100vh - 120px);
     display: flex;
     align-items: flex-start;
     justify-content: center;
     box-sizing: border-box;
+    padding-bottom: 80px;
   }
 
   .diagnostics-results-content {
@@ -1521,7 +1522,8 @@
 
   .diagnostics-consultation {
     margin-top: 24px;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
   }
 
   .diagnostics-consultation-btn {
