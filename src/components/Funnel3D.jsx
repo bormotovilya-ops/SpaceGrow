@@ -11,17 +11,18 @@ const Funnel3D = ({ results }) => {
     setImageErrors(prev => ({ ...prev, [segmentId]: true }))
   }
 
-  // Все 6 сегментов воронки
+  // Все 7 сегментов воронки
   const segments = useMemo(() => {
     const segmentMap = {
       'audience': { name: 'Аудитория', image: '/images/1_трафик.png' },
       'landing': { name: 'Лендинг', image: '/images/2_лендинг.png' },
       'leadmagnet': { name: 'Лидмагнит', image: '/images/3_Лидмагнит.png' },
+      'tripwire': { name: 'Трипвайер', image: '/images/3-5.png' },
       'autofunnel': { name: 'Автоворонка', image: '/images/4_Прогрев.png' },
       'product': { name: 'Продукт', image: '/images/5_Курс.png' },
       'money': { name: 'Деньги', image: '/images/6_оплата.png' }
     }
-    const segmentIds = ['audience', 'landing', 'leadmagnet', 'autofunnel', 'product', 'money']
+    const segmentIds = ['audience', 'landing', 'leadmagnet', 'tripwire', 'autofunnel', 'product', 'money']
     return segmentIds.map(id => {
       const result = results.find(r => r.id === id)
       const segmentInfo = segmentMap[id] || { name: '', image: '' }
@@ -90,7 +91,7 @@ const Funnel3D = ({ results }) => {
       : 0
     
     // Ширина нижнего края блока "Деньги" в идеальной воронке (все этапы на 100%)
-    // Проходим через все 6 этапов с стандартным сужением
+    // Проходим через все 7 этапов с стандартным сужением
     let idealBottomWidth = maxWidth
     for (let i = 0; i < segments.length; i++) {
       idealBottomWidth = idealBottomWidth * standardNarrowing

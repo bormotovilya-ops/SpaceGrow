@@ -35,6 +35,15 @@ const funnelData = [
     width: 235 // 196 * 1.2
   },
   {
+    id: 'tripwire',
+    name: 'Трипвайер',
+    image: '/images/3-5.png',
+    color: '#ffd700',
+    description: 'Первая денежная транзакция. Автоматизация импульсивных покупок',
+    tech: ['Эквайринг', 'Фискализация', 'Webhooks'],
+    width: 185 // ~154 * 1.2
+  },
+  {
     id: 'autofunnel',
     name: 'Автоворонки прогрева',
     image: '/images/4_Прогрев.png',
@@ -176,7 +185,21 @@ function SalesFunnel() {
         onBack={handleCloseBlockDetail}
         onConsultation={handleConsultation}
         onAvatarClick={handleAvatarClick}
-        onNextBlock={selectedBlock.id === 'audience' ? () => handleNextBlock('landing') : undefined}
+        onNextBlock={
+          selectedBlock.id === 'audience' 
+            ? () => handleNextBlock('landing') 
+            : selectedBlock.id === 'landing'
+            ? () => handleNextBlock('leadmagnet')
+            : selectedBlock.id === 'leadmagnet'
+            ? () => handleNextBlock('tripwire')
+            : selectedBlock.id === 'tripwire'
+            ? () => handleNextBlock('autofunnel')
+            : selectedBlock.id === 'autofunnel'
+            ? () => handleNextBlock('product')
+            : selectedBlock.id === 'product'
+            ? () => handleNextBlock('money')
+            : undefined
+        }
       />
     )
   }
@@ -191,7 +214,7 @@ function SalesFunnel() {
       <div className="funnel-wrapper">
         <div className="funnel-blocks" id="funnel-blocks">
           {/* Основные блоки до Продукта */}
-          {funnelData.slice(0, 5).map((block, index) => (
+          {funnelData.slice(0, 6).map((block, index) => (
             <React.Fragment key={block.id}>
               {/* Блок воронки */}
               <div
@@ -238,9 +261,37 @@ function SalesFunnel() {
             </React.Fragment>
           ))}
           
-          {/* Блок результата (Деньги) */}
+          {/* Стрелка перед блоком "Деньги" */}
+          <div className="funnel-arrow money-arrow">
+            <svg width="20" height="20" viewBox="0 0 20 20" className="arrow-svg">
+              <line 
+                x1="10" 
+                y1="0" 
+                x2="10" 
+                y2="15" 
+                stroke="#ffffff" 
+                strokeWidth="2"
+                strokeOpacity="0.8"
+                markerEnd="url(#arrowhead-vertical-money)"
+              />
+              <defs>
+                <marker 
+                  id="arrowhead-vertical-money"
+                  markerWidth="10" 
+                  markerHeight="10" 
+                  refX="10" 
+                  refY="5" 
+                  orient="auto"
+                >
+                  <polygon points="0 0, 10 5, 0 10" fill="#ffffff" fillOpacity="0.8" />
+                </marker>
+              </defs>
+            </svg>
+          </div>
+          
+          {/* Блок результата (Деньги) - под продуктом */}
           <div className="result-blocks-container">
-            {funnelData.slice(5).map((block) => (
+            {funnelData.slice(6).map((block) => (
               <div
                 key={block.id}
                 className={`funnel-block result-block ${selectedBlock?.id === block.id ? 'selected' : ''} ${isAnimating && selectedBlock?.id === block.id ? 'animating' : ''}`}

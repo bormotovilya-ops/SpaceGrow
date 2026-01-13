@@ -89,10 +89,12 @@
 /* Контейнер для блоков результата */
 .result-blocks-container {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   margin-bottom: 150px; /* Отступ снизу равен высоте блока "Деньги" (150px) */
+  position: relative;
 }
 
 .funnel-block.selected {
@@ -342,7 +344,7 @@
     padding: 8px 10px;
     margin-top: 0;
     padding-top: calc(14px + 64px + 14px + 8px);
-    padding-bottom: 10px; /* Минимальный отступ снизу */
+    padding-bottom: 20px; /* Увеличен отступ снизу для зазора */
     display: flex;
     align-items: flex-start; /* Выравнивание по верху */
     justify-content: center;
@@ -410,13 +412,11 @@
   }
 
   .result-blocks-container {
-    gap: 10px;
+    gap: 2px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* Такая же высота как у основных блоков */
-    height: 90px;
-    min-height: 90px;
     flex-shrink: 0;
     flex: 0 0 auto;
     /* Убеждаемся, что блок виден */
@@ -424,6 +424,7 @@
     z-index: 10;
     /* Минимальный отступ снизу */
     margin-bottom: 10px;
+    width: 100%;
   }
 
   .result-block {
@@ -444,6 +445,11 @@
 
   /* Стрелка перед блоком "Продукт" теперь видна на мобильной версии */
   .product-arrow {
+    display: flex !important;
+  }
+
+  /* Стрелка перед блоком "Деньги" */
+  .money-arrow {
     display: flex !important;
   }
 }
