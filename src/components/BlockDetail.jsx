@@ -154,28 +154,41 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock
       // Пробуем разные способы скролла
       const container = document.querySelector('.block-detail-container')
       if (container) {
+        // Для мобильных используем scrollTop напрямую
+        container.scrollTop = 0
         container.scrollTo({ top: 0, behavior: 'instant' })
+        // Также пробуем scrollIntoView для надежности
+        const firstElement = container.firstElementChild
+        if (firstElement) {
+          firstElement.scrollIntoView({ behavior: 'instant', block: 'start' })
+        }
       }
       // Также скроллим window на случай, если скролл там
       window.scrollTo({ top: 0, behavior: 'instant' })
+      window.scrollTo(0, 0)
       document.documentElement.scrollTop = 0
       document.body.scrollTop = 0
+      // Для мобильных Safari
+      if (window.pageYOffset !== undefined) {
+        window.pageYOffset = 0
+      }
     }
     
-    // Сразу скроллим к верху
-    scrollToTop()
-    
-    // И через небольшую задержку еще раз для надежности
-    const timer = setTimeout(() => {
+    // Используем requestAnimationFrame для гарантии, что DOM обновлен
+    requestAnimationFrame(() => {
       scrollToTop()
-      const container = document.querySelector('.block-detail-container')
-      if (container) {
-        container.scrollTo({ top: 0, behavior: 'smooth' })
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 100)
-    
-    return () => clearTimeout(timer)
+      
+      // И через небольшую задержку еще раз для надежности
+      setTimeout(() => {
+        scrollToTop()
+        const container = document.querySelector('.block-detail-container')
+        if (container) {
+          container.scrollTop = 0
+          container.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 150)
+    })
   }, [block.id])
 
   // Параллакс-эффект для блока Продукт

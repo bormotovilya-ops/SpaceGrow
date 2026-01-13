@@ -139,32 +139,48 @@ function SalesFunnel() {
   const handleNextBlock = (blockId) => {
     const nextBlock = funnelData.find(b => b.id === blockId)
     if (nextBlock) {
-      // Функция для скролла к верху
+      // Функция для скролла к верху (работает и на мобильных)
       const scrollToTop = () => {
         const container = document.querySelector('.block-detail-container')
         if (container) {
+          // Для мобильных используем scrollTop напрямую
+          container.scrollTop = 0
           container.scrollTo({ top: 0, behavior: 'instant' })
+          // Также пробуем scrollIntoView для надежности
+          const firstElement = container.firstElementChild
+          if (firstElement) {
+            firstElement.scrollIntoView({ behavior: 'instant', block: 'start' })
+          }
         }
         window.scrollTo({ top: 0, behavior: 'instant' })
+        window.scrollTo(0, 0)
         document.documentElement.scrollTop = 0
         document.body.scrollTop = 0
+        // Для мобильных Safari
+        if (window.pageYOffset !== undefined) {
+          window.pageYOffset = 0
+        }
       }
       
-      // Сначала скроллим к верху страницы
-      scrollToTop()
-      setIsAnimating(true)
-      setSelectedBlock(nextBlock)
-      
-      setTimeout(() => {
-        setIsAnimating(false)
-        // Дополнительный скролл к верху после анимации
+      // Используем requestAnimationFrame для гарантии, что DOM обновлен
+      requestAnimationFrame(() => {
+        // Сначала скроллим к верху страницы
         scrollToTop()
-        const container = document.querySelector('.block-detail-container')
-        if (container) {
-          container.scrollTo({ top: 0, behavior: 'smooth' })
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }, 300)
+        setIsAnimating(true)
+        setSelectedBlock(nextBlock)
+        
+        setTimeout(() => {
+          setIsAnimating(false)
+          // Дополнительный скролл к верху после анимации
+          scrollToTop()
+          const container = document.querySelector('.block-detail-container')
+          if (container) {
+            container.scrollTop = 0
+            container.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }, 300)
+      })
     }
   }
 

@@ -368,8 +368,8 @@
     /* Убеждаемся, что контент не обрезается */
     min-height: 0;
     overflow: visible;
-    /* Уменьшаем масштаб всей диаграммы на 5% */
-    transform: scale(0.95);
+    /* Уменьшаем масштаб всей диаграммы на 10% (еще на 5%) */
+    transform: scale(0.90);
     transform-origin: top center;
   }
 
