@@ -1,6 +1,7 @@
 import React from 'react'
 import Header from './Header'
 import './Alchemy.css'
+import { openTelegramLink } from '../utils/telegram'
 
 function Alchemy({ onBack, onAvatarClick, onChatClick }) {
   const handleHeaderAvatarClick = () => {
@@ -13,7 +14,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick }) {
 
   const handleConsultation = () => {
     // Пока заглушка, можно добавить логику позже
-    window.open('https://t.me/ilyaborm', '_blank')
+    openTelegramLink('https://t.me/ilyaborm')
   }
 
   return (

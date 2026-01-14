@@ -4,6 +4,7 @@ import Header from './Header'
 import Funnel3D from './Funnel3D'
 import './Diagnostics.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { openTelegramLink } from '../utils/telegram'
 
 const stages = [
   {
@@ -395,10 +396,12 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
   }
 
   const handleResultsConsultation = () => {
-    yandexMetricaReachGoal(null, 'diagnostics_send_telegram')
     // Формируем URL с предзаполненным сообщением для Telegram
     const message = formatResultsForTelegram()
-    window.open(`https://t.me/ilyaborm?text=${message}`, '_blank')
+    const url = `https://t.me/ilyaborm?text=${message}`
+    const open = () => openTelegramLink(url)
+    const tracked = yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram' }, open)
+    if (!tracked) open()
   }
 
   // Подсчёт результатов

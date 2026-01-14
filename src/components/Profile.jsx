@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Header from './Header'
 import './Profile.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { openTelegramLink } from '../utils/telegram'
 
 // Импорт изображений технологического стека
 import img11 from '../assets/images/11.png'
@@ -19,12 +20,12 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
   const [isLoadingChat, setIsLoadingChat] = useState(false) // Загрузка ответа
   
   const handleConsultation = () => {
-    yandexMetricaReachGoal(null, 'profile_consultation_click')
-    if (onDiagnostics) {
-      onDiagnostics()
-    } else {
-      window.open('https://t.me/ilyaborm', '_blank')
-    }
+    const url = 'https://t.me/ilyaborm'
+    const open = () => openTelegramLink(url)
+
+    // CTA on profile must open Telegram chat (not diagnostics).
+    const tracked = yandexMetricaReachGoal(null, 'profile_consultation_click', { to: 'telegram', url }, open)
+    if (!tracked) open()
   }
 
   const handleHeaderAvatarClick = () => {
