@@ -179,8 +179,12 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
       console.log('✅ Данные получены:', {
         hasResponse: !!data.response,
         responseLength: data.response?.length,
-        responsePreview: data.response?.substring(0, 100) + '...'
+        responsePreview: data.response?.substring(0, 100) + '...',
+        source: data.source || 'unknown'
       })
+      if (data.source) {
+        console.log('📊 Источник ответа:', data.source === 'groq' ? '✅ Groq API' : '⚠️ Заглушка (mock)')
+      }
 
       if (data.response) {
         // Очищаем ответ от markdown-символов (на всякий случай, если сервер не обработал)

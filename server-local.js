@@ -86,7 +86,8 @@ function handleMockResponse(message, systemContext, res) {
   for (const [key, value] of Object.entries(responses)) {
     if (lowerMessage.includes(key)) {
       const cleanedResponse = cleanResponse(value)
-      return res.status(200).json({ response: cleanedResponse })
+      console.log('📝 Mock response found for key:', key)
+      return res.status(200).json({ response: cleanedResponse, source: 'mock' })
     }
   }
 
@@ -102,7 +103,8 @@ function handleMockResponse(message, systemContext, res) {
 Также предлагаю бесплатную диагностику воронки или мини-аудит бизнес-процессов.`
   
   const cleanedDefaultResponse = cleanResponse(defaultResponse)
-  return res.status(200).json({ response: cleanedDefaultResponse })
+  console.log('📝 Using default mock response')
+  return res.status(200).json({ response: cleanedDefaultResponse, source: 'mock' })
 }
 
 // Функция для формирования полного промпта с файлами знаний
@@ -251,7 +253,8 @@ app.post('/api/chat', async (req, res) => {
 
     console.log('✅ Получен ответ от Groq API')
     return res.status(200).json({
-      response: cleanedResponse
+      response: cleanedResponse,
+      source: 'groq'
     })
 
   } catch (error) {
