@@ -23,3 +23,9 @@ export function openTelegramLink(url) {
   return true
 }
 
+export function buildTelegramShareUrl(text, url = '') {
+  const t = typeof text === 'string' ? text : String(text ?? '')
+  const u = typeof url === 'string' ? url : String(url ?? '')
+  return `https://t.me/share/url?url=${encodeURIComponent(u)}&text=${encodeURIComponent(t)}`
+}
+

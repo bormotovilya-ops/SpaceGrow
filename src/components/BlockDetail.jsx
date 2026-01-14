@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Header from './Header'
 import './BlockDetail.css'
+import { buildTelegramShareUrl, openTelegramLink } from '../utils/telegram'
+import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 // Данные таблиц из файла "Таблицы аудитория.txt"
 const tableData = {
@@ -133,7 +135,7 @@ const workDiagramStructure = {
   ]
 }
 
-function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock, onAlchemyClick, onChatClick }) {
+function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarClick, onNextBlock, onAlchemyClick, onChatClick }) {
   const isAudienceBlock = block.id === 'audience'
   const isLandingBlock = block.id === 'landing'
   const isLeadmagnetBlock = block.id === 'leadmagnet'
@@ -1787,8 +1789,12 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock
             <button 
               className="money-cta-btn"
               onClick={() => {
-                const message = encodeURIComponent("Привет! Я прошел по всем этапам АИЦП на вашем сайте. Хочу обсудить внедрение такой системы и расчет окупаемости для моего продукта. Когда удобно пообщаться?");
-                window.open(`https://t.me/ilyaborm?text=${message}`, '_blank');
+                const message =
+                  'Привет! Я прошел по всем этапам АИЦП на вашем сайте. Хочу обсудить внедрение такой системы и расчет окупаемости для моего продукта. Когда удобно пообщаться?'
+                const url = buildTelegramShareUrl(message)
+                const open = () => openTelegramLink(url)
+                const tracked = yandexMetricaReachGoal(null, 'contact_telegram_click', { placement: 'money_success_cta' }, open)
+                if (!tracked) open()
               }}
             >
               Запустить мой финансовый успех
@@ -1993,7 +1999,8 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock
     <div className={`block-detail-container ${isProductBlock ? 'product-page' : ''} ${isMoneyBlock ? 'money-page' : ''}`}>
       <Header 
         onAvatarClick={onAvatarClick}
-        onConsultation={onConsultation}
+        // Top CTA in Header should lead to Diagnostics; stage CTAs use onConsultation (Telegram).
+        onConsultation={onDiagnostics || onConsultation}
         onBack={onBack}
         onAlchemyClick={onAlchemyClick}
         onChatClick={onChatClick}

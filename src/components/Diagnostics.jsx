@@ -4,7 +4,7 @@ import Header from './Header'
 import Funnel3D from './Funnel3D'
 import './Diagnostics.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
-import { openTelegramLink } from '../utils/telegram'
+import { buildTelegramShareUrl, openTelegramLink } from '../utils/telegram'
 
 const stages = [
   {
@@ -396,13 +396,14 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
     message += '\n\n'
     message += 'Давайте обсудим результаты и сформируем конкретный план действий для улучшения!'
     
-    return encodeURIComponent(message)
+    return message
   }
 
   const handleResultsConsultation = () => {
     // Формируем URL с предзаполненным сообщением для Telegram
     const message = formatResultsForTelegram()
-    const url = `https://t.me/ilyaborm?text=${message}`
+    // Use Telegram share link: reliably pre-fills text on mobile/desktop.
+    const url = buildTelegramShareUrl(message)
     const open = () => openTelegramLink(url)
     const tracked = yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram' }, open)
     if (!tracked) open()

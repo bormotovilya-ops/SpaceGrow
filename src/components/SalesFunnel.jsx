@@ -8,6 +8,7 @@ import Alchemy from './Alchemy'
 import ChatBot from './ChatBot'
 import './SalesFunnel.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { openTelegramLink } from '../utils/telegram'
 
 const funnelData = [
   {
@@ -142,6 +143,14 @@ function SalesFunnel() {
     setShowDiagnostics(true)
   }
 
+  const handleStageConsultation = () => {
+    // Stage CTAs ("Получить бесплатную консультацию") should open Telegram dialog.
+    const url = 'https://t.me/ilyaborm'
+    const open = () => openTelegramLink(url)
+    const tracked = yandexMetricaReachGoal(null, 'contact_telegram_click', { placement: 'funnel_stage_cta', url }, open)
+    if (!tracked) open()
+  }
+
   const handleAlchemyClick = () => {
     yandexMetricaReachGoal(null, 'open_alchemy')
     setShowAlchemy(true)
@@ -270,7 +279,8 @@ function SalesFunnel() {
       <BlockDetail 
         block={selectedBlock}
         onBack={handleCloseBlockDetail}
-        onConsultation={handleConsultation}
+        onConsultation={handleStageConsultation}
+        onDiagnostics={handleConsultation}
         onAvatarClick={handleAvatarClick}
         onAlchemyClick={handleAlchemyClick}
         onChatClick={handleChatClick}
