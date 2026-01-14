@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Header from './Header'
 import './BlockDetail.css'
-import { buildTelegramChatUrl, openTelegramLink } from '../utils/telegram'
+import { openTelegramChat } from '../utils/telegram'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 // Данные таблиц из файла "Таблицы аудитория.txt"
@@ -1791,8 +1791,7 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
               onClick={() => {
                 const message =
                   'Привет! Я прошел по всем этапам АИЦП на вашем сайте. Хочу обсудить внедрение такой системы и расчет окупаемости для моего продукта. Когда удобно пообщаться?'
-                const url = buildTelegramChatUrl('ilyaborm', message)
-                const open = () => openTelegramLink(url)
+                const open = () => openTelegramChat('ilyaborm', message)
                 const tracked = yandexMetricaReachGoal(null, 'contact_telegram_click', { placement: 'money_success_cta' }, open)
                 if (!tracked) open()
               }}
