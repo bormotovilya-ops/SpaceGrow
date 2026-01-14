@@ -102,10 +102,30 @@ function handleMockResponse(message, systemContext, res) {
   return res.status(200).json({ response: cleanedDefaultResponse, source: 'mock' })
 }
 
-// Функция для обрезки текста до определенного количества символов
+// Функция для умной обрезки текста по предложениям (без потери смысла)
 function truncateText(text, maxChars = 5000) {
   if (!text || text.length <= maxChars) return text
-  return text.substring(0, maxChars) + '...\n[Текст обрезан для экономии токенов]'
+  
+  // Обрезаем до maxChars, но ищем последнюю точку, восклицательный или вопросительный знак
+  // чтобы не обрезать посередине предложения
+  let truncated = text.substring(0, maxChars)
+  
+  // Ищем последнее завершенное предложение
+  const lastSentenceEnd = Math.max(
+    truncated.lastIndexOf('. '),
+    truncated.lastIndexOf('!\n'),
+    truncated.lastIndexOf('?\n'),
+    truncated.lastIndexOf('.\n'),
+    truncated.lastIndexOf('! '),
+    truncated.lastIndexOf('? ')
+  )
+  
+  // Если нашли конец предложения в последних 200 символах, обрезаем там
+  if (lastSentenceEnd > maxChars - 200 && lastSentenceEnd > 0) {
+    truncated = truncated.substring(0, lastSentenceEnd + 1)
+  }
+  
+  return truncated + '\n\n[Текст обрезан для экономии токенов]'
 }
 
 // Функция для формирования полного промпта с файлами знаний
