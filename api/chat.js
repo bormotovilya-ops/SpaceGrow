@@ -51,26 +51,25 @@ function truncateText(text, maxChars = 5000) {
 async function buildSystemContext() {
   const knowledge = await loadKnowledgeFiles()
   
-  // Обрезаем site_knowledge.md, чтобы уложиться в лимит 6000 токенов
-  const siteKnowledgeTruncated = truncateText(knowledge.siteKnowledge, 5000)
+  // Файл теперь короткий (около 4000 символов), используем полностью без обрезки
+  const siteKnowledge = knowledge.siteKnowledge || ''
   
   // Логируем, что попадает в промпт (проверка на наличие ключевой информации)
-  const hasCityInfo = siteKnowledgeTruncated.includes('Родился в Перми') || siteKnowledgeTruncated.includes('Сейчас живу в Сочи')
+  const hasCityInfo = siteKnowledge.includes('Родился в Перми') || siteKnowledge.includes('живу в Сочи') || siteKnowledge.includes('Перми')
   console.log('📋 Knowledge file loaded:', {
-    originalLength: knowledge.siteKnowledge?.length || 0,
-    truncatedLength: siteKnowledgeTruncated.length,
+    originalLength: siteKnowledge.length,
     hasCityInfo: hasCityInfo,
-    preview: siteKnowledgeTruncated.substring(0, 200) + '...'
+    preview: siteKnowledge.substring(0, 200) + '...'
   })
   
   if (!hasCityInfo) {
-    console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in truncated knowledge!')
+    console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in knowledge file!')
   }
   
   return `Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Отвечай на вопросы как мой "цифровой двойник", опираясь на базу знаний ниже.
 
 # База знаний:
-${siteKnowledgeTruncated}
+${siteKnowledge}
 
 # Правила ответа:
 - Говори от первого лица (Я, меня, мой), обращайся на "вы"
@@ -211,6 +210,7 @@ export default async function handler(req, res) {
     console.log('📝 Full system prompt length:', systemContext.length, 'chars')
     console.log('🔍 System prompt contains "Перми":', systemContext.includes('Перми'))
     console.log('🔍 System prompt contains "Сочи":', systemContext.includes('Сочи'))
+    console.log('🔍 System prompt contains "Родился":', systemContext.includes('Родился'))
     console.log('📄 System prompt preview (first 500 chars):', systemContext.substring(0, 500))
     
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
