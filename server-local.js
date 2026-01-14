@@ -184,9 +184,7 @@ app.post('/api/chat', async (req, res) => {
 
   if (!GROQ_API_KEY) {
     console.error('❌ GROQ_API_KEY не найден!')
-    const mockResponse = handleMockResponse(message, systemContext, res)
-    const cleanedMockResponse = cleanResponse(mockResponse)
-    return res.status(200).json({ response: cleanedMockResponse })
+    return handleMockResponse(message, systemContext, res)
   }
 
   console.log('✅ Groq API ключ найден, отправляю запрос к Groq API...')
@@ -233,9 +231,7 @@ app.post('/api/chat', async (req, res) => {
       console.error('❌ Groq API error body:', errorData)
       
       // При ошибке API возвращаем заглушку вместо ошибки
-      const mockResponse = handleMockResponse(message, systemContext, res)
-      const cleanedMockResponse = cleanResponse(mockResponse)
-      return res.status(200).json({ response: cleanedMockResponse })
+      return handleMockResponse(message, systemContext, res)
     }
 
     const data = await response.json()
@@ -246,9 +242,7 @@ app.post('/api/chat', async (req, res) => {
     
     if (!assistantMessage) {
       console.error('⚠️ Неожиданный формат ответа, используем заглушку:', data)
-      const mockResponse = handleMockResponse(message, systemContext, res)
-      const cleanedMockResponse = cleanResponse(mockResponse)
-      return res.status(200).json({ response: cleanedMockResponse })
+      return handleMockResponse(message, systemContext, res)
     }
 
     // Очищаем ответ от markdown-символов и форматируем
