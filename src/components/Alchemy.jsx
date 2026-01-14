@@ -1,9 +1,8 @@
 import React from 'react'
 import Header from './Header'
 import './Alchemy.css'
-import { openTelegramLink } from '../utils/telegram'
 
-function Alchemy({ onBack, onAvatarClick, onChatClick }) {
+function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics }) {
   const handleHeaderAvatarClick = () => {
     if (onAvatarClick) {
       onAvatarClick()
@@ -13,8 +12,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick }) {
   }
 
   const handleConsultation = () => {
-    // Пока заглушка, можно добавить логику позже
-    openTelegramLink('https://t.me/ilyaborm')
+    // Top CTA in Header must always open Diagnostics.
+    if (onDiagnostics) onDiagnostics()
   }
 
   return (

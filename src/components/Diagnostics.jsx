@@ -340,8 +340,12 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
   }
 
   const handleConsultation = () => {
-    // В Diagnostics кнопка в Header возвращает на главную
-    onBack()
+    // Top CTA in Header must always open Diagnostics.
+    // If we're already here — restart to intro screen.
+    yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'diagnostics' })
+    setAnswers({})
+    setShowResults(false)
+    setCurrentStep(0)
   }
 
   const handleHeaderAvatarClick = () => {

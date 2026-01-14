@@ -19,6 +19,12 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
   const [chatInput, setChatInput] = useState('') // Текст в поле ввода
   const [isLoadingChat, setIsLoadingChat] = useState(false) // Загрузка ответа
   
+  const handleHeaderConsultation = () => {
+    // Top CTA in Header must always open Diagnostics.
+    yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'profile' })
+    if (onDiagnostics) onDiagnostics()
+  }
+
   const handleConsultation = () => {
     const url = 'https://t.me/ilyaborm'
     const open = () => openTelegramLink(url)
@@ -269,7 +275,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     <div className="profile-container">
       <Header 
         onAvatarClick={handleHeaderAvatarClick}
-        onConsultation={handleConsultation}
+        onConsultation={handleHeaderConsultation}
         onBack={onBack}
         onAlchemyClick={onAlchemyClick}
         onChatClick={onChatClick}

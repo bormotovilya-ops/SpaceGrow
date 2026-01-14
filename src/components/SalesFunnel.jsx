@@ -154,9 +154,12 @@ function SalesFunnel() {
 
   const handleAvatarClick = () => {
     yandexMetricaReachGoal(null, 'open_profile')
-    // Закрываем Diagnostics если открыт, открываем Profile
+    // Open Profile from anywhere (close other sections first)
     if (showDiagnostics) {
       setShowDiagnostics(false)
+    }
+    if (showAlchemy) {
+      setShowAlchemy(false)
     }
     setShowProfile(true)
   }
@@ -218,6 +221,10 @@ function SalesFunnel() {
           window.location.hash = ''
         }} 
         onAvatarClick={handleAvatarClick}
+        onDiagnostics={() => {
+          setShowAlchemy(false)
+          setShowDiagnostics(true)
+        }}
         onChatClick={handleChatClick}
       />
     )
