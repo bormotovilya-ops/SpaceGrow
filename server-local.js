@@ -256,10 +256,8 @@ app.post('/api/chat', async (req, res) => {
   } catch (error) {
     console.error('❌ Ошибка в try-catch:', error)
     console.error('❌ Error details:', error.stack)
-    return res.status(500).json({
-      error: `Ошибка при обработке запроса: ${error.message}`,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    })
+    // При любой ошибке возвращаем заглушку
+    return handleMockResponse(message, systemContext, res)
   }
 })
 
