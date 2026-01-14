@@ -150,18 +150,29 @@ export default async function handler(req, res) {
   // Проверяем режим заглушки
   const USE_MOCK = process.env.USE_MOCK_RESPONSES === 'true'
   const GROQ_API_KEY = process.env.GROQ_API_KEY
+  const HF_API_KEY = process.env.HF_API_KEY // Для обратной совместимости
 
   console.log('🔍 API Debug:', {
     USE_MOCK,
     hasGROQ_API_KEY: !!GROQ_API_KEY,
-    GROQ_API_KEY_preview: GROQ_API_KEY ? GROQ_API_KEY.substring(0, 10) + '...' : 'missing'
+    GROQ_API_KEY_preview: GROQ_API_KEY ? GROQ_API_KEY.substring(0, 15) + '...' : 'missing',
+    GROQ_API_KEY_length: GROQ_API_KEY ? GROQ_API_KEY.length : 0,
+    hasHF_API_KEY: !!HF_API_KEY,
+    allEnvKeys: Object.keys(process.env).filter(k => k.includes('API') || k.includes('MOCK')).join(', ')
   })
 
   // Загружаем файлы знаний и формируем полный промпт
   const systemContext = await buildSystemContext()
 
-  if (USE_MOCK || !GROQ_API_KEY) {
-    console.log('⚠️ Using mock response:', USE_MOCK ? 'USE_MOCK_RESPONSES=true' : 'GROQ_API_KEY missing')
+  if (USE_MOCK) {
+    console.log('⚠️ Using mock response: USE_MOCK_RESPONSES=true')
+    const response = handleMockResponse(message)
+    const cleanedResponse = cleanResponse(response)
+    return res.status(200).json({ response: cleanedResponse })
+  }
+
+  if (!GROQ_API_KEY) {
+    console.error('❌ GROQ_API_KEY missing! Available env vars:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
     const response = handleMockResponse(message)
     const cleanedResponse = cleanResponse(response)
     return res.status(200).json({ response: cleanedResponse })
