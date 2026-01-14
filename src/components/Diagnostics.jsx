@@ -399,15 +399,47 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
     return message
   }
 
+  const formatResultsForTelegramCompact = () => {
+    const { results, critical, unstable, strong } = getResults()
+
+    let message = 'Добрый день!\n\n'
+    message += 'Я прошел диагностику цепочки продаж. Результаты:\n\n'
+
+    // Keep it short & ASCII-friendly (Telegram deep links may drop long payloads).
+    results.forEach((result) => {
+      message += `${result.name}: ${result.score}%\n`
+    })
+
+    if (critical.length > 0) {
+      message += `\nКритические зоны: ${critical.map(c => c.name).join(', ')}`
+    }
+    if (unstable.length > 0) {
+      message += `\nНестабильные зоны: ${unstable.map(u => u.name).join(', ')}`
+    }
+    if (strong.length > 0) {
+      message += `\nСильные стороны: ${strong.map(s => s.name).join(', ')}`
+    }
+
+    message += '\n\nХочу обсудить план действий по улучшению. Когда удобно пообщаться?'
+
+    return message
+  }
+
   const handleResultsConsultation = () => {
     // Формируем URL с предзаполненным сообщением для Telegram
     const rawMessage = formatResultsForTelegram()
-    // Telegram may drop/ignore very long ?text payloads; keep within a safe limit.
-    const MAX_LEN = 1400
+    const compactMessage = formatResultsForTelegramCompact()
+
+    // Telegram deep links + t.me links often ignore huge `text` payloads.
+    // Prefer full message, but fall back to compact if encoded payload looks too large.
+    const fullEncodedLen = encodeURIComponent(rawMessage).length
+    const compactEncodedLen = encodeURIComponent(compactMessage).length
+
+    const MAX_ENCODED_LEN = 900
     const message =
-      typeof rawMessage === 'string' && rawMessage.length > MAX_LEN
-        ? `${rawMessage.slice(0, MAX_LEN)}…\n\n(сообщение сокращено из-за лимита, полный текст могу отправить отдельно)`
-        : rawMessage
+      fullEncodedLen <= MAX_ENCODED_LEN ? rawMessage
+      : compactEncodedLen <= MAX_ENCODED_LEN ? compactMessage
+      : `${compactMessage.slice(0, 450)}…\n\n(сообщение сокращено из-за лимита)`
 
     const open = () => openTelegramChat('ilyaborm', message)
     const tracked = yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram' }, open)
