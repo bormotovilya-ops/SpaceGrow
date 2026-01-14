@@ -102,9 +102,18 @@ function handleMockResponse(message, systemContext, res) {
   return res.status(200).json({ response: cleanedDefaultResponse, source: 'mock' })
 }
 
+// Функция для обрезки текста до определенного количества символов
+function truncateText(text, maxChars = 5000) {
+  if (!text || text.length <= maxChars) return text
+  return text.substring(0, maxChars) + '...\n[Текст обрезан для экономии токенов]'
+}
+
 // Функция для формирования полного промпта с файлами знаний
 async function buildSystemContext() {
   const knowledge = await loadKnowledgeFiles()
+  
+  // Обрезаем site_knowledge.md, чтобы уложиться в лимит 6000 токенов
+  const siteKnowledgeTruncated = truncateText(knowledge.siteKnowledge, 5000)
   
   return `# Role & Context
 Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Твоя задача — отвечать на вопросы пользователей в чате на сайте, выступая как мой "цифровой двойник".
@@ -113,7 +122,7 @@ async function buildSystemContext() {
 При формировании ответов всегда опирайся на данные из файла знаний:
 
 ## @site_knowledge.md — База знаний
-${knowledge.siteKnowledge}
+${siteKnowledgeTruncated}
 
 # Core Philosophy
 1. Инструменты вторичны, логика первична. Если клиент просит "просто бота", объясни, что без архитектуры это слив бюджета.
