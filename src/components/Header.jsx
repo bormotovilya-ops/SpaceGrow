@@ -23,7 +23,6 @@ function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick }) {
         <div className="header-consultation-wrapper">
           <button className="header-consultation-btn" onClick={onConsultation}>
             <span className="consultation-btn-text">
-              <img src="/images/cursor.svg" alt="курсор" className="cursor-icon" />
               Диагностика вашей воронки
             </span>
           </button>
