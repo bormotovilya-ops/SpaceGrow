@@ -54,6 +54,19 @@ async function buildSystemContext() {
   // Обрезаем site_knowledge.md, чтобы уложиться в лимит 6000 токенов
   const siteKnowledgeTruncated = truncateText(knowledge.siteKnowledge, 5000)
   
+  // Логируем, что попадает в промпт (проверка на наличие ключевой информации)
+  const hasCityInfo = siteKnowledgeTruncated.includes('Родился в Перми') || siteKnowledgeTruncated.includes('Сейчас живу в Сочи')
+  console.log('📋 Knowledge file loaded:', {
+    originalLength: knowledge.siteKnowledge?.length || 0,
+    truncatedLength: siteKnowledgeTruncated.length,
+    hasCityInfo: hasCityInfo,
+    preview: siteKnowledgeTruncated.substring(0, 200) + '...'
+  })
+  
+  if (!hasCityInfo) {
+    console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in truncated knowledge!')
+  }
+  
   return `Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Отвечай на вопросы как мой "цифровой двойник", опираясь на базу знаний ниже.
 
 # База знаний:
@@ -194,7 +207,11 @@ export default async function handler(req, res) {
 
     console.log('📡 Sending request to Groq API...')
     console.log('🔑 Using API key:', GROQ_API_KEY.substring(0, 15) + '...')
-    console.log('📦 Request body:', JSON.stringify(requestBody).substring(0, 200) + '...')
+    console.log('📦 Request body preview:', JSON.stringify(requestBody).substring(0, 200) + '...')
+    console.log('📝 Full system prompt length:', systemContext.length, 'chars')
+    console.log('🔍 System prompt contains "Перми":', systemContext.includes('Перми'))
+    console.log('🔍 System prompt contains "Сочи":', systemContext.includes('Сочи'))
+    console.log('📄 System prompt preview (first 500 chars):', systemContext.substring(0, 500))
     
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
