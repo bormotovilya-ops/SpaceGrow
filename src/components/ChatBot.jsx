@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './ChatBot.css'
+import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 function ChatBot({ onClose }) {
   const [messages, setMessages] = useState([
@@ -31,6 +32,8 @@ function ChatBot({ onClose }) {
 
     const userMessage = inputValue.trim()
     setInputValue('')
+
+    yandexMetricaReachGoal(null, 'chatbot_send', { length: userMessage.length })
     
     // Добавляем сообщение пользователя
     setMessages(prev => [...prev, { role: 'user', content: userMessage }])

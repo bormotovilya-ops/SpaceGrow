@@ -7,6 +7,7 @@ import Diagnostics from './Diagnostics'
 import Alchemy from './Alchemy'
 import ChatBot from './ChatBot'
 import './SalesFunnel.css'
+import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 const funnelData = [
   {
@@ -111,6 +112,8 @@ function SalesFunnel() {
 
   const handleBlockClick = (block) => {
     if (isAnimating) return
+
+    yandexMetricaReachGoal(null, 'funnel_block_open', { blockId: block?.id })
     
     setIsAnimating(true)
     setSelectedBlock(block)
@@ -121,6 +124,7 @@ function SalesFunnel() {
   }
 
   const handleCloseBlockDetail = () => {
+    yandexMetricaReachGoal(null, 'funnel_block_close', { blockId: selectedBlock?.id })
     setIsAnimating(true)
     setTimeout(() => {
       setSelectedBlock(null)
@@ -129,22 +133,27 @@ function SalesFunnel() {
   }
 
   const handleAuthorClick = () => {
+    yandexMetricaReachGoal(null, 'open_portfolio')
     setShowPortfolio(true)
   }
 
   const handleConsultation = () => {
+    yandexMetricaReachGoal(null, 'open_diagnostics')
     setShowDiagnostics(true)
   }
 
   const handleAlchemyClick = () => {
+    yandexMetricaReachGoal(null, 'open_alchemy')
     setShowAlchemy(true)
   }
 
   const handleChatClick = () => {
+    yandexMetricaReachGoal(null, 'open_chat')
     setShowChat(true)
   }
 
   const handleAvatarClick = () => {
+    yandexMetricaReachGoal(null, 'open_profile')
     // Закрываем Diagnostics если открыт, открываем Profile
     if (showDiagnostics) {
       setShowDiagnostics(false)
@@ -153,6 +162,7 @@ function SalesFunnel() {
   }
 
   const handleNextBlock = (blockId) => {
+    yandexMetricaReachGoal(null, 'funnel_next_block', { blockId })
     const nextBlock = funnelData.find(b => b.id === blockId)
     if (nextBlock) {
       // Функция для скролла к верху (работает и на мобильных)

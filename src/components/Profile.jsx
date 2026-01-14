@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Header from './Header'
 import './Profile.css'
+import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 // Импорт изображений технологического стека
 import img11 from '../assets/images/11.png'
@@ -18,6 +19,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
   const [isLoadingChat, setIsLoadingChat] = useState(false) // Загрузка ответа
   
   const handleConsultation = () => {
+    yandexMetricaReachGoal(null, 'profile_consultation_click')
     if (onDiagnostics) {
       onDiagnostics()
     } else {
@@ -116,6 +118,8 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
 
     const userQuestion = chatInput.trim()
     setChatInput('')
+
+    yandexMetricaReachGoal(null, 'profile_chat_send', { length: userQuestion.length })
     
     console.log('💬 Отправка сообщения:', userQuestion)
     

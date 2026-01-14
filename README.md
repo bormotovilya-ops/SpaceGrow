@@ -11,6 +11,7 @@
 Метрика уже подключена в коде. Чтобы включить её, задайте переменную окружения `VITE_YM_COUNTER_ID` (ID счётчика).
 
 - Локально и на Vercel: см. [ENV_SETUP.md](./ENV_SETUP.md)
+- Цели (reachGoal): см. [YANDEX_METRICA_GOALS.md](./YANDEX_METRICA_GOALS.md)
 
 ### Логи переписки
 

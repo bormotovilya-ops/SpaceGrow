@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import Header from './Header'
 import Funnel3D from './Funnel3D'
 import './Diagnostics.css'
+import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 const stages = [
   {
@@ -313,6 +314,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
   const [showResults, setShowResults] = useState(false)
 
   const handleStart = () => {
+    yandexMetricaReachGoal(null, 'diagnostics_start', { totalQuestions })
     setCurrentStep(1)
   }
 
@@ -329,6 +331,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
     } else {
       // Последний вопрос - показываем результаты
       setTimeout(() => {
+        yandexMetricaReachGoal(null, 'diagnostics_complete', { totalQuestions })
         setShowResults(true)
         setCurrentStep(totalQuestions + 1)
       }, 300)
@@ -392,6 +395,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
   }
 
   const handleResultsConsultation = () => {
+    yandexMetricaReachGoal(null, 'diagnostics_send_telegram')
     // Формируем URL с предзаполненным сообщением для Telegram
     const message = formatResultsForTelegram()
     window.open(`https://t.me/ilyaborm?text=${message}`, '_blank')
