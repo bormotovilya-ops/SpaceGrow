@@ -151,10 +151,17 @@ export default async function handler(req, res) {
   const USE_MOCK = process.env.USE_MOCK_RESPONSES === 'true'
   const HF_API_KEY = process.env.HF_API_KEY
 
+  console.log('🔍 API Debug:', {
+    USE_MOCK,
+    hasHF_API_KEY: !!HF_API_KEY,
+    HF_API_KEY_preview: HF_API_KEY ? HF_API_KEY.substring(0, 10) + '...' : 'missing'
+  })
+
   // Загружаем файлы знаний и формируем полный промпт
   const systemContext = await buildSystemContext()
 
   if (USE_MOCK || !HF_API_KEY) {
+    console.log('⚠️ Using mock response:', USE_MOCK ? 'USE_MOCK_RESPONSES=true' : 'HF_API_KEY missing')
     const response = handleMockResponse(message)
     const cleanedResponse = cleanResponse(response)
     return res.status(200).json({ response: cleanedResponse })
@@ -181,6 +188,7 @@ export default async function handler(req, res) {
       max_tokens: 150
     }
 
+    console.log('📡 Sending request to Hugging Face API...')
     const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -190,20 +198,33 @@ export default async function handler(req, res) {
       body: JSON.stringify(requestBody)
     })
 
+    console.log('📊 Response status:', response.status, response.statusText)
+
     if (!response.ok) {
       // Если ошибка API, переключаемся на заглушку
       const errorText = await response.text().catch(() => 'Unknown error')
-      console.error('Hugging Face API error:', response.status, errorText)
+      console.error('❌ Hugging Face API error:', response.status, errorText)
       const mockResponse = handleMockResponse(message)
       const cleanedMockResponse = cleanResponse(mockResponse)
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
     const data = await response.json()
+    console.log('✅ API response received:', JSON.stringify(data).substring(0, 200))
+    
     // Router API возвращает ответ в OpenAI-совместимом формате
     const assistantMessage = data.choices?.[0]?.message?.content || 
                             data.choices?.[0]?.text ||
-                            handleMockResponse(message)
+                            null
+
+    if (!assistantMessage) {
+      console.error('⚠️ No assistant message in response, using mock')
+      const mockResponse = handleMockResponse(message)
+      const cleanedMockResponse = cleanResponse(mockResponse)
+      return res.status(200).json({ response: cleanedMockResponse })
+    }
+
+    console.log('💬 Assistant message:', assistantMessage.substring(0, 100) + '...')
 
     // Очищаем ответ от markdown-символов и форматируем
     const cleanedResponse = cleanResponse(assistantMessage)
@@ -213,9 +234,11 @@ export default async function handler(req, res) {
     })
 
   } catch (error) {
-    console.error('Error:', error)
-    return res.status(500).json({
-      error: `Ошибка при обработке запроса: ${error.message}`
-    })
+    console.error('❌ Exception in API handler:', error)
+    console.error('Error stack:', error.stack)
+    // При любой ошибке возвращаем заглушку вместо ошибки
+    const mockResponse = handleMockResponse(message)
+    const cleanedMockResponse = cleanResponse(mockResponse)
+    return res.status(200).json({ response: cleanedMockResponse })
   }
 }
