@@ -135,8 +135,11 @@ async function logConversation(message, response, clientInfo = {}, req = null) {
       shouldAddCTA: !!clientInfo.shouldAddCTA,
     }
 
-    // Вариант 1 (самый простой для Vercel): всегда пишем лог в stdout одним JSON
-    // Это удобно фильтровать в Vercel Logs по строке "CHAT_LOG".
+    // Вариант 1 (самый простой для Vercel):
+    // 1) Отдельные строки для вопроса/ответа (чтобы не терялись при обрезке длинных логов)
+    console.log('CHAT_Q', JSON.stringify({ timestamp, messageCount: logEntry.messageCount, source: logEntry.source, message: logEntry.message }))
+    console.log('CHAT_A', JSON.stringify({ timestamp, messageCount: logEntry.messageCount, source: logEntry.source, response: logEntry.response, shouldAddCTA: logEntry.shouldAddCTA }))
+    // 2) Полный JSON (может обрезаться из-за длинного userAgent, но полезен для деталей)
     console.log('CHAT_LOG', JSON.stringify(logEntry))
 
     // Пишем в Google Sheets (если настроено)
