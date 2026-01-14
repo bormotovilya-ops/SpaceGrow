@@ -273,17 +273,17 @@ app.listen(PORT, () => {
   console.log(`\n🚀 Локальный сервер запущен на http://localhost:${PORT}`)
   console.log(`📡 API endpoint: http://localhost:${PORT}/api/chat`)
   
-  const hfApiKey = process.env.HF_API_KEY
+  const groqApiKey = process.env.GROQ_API_KEY
   const useMock = process.env.USE_MOCK_RESPONSES === 'true'
   
   if (useMock) {
     console.log(`📝 Режим заглушки активен (USE_MOCK_RESPONSES=true)`)
-  } else if (hfApiKey) {
-    console.log(`✅ Hugging Face API настроен: ${hfApiKey.substring(0, 10)}...`)
+  } else if (groqApiKey) {
+    console.log(`✅ Groq API настроен: ${groqApiKey.substring(0, 10)}...`)
   } else {
-    console.log(`📝 Режим заглушки (нет HF_API_KEY)`)
-    console.log(`💡 Для использования Hugging Face API добавьте HF_API_KEY в .env`)
-    console.log(`💡 Получите ключ на https://huggingface.co/settings/tokens`)
+    console.log(`📝 Режим заглушки (нет GROQ_API_KEY)`)
+    console.log(`💡 Для использования Groq API добавьте GROQ_API_KEY в .env`)
+    console.log(`💡 Получите ключ на https://console.groq.com`)
   }
   
   console.log(`\n💡 Запустите фронтенд в другом терминале: npm run dev\n`)
