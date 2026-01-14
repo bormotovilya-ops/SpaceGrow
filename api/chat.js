@@ -183,7 +183,7 @@ export default async function handler(req, res) {
     // Endpoint: https://api.groq.com/openai/v1/chat/completions
     // Формат: OpenAI-совместимый
     const requestBody = {
-      model: 'llama-3.1-70b-versatile', // Быстрая и качественная модель Groq
+      model: 'llama-3.1-8b-instant', // Актуальная модель Groq (быстрая)
       messages: [
         {
           role: 'system',
