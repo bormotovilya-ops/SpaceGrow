@@ -269,15 +269,24 @@ app.listen(PORT, () => {
   console.log(`\n🚀 Локальный сервер запущен на http://localhost:${PORT}`)
   console.log(`📡 API endpoint: http://localhost:${PORT}/api/chat`)
   
+  // Проверяем загрузку .env
+  console.log(`\n🔍 Проверка переменных окружения:`)
+  console.log(`  - .env файл загружен:`, require('fs').existsSync('.env'))
+  
   const groqApiKey = process.env.GROQ_API_KEY
   const useMock = process.env.USE_MOCK_RESPONSES === 'true'
   
+  console.log(`  - USE_MOCK_RESPONSES:`, process.env.USE_MOCK_RESPONSES)
+  console.log(`  - GROQ_API_KEY существует:`, !!groqApiKey)
+  console.log(`  - GROQ_API_KEY длина:`, groqApiKey ? groqApiKey.length : 0)
+  console.log(`  - GROQ_API_KEY первые 20 символов:`, groqApiKey ? groqApiKey.substring(0, 20) + '...' : 'не найден')
+  
   if (useMock) {
-    console.log(`📝 Режим заглушки активен (USE_MOCK_RESPONSES=true)`)
+    console.log(`\n📝 Режим заглушки активен (USE_MOCK_RESPONSES=true)`)
   } else if (groqApiKey) {
-    console.log(`✅ Groq API настроен: ${groqApiKey.substring(0, 10)}...`)
+    console.log(`\n✅ Groq API настроен: ${groqApiKey.substring(0, 10)}...`)
   } else {
-    console.log(`📝 Режим заглушки (нет GROQ_API_KEY)`)
+    console.log(`\n📝 Режим заглушки (нет GROQ_API_KEY)`)
     console.log(`💡 Для использования Groq API добавьте GROQ_API_KEY в .env`)
     console.log(`💡 Получите ключ на https://console.groq.com`)
   }
