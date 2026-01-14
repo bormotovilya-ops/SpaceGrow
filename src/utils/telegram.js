@@ -48,43 +48,50 @@ export function openTelegramChat(username, text) {
 
   const tg = window.Telegram?.WebApp
 
-  // In Telegram WebApp: prefer openLink for full URLs with query params
-  // (openTelegramLink may drop/ignore ?text in some environments).
+  // In Telegram WebApp: prefer openTelegramLink to jump into Telegram UI.
+  // Then close the WebApp to "minimize" it on mobile.
   try {
-    if (tg?.openLink) {
-      tg.openLink(httpsUrl)
-      return true
-    }
     if (tg?.openTelegramLink) {
-      tg.openTelegramLink(`https://t.me/${u}`)
-      // Fall back to opening full url in a new tab; best effort.
+      tg.openTelegramLink(httpsUrl)
       setTimeout(() => {
         try {
-          window.open(httpsUrl, '_blank', 'noopener,noreferrer')
+          tg.close?.()
         } catch {
           // ignore
         }
-      }, 0)
+      }, 50)
+      return true
+    }
+    // Fallback supported in some versions.
+    if (tg?.openLink) {
+      tg.openLink(httpsUrl)
+      setTimeout(() => {
+        try {
+          tg.close?.()
+        } catch {
+          // ignore
+        }
+      }, 50)
       return true
     }
   } catch {
     // ignore
   }
 
-  // Browser: try deep-link first (better chance to preserve prefilled text on mobile),
-  // then fall back to https link.
+  // Browser: try deep-link first (opens Telegram app), then fall back to https.
   try {
     window.location.href = tgUrl
   } catch {
     // ignore
   }
+  // Avoid async window.open (often blocked on mobile). Use location navigation instead.
   setTimeout(() => {
     try {
-      window.open(httpsUrl, '_blank', 'noopener,noreferrer')
+      window.location.href = httpsUrl
     } catch {
       // ignore
     }
-  }, 700)
+  }, 500)
 
   return true
 }
