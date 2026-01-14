@@ -42,6 +42,8 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+temp_prompt.txt
+~$*.xlsx
 
 
 

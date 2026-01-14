@@ -109,10 +109,10 @@ async function buildSystemContext(shouldAddCTA = false) {
     console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in knowledge file!')
   }
 
-  // Формируем инструкцию о CTA
-  const ctaInstruction = shouldAddCTA 
-    ? '\n\n# ВАЖНО: В конце ответа ОБЯЗАТЕЛЬНО добавь CTA с новой строки:\n\\n\\n[Записаться на диагностику](https://t.me/ilyaborm)'
-    : '\n\n# ВАЖНО: НЕ добавляй CTA в этом ответе!'
+  // Формируем инструкцию о CTA (без вывода литералов вида "\n")
+  const ctaInstruction = shouldAddCTA
+    ? '\n\nВАЖНО: В ЭТОМ ответе добавь CTA в самом конце на новой строке (один перенос строки, без пустой строки, без символов "\\n"). Формат CTA ровно такой: [Записаться на диагностику](https://t.me/ilyaborm)'
+    : '\n\nВАЖНО: В ЭТОМ ответе НЕ добавляй CTA.'
 
   return `Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Отвечай на вопросы как мой "цифровой двойник", опираясь на базу знаний ниже.
 
@@ -129,7 +129,7 @@ ${siteKnowledge}
 # Правила ответа:
 - Говори от первого лица (Я, меня, мой), обращайся на "вы"
 - Максимальная длина ответа — 300 символов. Только суть!
-- Если нужно добавить CTA, всегда с новой строки: \\n\\n[Записаться на диагностику](https://t.me/ilyaborm)
+- Если добавляешь CTA — ставь ссылку на новой строке (один перенос строки), без пустой строки. Формат: [Записаться на диагностику](https://t.me/ilyaborm)
 - Не используй фразы "Как я могу вам помочь?"
 - Будь живым экспертом, не роботом${ctaInstruction}`
 }
@@ -148,6 +148,45 @@ function cleanResponse(text) {
     .trim()
   
   return cleaned
+}
+
+const CTA_MARKDOWN = '[Записаться на диагностику](https://t.me/ilyaborm)'
+const CTA_URL = 'https://t.me/ilyaborm'
+
+function formatFinalResponse(rawText, shouldAddCTA, maxChars = 300) {
+  const text = cleanResponse(rawText || '')
+
+  // Убираем возможные литералы "\n" / "\r" из ответа модели (в т.ч. двойное экранирование)
+  let main = text
+    // \n, \\n, \\\\n -> убираем любые "\" перед n/r
+    .replace(/\\+n/g, ' ')
+    .replace(/\\+r/g, ' ')
+    // иногда модель пишет именно "\n\n" как текст
+    .replace(/\\n\\n/g, ' ')
+    .replace(/\\r\\n/g, ' ')
+    // нормализуем настоящие переводы строк в пробел (чтобы не было пустых строк перед CTA)
+    .replace(/[\r\n]+/g, ' ')
+
+  // Убираем CTA, если модель добавила его сама (чтобы контролировать частоту)
+  main = main
+    .replace(/\[Записаться на диагностику\]\(https:\/\/t\.me\/ilyaborm\)/g, '')
+    .replaceAll(CTA_MARKDOWN, '')
+    .replaceAll(CTA_URL, '')
+    .trim()
+
+  if (!shouldAddCTA) {
+    return main.length > maxChars ? main.slice(0, maxChars).trimEnd() : main
+  }
+
+  // CTA нужен: оставляем место под "\n" + CTA
+  const reserve = 1 + CTA_MARKDOWN.length
+  const maxMain = Math.max(0, maxChars - reserve)
+  if (main.length > maxMain) {
+    main = main.slice(0, maxMain).trimEnd()
+  }
+
+  // Гарантируем: ровно одна новая строка перед CTA (без пустой строки)
+  return (main ? `${main}\n` : '') + CTA_MARKDOWN
 }
 
 // Функция для обработки заглушки
@@ -231,7 +270,7 @@ export default async function handler(req, res) {
   if (USE_MOCK) {
     console.log('⚠️ Using mock response: USE_MOCK_RESPONSES=true')
     const response = handleMockResponse(message)
-    const cleanedResponse = cleanResponse(response)
+    const cleanedResponse = formatFinalResponse(response, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
@@ -240,7 +279,7 @@ export default async function handler(req, res) {
   if (!GROQ_API_KEY) {
     console.error('❌ GROQ_API_KEY missing! Available env vars:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
     const response = handleMockResponse(message)
-    const cleanedResponse = cleanResponse(response)
+    const cleanedResponse = formatFinalResponse(response, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
@@ -292,7 +331,7 @@ export default async function handler(req, res) {
       const errorText = await response.text().catch(() => 'Unknown error')
       console.error('❌ Groq API error:', response.status, errorText)
       const mockResponse = handleMockResponse(message)
-      const cleanedMockResponse = cleanResponse(mockResponse)
+      const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
       // Логируем переписку (не блокируем ответ)
       logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
@@ -307,7 +346,7 @@ export default async function handler(req, res) {
     if (!assistantMessage) {
       console.error('⚠️ No assistant message in response, using mock')
       const mockResponse = handleMockResponse(message)
-      const cleanedMockResponse = cleanResponse(mockResponse)
+      const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
       // Логируем переписку (не блокируем ответ)
       logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
@@ -316,7 +355,7 @@ export default async function handler(req, res) {
     console.log('💬 Assistant message:', assistantMessage.substring(0, 100) + '...')
 
     // Очищаем ответ от markdown-символов и форматируем
-    const cleanedResponse = cleanResponse(assistantMessage)
+    const cleanedResponse = formatFinalResponse(assistantMessage, shouldAddCTA)
 
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
@@ -330,7 +369,7 @@ export default async function handler(req, res) {
     console.error('Error stack:', error.stack)
     // При любой ошибке возвращаем заглушку вместо ошибки
     const mockResponse = handleMockResponse(message)
-    const cleanedMockResponse = cleanResponse(mockResponse)
+    const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
     return res.status(200).json({ response: cleanedMockResponse })
