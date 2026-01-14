@@ -146,9 +146,10 @@ function SalesFunnel() {
   const handleStageConsultation = () => {
     // Stage CTAs ("Получить бесплатную консультацию") should open Telegram dialog.
     const url = 'https://t.me/ilyaborm'
-    const open = () => openTelegramLink(url)
-    const tracked = yandexMetricaReachGoal(null, 'contact_telegram_click', { placement: 'funnel_stage_cta', url }, open)
-    if (!tracked) open()
+    // IMPORTANT: open synchronously on click (user gesture).
+    const opened = openTelegramLink(url)
+    // Then send analytics without blocking navigation.
+    yandexMetricaReachGoal(null, 'contact_telegram_click', { placement: 'funnel_stage_cta', url, opened })
   }
 
   const handleAlchemyClick = () => {

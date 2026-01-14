@@ -27,11 +27,10 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
 
   const handleConsultation = () => {
     const url = 'https://t.me/ilyaborm'
-    const open = () => openTelegramLink(url)
-
-    // CTA on profile must open Telegram chat (not diagnostics).
-    const tracked = yandexMetricaReachGoal(null, 'profile_consultation_click', { to: 'telegram', url }, open)
-    if (!tracked) open()
+    // IMPORTANT: open synchronously on click (user gesture).
+    const opened = openTelegramLink(url)
+    // Then send analytics without blocking navigation.
+    yandexMetricaReachGoal(null, 'profile_consultation_click', { to: 'telegram', url, opened })
   }
 
   const handleHeaderAvatarClick = () => {
