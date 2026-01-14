@@ -29,3 +29,10 @@ export function buildTelegramShareUrl(text, url = '') {
   return `https://t.me/share/url?url=${encodeURIComponent(u)}&text=${encodeURIComponent(t)}`
 }
 
+export function buildTelegramChatUrl(username, text) {
+  const u = typeof username === 'string' ? username.trim().replace(/^@/, '') : ''
+  if (!u) return ''
+  const t = typeof text === 'string' ? text : String(text ?? '')
+  return `https://t.me/${u}?text=${encodeURIComponent(t)}`
+}
+
