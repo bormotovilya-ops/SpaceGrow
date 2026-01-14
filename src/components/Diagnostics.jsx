@@ -4,7 +4,7 @@ import Header from './Header'
 import Funnel3D from './Funnel3D'
 import './Diagnostics.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
-import { buildTelegramChatUrl, openTelegramLink } from '../utils/telegram'
+import { openTelegramChat } from '../utils/telegram'
 
 const stages = [
   {
@@ -401,10 +401,15 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
 
   const handleResultsConsultation = () => {
     // Формируем URL с предзаполненным сообщением для Telegram
-    const message = formatResultsForTelegram()
-    // Open direct chat with prefilled text (as it was before).
-    const url = buildTelegramChatUrl('ilyaborm', message)
-    const open = () => openTelegramLink(url)
+    const rawMessage = formatResultsForTelegram()
+    // Telegram may drop/ignore very long ?text payloads; keep within a safe limit.
+    const MAX_LEN = 1400
+    const message =
+      typeof rawMessage === 'string' && rawMessage.length > MAX_LEN
+        ? `${rawMessage.slice(0, MAX_LEN)}…\n\n(сообщение сокращено из-за лимита, полный текст могу отправить отдельно)`
+        : rawMessage
+
+    const open = () => openTelegramChat('ilyaborm', message)
     const tracked = yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram' }, open)
     if (!tracked) open()
   }
