@@ -6,6 +6,11 @@
 
 Проект готов к публикации на **Vercel**. Подробная инструкция в файле [ДЕПЛОЙ.md](./ДЕПЛОЙ.md)
 
+### Логи переписки
+
+- Локально логи пишутся в `logs/chat-YYYY-MM-DD.log`
+- Для Vercel рекомендуется включить логирование в Google Sheets: см. [GOOGLE_SHEETS_LOGS_SETUP.md](./GOOGLE_SHEETS_LOGS_SETUP.md)
+
 ### Быстрый старт:
 
 1. **Git не установлен?** Скачайте с https://git-scm.com/download/win

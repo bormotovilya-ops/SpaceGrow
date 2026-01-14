@@ -3,6 +3,107 @@
 
 import { readFile, appendFile, mkdir } from 'fs/promises'
 import { join } from 'path'
+import { google } from 'googleapis'
+
+let _sheetsClient = null
+let _sheetsHeaderEnsured = false
+
+function getEnv(name) {
+  return process.env[name] ? String(process.env[name]) : ''
+}
+
+function getSheetsConfig() {
+  const enabled = getEnv('GSHEETS_LOGGING_ENABLED') === 'true'
+  const spreadsheetId = getEnv('GSHEETS_SPREADSHEET_ID')
+  const sheetName = getEnv('GSHEETS_SHEET_NAME') || 'Logs'
+  const clientEmail = getEnv('GSHEETS_SERVICE_ACCOUNT_EMAIL')
+  const privateKey = getEnv('GSHEETS_PRIVATE_KEY').replace(/\\n/g, '\n')
+  return { enabled, spreadsheetId, sheetName, clientEmail, privateKey }
+}
+
+async function getSheetsClient() {
+  const cfg = getSheetsConfig()
+  if (!cfg.enabled) return null
+  if (!cfg.spreadsheetId || !cfg.clientEmail || !cfg.privateKey) return null
+
+  if (_sheetsClient) return _sheetsClient
+
+  const auth = new google.auth.JWT({
+    email: cfg.clientEmail,
+    key: cfg.privateKey,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+  _sheetsClient = google.sheets({ version: 'v4', auth })
+  return _sheetsClient
+}
+
+async function ensureSheetsHeader() {
+  const cfg = getSheetsConfig()
+  const sheets = await getSheetsClient()
+  if (!sheets) return
+  if (_sheetsHeaderEnsured) return
+
+  try {
+    const range = `${cfg.sheetName}!A1:H1`
+    const existing = await sheets.spreadsheets.values.get({
+      spreadsheetId: cfg.spreadsheetId,
+      range,
+    })
+    const hasHeader = Array.isArray(existing.data?.values) && existing.data.values.length > 0 && existing.data.values[0].length > 0
+    if (!hasHeader) {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: cfg.spreadsheetId,
+        range: `${cfg.sheetName}!A1`,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: {
+          values: [[
+            'timestamp',
+            'ip',
+            'userAgent',
+            'messageCount',
+            'source',
+            'message',
+            'response',
+            'shouldAddCTA',
+          ]],
+        },
+      })
+    }
+  } catch (e) {
+    // Не критично
+  } finally {
+    _sheetsHeaderEnsured = true
+  }
+}
+
+async function logConversationToGoogleSheets(entry) {
+  const cfg = getSheetsConfig()
+  const sheets = await getSheetsClient()
+  if (!sheets) return false
+
+  await ensureSheetsHeader()
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: cfg.spreadsheetId,
+    range: `${cfg.sheetName}!A1`,
+    valueInputOption: 'RAW',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: {
+      values: [[
+        entry.timestamp,
+        entry.client?.ip || '',
+        entry.client?.userAgent || '',
+        entry.messageCount ?? 0,
+        entry.source || '',
+        entry.message || '',
+        entry.response || '',
+        entry.shouldAddCTA ? 'true' : 'false',
+      ]],
+    },
+  })
+  return true
+}
 
 // Функция для логирования переписки
 async function logConversation(message, response, clientInfo = {}, req = null) {
@@ -29,7 +130,23 @@ async function logConversation(message, response, clientInfo = {}, req = null) {
       },
       message,
       response,
-      messageCount: clientInfo.messageCount || 0
+      messageCount: clientInfo.messageCount || 0,
+      source: clientInfo.source || 'unknown',
+      shouldAddCTA: !!clientInfo.shouldAddCTA,
+    }
+
+    // Пишем в Google Sheets (если настроено)
+    try {
+      const ok = await Promise.race([
+        logConversationToGoogleSheets(logEntry),
+        new Promise((resolve) => setTimeout(() => resolve(false), 1500)),
+      ])
+      if (ok) {
+        console.log('📊 Conversation logged to Google Sheets')
+        return
+      }
+    } catch (e) {
+      // игнорируем, пишем в файл ниже
     }
     
     const logLine = JSON.stringify(logEntry) + '\n'
@@ -272,7 +389,7 @@ export default async function handler(req, res) {
     const response = handleMockResponse(message)
     const cleanedResponse = formatFinalResponse(response, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
-    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
+    logConversation(message, cleanedResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
   }
 
@@ -281,7 +398,7 @@ export default async function handler(req, res) {
     const response = handleMockResponse(message)
     const cleanedResponse = formatFinalResponse(response, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
-    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
+    logConversation(message, cleanedResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
   }
 
@@ -333,7 +450,7 @@ export default async function handler(req, res) {
       const mockResponse = handleMockResponse(message)
       const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
       // Логируем переписку (не блокируем ответ)
-      logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
+      logConversation(message, cleanedMockResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
@@ -348,7 +465,7 @@ export default async function handler(req, res) {
       const mockResponse = handleMockResponse(message)
       const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
       // Логируем переписку (не блокируем ответ)
-      logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
+      logConversation(message, cleanedMockResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
@@ -358,7 +475,7 @@ export default async function handler(req, res) {
     const cleanedResponse = formatFinalResponse(assistantMessage, shouldAddCTA)
 
     // Логируем переписку (не блокируем ответ)
-    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
+    logConversation(message, cleanedResponse, { messageCount, shouldAddCTA, source: 'groq' }, req).catch(() => {})
 
     return res.status(200).json({
       response: cleanedResponse
@@ -371,7 +488,7 @@ export default async function handler(req, res) {
     const mockResponse = handleMockResponse(message)
     const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
-    logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
+    logConversation(message, cleanedMockResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
     return res.status(200).json({ response: cleanedMockResponse })
   }
 }
