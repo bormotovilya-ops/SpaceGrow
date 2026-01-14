@@ -441,9 +441,10 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
       : compactEncodedLen <= MAX_ENCODED_LEN ? compactMessage
       : `${compactMessage.slice(0, 450)}…\n\n(сообщение сокращено из-за лимита)`
 
-    const open = () => openTelegramChat('ilyaborm', message)
-    const tracked = yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram' }, open)
-    if (!tracked) open()
+    // IMPORTANT: open Telegram synchronously on click (user gesture).
+    // If we delay via Metrica callback/timeout, Telegram WebApp may block the navigation.
+    const opened = openTelegramChat('ilyaborm', message)
+    yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram', opened })
   }
 
   // Подсчёт результатов
