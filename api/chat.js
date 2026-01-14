@@ -192,8 +192,11 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       // Если ошибка API, переключаемся на заглушку
-      const response = handleMockResponse(message)
-      return res.status(200).json({ response })
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.error('Hugging Face API error:', response.status, errorText)
+      const mockResponse = handleMockResponse(message)
+      const cleanedMockResponse = cleanResponse(mockResponse)
+      return res.status(200).json({ response: cleanedMockResponse })
     }
 
     const data = await response.json()
