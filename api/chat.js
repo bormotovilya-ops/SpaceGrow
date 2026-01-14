@@ -199,16 +199,20 @@ export default async function handler(req, res) {
     }
 
     console.log('📡 Sending request to Groq API...')
+    console.log('🔑 Using API key:', GROQ_API_KEY.substring(0, 15) + '...')
+    console.log('📦 Request body:', JSON.stringify(requestBody).substring(0, 200) + '...')
+    
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Authorization': `Bearer ${GROQ_API_KEY.trim()}`,
       },
       body: JSON.stringify(requestBody)
     })
 
     console.log('📊 Response status:', response.status, response.statusText)
+    console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       // Если ошибка API, переключаемся на заглушку
