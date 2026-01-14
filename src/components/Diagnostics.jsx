@@ -439,7 +439,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
     const message =
       fullEncodedLen <= MAX_ENCODED_LEN ? rawMessage
       : compactEncodedLen <= MAX_ENCODED_LEN ? compactMessage
-      : `${compactMessage.slice(0, 450)}…\n\n(сообщение сокращено из-за лимита)`
+      : `${compactMessage.slice(0, 450)}…`
 
     // IMPORTANT: open Telegram synchronously on click (user gesture).
     // If we delay via Metrica callback/timeout, Telegram WebApp may block the navigation.
