@@ -162,16 +162,16 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
   }
 
-  // Проверяем токен Hugging Face
-  const HF_API_KEY = process.env.HF_API_KEY
+  // Проверяем токен Groq
+  const GROQ_API_KEY = process.env.GROQ_API_KEY
   const USE_MOCK_ENV = process.env.USE_MOCK_RESPONSES === 'true'
 
   console.log('🔍 Проверка настроек:')
   console.log('  - USE_MOCK_RESPONSES:', process.env.USE_MOCK_RESPONSES)
   console.log('  - USE_MOCK_ENV:', USE_MOCK_ENV)
-  console.log('  - HF_API_KEY существует:', !!HF_API_KEY)
-  console.log('  - HF_API_KEY первые 15 символов:', HF_API_KEY ? HF_API_KEY.substring(0, 15) + '...' : 'не найден')
-  console.log('  - HF_API_KEY длина:', HF_API_KEY ? HF_API_KEY.length : 0)
+  console.log('  - GROQ_API_KEY существует:', !!GROQ_API_KEY)
+  console.log('  - GROQ_API_KEY первые 15 символов:', GROQ_API_KEY ? GROQ_API_KEY.substring(0, 15) + '...' : 'не найден')
+  console.log('  - GROQ_API_KEY длина:', GROQ_API_KEY ? GROQ_API_KEY.length : 0)
 
   // Загружаем файлы знаний и формируем полный промпт
   const systemContext = await buildSystemContext()
@@ -182,25 +182,24 @@ app.post('/api/chat', async (req, res) => {
     return handleMockResponse(message, systemContext, res)
   }
 
-  if (!HF_API_KEY) {
-    console.error('❌ HF_API_KEY не найден!')
-    return res.status(500).json({
-      error: 'HF_API_KEY не настроен. Добавьте токен в .env файл'
-    })
+  if (!GROQ_API_KEY) {
+    console.error('❌ GROQ_API_KEY не найден!')
+    const mockResponse = handleMockResponse(message, systemContext, res)
+    const cleanedMockResponse = cleanResponse(mockResponse)
+    return res.status(200).json({ response: cleanedMockResponse })
   }
 
-  console.log('✅ Hugging Face API ключ найден, отправляю запрос к Hugging Face API...')
+  console.log('✅ Groq API ключ найден, отправляю запрос к Groq API...')
 
   try {
-    // Используем правильный формат для router.huggingface.co
-    // Endpoint: https://router.huggingface.co/v1/chat/completions
-    // Формат: OpenAI-совместимый с messages и model
-    console.log('📡 Отправляю запрос к router.huggingface.co/v1/chat/completions...')
-    console.log('🔑 Токен (первые 15):', HF_API_KEY.substring(0, 15) + '...')
+    // Используем Groq API (быстрый и бесплатный)
+    // Endpoint: https://api.groq.com/openai/v1/chat/completions
+    // Формат: OpenAI-совместимый
+    console.log('📡 Отправляю запрос к api.groq.com/openai/v1/chat/completions...')
+    console.log('🔑 Токен (первые 15):', GROQ_API_KEY.substring(0, 15) + '...')
     
-    // OpenAI-совместимый формат для router API
     const requestBody = {
-      model: 'openai/gpt-oss-120b:fastest', // Модель из документации
+      model: 'llama-3.1-70b-versatile', // Быстрая и качественная модель Groq
       messages: [
         {
           role: 'system',
@@ -212,16 +211,16 @@ app.post('/api/chat', async (req, res) => {
         }
       ],
       temperature: 0.7,
-      max_tokens: 150
+      max_tokens: 300 // Увеличил до 300, так как Groq быстрый
     }
     
     console.log('📦 Тело запроса:', JSON.stringify(requestBody).substring(0, 300))
     
-    const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${HF_API_KEY}`,
+        'Authorization': `Bearer ${GROQ_API_KEY.trim()}`,
       },
       body: JSON.stringify(requestBody)
     })
@@ -230,47 +229,32 @@ app.post('/api/chat', async (req, res) => {
 
     if (!response.ok) {
       const errorData = await response.text()
-      console.error('❌ Hugging Face API error status:', response.status)
-      console.error('❌ Hugging Face API error body:', errorData)
+      console.error('❌ Groq API error status:', response.status)
+      console.error('❌ Groq API error body:', errorData)
       
-      // Пробуем распарсить ошибку
-      let errorMessage = 'Ошибка при обращении к Hugging Face API'
-      let errorDetails = ''
-      try {
-        const errorJson = JSON.parse(errorData)
-        errorMessage = errorJson.error || errorJson.message || errorMessage
-        errorDetails = JSON.stringify(errorJson, null, 2)
-        console.error('❌ Parsed error:', errorMessage)
-        console.error('❌ Error details:', errorDetails)
-      } catch (e) {
-        errorDetails = errorData
-        console.error('❌ Error text:', errorData)
-      }
-      
-      // Возвращаем детальную ошибку
-      return res.status(500).json({
-        error: errorMessage,
-        status: response.status,
-        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
-      })
+      // При ошибке API возвращаем заглушку вместо ошибки
+      const mockResponse = handleMockResponse(message, systemContext, res)
+      const cleanedMockResponse = cleanResponse(mockResponse)
+      return res.status(200).json({ response: cleanedMockResponse })
     }
 
     const data = await response.json()
-    console.log('📦 Получен ответ от Hugging Face:', JSON.stringify(data).substring(0, 200))
+    console.log('📦 Получен ответ от Groq:', JSON.stringify(data).substring(0, 200))
     
-    // Router API возвращает ответ в OpenAI-совместимом формате
-    const assistantMessage = data.choices?.[0]?.message?.content || 
-                            data.choices?.[0]?.text ||
-                            'Извините, не удалось получить ответ'
+    // Groq API возвращает ответ в OpenAI-совместимом формате
+    const assistantMessage = data.choices?.[0]?.message?.content || null
     
-    if (!assistantMessage || assistantMessage === 'Извините, не удалось получить ответ') {
-      console.error('⚠️ Неожиданный формат ответа:', data)
+    if (!assistantMessage) {
+      console.error('⚠️ Неожиданный формат ответа, используем заглушку:', data)
+      const mockResponse = handleMockResponse(message, systemContext, res)
+      const cleanedMockResponse = cleanResponse(mockResponse)
+      return res.status(200).json({ response: cleanedMockResponse })
     }
 
     // Очищаем ответ от markdown-символов и форматируем
     const cleanedResponse = cleanResponse(assistantMessage)
 
-    console.log('✅ Получен ответ от Hugging Face API')
+    console.log('✅ Получен ответ от Groq API')
     return res.status(200).json({
       response: cleanedResponse
     })
