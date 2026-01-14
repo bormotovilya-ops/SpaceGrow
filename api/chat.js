@@ -135,6 +135,10 @@ async function logConversation(message, response, clientInfo = {}, req = null) {
       shouldAddCTA: !!clientInfo.shouldAddCTA,
     }
 
+    // Вариант 1 (самый простой для Vercel): всегда пишем лог в stdout одним JSON
+    // Это удобно фильтровать в Vercel Logs по строке "CHAT_LOG".
+    console.log('CHAT_LOG', JSON.stringify(logEntry))
+
     // Пишем в Google Sheets (если настроено)
     try {
       const ok = await Promise.race([
