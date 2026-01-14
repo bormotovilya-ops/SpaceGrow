@@ -8,49 +8,31 @@ import { join } from 'path'
 async function loadKnowledgeFiles() {
   try {
     // В Vercel Serverless Functions путь относительно корня проекта
-    const [brief48, siteKnowledge] = await Promise.all([
-      readFile(join(process.cwd(), 'DOP', '48.txt'), 'utf-8').catch(() => null),
-      readFile(join(process.cwd(), 'site_knowledge.md'), 'utf-8').catch(() => null)
-    ])
+    const siteKnowledge = await readFile(join(process.cwd(), 'site_knowledge.md'), 'utf-8').catch(() => null)
     
     return {
-      brief48: brief48 || 'Файл 48.txt не найден',
       siteKnowledge: siteKnowledge || 'Файл site_knowledge.md не найден'
     }
   } catch (error) {
     console.error('❌ Ошибка при загрузке файлов знаний:', error)
     return {
-      brief48: 'Ошибка загрузки 48.txt',
       siteKnowledge: 'Ошибка загрузки site_knowledge.md'
     }
   }
-}
-
-// Функция для обрезки текста до определенного количества символов (примерно 3000 токенов)
-function truncateText(text, maxChars = 8000) {
-  if (!text || text.length <= maxChars) return text
-  return text.substring(0, maxChars) + '...\n[Текст обрезан для экономии токенов]'
 }
 
 // Функция для формирования полного промпта с файлами знаний
 async function buildSystemContext() {
   const knowledge = await loadKnowledgeFiles()
   
-  // Обрезаем файлы знаний, чтобы не превысить лимит токенов
-  const brief48Truncated = truncateText(knowledge.brief48, 3000)
-  const siteKnowledgeTruncated = truncateText(knowledge.siteKnowledge, 3000)
-  
   return `# Role & Context
 Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Твоя задача — отвечать на вопросы пользователей в чате на сайте, выступая как мой "цифровой двойник".
 
 # Knowledge Sources
-При формировании ответов всегда опирайся на данные из следующих файлов:
+При формировании ответов всегда опирайся на данные из файла знаний:
 
-## @48.txt — Подробный бриф
-${brief48Truncated}
-
-## @site_knowledge.md — База знаний (используй в первую очередь)
-${siteKnowledgeTruncated}
+## @site_knowledge.md — База знаний
+${knowledge.siteKnowledge}
 
 # Core Philosophy
 1. Инструменты вторичны, логика первична. Если клиент просит "просто бота", объясни, что без архитектуры это слив бюджета.
