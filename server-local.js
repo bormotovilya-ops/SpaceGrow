@@ -200,7 +200,7 @@ app.post('/api/chat', async (req, res) => {
     console.log('🔑 Токен (первые 15):', GROQ_API_KEY.substring(0, 15) + '...')
     
     const requestBody = {
-      model: 'llama-3.1-8b-instant', // Актуальная модель Groq (быстрая)
+      model: 'llama-3.3-70b-versatile', // Актуальная модель Groq (замена для llama-3.1-70b-versatile)
       messages: [
         {
           role: 'system',
