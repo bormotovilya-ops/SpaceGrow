@@ -46,6 +46,22 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     setExpandedTechStack(newExpanded)
   }
 
+  // Функция для очистки markdown-символов из ответа
+  const cleanResponse = (text) => {
+    if (!text) return text
+    
+    // Убираем markdown-символы
+    let cleaned = text
+      .replace(/\*\*/g, '') // Убираем **
+      .replace(/###/g, '') // Убираем ###
+      .replace(/\|\|/g, '') // Убираем ||
+      .replace(/-----+/g, '') // Убираем ----- и более
+      .replace(/---+/g, '') // Убираем --- и более
+      .trim()
+    
+    return cleaned
+  }
+
   const handleChatSend = async () => {
     if (!chatInput.trim() || isLoadingChat) return
 
@@ -90,7 +106,9 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
       const data = await response.json()
 
       if (data.response) {
-        setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+        // Очищаем ответ от markdown-символов (на всякий случай, если сервер не обработал)
+        const cleanedResponse = cleanResponse(data.response)
+        setChatMessages(prev => [...prev, { role: 'assistant', content: cleanedResponse }])
       } else {
         setChatMessages(prev => [...prev, {
           role: 'assistant',

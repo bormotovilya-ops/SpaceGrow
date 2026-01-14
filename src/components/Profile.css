@@ -176,6 +176,7 @@
   margin: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .typing-indicator {
@@ -243,6 +244,11 @@
 /* Чат в диалоге */
 .chat-message {
   margin-top: 8px;
+}
+
+.chat-message p {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .user-chat-message {
