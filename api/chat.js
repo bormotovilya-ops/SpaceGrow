@@ -149,31 +149,30 @@ export default async function handler(req, res) {
 
   // Проверяем режим заглушки
   const USE_MOCK = process.env.USE_MOCK_RESPONSES === 'true'
-  const HF_API_KEY = process.env.HF_API_KEY
+  const GROQ_API_KEY = process.env.GROQ_API_KEY
 
   console.log('🔍 API Debug:', {
     USE_MOCK,
-    hasHF_API_KEY: !!HF_API_KEY,
-    HF_API_KEY_preview: HF_API_KEY ? HF_API_KEY.substring(0, 10) + '...' : 'missing'
+    hasGROQ_API_KEY: !!GROQ_API_KEY,
+    GROQ_API_KEY_preview: GROQ_API_KEY ? GROQ_API_KEY.substring(0, 10) + '...' : 'missing'
   })
 
   // Загружаем файлы знаний и формируем полный промпт
   const systemContext = await buildSystemContext()
 
-  if (USE_MOCK || !HF_API_KEY) {
-    console.log('⚠️ Using mock response:', USE_MOCK ? 'USE_MOCK_RESPONSES=true' : 'HF_API_KEY missing')
+  if (USE_MOCK || !GROQ_API_KEY) {
+    console.log('⚠️ Using mock response:', USE_MOCK ? 'USE_MOCK_RESPONSES=true' : 'GROQ_API_KEY missing')
     const response = handleMockResponse(message)
     const cleanedResponse = cleanResponse(response)
     return res.status(200).json({ response: cleanedResponse })
   }
 
   try {
-
-    // Используем правильный формат для router.huggingface.co
-    // Endpoint: https://router.huggingface.co/v1/chat/completions
-    // Формат: OpenAI-совместимый с messages и model
+    // Используем Groq API (быстрый и бесплатный)
+    // Endpoint: https://api.groq.com/openai/v1/chat/completions
+    // Формат: OpenAI-совместимый
     const requestBody = {
-      model: 'openai/gpt-oss-120b:fastest', // Модель из документации
+      model: 'llama-3.1-70b-versatile', // Быстрая и качественная модель Groq
       messages: [
         {
           role: 'system',
@@ -185,15 +184,15 @@ export default async function handler(req, res) {
         }
       ],
       temperature: 0.7,
-      max_tokens: 150
+      max_tokens: 300 // Увеличил до 300, так как Groq быстрый
     }
 
-    console.log('📡 Sending request to Hugging Face API...')
-    const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
+    console.log('📡 Sending request to Groq API...')
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${HF_API_KEY}`,
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify(requestBody)
     })
@@ -203,7 +202,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       // Если ошибка API, переключаемся на заглушку
       const errorText = await response.text().catch(() => 'Unknown error')
-      console.error('❌ Hugging Face API error:', response.status, errorText)
+      console.error('❌ Groq API error:', response.status, errorText)
       const mockResponse = handleMockResponse(message)
       const cleanedMockResponse = cleanResponse(mockResponse)
       return res.status(200).json({ response: cleanedMockResponse })
@@ -212,10 +211,8 @@ export default async function handler(req, res) {
     const data = await response.json()
     console.log('✅ API response received:', JSON.stringify(data).substring(0, 200))
     
-    // Router API возвращает ответ в OpenAI-совместимом формате
-    const assistantMessage = data.choices?.[0]?.message?.content || 
-                            data.choices?.[0]?.text ||
-                            null
+    // Groq API возвращает ответ в OpenAI-совместимом формате
+    const assistantMessage = data.choices?.[0]?.message?.content || null
 
     if (!assistantMessage) {
       console.error('⚠️ No assistant message in response, using mock')
