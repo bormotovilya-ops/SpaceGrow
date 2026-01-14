@@ -179,6 +179,12 @@
   white-space: pre-wrap;
 }
 
+.dialog-message a {
+  color: #00d1ff;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
 .typing-indicator {
   display: flex;
   align-items: center;

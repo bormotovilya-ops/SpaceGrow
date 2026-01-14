@@ -62,6 +62,55 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     return cleaned
   }
 
+  // Рендерит кликабельные ссылки из markdown-формата [text](url) и голых URL
+  const renderMessage = (text) => {
+    if (!text) return null
+
+    const elements = []
+    const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
+    let lastIndex = 0
+    let match
+
+    const pushUrlFragments = (segment) => {
+      if (!segment) return
+      const urlRegex = /(https?:\/\/[^\s]+)/g
+      let last = 0
+      let m
+      while ((m = urlRegex.exec(segment)) !== null) {
+        if (m.index > last) {
+          elements.push(segment.slice(last, m.index))
+        }
+        elements.push(
+          <a key={`url-${elements.length}`} href={m[1]} target="_blank" rel="noopener noreferrer">
+            {m[1]}
+          </a>
+        )
+        last = urlRegex.lastIndex
+      }
+      if (last < segment.length) {
+        elements.push(segment.slice(last))
+      }
+    }
+
+    while ((match = markdownRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        pushUrlFragments(text.slice(lastIndex, match.index))
+      }
+      elements.push(
+        <a key={`md-${elements.length}`} href={match[2]} target="_blank" rel="noopener noreferrer">
+          {match[1]}
+        </a>
+      )
+      lastIndex = markdownRegex.lastIndex
+    }
+
+    if (lastIndex < text.length) {
+      pushUrlFragments(text.slice(lastIndex))
+    }
+
+    return elements
+  }
+
   const handleChatSend = async () => {
     if (!chatInput.trim() || isLoadingChat) return
 
@@ -223,7 +272,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                   {/* Чат с пользователем */}
                   {chatMessages.map((msg, index) => (
                     <div key={index} className={`dialog-message chat-message ${msg.role === 'user' ? 'user-chat-message' : 'assistant-chat-message'} visible`}>
-                      <p>{msg.content}</p>
+                    <p>{renderMessage(msg.content)}</p>
                     </div>
                   ))}
                   
