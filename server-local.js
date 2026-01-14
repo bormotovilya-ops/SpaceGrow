@@ -172,6 +172,7 @@ app.post('/api/chat', async (req, res) => {
   console.log('  - GROQ_API_KEY существует:', !!GROQ_API_KEY)
   console.log('  - GROQ_API_KEY первые 15 символов:', GROQ_API_KEY ? GROQ_API_KEY.substring(0, 15) + '...' : 'не найден')
   console.log('  - GROQ_API_KEY длина:', GROQ_API_KEY ? GROQ_API_KEY.length : 0)
+  console.log('  - Все env переменные с API:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
 
   // Загружаем файлы знаний и формируем полный промпт
   const systemContext = await buildSystemContext()
