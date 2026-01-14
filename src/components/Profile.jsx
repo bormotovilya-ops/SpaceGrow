@@ -117,11 +117,14 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     const userQuestion = chatInput.trim()
     setChatInput('')
     
+    console.log('💬 Отправка сообщения:', userQuestion)
+    
     // Добавляем вопрос пользователя
     setChatMessages(prev => [...prev, { role: 'user', content: userQuestion }])
     setIsLoadingChat(true)
 
     try {
+      console.log('📡 Отправка запроса к /api/chat...')
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -130,9 +133,29 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         body: JSON.stringify({ message: userQuestion }),
       })
 
+      console.log('📊 Ответ получен:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: `Ошибка сервера (статус: ${response.status})` }))
-        console.error('API Error:', errorData)
+        const errorText = await response.text().catch(() => 'Не удалось прочитать ошибку')
+        console.error('❌ Ошибка ответа сервера:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        })
+        
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+        } catch (e) {
+          errorData = { error: errorText || `Ошибка сервера (статус: ${response.status})` }
+        }
+        
+        console.error('❌ Parsed error data:', errorData)
         let errorMessage = errorData.error || 'Извините, произошла ошибка.'
         
         // Более понятные сообщения для пользователя
@@ -153,25 +176,37 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
       }
 
       const data = await response.json()
+      console.log('✅ Данные получены:', {
+        hasResponse: !!data.response,
+        responseLength: data.response?.length,
+        responsePreview: data.response?.substring(0, 100) + '...'
+      })
 
       if (data.response) {
         // Очищаем ответ от markdown-символов (на всякий случай, если сервер не обработал)
         const cleanedResponse = cleanResponse(data.response)
+        console.log('🧹 Очищенный ответ:', cleanedResponse.substring(0, 100) + '...')
         setChatMessages(prev => [...prev, { role: 'assistant', content: cleanedResponse }])
       } else {
+        console.warn('⚠️ Нет поля response в ответе:', data)
         setChatMessages(prev => [...prev, {
           role: 'assistant',
           content: 'Не удалось получить ответ. Попробуйте еще раз или свяжитесь напрямую: @ilyaborm в Telegram.'
         }])
       }
     } catch (error) {
-      console.error('Network Error:', error)
+      console.error('❌ Network Error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
       setChatMessages(prev => [...prev, {
         role: 'assistant',
         content: `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
       }])
     } finally {
       setIsLoadingChat(false)
+      console.log('✅ Запрос завершен')
     }
   }
 
