@@ -1,8 +1,51 @@
 // Vercel Serverless Function для бесплатного чата
 // Поддерживает режим заглушки и Hugging Face API
 
-import { readFile } from 'fs/promises'
+import { readFile, appendFile, mkdir } from 'fs/promises'
 import { join } from 'path'
+
+// Функция для логирования переписки
+async function logConversation(message, response, clientInfo = {}, req = null) {
+  try {
+    const timestamp = new Date().toISOString()
+    const logDir = join(process.cwd(), 'logs')
+    const logFile = join(logDir, `chat-${new Date().toISOString().split('T')[0]}.log`)
+    
+    // Создаем директорию logs, если её нет (игнорируем ошибку, если уже существует)
+    try {
+      await mkdir(logDir, { recursive: true })
+    } catch (e) {
+      // Директория уже существует или нет прав - продолжаем
+    }
+    
+    const clientIP = clientInfo.ip || req?.headers?.['x-forwarded-for']?.split(',')[0] || req?.connection?.remoteAddress || 'unknown'
+    const userAgent = clientInfo.userAgent || req?.headers?.['user-agent'] || 'unknown'
+    
+    const logEntry = {
+      timestamp,
+      client: {
+        ip: clientIP,
+        userAgent: userAgent
+      },
+      message,
+      response,
+      messageCount: clientInfo.messageCount || 0
+    }
+    
+    const logLine = JSON.stringify(logEntry) + '\n'
+    await appendFile(logFile, logLine, 'utf-8')
+    console.log('📝 Conversation logged to:', logFile)
+  } catch (error) {
+    // Логирование не критично, просто выводим в консоль
+    console.error('⚠️ Failed to log conversation:', error.message)
+    console.log('📝 Conversation log (fallback):', {
+      timestamp: new Date().toISOString(),
+      message,
+      response: response?.substring(0, 100) + '...',
+      messageCount: clientInfo.messageCount || 0
+    })
+  }
+}
 
 // Функция для загрузки файлов знаний
 async function loadKnowledgeFiles() {
@@ -48,7 +91,7 @@ function truncateText(text, maxChars = 5000) {
 }
 
 // Функция для формирования полного промпта с файлами знаний
-async function buildSystemContext() {
+async function buildSystemContext(shouldAddCTA = false) {
   const knowledge = await loadKnowledgeFiles()
   
   // Файл теперь короткий (около 4000 символов), используем полностью без обрезки
@@ -65,7 +108,12 @@ async function buildSystemContext() {
   if (!hasCityInfo) {
     console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in knowledge file!')
   }
-  
+
+  // Формируем инструкцию о CTA
+  const ctaInstruction = shouldAddCTA 
+    ? '\n\n# ВАЖНО: В конце ответа ОБЯЗАТЕЛЬНО добавь CTA с новой строки:\n\\n\\n[Записаться на диагностику](https://t.me/ilyaborm)'
+    : '\n\n# ВАЖНО: НЕ добавляй CTA в этом ответе!'
+
   return `Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Отвечай на вопросы как мой "цифровой двойник", опираясь на базу знаний ниже.
 
 # База знаний:
@@ -81,9 +129,9 @@ ${siteKnowledge}
 # Правила ответа:
 - Говори от первого лица (Я, меня, мой), обращайся на "вы"
 - Максимальная длина ответа — 300 символов. Только суть!
-- В конце ВСЕГДА добавляй CTA: [Записаться на диагностику](https://t.me/ilyaborm)
+- Если нужно добавить CTA, всегда с новой строки: \\n\\n[Записаться на диагностику](https://t.me/ilyaborm)
 - Не используй фразы "Как я могу вам помочь?"
-- Будь живым экспертом, не роботом`
+- Будь живым экспертом, не роботом${ctaInstruction}`
 }
 
 // Функция для очистки markdown-символов из ответа
@@ -154,11 +202,14 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  const { message } = req.body
+  const { message, messageCount = 0 } = req.body
 
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
   }
+
+  // Определяем, нужно ли добавлять CTA (каждое 3-е сообщение)
+  const shouldAddCTA = messageCount > 0 && messageCount % 3 === 0
 
   // Проверяем режим заглушки
   const USE_MOCK = process.env.USE_MOCK_RESPONSES === 'true'
@@ -175,12 +226,14 @@ export default async function handler(req, res) {
   })
 
   // Загружаем файлы знаний и формируем полный промпт
-  const systemContext = await buildSystemContext()
+  const systemContext = await buildSystemContext(shouldAddCTA)
 
   if (USE_MOCK) {
     console.log('⚠️ Using mock response: USE_MOCK_RESPONSES=true')
     const response = handleMockResponse(message)
     const cleanedResponse = cleanResponse(response)
+    // Логируем переписку (не блокируем ответ)
+    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
   }
 
@@ -188,6 +241,8 @@ export default async function handler(req, res) {
     console.error('❌ GROQ_API_KEY missing! Available env vars:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
     const response = handleMockResponse(message)
     const cleanedResponse = cleanResponse(response)
+    // Логируем переписку (не блокируем ответ)
+    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
   }
 
@@ -238,6 +293,8 @@ export default async function handler(req, res) {
       console.error('❌ Groq API error:', response.status, errorText)
       const mockResponse = handleMockResponse(message)
       const cleanedMockResponse = cleanResponse(mockResponse)
+      // Логируем переписку (не блокируем ответ)
+      logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
@@ -251,6 +308,8 @@ export default async function handler(req, res) {
       console.error('⚠️ No assistant message in response, using mock')
       const mockResponse = handleMockResponse(message)
       const cleanedMockResponse = cleanResponse(mockResponse)
+      // Логируем переписку (не блокируем ответ)
+      logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
@@ -258,6 +317,9 @@ export default async function handler(req, res) {
 
     // Очищаем ответ от markdown-символов и форматируем
     const cleanedResponse = cleanResponse(assistantMessage)
+
+    // Логируем переписку (не блокируем ответ)
+    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
 
     return res.status(200).json({
       response: cleanedResponse
@@ -269,6 +331,8 @@ export default async function handler(req, res) {
     // При любой ошибке возвращаем заглушку вместо ошибки
     const mockResponse = handleMockResponse(message)
     const cleanedMockResponse = cleanResponse(mockResponse)
+    // Логируем переписку (не блокируем ответ)
+    logConversation(message, cleanedMockResponse, { messageCount }, req).catch(() => {})
     return res.status(200).json({ response: cleanedMockResponse })
   }
 }

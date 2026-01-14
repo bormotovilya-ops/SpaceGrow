@@ -124,13 +124,19 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     setIsLoadingChat(true)
 
     try {
-      console.log('📡 Отправка запроса к /api/chat...')
+      // Считаем количество сообщений пользователя (только user сообщения)
+      const userMessageCount = chatMessages.filter(msg => msg.role === 'user').length + 1
+      
+      console.log('📡 Отправка запроса к /api/chat...', { messageCount: userMessageCount })
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userQuestion }),
+        body: JSON.stringify({ 
+          message: userQuestion,
+          messageCount: userMessageCount
+        }),
       })
 
       console.log('📊 Ответ получен:', {

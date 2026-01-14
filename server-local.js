@@ -7,10 +7,53 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { readFile } from 'fs/promises'
+import { readFile, appendFile, mkdir } from 'fs/promises'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+
+// Функция для логирования переписки
+async function logConversation(message, response, clientInfo = {}, req = null) {
+  try {
+    const timestamp = new Date().toISOString()
+    const logDir = join(__dirname, 'logs')
+    const logFile = join(logDir, `chat-${new Date().toISOString().split('T')[0]}.log`)
+    
+    // Создаем директорию logs, если её нет (игнорируем ошибку, если уже существует)
+    try {
+      await mkdir(logDir, { recursive: true })
+    } catch (e) {
+      // Директория уже существует или нет прав - продолжаем
+    }
+    
+    const clientIP = clientInfo.ip || req?.ip || req?.connection?.remoteAddress || 'unknown'
+    const userAgent = clientInfo.userAgent || req?.headers?.['user-agent'] || 'unknown'
+    
+    const logEntry = {
+      timestamp,
+      client: {
+        ip: clientIP,
+        userAgent: userAgent
+      },
+      message,
+      response,
+      messageCount: clientInfo.messageCount || 0
+    }
+    
+    const logLine = JSON.stringify(logEntry) + '\n'
+    await appendFile(logFile, logLine, 'utf-8')
+    console.log('📝 Conversation logged to:', logFile)
+  } catch (error) {
+    // Логирование не критично, просто выводим в консоль
+    console.error('⚠️ Failed to log conversation:', error.message)
+    console.log('📝 Conversation log (fallback):', {
+      timestamp: new Date().toISOString(),
+      message,
+      response: response?.substring(0, 100) + '...',
+      messageCount: clientInfo.messageCount || 0
+    })
+  }
+}
 
 dotenv.config()
 
@@ -53,7 +96,7 @@ function cleanResponse(text) {
 }
 
 // Функция для обработки заглушки (предопределенные ответы)
-function handleMockResponse(message, systemContext, res) {
+async function handleMockResponse(message, systemContext, res, messageCount = 0, req = null) {
   const lowerMessage = message.toLowerCase().trim()
   
   // Предопределенные ответы на частые вопросы
@@ -82,6 +125,8 @@ function handleMockResponse(message, systemContext, res) {
     if (lowerMessage.includes(key)) {
       const cleanedResponse = cleanResponse(value)
       console.log('📝 Mock response found for key:', key)
+      // Логируем переписку (не блокируем ответ)
+      logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
       return res.status(200).json({ response: cleanedResponse, source: 'mock' })
     }
   }
@@ -99,6 +144,8 @@ function handleMockResponse(message, systemContext, res) {
   
   const cleanedDefaultResponse = cleanResponse(defaultResponse)
   console.log('📝 Using default mock response')
+  // Логируем переписку (не блокируем ответ)
+  logConversation(message, cleanedDefaultResponse, { messageCount }, req).catch(() => {})
   return res.status(200).json({ response: cleanedDefaultResponse, source: 'mock' })
 }
 
@@ -129,7 +176,7 @@ function truncateText(text, maxChars = 5000) {
 }
 
 // Функция для формирования полного промпта с файлами знаний
-async function buildSystemContext() {
+async function buildSystemContext(shouldAddCTA = false) {
   const knowledge = await loadKnowledgeFiles()
   
   // Файл теперь короткий (около 4000 символов), используем полностью без обрезки
@@ -146,6 +193,11 @@ async function buildSystemContext() {
   if (!hasCityInfo) {
     console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in knowledge file!')
   }
+
+  // Формируем инструкцию о CTA
+  const ctaInstruction = shouldAddCTA 
+    ? '\n\n# ВАЖНО: В конце ответа ОБЯЗАТЕЛЬНО добавь CTA с новой строки:\n\\n\\n[Записаться на диагностику](https://t.me/ilyaborm)'
+    : '\n\n# ВАЖНО: НЕ добавляй CTA в этом ответе!'
   
   return `Ты — Илья Бормотов, IT-интегратор и архитектор АИЦП. Отвечай на вопросы как мой "цифровой двойник", опираясь на базу знаний ниже.
 
@@ -162,20 +214,23 @@ ${siteKnowledge}
 # Правила ответа:
 - Говори от первого лица (Я, меня, мой), обращайся на "вы"
 - Максимальная длина ответа — 300 символов. Только суть!
-- В конце ВСЕГДА добавляй CTA: [Записаться на диагностику](https://t.me/ilyaborm)
+- Если нужно добавить CTA, всегда с новой строки: \\n\\n[Записаться на диагностику](https://t.me/ilyaborm)
 - Не используй фразы "Как я могу вам помочь?"
-- Будь живым экспертом, не роботом`
+- Будь живым экспертом, не роботом${ctaInstruction}`
 }
 
 // Endpoint для чата (эмулирует api/chat.js)
 app.post('/api/chat', async (req, res) => {
   console.log('📨 Получен запрос:', req.body.message?.substring(0, 50) + '...')
   
-  const { message } = req.body
+  const { message, messageCount = 0 } = req.body
 
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
   }
+
+  // Определяем, нужно ли добавлять CTA (каждое 3-е сообщение)
+  const shouldAddCTA = messageCount > 0 && messageCount % 3 === 0
 
   // Проверяем токен Groq
   const GROQ_API_KEY = process.env.GROQ_API_KEY
@@ -190,17 +245,17 @@ app.post('/api/chat', async (req, res) => {
   console.log('  - Все env переменные с API:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
 
   // Загружаем файлы знаний и формируем полный промпт
-  const systemContext = await buildSystemContext()
-  console.log('📚 Файлы знаний загружены, промпт сформирован')
+  const systemContext = await buildSystemContext(shouldAddCTA)
+  console.log('📚 Файлы знаний загружены, промпт сформирован', { shouldAddCTA, messageCount })
 
   if (USE_MOCK_ENV) {
     console.log('📝 Используется режим заглушки (USE_MOCK_RESPONSES=true)')
-    return handleMockResponse(message, systemContext, res)
+    return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 
   if (!GROQ_API_KEY) {
     console.error('❌ GROQ_API_KEY не найден!')
-    return handleMockResponse(message, systemContext, res)
+    return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 
   console.log('✅ Groq API ключ найден, отправляю запрос к Groq API...')
@@ -252,7 +307,7 @@ app.post('/api/chat', async (req, res) => {
       console.error('❌ Groq API error body:', errorData)
       
       // При ошибке API возвращаем заглушку вместо ошибки
-      return handleMockResponse(message, systemContext, res)
+      return handleMockResponse(message, systemContext, res, messageCount, req)
     }
 
     const data = await response.json()
@@ -263,13 +318,17 @@ app.post('/api/chat', async (req, res) => {
     
     if (!assistantMessage) {
       console.error('⚠️ Неожиданный формат ответа, используем заглушку:', data)
-      return handleMockResponse(message, systemContext, res)
+      return handleMockResponse(message, systemContext, res, messageCount, req)
     }
 
     // Очищаем ответ от markdown-символов и форматируем
     const cleanedResponse = cleanResponse(assistantMessage)
 
     console.log('✅ Получен ответ от Groq API')
+    
+    // Логируем переписку (не блокируем ответ)
+    logConversation(message, cleanedResponse, { messageCount }, req).catch(() => {})
+    
     return res.status(200).json({
       response: cleanedResponse,
       source: 'groq'
@@ -279,7 +338,7 @@ app.post('/api/chat', async (req, res) => {
     console.error('❌ Ошибка в try-catch:', error)
     console.error('❌ Error details:', error.stack)
     // При любой ошибке возвращаем заглушку
-    return handleMockResponse(message, systemContext, res)
+    return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 })
 
