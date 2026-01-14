@@ -238,9 +238,95 @@
 .profile-aicp-answer {
   color: rgba(255, 255, 255, 0.9);
   font-size: 16px;
-  line-height: 1.6;
-  margin: 0;
-  text-align: center;
+}
+
+/* Чат в диалоге */
+.chat-message {
+  margin-top: 8px;
+}
+
+.user-chat-message {
+  background: linear-gradient(135deg, rgba(0, 209, 255, 0.2), rgba(0, 122, 255, 0.15));
+  border-color: rgba(0, 209, 255, 0.3);
+  margin-left: 40px;
+}
+
+.user-chat-message::before,
+.user-chat-message::after {
+  display: none;
+}
+
+.assistant-chat-message {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Контейнер для поля ввода чата */
+.profile-chat-input-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-chat-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.profile-chat-input:focus {
+  outline: none;
+  border-color: rgba(0, 209, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.1);
+}
+
+.profile-chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.profile-chat-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-chat-send-btn {
+  background: linear-gradient(135deg, #00D1FF, #007AFF);
+  border: none;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 209, 255, 0.3);
+}
+
+.profile-chat-send-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 209, 255, 0.4);
+}
+
+.profile-chat-send-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.profile-chat-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .profile-aicp-answer strong {
@@ -1434,6 +1520,26 @@
     font-size: 14px;
   }
 
+  .profile-chat-input-container {
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+  }
+
+  .profile-chat-input {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .profile-chat-send-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .user-chat-message {
+    margin-left: 20px;
+  }
+
   .contacts-list {
     gap: 12px;
   }
@@ -1507,6 +1613,26 @@
   .dialog-message::before,
   .dialog-message::after {
     display: none;
+  }
+
+  .user-chat-message {
+    margin-left: 0;
+  }
+
+  .profile-chat-input-container {
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .profile-chat-input {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .profile-chat-send-btn {
+    width: 36px;
+    height: 36px;
   }
 
   .dialog-message p {

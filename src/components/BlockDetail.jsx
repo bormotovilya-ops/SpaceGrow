@@ -133,7 +133,7 @@ const workDiagramStructure = {
   ]
 }
 
-function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock }) {
+function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock, onAlchemyClick, onChatClick }) {
   const isAudienceBlock = block.id === 'audience'
   const isLandingBlock = block.id === 'landing'
   const isLeadmagnetBlock = block.id === 'leadmagnet'
@@ -1995,6 +1995,8 @@ function BlockDetail({ block, onBack, onConsultation, onAvatarClick, onNextBlock
         onAvatarClick={onAvatarClick}
         onConsultation={onConsultation}
         onBack={onBack}
+        onAlchemyClick={onAlchemyClick}
+        onChatClick={onChatClick}
       />
       
       <div className="block-detail-content">

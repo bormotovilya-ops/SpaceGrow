@@ -4,6 +4,8 @@ import Profile from './Profile'
 import BlockDetail from './BlockDetail'
 import Header from './Header'
 import Diagnostics from './Diagnostics'
+import Alchemy from './Alchemy'
+import ChatBot from './ChatBot'
 import './SalesFunnel.css'
 
 const funnelData = [
@@ -78,6 +80,8 @@ function SalesFunnel() {
   const [showPortfolio, setShowPortfolio] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
+  const [showAlchemy, setShowAlchemy] = useState(false)
+  const [showChat, setShowChat] = useState(false)
 
   // Обработка hash в URL для прямой ссылки на профиль
   useEffect(() => {
@@ -86,6 +90,8 @@ function SalesFunnel() {
       setShowProfile(true)
     } else if (hash === '#diagnostics') {
       setShowDiagnostics(true)
+    } else if (hash === '#alchemy') {
+      setShowAlchemy(true)
     }
   }, [])
 
@@ -95,10 +101,12 @@ function SalesFunnel() {
       window.location.hash = 'profile'
     } else if (showDiagnostics) {
       window.location.hash = 'diagnostics'
+    } else if (showAlchemy) {
+      window.location.hash = 'alchemy'
     } else if (!selectedBlock) {
       window.location.hash = ''
     }
-  }, [showProfile, showDiagnostics, selectedBlock])
+  }, [showProfile, showDiagnostics, showAlchemy, selectedBlock])
 
 
   const handleBlockClick = (block) => {
@@ -126,6 +134,14 @@ function SalesFunnel() {
 
   const handleConsultation = () => {
     setShowDiagnostics(true)
+  }
+
+  const handleAlchemyClick = () => {
+    setShowAlchemy(true)
+  }
+
+  const handleChatClick = () => {
+    setShowChat(true)
   }
 
   const handleAvatarClick = () => {
@@ -184,6 +200,19 @@ function SalesFunnel() {
     }
   }
 
+  if (showAlchemy) {
+    return (
+      <Alchemy 
+        onBack={() => {
+          setShowAlchemy(false)
+          window.location.hash = ''
+        }} 
+        onAvatarClick={handleAvatarClick}
+        onChatClick={handleChatClick}
+      />
+    )
+  }
+
   if (showDiagnostics) {
     return (
       <Diagnostics 
@@ -192,6 +221,8 @@ function SalesFunnel() {
           window.location.hash = ''
         }} 
         onAvatarClick={handleAvatarClick}
+        onAlchemyClick={handleAlchemyClick}
+        onChatClick={handleChatClick}
       />
     )
   }
@@ -211,6 +242,8 @@ function SalesFunnel() {
           setShowProfile(false)
           setShowDiagnostics(true)
         }}
+        onAlchemyClick={handleAlchemyClick}
+        onChatClick={handleChatClick}
       />
     )
   }
@@ -222,6 +255,8 @@ function SalesFunnel() {
         onBack={handleCloseBlockDetail}
         onConsultation={handleConsultation}
         onAvatarClick={handleAvatarClick}
+        onAlchemyClick={handleAlchemyClick}
+        onChatClick={handleChatClick}
         onNextBlock={
           selectedBlock.id === 'audience' 
             ? () => handleNextBlock('landing') 
@@ -246,6 +281,8 @@ function SalesFunnel() {
       <Header 
         onAvatarClick={handleAvatarClick}
         onConsultation={handleConsultation}
+        onAlchemyClick={handleAlchemyClick}
+        onChatClick={handleChatClick}
       />
 
       <div className="funnel-wrapper">
@@ -353,6 +390,11 @@ function SalesFunnel() {
           onClose={() => setShowPortfolio(false)}
           onConsultation={handleConsultation}
         />
+      )}
+
+      {/* Чат-бот */}
+      {showChat && (
+        <ChatBot onClose={() => setShowChat(false)} />
       )}
     </div>
   )

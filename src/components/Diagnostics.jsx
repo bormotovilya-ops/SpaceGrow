@@ -290,7 +290,7 @@ const getAnswerOptions = (questionId) => {
   ]
 }
 
-function Diagnostics({ onBack, onAvatarClick }) {
+function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
   // Вычисляем общее количество вопросов
   const totalQuestions = stages.reduce((sum, stage) => sum + stage.questions.length, 0)
   
@@ -526,6 +526,8 @@ function Diagnostics({ onBack, onAvatarClick }) {
           onAvatarClick={handleHeaderAvatarClick}
           onConsultation={handleConsultation}
           onBack={onBack}
+          onAlchemyClick={onAlchemyClick}
+          onChatClick={onChatClick}
         />
         <div className="diagnostics-intro">
           <div className="diagnostics-intro-content">
@@ -554,6 +556,8 @@ function Diagnostics({ onBack, onAvatarClick }) {
           onAvatarClick={handleHeaderAvatarClick}
           onConsultation={handleConsultation}
           onBack={onBack}
+          onAlchemyClick={onAlchemyClick}
+          onChatClick={onChatClick}
         />
         <div className="diagnostics-results">
           <div className="diagnostics-results-content">
@@ -705,6 +709,7 @@ function Diagnostics({ onBack, onAvatarClick }) {
         onAvatarClick={handleHeaderAvatarClick}
         onConsultation={handleConsultation}
         onBack={onBack}
+        onAlchemyClick={onAlchemyClick}
       />
       <div className="diagnostics-question">
         <div className="diagnostics-progress">

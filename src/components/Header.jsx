@@ -1,7 +1,7 @@
 import React from 'react'
 import './Header.css'
 
-function Header({ onAvatarClick, onConsultation, onBack }) {
+function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick }) {
   return (
     <div className="header-block">
       <div className="header-content">
@@ -33,6 +33,21 @@ function Header({ onAvatarClick, onConsultation, onBack }) {
             <span className="header-title">IT-Интегратор АИЦП</span>
           </div>
         </div>
+        {onAlchemyClick && (
+          <div className="header-alchemy-wrapper">
+            <button 
+              className="header-alchemy-btn" 
+              onClick={onAlchemyClick}
+              aria-label="Цифровая Алхимия"
+            >
+              <img 
+                src="/images/Дверь2.png" 
+                alt="Цифровая Алхимия" 
+                className="header-alchemy-image" 
+              />
+            </button>
+          </div>
+        )}
         <div className="header-spacer-right"></div>
       </div>
     </div>

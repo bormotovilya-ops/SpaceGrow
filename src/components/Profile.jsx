@@ -8,11 +8,14 @@ import img22 from '../assets/images/22.png'
 import img33 from '../assets/images/33.png'
 import img44 from '../assets/images/44.png'
 
-function Profile({ onBack, onAvatarClick, onDiagnostics }) {
+function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick }) {
   const [typingMessages, setTypingMessages] = useState([false, false, false]) // Показывать многоточие
   const [visibleMessages, setVisibleMessages] = useState([false, false, false]) // Показывать текст
   const [expandedCases, setExpandedCases] = useState([false, false, false]) // Раскрытые кейсы
   const [expandedTechStack, setExpandedTechStack] = useState([false, false, false, false]) // Раскрытый технологический стек
+  const [chatMessages, setChatMessages] = useState([]) // Сообщения чата (вопросы и ответы)
+  const [chatInput, setChatInput] = useState('') // Текст в поле ввода
+  const [isLoadingChat, setIsLoadingChat] = useState(false) // Загрузка ответа
   
   const handleConsultation = () => {
     if (onDiagnostics) {
@@ -41,6 +44,75 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
     const newExpanded = [...expandedTechStack]
     newExpanded[index] = !newExpanded[index]
     setExpandedTechStack(newExpanded)
+  }
+
+  const handleChatSend = async () => {
+    if (!chatInput.trim() || isLoadingChat) return
+
+    const userQuestion = chatInput.trim()
+    setChatInput('')
+    
+    // Добавляем вопрос пользователя
+    setChatMessages(prev => [...prev, { role: 'user', content: userQuestion }])
+    setIsLoadingChat(true)
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userQuestion }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: `Ошибка сервера (статус: ${response.status})` }))
+        console.error('API Error:', errorData)
+        let errorMessage = errorData.error || 'Извините, произошла ошибка.'
+        
+        // Более понятные сообщения для пользователя
+        if (errorMessage.includes('API key') || errorMessage.includes('authentication') || errorMessage.includes('401')) {
+          errorMessage = 'Ошибка авторизации. Проверьте, что токен Groq указан правильно в файле .env'
+        } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+          errorMessage = 'Превышен лимит запросов. Попробуйте позже.'
+        } else if (errorMessage.includes('model') || errorMessage.includes('404')) {
+          errorMessage = 'Ошибка выбора модели. Попробуйте позже.'
+        }
+        
+        setChatMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `${errorMessage} Если проблема сохраняется, свяжитесь напрямую: @ilyaborm в Telegram.`
+        }])
+        setIsLoadingChat(false)
+        return
+      }
+
+      const data = await response.json()
+
+      if (data.response) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+      } else {
+        setChatMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'Не удалось получить ответ. Попробуйте еще раз или свяжитесь напрямую: @ilyaborm в Telegram.'
+        }])
+      }
+    } catch (error) {
+      console.error('Network Error:', error)
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
+      }])
+    } finally {
+      setIsLoadingChat(false)
+    }
+  }
+
+  const handleChatKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleChatSend()
+    }
   }
 
   useEffect(() => {
@@ -82,6 +154,8 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
         onAvatarClick={handleHeaderAvatarClick}
         onConsultation={handleConsultation}
         onBack={onBack}
+        onAlchemyClick={onAlchemyClick}
+        onChatClick={onChatClick}
       />
       
       <div className="profile-content">
@@ -127,7 +201,48 @@ function Profile({ onBack, onAvatarClick, onDiagnostics }) {
                       <p>Ниже подробнее описаны мои компетенции, кейсы, достижения, подход и контакты</p>
                     ) : null}
                   </div>
+                  
+                  {/* Чат с пользователем */}
+                  {chatMessages.map((msg, index) => (
+                    <div key={index} className={`dialog-message chat-message ${msg.role === 'user' ? 'user-chat-message' : 'assistant-chat-message'} visible`}>
+                      <p>{msg.content}</p>
+                    </div>
+                  ))}
+                  
+                  {isLoadingChat && (
+                    <div className="dialog-message chat-message assistant-chat-message visible">
+                      <p className="typing-indicator">
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
+              </div>
+              
+              {/* Поле ввода для вопросов */}
+              <div className="profile-chat-input-container">
+                <input
+                  type="text"
+                  className="profile-chat-input"
+                  placeholder="Задайте вопрос..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyPress={handleChatKeyPress}
+                  disabled={isLoadingChat}
+                />
+                <button
+                  className="profile-chat-send-btn"
+                  onClick={handleChatSend}
+                  disabled={!chatInput.trim() || isLoadingChat}
+                  aria-label="Отправить"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
               </div>
               <div className="profile-aicp-explanation">
                 <p className="profile-aicp-answer">

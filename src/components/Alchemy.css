@@ -1,0 +1,60 @@
+.alchemy-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(15, 15, 25, 0.98), rgba(20, 20, 30, 0.95));
+  padding-top: 80px;
+}
+
+.alchemy-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.alchemy-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.alchemy-section {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.alchemy-title {
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.alchemy-description {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  line-height: 1.7;
+  text-align: center;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .alchemy-content {
+    padding: 30px 16px;
+  }
+
+  .alchemy-section {
+    padding: 30px 20px;
+  }
+
+  .alchemy-title {
+    font-size: 28px;
+  }
+
+  .alchemy-description {
+    font-size: 16px;
+  }
+}
