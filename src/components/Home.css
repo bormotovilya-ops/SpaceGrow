@@ -5,6 +5,7 @@
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
+  height: auto;
   
   /* Скрыть полосу прокрутки */
   scrollbar-width: none; /* Firefox */
@@ -663,6 +664,7 @@
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+  padding-bottom: 20px; /* Дополнительный отступ для скролла */
 }
 
 .faq-title {
@@ -912,12 +914,12 @@
     display: block;
   }
   
-  .home-content {
-    padding: 180px 20px 50px;
-  }
-  
-  /* Скрыть полосу прокрутки на мобильных */
   .home-container {
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -926,6 +928,17 @@
     display: none;
     width: 0;
     height: 0;
+  }
+  
+  .home-content {
+    padding: 180px 20px 120px; /* Увеличен padding-bottom для скролла до конца (учитывая sticky-cta) */
+    min-height: calc(100vh - 180px); /* Обеспечиваем минимальную высоту */
+    box-sizing: border-box;
+  }
+  
+  .home-faq {
+    margin-bottom: 60px; /* Достаточный отступ перед sticky-cta */
+    padding-bottom: 20px; /* Дополнительный отступ */
   }
 
   .home-hero {
