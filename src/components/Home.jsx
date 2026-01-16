@@ -40,18 +40,6 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
       author: 'Саттва Ом',
       role: 'Инструктор по йоге и цигун',
       avatar: '/photo_7_2025-03-19_17-21-55.jpg'
-    },
-    {
-      text: 'ROI окупился за первый месяц. Воронка работает, клиенты довольны, я могу больше времени уделять семье.',
-      author: 'Алексей П.',
-      role: 'Эксперт по недвижимости',
-      avatar: '/images/me.jpg'
-    },
-    {
-      text: 'Илья не просто настроил систему — он научил нас мыслить процессами. Это изменило весь бизнес.',
-      author: 'Елена С.',
-      role: 'Коуч по карьере',
-      avatar: '/images/me.jpg'
     }
   ]
 
@@ -369,6 +357,52 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
             <span>Экспресс-диагностика</span>
             <span className="cta-arrow">→</span>
           </button>
+        </motion.div>
+
+        {/* Footer with Contacts */}
+        <motion.div 
+          className="home-footer"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.1 }}
+        >
+          <div className="home-footer-content">
+            <h3 className="home-footer-title">Контакты</h3>
+            <div className="home-footer-contacts">
+              <a href="tel:+79991237788" className="home-footer-contact">
+                <span className="home-footer-icon">📞</span>
+                <span>+7 (999) 123-77-88</span>
+              </a>
+              
+              <a href="mailto:bormotovilya@gmail.com" className="home-footer-contact">
+                <span className="home-footer-icon">📧</span>
+                <span>bormotovilya@gmail.com</span>
+              </a>
+              
+              <a href="https://t.me/ilyaborm" target="_blank" rel="noopener noreferrer" className="home-footer-contact">
+                <span className="home-footer-icon">
+                  <img src="/images/telegram-icon.png" alt="Telegram" className="home-footer-telegram-icon" />
+                </span>
+                <span>@ilyaborm</span>
+              </a>
+              
+              <a href="https://t.me/SoulGuideIT" target="_blank" rel="noopener noreferrer" className="home-footer-contact">
+                <span className="home-footer-icon">📢</span>
+                <span>@SoulGuideIT</span>
+              </a>
+            </div>
+            
+            <div className="home-footer-links">
+              <a 
+                href="https://docs.google.com/document/d/1rdhH5IrwNAW9O_Vj_aFamzBzqMLMlQ-B/edit?usp=sharing&ouid=117665820562834516912&rtpof=true&sd=true" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="home-footer-link"
+              >
+                Политика в отношении обработки персональных данных
+              </a>
+            </div>
+          </div>
         </motion.div>
 
         {/* Animated Background Elements */}
