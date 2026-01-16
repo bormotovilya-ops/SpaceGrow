@@ -4,10 +4,10 @@ import './Header.css'
 function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeClick, activeMenuId }) {
   const greetingMessages = [
     'Добрый день, я Илья!',
-    'Автоматизирую онлайн-обучение',
+    'Улучшаю онлайн-обучение',
     'Превращаю хаос в систему.',
-    'Увеличиваю вашу прибыль.',
-    'Давайте добавим магии?'
+    'Умножаю вашу прибыль.',
+    'Давайте добавим магии!'
   ]
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0)

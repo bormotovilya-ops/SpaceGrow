@@ -1,27 +1,24 @@
 /* Home Container - Digital Alchemy Style */
 .home-container {
-  min-height: 100vh;
   width: 100%;
-  position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  height: auto;
-  
-  /* Скрыть полосу прокрутки */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE и Edge */
-  
-  /* Deep black background with animated mesh gradients */
-  background:
+  min-height: 100vh;
+  background-image: 
     url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 100 0 L 0 0 0 100' fill='none' stroke='rgba(255,215,0,0.05)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grid)'/%3E%3C/svg%3E"),
     radial-gradient(circle at 20% 30%, rgba(0, 50, 150, 0.15), transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(139, 69, 139, 0.1), transparent 50%),
     radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08), transparent 60%),
     linear-gradient(180deg, #000000, #0a0a0f);
+  position: relative;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  height: 100vh;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .home-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none;
 }
 
 .home-content {
@@ -31,6 +28,8 @@
   position: relative;
   z-index: 1;
 }
+<｜tool▁call▁end｜><｜tool▁call▁begin｜>
+read_file
 
 /* Hero Section */
 .home-hero {
@@ -915,9 +914,8 @@
   }
   
   .home-container {
-    min-height: 100vh;
-    height: auto;
-    overflow-y: auto;
+    height: 100vh;
+    overflow-y: scroll;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
     scrollbar-width: none;
@@ -931,15 +929,10 @@
   }
   
   .home-content {
-    padding: 180px 20px 120px; /* Увеличен padding-bottom для скролла до конца (учитывая sticky-cta) */
-    min-height: calc(100vh - 180px); /* Обеспечиваем минимальную высоту */
+    padding: 180px 20px 100px; /* Как на странице профиля */
     box-sizing: border-box;
   }
   
-  .home-faq {
-    margin-bottom: 60px; /* Достаточный отступ перед sticky-cta */
-    padding-bottom: 20px; /* Дополнительный отступ */
-  }
 
   .home-hero {
     margin-bottom: 50px;
