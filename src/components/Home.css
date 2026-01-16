@@ -944,7 +944,12 @@ read_file
     align-items: stretch;
   }
 
+  .home-hero-text {
+    order: 1;
+  }
+
   .home-hero-image {
+    order: 2;
     flex: 1;
     width: 100%;
     align-self: center;
