@@ -10,9 +10,9 @@ import img22 from '../assets/images/22.png'
 import img33 from '../assets/images/33.png'
 import img44 from '../assets/images/44.png'
 
-function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick }) {
-  const [typingMessages, setTypingMessages] = useState([false, false, false]) // Показывать многоточие
-  const [visibleMessages, setVisibleMessages] = useState([false, false, false]) // Показывать текст
+function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick }) {
+  const [typingMessages, setTypingMessages] = useState([false, false, false, false]) // Показывать многоточие
+  const [visibleMessages, setVisibleMessages] = useState([false, false, false, false]) // Показывать текст
   const [expandedCases, setExpandedCases] = useState([false, false, false]) // Раскрытые кейсы
   const [expandedTechStack, setExpandedTechStack] = useState([false, false, false, false]) // Раскрытый технологический стек
   const [chatMessages, setChatMessages] = useState([]) // Сообщения чата (вопросы и ответы)
@@ -239,36 +239,50 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
 
   useEffect(() => {
     // Первое сообщение: показываем многоточие сразу
-    setTypingMessages([true, false, false])
+    setTypingMessages([true, false, false, false])
     
     // Через 2 секунды показываем текст первого сообщения
     const timer1 = setTimeout(() => {
-      setVisibleMessages([true, false, false])
-      setTypingMessages([false, false, false])
+      setVisibleMessages([true, false, false, false])
+      setTypingMessages([false, false, false, false])
       // Начинаем печатать второе сообщение
-      setTypingMessages([false, true, false])
+      setTypingMessages([false, true, false, false])
     }, 2000)
     
     // Через 4 секунды (2 + 2) показываем текст второго сообщения
     const timer2 = setTimeout(() => {
-      setVisibleMessages([true, true, false])
-      setTypingMessages([false, false, false])
+      setVisibleMessages([true, true, false, false])
+      setTypingMessages([false, false, false, false])
       // Начинаем печатать третье сообщение
-      setTypingMessages([false, false, true])
+      setTypingMessages([false, false, true, false])
     }, 4000)
     
     // Через 6 секунд (4 + 2) показываем текст третьего сообщения
     const timer3 = setTimeout(() => {
-      setVisibleMessages([true, true, true])
-      setTypingMessages([false, false, false])
+      setVisibleMessages([true, true, true, false])
+      setTypingMessages([false, false, false, false])
+      // Начинаем печатать четвертое сообщение
+      setTypingMessages([false, false, false, true])
     }, 6000)
+    
+    // Через 8 секунд (6 + 2) показываем текст четвертого сообщения
+    const timer4 = setTimeout(() => {
+      setVisibleMessages([true, true, true, true])
+      setTypingMessages([false, false, false, false])
+    }, 8000)
     
     return () => {
       clearTimeout(timer1)
       clearTimeout(timer2)
       clearTimeout(timer3)
+      clearTimeout(timer4)
     }
   }, [])
+
+  const handleHeaderHomeClick = () => {
+    // Вернуться на пустую главную страницу
+    if (onHomeClick) onHomeClick()
+  }
 
   return (
     <div className="profile-container">
@@ -277,7 +291,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         onConsultation={handleHeaderConsultation}
         onBack={onBack}
         onAlchemyClick={onAlchemyClick}
-        onChatClick={onChatClick}
+        onHomeClick={handleHeaderHomeClick}
       />
       
       <div className="profile-content">
@@ -320,6 +334,17 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                         <span className="typing-dot">.</span>
                       </p>
                     ) : visibleMessages[2] ? (
+                      <p>Увлекаюсь темами самопознания, здоровья, финансовой свободы, творчества  и спорта</p>
+                    ) : null}
+                  </div>
+                  <div className={`dialog-message ${(typingMessages[3] || visibleMessages[3]) ? 'visible' : ''}`}>
+                    {typingMessages[3] ? (
+                      <p className="typing-indicator">
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                      </p>
+                    ) : visibleMessages[3] ? (
                       <p>Ниже подробнее описаны мои компетенции, кейсы, достижения, подход и контакты</p>
                     ) : null}
                   </div>

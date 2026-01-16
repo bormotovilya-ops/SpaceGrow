@@ -21,11 +21,28 @@
     box-sizing: border-box;
 }
 
+html {
+    /* Скрыть полосу прокрутки, но оставить прокрутку */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE и Edge */
+}
+
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+    width: 0;
+    height: 0;
+}
+
 body {
     margin: 0;
     font-family: "Inter", sans-serif;
     color: var(--text);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    /* Скрыть полосу прокрутки, но оставить прокрутку */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE и Edge */
 
     /* Мягкий Vision-фон */
     background:
@@ -35,16 +52,59 @@ body {
         linear-gradient(180deg, var(--bg-1), var(--bg-2));
 }
 
-#root {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+/* Скрыть полосу прокрутки для WebKit браузеров (Chrome, Safari) */
+body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
-/* Для мобильной версии убираем прокрутку */
+#root {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+    
+    /* Скрыть полосу прокрутки, но оставить прокрутку */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE и Edge */
+}
+
+#root::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+    width: 0;
+    height: 0;
+}
+
+/* Для мобильной версии прокрутка работает, но без полосы */
 @media (max-width: 768px) {
     #root {
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
+        
+        /* Скрыть полосу прокрутки на мобильных */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    #root::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        
+        /* Скрыть полосу прокрутки на мобильных */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
 }
 
