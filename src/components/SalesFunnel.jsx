@@ -367,6 +367,7 @@ function SalesFunnel() {
         onAlchemyClick={handleAlchemyClick}
         onHomeClick={handleHomeClick}
         onBack={handlePortalClick}
+        activeMenuId="portal"
       />
 
       {/* Диаграмма воронки */}

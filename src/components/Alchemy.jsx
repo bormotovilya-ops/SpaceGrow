@@ -29,6 +29,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         onBack={onBack}
         onAlchemyClick={() => {}} // Пустой обработчик, так как мы уже в этом разделе
         onHomeClick={handleHeaderHomeClick}
+        activeMenuId="alchemy"
       />
       
       <div className="alchemy-content">

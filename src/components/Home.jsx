@@ -82,6 +82,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
         onAlchemyClick={onAlchemy}
         onHomeClick={() => window.location.hash = ''}
         onBack={onPortal}
+        activeMenuId="home"
       />
 
       <div className="home-content">
@@ -358,7 +359,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
             className="sticky-cta-button" 
             onClick={onDiagnostics}
           >
-            <span>Получить план роста</span>
+            <span>Экспресс-диагностика</span>
             <span className="cta-arrow">→</span>
           </button>
         </motion.div>

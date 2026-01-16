@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './Header.css'
 
-function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeClick }) {
+function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeClick, activeMenuId }) {
   const greetingMessages = [
     'Добрый день, я Илья!',
     'Автоматизирую онлайн-обучение',
@@ -37,7 +37,7 @@ function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeC
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`header-menu-item ${item.highlight ? 'header-menu-item-highlight' : ''} ${item.isProfile ? 'header-menu-item-profile' : ''}`}
+              className={`header-menu-item ${item.highlight ? 'header-menu-item-highlight' : ''} ${item.isProfile ? 'header-menu-item-profile' : ''} ${activeMenuId === item.id ? 'active' : ''}`}
               onClick={item.onClick}
               aria-label={item.label}
             >

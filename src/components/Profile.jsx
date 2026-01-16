@@ -292,6 +292,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         onBack={onBack}
         onAlchemyClick={onAlchemyClick}
         onHomeClick={handleHeaderHomeClick}
+        activeMenuId="profile"
       />
       
       <div className="profile-content">

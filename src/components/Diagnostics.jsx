@@ -583,6 +583,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick, onHom
           onBack={onBack}
           onAlchemyClick={onAlchemyClick}
           onHomeClick={handleHeaderHomeClick}
+          activeMenuId="diagnostics"
         />
         <div className="diagnostics-intro">
           <div className="diagnostics-intro-content">
