@@ -143,6 +143,41 @@ read_file
   font-weight: 400;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.subtitle-paragraph {
+  margin: 0;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.subtitle-paragraph:first-child {
+  font-size: 20px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  font-style: italic;
+}
+
+.subtitle-highlight {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.subtitle-highlight strong {
+  color: #ffd700;
+  font-weight: 700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.tech-highlight {
+  color: rgba(0, 209, 255, 0.9);
+  font-weight: 500;
 }
 
 .home-hero-subtitle strong {
@@ -929,13 +964,14 @@ read_file
   }
   
   .home-content {
-    padding: 180px 20px 100px; /* Как на странице профиля */
+    padding: 130px 20px 100px; /* Уменьшен отступ сверху для мобильной версии */
     box-sizing: border-box;
   }
   
 
   .home-hero {
     margin-bottom: 50px;
+    margin-top: 0;
   }
 
   .home-hero-content {
@@ -945,11 +981,11 @@ read_file
   }
 
   .home-hero-text {
-    order: 1;
+    order: 2;
   }
 
   .home-hero-image {
-    order: 2;
+    order: 1;
     flex: 1;
     width: 100%;
     align-self: center;
@@ -972,6 +1008,7 @@ read_file
     font-size: 30px;
     line-height: 1.25;
     text-align: center;
+    margin-top: 0;
     margin-bottom: 20px;
     letter-spacing: -0.3px;
   }
@@ -991,6 +1028,17 @@ read_file
     font-size: 16px;
     line-height: 1.65;
     text-align: center;
+    gap: 16px;
+  }
+
+  .subtitle-paragraph:first-child {
+    font-size: 17px;
+  }
+
+  .subtitle-highlight {
+    font-size: 16px;
+    padding-top: 16px;
+    margin-top: 6px;
   }
 
   .home-about {
@@ -1120,11 +1168,23 @@ read_file
   .home-hero-title {
     font-size: 26px;
     line-height: 1.3;
+    margin-top: 0;
     margin-bottom: 18px;
   }
 
   .home-hero-subtitle {
     font-size: 15px;
+    gap: 14px;
+  }
+
+  .subtitle-paragraph:first-child {
+    font-size: 16px;
+  }
+
+  .subtitle-highlight {
+    font-size: 15px;
+    padding-top: 14px;
+    margin-top: 4px;
   }
 
   .home-about-text {
