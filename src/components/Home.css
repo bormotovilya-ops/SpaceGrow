@@ -187,6 +187,7 @@ read_file
 
 /* About Me Block */
 .home-about {
+  margin-top: 0;
   margin-bottom: 80px;
   display: flex;
   justify-content: center;
@@ -970,7 +971,7 @@ read_file
   
 
   .home-hero {
-    margin-bottom: 50px;
+    margin-bottom: 60px;
     margin-top: 0;
   }
 
@@ -1042,7 +1043,28 @@ read_file
   }
 
   .home-about {
-    margin-bottom: 50px;
+    margin-top: 0;
+    margin-bottom: 60px;
+  }
+
+  .home-stats {
+    margin-bottom: 60px;
+  }
+
+  .home-journey {
+    margin-bottom: 60px;
+  }
+
+  .home-cards {
+    margin-bottom: 60px;
+  }
+
+  .home-testimonials {
+    margin-bottom: 60px;
+  }
+
+  .home-faq {
+    margin-bottom: 60px;
   }
 
   .home-about-content {
