@@ -135,7 +135,7 @@ const workDiagramStructure = {
   ]
 }
 
-function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarClick, onNextBlock, onAlchemyClick, onChatClick }) {
+function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarClick, onNextBlock, onAlchemyClick, onChatClick, onHomeClick }) {
   const isAudienceBlock = block.id === 'audience'
   const isLandingBlock = block.id === 'landing'
   const isLeadmagnetBlock = block.id === 'leadmagnet'
@@ -1995,6 +1995,11 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
     </div>
   )
 
+  const handleHeaderHomeClick = () => {
+    // Вернуться на пустую главную страницу
+    if (onHomeClick) onHomeClick()
+  }
+
   return (
     <div className={`block-detail-container ${isProductBlock ? 'product-page' : ''} ${isMoneyBlock ? 'money-page' : ''}`}>
       <Header 
@@ -2003,7 +2008,7 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
         onConsultation={onDiagnostics || onConsultation}
         onBack={onBack}
         onAlchemyClick={onAlchemyClick}
-        onChatClick={onChatClick}
+        onHomeClick={handleHeaderHomeClick}
       />
       
       <div className="block-detail-content">

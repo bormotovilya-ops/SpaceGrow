@@ -13,7 +13,7 @@
   -ms-overflow-style: none;
   height: 100vh;
   padding-bottom: 100px;
-  padding-top: 120px;
+  padding-top: 180px;
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -1468,7 +1468,7 @@
 
 @media (max-width: 768px) {
   .profile-container {
-    padding-top: 92px;
+    padding-top: 150px;
   }
 
   .profile-content {

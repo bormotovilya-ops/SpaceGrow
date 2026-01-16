@@ -13,7 +13,7 @@
   -ms-overflow-style: none;
   height: 100vh;
   padding-bottom: 100px;
-  padding-top: 120px;
+  padding-top: 180px;
 }
 
 /* Специальный фон для страницы Продукт */
@@ -972,7 +972,7 @@
 
 @media (max-width: 768px) {
   .block-detail-container {
-    padding-top: 92px;
+    padding-top: 150px;
   }
 
   .block-detail-content {

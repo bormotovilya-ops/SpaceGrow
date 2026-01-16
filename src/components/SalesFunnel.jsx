@@ -6,6 +6,7 @@ import Header from './Header'
 import Diagnostics from './Diagnostics'
 import Alchemy from './Alchemy'
 import ChatBot from './ChatBot'
+import Home from './Home'
 import './SalesFunnel.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
@@ -84,6 +85,7 @@ function SalesFunnel() {
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   const [showAlchemy, setShowAlchemy] = useState(false)
   const [showChat, setShowChat] = useState(false)
+  const [showFunnelDiagram, setShowFunnelDiagram] = useState(false) // true = показываем воронку, false = главная (пустая)
 
   // Обработка hash в URL для прямой ссылки на профиль
   useEffect(() => {
@@ -228,6 +230,7 @@ function SalesFunnel() {
       <Alchemy 
         onBack={() => {
           setShowAlchemy(false)
+          setShowFunnelDiagram(true) // Возврат к диаграмме воронки
           window.location.hash = ''
         }} 
         onAvatarClick={handleAvatarClick}
@@ -236,6 +239,12 @@ function SalesFunnel() {
           setShowDiagnostics(true)
         }}
         onChatClick={handleChatClick}
+        onHomeClick={() => {
+          setShowAlchemy(false)
+          setShowFunnelDiagram(false) // Возврат на пустую главную
+          setSelectedBlock(null) // Сброс выбранного блока
+          window.location.hash = ''
+        }}
       />
     )
   }
@@ -245,11 +254,18 @@ function SalesFunnel() {
       <Diagnostics 
         onBack={() => {
           setShowDiagnostics(false)
+          setShowFunnelDiagram(true) // Возврат к диаграмме воронки
           window.location.hash = ''
         }} 
         onAvatarClick={handleAvatarClick}
         onAlchemyClick={handleAlchemyClick}
         onChatClick={handleChatClick}
+        onHomeClick={() => {
+          setShowDiagnostics(false)
+          setShowFunnelDiagram(false) // Возврат на пустую главную
+          setSelectedBlock(null) // Сброс выбранного блока
+          window.location.hash = ''
+        }}
       />
     )
   }
@@ -259,6 +275,7 @@ function SalesFunnel() {
       <Profile 
         onBack={() => {
           setShowProfile(false)
+          setShowFunnelDiagram(true) // Возврат к диаграмме воронки
           window.location.hash = ''
         }} 
         onAvatarClick={() => {
@@ -271,6 +288,12 @@ function SalesFunnel() {
         }}
         onAlchemyClick={handleAlchemyClick}
         onChatClick={handleChatClick}
+        onHomeClick={() => {
+          setShowProfile(false)
+          setShowFunnelDiagram(false) // Возврат на пустую главную
+          setSelectedBlock(null) // Сброс выбранного блока
+          window.location.hash = ''
+        }}
       />
     )
   }
@@ -285,6 +308,10 @@ function SalesFunnel() {
         onAvatarClick={handleAvatarClick}
         onAlchemyClick={handleAlchemyClick}
         onChatClick={handleChatClick}
+        onHomeClick={() => {
+          setSelectedBlock(null)
+          setShowFunnelDiagram(false) // Возврат на пустую главную
+        }}
         onNextBlock={
           selectedBlock.id === 'audience' 
             ? () => handleNextBlock('landing') 
@@ -304,17 +331,47 @@ function SalesFunnel() {
     )
   }
 
+  const handleHomeClick = () => {
+    yandexMetricaReachGoal(null, 'home_click')
+    // Возвращаемся на главную (пустую) страницу
+    setShowFunnelDiagram(false)
+    setSelectedBlock(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handlePortalClick = () => {
+    yandexMetricaReachGoal(null, 'funnel_diagram_open')
+    // Открываем страницу с диаграммой воронки
+    setShowFunnelDiagram(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Show Home page when showFunnelDiagram is false
+  if (!showFunnelDiagram) {
+    return (
+      <Home 
+        onDiagnostics={handleConsultation}
+        onTechnologies={handlePortalClick}
+        onAlchemy={handleAlchemyClick}
+        onPortal={handlePortalClick}
+        onAvatarClick={handleAvatarClick}
+      />
+    )
+  }
+
   return (
     <div className="sales-funnel-container">
       <Header 
         onAvatarClick={handleAvatarClick}
         onConsultation={handleConsultation}
         onAlchemyClick={handleAlchemyClick}
-        onChatClick={handleChatClick}
+        onHomeClick={handleHomeClick}
+        onBack={handlePortalClick}
       />
 
+      {/* Диаграмма воронки */}
       <div className="funnel-wrapper">
-        <div className="funnel-blocks" id="funnel-blocks">
+          <div className="funnel-blocks" id="funnel-blocks">
           {/* Основные блоки: Аудитория, Лендинг, Лидмагнит, Трипваер, Автоворонки, Продукт */}
           {funnelData.slice(0, 6).map((block, index) => (
             <React.Fragment key={block.id}>
@@ -408,9 +465,8 @@ function SalesFunnel() {
               </div>
             ))}
           </div>
+          </div>
         </div>
-      </div>
-
 
       {/* Портфолио модальное окно */}
       {showPortfolio && (

@@ -292,7 +292,7 @@ const getAnswerOptions = (questionId) => {
   ]
 }
 
-function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
+function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick, onHomeClick }) {
   // Вычисляем общее количество вопросов
   const totalQuestions = stages.reduce((sum, stage) => sum + stage.questions.length, 0)
   
@@ -568,6 +568,11 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
     return 'Этап можно использовать как опору при масштабировании.'
   }
 
+  const handleHeaderHomeClick = () => {
+    // Вернуться на пустую главную страницу
+    if (onHomeClick) onHomeClick()
+  }
+
   // Вводный экран
   if (currentStep === 0) {
     return (
@@ -577,7 +582,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
           onConsultation={handleConsultation}
           onBack={onBack}
           onAlchemyClick={onAlchemyClick}
-          onChatClick={onChatClick}
+          onHomeClick={handleHeaderHomeClick}
         />
         <div className="diagnostics-intro">
           <div className="diagnostics-intro-content">
@@ -607,6 +612,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
           onConsultation={handleConsultation}
           onBack={onBack}
           onAlchemyClick={onAlchemyClick}
+          onHomeClick={handleHeaderHomeClick}
           onChatClick={onChatClick}
         />
         <div className="diagnostics-results">
@@ -759,6 +765,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick }) {
         onAvatarClick={handleHeaderAvatarClick}
         onConsultation={handleConsultation}
         onBack={onBack}
+        onHomeClick={handleHeaderHomeClick}
         onAlchemyClick={onAlchemyClick}
       />
       <div className="diagnostics-question">

@@ -2,7 +2,7 @@ import React from 'react'
 import Header from './Header'
 import './Alchemy.css'
 
-function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics }) {
+function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
   const handleHeaderAvatarClick = () => {
     if (onAvatarClick) {
       onAvatarClick()
@@ -16,6 +16,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics }) {
     if (onDiagnostics) onDiagnostics()
   }
 
+  const handleHeaderHomeClick = () => {
+    // Вернуться на пустую главную страницу
+    if (onHomeClick) onHomeClick()
+  }
+
   return (
     <div className="alchemy-container">
       <Header 
@@ -23,7 +28,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics }) {
         onConsultation={handleConsultation}
         onBack={onBack}
         onAlchemyClick={() => {}} // Пустой обработчик, так как мы уже в этом разделе
-        onChatClick={onChatClick}
+        onHomeClick={handleHeaderHomeClick}
       />
       
       <div className="alchemy-content">

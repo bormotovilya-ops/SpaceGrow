@@ -1,7 +1,7 @@
 .alchemy-container {
   min-height: 100vh;
   background: linear-gradient(135deg, rgba(15, 15, 25, 0.98), rgba(20, 20, 30, 0.95));
-  padding-top: 80px;
+  padding-top: 180px; /* Высота header: 16px padding + 64px иконка + speech bubble ~60px + 16px padding = ~156px + запас */
 }
 
 .alchemy-content {
@@ -42,6 +42,10 @@
 }
 
 @media (max-width: 768px) {
+  .alchemy-container {
+    padding-top: 150px; /* Высота header на мобильных: 12px padding + 48px иконка + speech bubble ~50px + 12px padding = ~122px + запас */
+  }
+
   .alchemy-content {
     padding: 30px 16px;
   }
