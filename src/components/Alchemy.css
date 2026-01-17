@@ -106,16 +106,18 @@
   }
 }
 
-/* Приветствие */
+/* Приветствие - перемещено вниз */
 .alchemy-hero-greeting {
-  position: relative;
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10;
-  margin-top: 20px;
-  padding: 20px 35px;
+  padding: 15px 30px;
   background: linear-gradient(
     135deg,
-    rgba(0, 0, 0, 0.7),
-    rgba(26, 26, 26, 0.8)
+    rgba(0, 0, 0, 0.75),
+    rgba(26, 26, 26, 0.85)
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -125,6 +127,9 @@
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 30px rgba(255, 215, 0, 0.2);
   animation: fadeInGreeting 1s ease-in-out;
+  width: 90%;
+  max-width: 600px;
+  box-sizing: border-box;
 }
 
 .alchemy-hero-subtitle {
@@ -161,12 +166,7 @@
   letter-spacing: 5px;
   text-transform: capitalize;
   font-variant: small-caps;
-  text-decoration: underline;
-  text-decoration-style: wavy;
-  text-decoration-color: rgba(255, 215, 0, 0.5);
-  text-underline-offset: 4px;
-  text-decoration-style: wavy;
-  text-decoration-color: rgba(255, 215, 0, 0.5);
+  /* Убрано волнистое подчеркивание */
   /* Магический градиентный текст */
   background: linear-gradient(
     135deg,
@@ -235,8 +235,7 @@
   width: 100%;
   height: 100%;
   z-index: 5;
-  margin-top: auto;
-  padding-bottom: 100px;
+  padding-bottom: 180px; /* Отступ снизу для приветствия */
 }
 
 .artifact-zone {
@@ -687,8 +686,13 @@
   }
 
   .alchemy-hero-greeting {
-    padding: 15px 20px;
-    margin-top: 10px;
+    bottom: 20px;
+    padding: 12px 18px;
+    width: 95%;
+  }
+  
+  .alchemy-interactive-zones {
+    padding-bottom: 150px; /* Отступ снизу для мобильных */
   }
 
   .alchemy-hero-title {
@@ -874,6 +878,12 @@
     padding-top: 50px; /* Еще меньший отступ для очень маленьких экранов */
   }
 
+  .alchemy-hero-greeting {
+    bottom: 15px;
+    padding: 10px 15px;
+    width: 95%;
+  }
+
   .alchemy-hero-title {
     font-size: 18px;
     letter-spacing: 1.5px;
@@ -882,6 +892,10 @@
   .alchemy-hero-subtitle {
     font-size: 12px;
     letter-spacing: 0.3px;
+  }
+  
+  .alchemy-interactive-zones {
+    padding-bottom: 130px; /* Отступ снизу для очень маленьких экранов */
   }
 
   .action-zone-title {

@@ -445,18 +445,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       {/* Hero Section с фоном */}
       <div className="alchemy-hero">
         <div className="alchemy-hero-background" ref={heroBackgroundRef}></div>
-        
-        {/* Приветствие */}
-        <div className="alchemy-hero-greeting">
-          <h1 className="alchemy-hero-title">
-            {userName ? `Добро пожаловать, ${userName}!` : 'Добро пожаловать!'}
-          </h1>
-          {!selectedArtifact && (
-            <p className="alchemy-hero-subtitle">
-              Выберите артефакт на столе, чтобы начать.
-            </p>
-          )}
-        </div>
 
         {/* Интерактивные кликабельные зоны */}
         <div className="alchemy-interactive-zones">
@@ -522,6 +510,18 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             onClick={() => handleArtifactClick('amulets')}
             title="Амулеты и Руны"
           ></div>
+        </div>
+        
+        {/* Приветствие - внизу, чтобы не загораживать артефакты */}
+        <div className="alchemy-hero-greeting">
+          <h1 className="alchemy-hero-title">
+            {userName ? `Добро пожаловать, ${userName}!` : 'Добро пожаловать!'}
+          </h1>
+          {!selectedArtifact && (
+            <p className="alchemy-hero-subtitle">
+              Выберите артефакт на столе, чтобы начать.
+            </p>
+          )}
         </div>
       </div>
 
