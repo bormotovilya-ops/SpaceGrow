@@ -7,7 +7,8 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { readFile, appendFile, mkdir } from 'fs/promises'
+import { readFile, appendFile, mkdir, existsSync } from 'fs'
+import { promises as fs } from 'fs'
 import { google } from 'googleapis'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -117,7 +118,9 @@ async function logConversationToGoogleSheets(entry) {
 async function logConversation(message, response, clientInfo = {}, req = null) {
   try {
     const timestamp = new Date().toISOString()
-    const logDir = join(__dirname, 'logs')
+    // __dirname указывает на scripts/, нужно подняться на уровень выше для папки logs
+    const rootDir = join(__dirname, '..')
+    const logDir = join(rootDir, 'logs')
     const logFile = join(logDir, `chat-${new Date().toISOString().split('T')[0]}.log`)
     
     // Создаем директорию logs, если её нет (игнорируем ошибку, если уже существует)
@@ -172,12 +175,33 @@ async function logConversation(message, response, clientInfo = {}, req = null) {
   }
 }
 
-dotenv.config()
+// Загружаем .env из корня проекта (__dirname указывает на scripts/)
+dotenv.config({ path: join(__dirname, '..', '.env') })
 
 // Функция для загрузки файлов знаний
 async function loadKnowledgeFiles() {
   try {
-    const siteKnowledge = await readFile(join(__dirname, 'site_knowledge.md'), 'utf-8').catch(() => null)
+    // __dirname указывает на scripts/, нужно подняться на уровень выше
+    const rootDir = join(__dirname, '..')
+    const knowledgePath = join(rootDir, 'site_knowledge.md')
+    
+    console.log('🔍 Загрузка файла знаний:', {
+      __dirname,
+      rootDir,
+      knowledgePath,
+      exists: existsSync(knowledgePath)
+    })
+    
+    const siteKnowledge = await readFile(knowledgePath, 'utf-8').catch((err) => {
+      console.error('❌ Ошибка чтения файла знаний:', err.message)
+      return null
+    })
+    
+    if (!siteKnowledge) {
+      console.error('❌ Файл site_knowledge.md не найден или пуст по пути:', knowledgePath)
+    } else {
+      console.log('✅ Файл знаний загружен, размер:', siteKnowledge.length, 'символов')
+    }
     
     return {
       siteKnowledge: siteKnowledge || 'Файл site_knowledge.md не найден'
@@ -339,13 +363,21 @@ async function buildSystemContext(shouldAddCTA = false) {
   
   // Логируем, что попадает в промпт (проверка на наличие ключевой информации)
   const hasCityInfo = siteKnowledge.includes('Родился в Перми') || siteKnowledge.includes('живу в Сочи') || siteKnowledge.includes('Перми')
+  const isMockContent = siteKnowledge.includes('Файл site_knowledge.md не найден') || siteKnowledge.length < 100
+  
   console.log('📋 Knowledge file loaded:', {
     originalLength: siteKnowledge.length,
     hasCityInfo: hasCityInfo,
+    isMockContent: isMockContent,
     preview: siteKnowledge.substring(0, 200) + '...'
   })
   
-  if (!hasCityInfo) {
+  if (isMockContent) {
+    console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Файл знаний не загружен! Используется заглушка.')
+    console.error('🔍 Проверьте путь к файлу site_knowledge.md')
+  }
+  
+  if (!hasCityInfo && !isMockContent) {
     console.warn('⚠️ WARNING: City information (Пермь/Сочи) not found in knowledge file!')
   }
 
@@ -376,11 +408,16 @@ ${siteKnowledge}
 
 // Endpoint для чата (эмулирует api/chat.js)
 app.post('/api/chat', async (req, res) => {
-  console.log('📨 Получен запрос:', req.body.message?.substring(0, 50) + '...')
+  console.log('\n' + '='.repeat(60))
+  console.log('📨 ПОЛУЧЕН ЗАПРОС К /api/chat')
+  console.log('='.repeat(60))
+  console.log('📝 Сообщение:', req.body.message?.substring(0, 100) + (req.body.message?.length > 100 ? '...' : ''))
+  console.log('📊 Message count:', req.body.messageCount || 0)
   
   const { message, messageCount = 0 } = req.body
 
   if (!message || !message.trim()) {
+    console.error('❌ Пустое сообщение!')
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
   }
 
@@ -391,29 +428,36 @@ app.post('/api/chat', async (req, res) => {
   const GROQ_API_KEY = process.env.GROQ_API_KEY
   const USE_MOCK_ENV = process.env.USE_MOCK_RESPONSES === 'true'
 
-  console.log('🔍 Проверка настроек:')
-  console.log('  - USE_MOCK_RESPONSES:', process.env.USE_MOCK_RESPONSES)
+  console.log('\n🔍 ПРОВЕРКА НАСТРОЕК:')
+  console.log('  - USE_MOCK_RESPONSES:', process.env.USE_MOCK_RESPONSES || 'не установлен')
   console.log('  - USE_MOCK_ENV:', USE_MOCK_ENV)
   console.log('  - GROQ_API_KEY существует:', !!GROQ_API_KEY)
   console.log('  - GROQ_API_KEY первые 15 символов:', GROQ_API_KEY ? GROQ_API_KEY.substring(0, 15) + '...' : 'не найден')
   console.log('  - GROQ_API_KEY длина:', GROQ_API_KEY ? GROQ_API_KEY.length : 0)
-  console.log('  - Все env переменные с API:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
-
-  // Загружаем файлы знаний и формируем полный промпт
-  const systemContext = await buildSystemContext(shouldAddCTA)
-  console.log('📚 Файлы знаний загружены, промпт сформирован', { shouldAddCTA, messageCount })
-
+  
+  // КРИТИЧЕСКАЯ ПРОВЕРКА: если USE_MOCK_ENV = true, сразу возвращаем заглушку
   if (USE_MOCK_ENV) {
-    console.log('📝 Используется режим заглушки (USE_MOCK_RESPONSES=true)')
+    console.log('\n⚠️ ВНИМАНИЕ: USE_MOCK_RESPONSES=true - принудительно используется заглушка!')
+    console.log('💡 Чтобы использовать Groq API, удалите или установите USE_MOCK_RESPONSES=false в .env')
+    const systemContext = await buildSystemContext(shouldAddCTA)
     return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 
   if (!GROQ_API_KEY) {
-    console.error('❌ GROQ_API_KEY не найден!')
+    console.error('\n❌ GROQ_API_KEY НЕ НАЙДЕН!')
+    console.error('💡 Добавьте GROQ_API_KEY в файл .env')
+    const systemContext = await buildSystemContext(shouldAddCTA)
     return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 
-  console.log('✅ Groq API ключ найден, отправляю запрос к Groq API...')
+  // Загружаем файлы знаний и формируем полный промпт
+  console.log('\n📚 Загрузка файлов знаний...')
+  const systemContext = await buildSystemContext(shouldAddCTA)
+  console.log('✅ Файлы знаний загружены, промпт сформирован')
+  console.log('   - Длина промпта:', systemContext.length, 'символов')
+  console.log('   - Should add CTA:', shouldAddCTA)
+
+  console.log('\n✅ Groq API ключ найден, отправляю запрос к Groq API...')
 
   try {
     // Используем Groq API (быстрый и бесплатный)
@@ -503,7 +547,8 @@ app.listen(PORT, () => {
   
   // Проверяем загрузку .env
   console.log(`\n🔍 Проверка переменных окружения:`)
-  console.log(`  - .env файл загружен:`, require('fs').existsSync('.env'))
+  const envPath = join(__dirname, '..', '.env')
+  console.log(`  - .env файл загружен:`, existsSync(envPath))
   
   const groqApiKey = process.env.GROQ_API_KEY
   const useMock = process.env.USE_MOCK_RESPONSES === 'true'

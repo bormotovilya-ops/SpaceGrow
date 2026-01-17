@@ -79,7 +79,7 @@ def create_drawio_json(description_data):
     
     return drawio_data
 
-def save_json(data, filename="interface_drawio.json"):
+def save_json(data, filename="config/interface_drawio.json"):
     """Сохраняет JSON в файл"""
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

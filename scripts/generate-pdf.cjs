@@ -5,29 +5,49 @@ const path = require('path');
 
 const BASE_URL = 'http://localhost:5173';
 const OUTPUT_FILE = 'site_screenshots.pdf';
-const TEMP_DIR = path.join(__dirname, 'temp_screenshots');
+// __dirname указывает на scripts/, нужно подняться на уровень выше для temp/
+const TEMP_DIR = path.join(__dirname, '..', 'temp', 'temp_screenshots');
 
 // Создаем временную директорию
-if (!fs.existsSync(TEMP_DIR)) {
-  fs.mkdirSync(TEMP_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(TEMP_DIR)) {
+    fs.mkdirSync(TEMP_DIR, { recursive: true });
+  }
+} catch (error) {
+  console.error('Ошибка создания временной директории:', error.message);
+  process.exit(1);
 }
 
-async function waitForServer(browser, maxAttempts = 30) {
+async function waitForServer(browser, maxAttempts = 60) {
   console.log('Ожидание запуска dev-сервера...');
-  const testPage = await browser.newPage();
+  let testPage = null;
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      await testPage.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 2000 });
-      await testPage.close();
-      console.log('✓ Сервер запущен!');
+      if (!testPage || testPage.isClosed()) {
+        testPage = await browser.newPage();
+      }
+      await testPage.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 3000 });
+      if (testPage && !testPage.isClosed()) {
+        await testPage.close();
+      }
+      console.log('\n✓ Сервер запущен!');
       return true;
     } catch (e) {
       // Сервер еще не запущен
+      if (testPage && !testPage.isClosed()) {
+        try {
+          await testPage.close();
+        } catch (e2) {}
+      }
     }
     await new Promise(resolve => setTimeout(resolve, 1000));
-    process.stdout.write('.');
+    if (i % 5 === 0) process.stdout.write('.');
   }
-  await testPage.close();
+  if (testPage && !testPage.isClosed()) {
+    try {
+      await testPage.close();
+    } catch (e) {}
+  }
   console.log('\n✗ Сервер не запустился за отведенное время');
   return false;
 }
@@ -62,7 +82,15 @@ async function generatePDF() {
   
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    args: [
+      '--no-sandbox', 
+      '--disable-setuid-sandbox', 
+      '--disable-dev-shm-usage',
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--user-data-dir=' + path.join(__dirname, '..', 'puppeteer-data')
+    ],
+    ignoreHTTPSErrors: true
   });
   
   // Ждем запуска сервера
@@ -219,7 +247,8 @@ async function generatePDF() {
     margin: 20
   });
   
-  const outputPath = path.join(__dirname, OUTPUT_FILE);
+  // Сохраняем PDF в корне проекта
+  const outputPath = path.join(__dirname, '..', OUTPUT_FILE);
   doc.pipe(fs.createWriteStream(outputPath));
   
   let pageCount = 0;
@@ -254,13 +283,36 @@ async function generatePDF() {
   
   // Очистка
   console.log('\n🧹 Очистка временных файлов...');
-  screenshots.forEach(s => {
-    if (fs.existsSync(s.file)) {
-      fs.unlinkSync(s.file);
+  try {
+    screenshots.forEach(s => {
+      try {
+        if (fs.existsSync(s.file)) {
+          fs.unlinkSync(s.file);
+        }
+      } catch (e) {
+        // Игнорируем ошибки удаления отдельных файлов
+      }
+    });
+    if (fs.existsSync(TEMP_DIR)) {
+      try {
+        fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+      } catch (e) {
+        // Пробуем альтернативный способ
+        try {
+          const files = fs.readdirSync(TEMP_DIR);
+          files.forEach(file => {
+            try {
+              fs.unlinkSync(path.join(TEMP_DIR, file));
+            } catch (e2) {}
+          });
+          fs.rmdirSync(TEMP_DIR);
+        } catch (e2) {
+          console.log('⚠️  Некоторые временные файлы не удалены, но это не критично');
+        }
+      }
     }
-  });
-  if (fs.existsSync(TEMP_DIR)) {
-    fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+  } catch (error) {
+    console.log('⚠️  Ошибка при очистке:', error.message);
   }
   
   console.log('\n✨ Готово!');

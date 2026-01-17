@@ -3,6 +3,10 @@ import logging
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+from db import Database
+from notifications import NotificationService
 
 # Загружаем переменные окружения
 load_dotenv()
@@ -17,10 +21,22 @@ logger = logging.getLogger(__name__)
 # URL вашего сайта (MiniApp)
 MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrow.vercel.app/')
 
+# Инициализация БД и сервиса уведомлений
+db = Database()
+notification_service = None  # Инициализируется после создания бота
+
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /start"""
     user = update.effective_user
+    
+    # Создаем/обновляем пользователя в БД
+    db.create_or_update_user(
+        user_id=user.id,
+        username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name
+    )
     
     # Создаем кнопку с WebApp
     keyboard = [
@@ -46,6 +62,53 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         welcome_text,
         reply_markup=reply_markup,
         parse_mode='HTML'
+    )
+
+# Обработка данных от MiniApp (web_app_data)
+async def handle_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Обработчик данных от MiniApp - когда пользователь открывает приложение"""
+    user = update.effective_user
+    
+    # Получаем данные от MiniApp
+    web_app_data = update.message.web_app_data
+    
+    if web_app_data:
+        # Если пользователь открыл MiniApp, отмечаем что диагностика началась
+        # Можно также проверить, содержит ли data информацию о диагностике
+        data = web_app_data.data
+        
+        # Если в данных есть информация о начале диагностики
+        if 'diagnostics' in data.lower() or 'started' in data.lower():
+            db.mark_diagnostics_started(user.id)
+            logger.info(f"Пользователь {user.id} начал диагностику через MiniApp")
+        else:
+            # Просто открытие MiniApp тоже считаем началом
+            db.mark_diagnostics_started(user.id)
+            logger.info(f"Пользователь {user.id} открыл MiniApp")
+
+# Команда /diagnostics
+async def diagnostics_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Открыть диагностику"""
+    user = update.effective_user
+    
+    # Отмечаем, что пользователь начал диагностику
+    db.mark_diagnostics_started(user.id)
+    
+    diagnostics_url = f"{MINIAPP_URL}#diagnostics"
+    keyboard = [
+        [InlineKeyboardButton(
+            "📊 Пройти диагностику",
+            web_app=WebAppInfo(url=diagnostics_url)
+        )]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        "Пройди бесплатную диагностику воронки продаж (21 вопрос) и получи наглядную картину:\n"
+        "• Где деньги теряются\n"
+        "• Где система уже работает хорошо\n\n"
+        "Нажми на кнопку, чтобы начать:",
+        reply_markup=reply_markup
     )
 
 # Команда /help
@@ -89,26 +152,6 @@ async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     
     await update.message.reply_text(
         "Нажми на кнопку, чтобы открыть SpaceGrow IT-Service:",
-        reply_markup=reply_markup
-    )
-
-# Команда /diagnostics
-async def diagnostics_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Открыть диагностику"""
-    diagnostics_url = f"{MINIAPP_URL}#diagnostics"
-    keyboard = [
-        [InlineKeyboardButton(
-            "📊 Пройти диагностику",
-            web_app=WebAppInfo(url=diagnostics_url)
-        )]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        "Пройди бесплатную диагностику воронки продаж (21 вопрос) и получи наглядную картину:\n"
-        "• Где деньги теряются\n"
-        "• Где система уже работает хорошо\n\n"
-        "Нажми на кнопку, чтобы начать:",
         reply_markup=reply_markup
     )
 
@@ -172,6 +215,8 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 def main() -> None:
     """Запуск бота"""
+    global notification_service
+    
     # Получаем токен из переменных окружения
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     
@@ -181,12 +226,30 @@ def main() -> None:
     # Создаем приложение
     application = Application.builder().token(token).build()
     
+    # Инициализируем сервис уведомлений
+    notification_service = NotificationService(application.bot, db, MINIAPP_URL)
+    
+    # Настраиваем планировщик задач
+    scheduler = AsyncIOScheduler()
+    
+    # Проверяем напоминания каждую минуту
+    scheduler.add_job(
+        notification_service.check_and_send_reminders,
+        trigger=IntervalTrigger(minutes=1),
+        id='check_reminders',
+        replace_existing=True
+    )
+    
+    scheduler.start()
+    logger.info("Планировщик задач запущен")
+    
     # Регистрируем обработчики
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("site", site_command))
     application.add_handler(CommandHandler("diagnostics", diagnostics_command))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_web_app_data))
     
     # Обработчик ошибок
     application.add_error_handler(error_handler)

@@ -42,8 +42,15 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+temp/
 temp_prompt.txt
 ~$*.xlsx
+
+# Database files
+telegram-bot/bot_users.db
+telegram-bot/bot_users.db-journal
+*.db
+*.db-journal
 
 
 

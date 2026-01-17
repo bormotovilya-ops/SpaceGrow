@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:server": "node server-local.js",
+    "dev:server": "node scripts/server-local.js",
     "dev:all": "concurrently \"npm run dev:server\" \"npm run dev\"",
     "build": "vite build",
     "preview": "vite preview",
-    "generate-pdf": "node generate-pdf.cjs",
-    "generate-screenshots": "node generate-screenshots.cjs"
+    "generate-pdf": "node scripts/generate-pdf.cjs",
+    "generate-screenshots": "node scripts/generate-screenshots.cjs"
   },
   "dependencies": {
     "framer-motion": "^12.24.12",

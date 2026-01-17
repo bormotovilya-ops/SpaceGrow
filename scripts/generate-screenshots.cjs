@@ -3,8 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 const BASE_URL = 'http://localhost:5173';
-const OUTPUT_DIR = path.join(__dirname, 'screenshots');
-const HTML_FILE = path.join(__dirname, 'screenshots.html');
+// __dirname указывает на scripts/, screenshots в корне проекта
+const OUTPUT_DIR = path.join(__dirname, '..', 'screenshots');
+const HTML_FILE = path.join(__dirname, '..', 'screenshots.html');
 
 // Создаем директорию для скриншотов
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -293,7 +294,7 @@ async function generateScreenshots() {
     ${screenshots.map((s, i) => `
       <div class="screenshot-item">
         <h2>${i + 1}. ${s.name}</h2>
-        <img src="${path.relative(__dirname, s.file).replace(/\\/g, '/')}" alt="${s.name}">
+        <img src="${path.relative(path.join(__dirname, '..'), s.file).replace(/\\/g, '/')}" alt="${s.name}">
       </div>
     `).join('')}
   </div>

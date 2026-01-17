@@ -522,8 +522,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
-    console.log('💬 Assistant message:', assistantMessage.substring(0, 100) + '...')
-
     // Очищаем ответ от markdown-символов и форматируем
     const cleanedResponse = formatFinalResponse(assistantMessage, shouldAddCTA)
 

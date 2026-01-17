@@ -179,8 +179,10 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           errorMessage = 'Ошибка авторизации. Проверьте, что токен Groq указан правильно в файле .env'
         } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
           errorMessage = 'Превышен лимит запросов. Попробуйте позже.'
-        } else if (errorMessage.includes('model') || errorMessage.includes('404')) {
-          errorMessage = 'Ошибка выбора модели. Попробуйте позже.'
+        } else if (errorMessage.includes('model') || errorMessage.includes('404') || errorMessage.includes('not found')) {
+          errorMessage = 'Временно недоступно. Используется режим заглушки.'
+        } else if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+          errorMessage = 'Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server).'
         }
         
         setChatMessages(prev => [...prev, {
