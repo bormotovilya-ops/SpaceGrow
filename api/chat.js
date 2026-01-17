@@ -252,7 +252,7 @@ ${siteKnowledge}
 
 # Правила ответа:
 - Говори от первого лица (Я, меня, мой), обращайся на "вы"
-- Максимальная длина ответа — 300 символов. Только суть!
+- КРИТИЧЕСКИ ВАЖНО: Твой ответ должен быть КРАТКИМ — максимум 250-300 символов. Пиши только суть, без лишних слов. ЗАВЕРШАЙ мысль полностью в пределах этого лимита. НЕ начинай новые предложения, если не укладываешься в лимит.
 - Если добавляешь CTA — ставь ссылку на новой строке (один перенос строки), без пустой строки. Формат: [Записаться на диагностику](https://t.me/ilyaborm)
 - Не используй фразы "Как я могу вам помочь?"
 - Будь живым экспертом, не роботом${ctaInstruction}`
@@ -298,15 +298,56 @@ function formatFinalResponse(rawText, shouldAddCTA, maxChars = 300) {
     .replaceAll(CTA_URL, '')
     .trim()
 
+  // УБРАЛИ техническую обрезку - полагаемся на модель
+  // Если модель не послушалась и ответ слишком длинный, обрезаем только как fallback
+  // Ищем последнее законченное предложение перед лимитом
+  if (main.length > maxChars + 50) { // Только если сильно превысила (больше чем на 50 символов)
+    const truncated = main.substring(0, maxChars + 50)
+    const lastSentenceEnd = Math.max(
+      truncated.lastIndexOf('. '),
+      truncated.lastIndexOf('! '),
+      truncated.lastIndexOf('? '),
+      truncated.lastIndexOf('.\n'),
+      truncated.lastIndexOf('!\n'),
+      truncated.lastIndexOf('?\n')
+    )
+    
+    if (lastSentenceEnd > maxChars - 100 && lastSentenceEnd > 0) {
+      main = main.substring(0, lastSentenceEnd + 1).trim()
+    } else {
+      // Если не нашли конец предложения, обрезаем на границе слова
+      const wordBoundary = main.lastIndexOf(' ', maxChars)
+      if (wordBoundary > maxChars - 50) {
+        main = main.substring(0, wordBoundary).trim()
+      }
+    }
+  }
+
   if (!shouldAddCTA) {
-    return main.length > maxChars ? main.slice(0, maxChars).trimEnd() : main
+    return main
   }
 
   // CTA нужен: оставляем место под "\n" + CTA
   const reserve = 1 + CTA_MARKDOWN.length
   const maxMain = Math.max(0, maxChars - reserve)
-  if (main.length > maxMain) {
-    main = main.slice(0, maxMain).trimEnd()
+  
+  // Если с CTA текст всё ещё слишком длинный, обрезаем только как fallback
+  if (main.length > maxMain + 50) {
+    const truncated = main.substring(0, maxMain + 50)
+    const lastSentenceEnd = Math.max(
+      truncated.lastIndexOf('. '),
+      truncated.lastIndexOf('! '),
+      truncated.lastIndexOf('? ')
+    )
+    
+    if (lastSentenceEnd > maxMain - 100 && lastSentenceEnd > 0) {
+      main = main.substring(0, lastSentenceEnd + 1).trim()
+    } else {
+      const wordBoundary = main.lastIndexOf(' ', maxMain)
+      if (wordBoundary > maxMain - 50) {
+        main = main.substring(0, wordBoundary).trim()
+      }
+    }
   }
 
   // Гарантируем: ровно одна новая строка перед CTA (без пустой строки)
@@ -426,7 +467,7 @@ export default async function handler(req, res) {
         }
       ],
       temperature: 0.7,
-      max_tokens: 300 // Увеличил до 300, так как Groq быстрый
+      max_tokens: 150 // Уменьшил до 150, чтобы модель сама контролировала длину, но могла закончить мысль
     }
 
     console.log('📡 Sending request to Groq API...')
