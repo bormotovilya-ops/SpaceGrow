@@ -1,7 +1,7 @@
-/* Шрифт Harry Potter - если файл есть в public/fonts/, он подключится автоматически */
+/* Шрифт Harry Potter - подключение скачанного шрифта */
 @font-face {
   font-family: 'HarryPotter';
-  src: url('/fonts/harry-potter.ttf') format('truetype');
+  src: url('/fonts/harry-potter-russian-version-of-gfdtk-regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
