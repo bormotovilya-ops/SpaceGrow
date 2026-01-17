@@ -3,20 +3,24 @@ import logging
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 from db import Database
 from notifications import NotificationService
 
 # Загружаем переменные окружения
 load_dotenv()
 
-# Настройка логирования
+# Настройка логирования (вывод в консоль и файл)
+log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    format=log_format,
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler('bot.log', encoding='utf-8'),
+        logging.StreamHandler()  # Также выводить в консоль
+    ]
 )
 logger = logging.getLogger(__name__)
+logger.info("Логирование настроено. Логи сохраняются в bot.log")
 
 # URL вашего сайта (MiniApp)
 MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrow.vercel.app/')
@@ -37,6 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         first_name=user.first_name,
         last_name=user.last_name
     )
+    logger.info(f"Пользователь {user.id} запустил /start. Таймер напоминания установлен на 1 минуту")
     
     # Создаем кнопку с WebApp
     keyboard = [
@@ -111,6 +116,90 @@ async def diagnostics_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         reply_markup=reply_markup
     )
 
+# Команда /stats
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Показать статистику из базы данных (только для владельца)"""
+    user = update.effective_user
+    
+    # Проверяем, что команда доступна только для @ilyaborm
+    if user.username != 'ilyaborm':
+        await update.message.reply_text(
+            "❌ Эта команда доступна только администратору."
+        )
+        logger.warning(f"Пользователь {user.id} (@{user.username}) попытался использовать /stats")
+        return
+    
+    try:
+        # Получаем статистику из БД
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        # Общая статистика
+        cursor.execute('SELECT COUNT(*) as total FROM users')
+        total = cursor.fetchone()['total']
+        
+        cursor.execute('SELECT COUNT(*) as started FROM users WHERE has_started_diagnostics = 1')
+        started = cursor.fetchone()['started']
+        
+        cursor.execute('SELECT COUNT(*) as first_sent FROM users WHERE first_reminder_sent = 1')
+        first_sent = cursor.fetchone()['first_sent']
+        
+        cursor.execute('SELECT COUNT(*) as second_sent FROM users WHERE second_reminder_sent = 1')
+        second_sent = cursor.fetchone()['second_sent']
+        
+        # Пользователи ожидающие первого напоминания
+        cursor.execute('''
+            SELECT COUNT(*) as pending 
+            FROM users 
+            WHERE has_started_diagnostics = 0 
+            AND first_reminder_sent = 0
+            AND started_at IS NOT NULL
+            AND datetime(started_at, '+10 minutes') <= datetime('now')
+        ''')
+        pending_first = cursor.fetchone()['pending']
+        
+        # Последние 5 пользователей
+        cursor.execute('''
+            SELECT user_id, first_name, username, has_started_diagnostics, 
+                   first_reminder_sent, started_at
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 5
+        ''')
+        recent_users = cursor.fetchall()
+        
+        conn.close()
+        
+        # Формируем сообщение
+        stats_text = (
+            f"📊 <b>Статистика бота</b>\n\n"
+            f"👥 Всего пользователей: <b>{total}</b>\n"
+            f"✅ Начали диагностику: <b>{started}</b>\n"
+            f"📨 Первое напоминание отправлено: <b>{first_sent}</b>\n"
+            f"📨 Второе напоминание отправлено: <b>{second_sent}</b>\n"
+            f"⏰ Ожидают первого напоминания (прошла 10+ мин): <b>{pending_first}</b>\n\n"
+        )
+        
+        if recent_users:
+            stats_text += "<b>Последние пользователи:</b>\n"
+            for idx, u in enumerate(recent_users, 1):
+                name = u['first_name'] or u['username'] or f"ID:{u['user_id']}"
+                status = "✅ Диагностика" if u['has_started_diagnostics'] else "⏳ Ожидает"
+                reminder = "📨" if u['first_reminder_sent'] else ""
+                stats_text += f"{idx}. {name} - {status} {reminder}\n"
+        
+        await update.message.reply_text(
+            stats_text,
+            parse_mode='HTML'
+        )
+        logger.info(f"Пользователь {user.id} запросил статистику")
+        
+    except Exception as e:
+        logger.error(f"Ошибка при получении статистики: {e}")
+        await update.message.reply_text(
+            f"❌ Ошибка при получении статистики: {str(e)}"
+        )
+
 # Команда /help
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /help"""
@@ -119,7 +208,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/start - Начать работу с ботом\n"
         "/help - Показать эту справку\n"
         "/site - Открыть сайт SpaceGrow\n"
-        "/diagnostics - Пройти диагностику воронки\n\n"
+        "/diagnostics - Пройти диагностику воронки\n"
+        "/stats - Показать статистику бота\n\n"
         "💬 Контакты:\n"
         "Telegram: @ilyaborm\n"
         "Канал: @SoulGuideIT\n"
@@ -229,25 +319,27 @@ def main() -> None:
     # Инициализируем сервис уведомлений
     notification_service = NotificationService(application.bot, db, MINIAPP_URL)
     
-    # Настраиваем планировщик задач
-    scheduler = AsyncIOScheduler()
+    # Настраиваем планировщик задач через JobQueue
+    job_queue = application.job_queue
     
     # Проверяем напоминания каждую минуту
-    scheduler.add_job(
-        notification_service.check_and_send_reminders,
-        trigger=IntervalTrigger(minutes=1),
-        id='check_reminders',
-        replace_existing=True
-    )
-    
-    scheduler.start()
-    logger.info("Планировщик задач запущен")
+    if job_queue:
+        job_queue.run_repeating(
+            notification_service.check_and_send_reminders,
+            interval=60,  # 60 секунд = 1 минута
+            first=60,  # Первый запуск через 60 секунд
+            name='check_reminders'
+        )
+        logger.info("Планировщик задач запущен. Проверка напоминаний каждую минуту")
+    else:
+        logger.error("JobQueue не доступен!")
     
     # Регистрируем обработчики
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("site", site_command))
     application.add_handler(CommandHandler("diagnostics", diagnostics_command))
+    application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_web_app_data))
     

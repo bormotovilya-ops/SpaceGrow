@@ -61,6 +61,9 @@ class Database:
                         updated_at = CURRENT_TIMESTAMP
                     WHERE user_id = ?
                 ''', (username, first_name, last_name, user_id))
+                logger.info(f"Пользователь {user_id} обновлен. started_at установлен на CURRENT_TIMESTAMP")
+            else:
+                logger.info(f"Пользователь {user_id} уже начал диагностику, started_at не обновляется")
         else:
             # Создаем нового пользователя
             cursor.execute('''
@@ -68,6 +71,7 @@ class Database:
                                  has_started_diagnostics, started_at)
                 VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP)
             ''', (user_id, username, first_name, last_name))
+            logger.info(f"Новый пользователь {user_id} создан. started_at установлен на CURRENT_TIMESTAMP")
         
         conn.commit()
         conn.close()
@@ -105,6 +109,7 @@ class Database:
                 AND started_at IS NOT NULL
                 AND datetime(started_at, '+10 minutes') <= datetime('now')
             ''')
+            logger.info(f"Запрос первого напоминания выполнен. Текущее время: {datetime.now()}")
         elif reminder_type == "second":
             # Второе напоминание через 24 часа
             cursor.execute('''
@@ -117,6 +122,10 @@ class Database:
             ''')
         
         users = cursor.fetchall()
+        logger.info(f"Найдено пользователей для напоминания '{reminder_type}': {len(users)}")
+        if users:
+            for user in users:
+                logger.info(f"  - Пользователь {user['user_id']} ({user['username'] or user['first_name']})")
         conn.close()
         return users
     
