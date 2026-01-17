@@ -589,8 +589,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick, onHom
           <div className="diagnostics-intro-content">
             <h1 className="diagnostics-intro-title">Диагностика системы продаж</h1>
             <p className="diagnostics-intro-subtitle">
-              Ответьте на {totalQuestions} вопросов и получите наглядную картину своей воронки:
-              где деньги теряются, а где система уже работает.
+              Ответьте на 21 вопрос и получите наглядную картину своей воронки: где деньги теряются, а где система уже работает хорошо.
             </p>
             <button className="diagnostics-start-btn" onClick={handleStart}>
               Начать диагностику
