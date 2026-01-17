@@ -1,64 +1,878 @@
+/* Контейнер страницы */
 .alchemy-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, rgba(15, 15, 25, 0.98), rgba(20, 20, 30, 0.95));
-  padding-top: 180px; /* Высота header: 16px padding + 64px иконка + speech bubble ~60px + 16px padding = ~156px + запас */
+  background: transparent; /* Прозрачный фон, чтобы hero-background был виден */
+  position: relative;
+  overflow-x: hidden;
 }
 
-.alchemy-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 24px;
+.alchemy-container.dark-mode {
+  background: #000000; /* Черный фон только в темном режиме */
 }
 
-.alchemy-sections {
+/* Прозрачный Header на странице Alchemy - в 2 раза прозрачнее */
+.alchemy-container .header-block {
+  background: rgba(20, 20, 30, 0.075) !important; /* В 2 раза прозрачнее (0.15 / 2 = 0.075) */
+  backdrop-filter: blur(15px) saturate(120%);
+  -webkit-backdrop-filter: blur(15px) saturate(120%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  padding: 6px 20px 4px 20px !important; /* Еще меньше padding для меньшей высоты */
+}
+
+/* Уменьшаем размер иконок на странице Alchemy */
+.alchemy-container .header-menu-icon-wrapper {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+}
+
+.alchemy-container .header-menu-icon {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+}
+
+/* Убираем подписи под картинками */
+.alchemy-container .header-menu-label {
+  display: none !important;
+}
+
+/* Уменьшаем высоту кнопок меню */
+.alchemy-container .header-menu-item {
+  background: rgba(255, 255, 255, 0.01) !important;
+  min-height: 50px !important; /* Еще меньше минимальная высота */
+  padding: 4px 2px !important;
+  gap: 0 !important; /* Убираем gap так как нет подписей */
+  justify-content: center !important;
+}
+
+.alchemy-container .header-menu-item:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Скрываем speech bubble для профиля на странице Alchemy */
+.alchemy-container .speech-bubble {
+  display: none !important;
+}
+
+/* Уменьшаем gap в сетке меню */
+.alchemy-container .header-menu-grid {
+  gap: 4px !important;
+}
+
+/* Hero Section */
+.alchemy-hero {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  padding-top: 70px; /* Отступ для уменьшенного Header */
 }
 
-.alchemy-section {
+/* Фоновое изображение */
+.alchemy-hero-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('/images/i.webp');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  z-index: 1;
+  /* Адаптация под вертикальное соотношение 9:16 для мобильных */
+}
+
+/* Эффект параллакса при прокрутке */
+@media (prefers-reduced-motion: no-preference) {
+  .alchemy-hero-background {
+    will-change: transform;
+  }
+}
+
+/* Приветствие */
+.alchemy-hero-greeting {
+  position: relative;
+  z-index: 10;
+  margin-top: 20px;
+  padding: 15px 30px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.7),
+    rgba(26, 26, 26, 0.8)
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(255, 215, 0, 0.2);
+  animation: fadeInGreeting 1s ease-in-out;
+}
+
+@keyframes fadeInGreeting {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alchemy-hero-title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  letter-spacing: 1px;
+  /* Магический градиентный текст */
+  background: linear-gradient(
+    135deg,
+    #FFD700 0%,
+    #FFA500 25%,
+    #FFD700 50%,
+    #FFF8DC 75%,
+    #FFD700 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: #FFD700; /* Fallback для браузеров без поддержки */
+  /* Многослойное светящееся свечение */
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 0.8),
+    0 0 20px rgba(255, 165, 0, 0.6),
+    0 0 30px rgba(255, 215, 0, 0.4),
+    0 0 40px rgba(255, 215, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+  /* Анимация пульсации свечения */
+  animation: magicGlow 3s ease-in-out infinite, gradientShift 4s ease infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
+/* Анимация пульсации свечения */
+@keyframes magicGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(255, 215, 0, 0.8),
+      0 0 20px rgba(255, 165, 0, 0.6),
+      0 0 30px rgba(255, 215, 0, 0.4),
+      0 0 40px rgba(255, 215, 0, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.8);
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+  }
+  50% {
+    text-shadow: 
+      0 0 20px rgba(255, 215, 0, 1),
+      0 0 30px rgba(255, 165, 0, 0.8),
+      0 0 40px rgba(255, 215, 0, 0.6),
+      0 0 50px rgba(255, 215, 0, 0.5),
+      0 0 60px rgba(255, 165, 0, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.8);
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
+  }
+}
+
+/* Анимация движения градиента */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Интерактивные зоны */
+.alchemy-interactive-zones {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  margin-top: auto;
+  padding-bottom: 100px;
+}
+
+.artifact-zone {
+  position: absolute;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  z-index: 6;
+  /* Зоны становятся видимыми при наведении */
+}
+
+.artifact-zone::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #FFD700;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.artifact-zone:hover {
+  opacity: 1;
+  border-color: rgba(255, 215, 0, 0.6);
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  transform: scale(1.05);
+}
+
+.artifact-zone:hover::after {
+  opacity: 1;
+}
+
+/* Расположение зон на изображении */
+.artifact-mirror {
+  top: 5%;
+  left: 20%;
+  width: 15%;
+  height: 15%;
+}
+
+.artifact-crystal {
+  top: 8%;
+  right: 20%;
+  width: 12%;
+  height: 12%;
+}
+
+.artifact-astrolabe {
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 25%;
+  height: 30%;
+}
+
+.artifact-candle {
+  top: 40%;
+  left: 10%;
+  width: 10%;
+  height: 15%;
+}
+
+.artifact-snitch {
+  top: 45%;
+  right: 15%;
+  width: 10%;
+  height: 10%;
+}
+
+.artifact-tarot {
+  bottom: 25%;
+  left: 15%;
+  width: 12%;
+  height: 15%;
+}
+
+.artifact-hourglass {
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10%;
+  height: 15%;
+}
+
+.artifact-chalice {
+  bottom: 25%;
+  right: 20%;
+  width: 10%;
+  height: 12%;
+}
+
+.artifact-amulets {
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20%;
+  height: 10%;
+}
+
+/* Секция действий */
+.action-zone {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #1a1a1a;
+  background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+  padding: 80px 20px 120px;
+  z-index: 20;
+  display: block;
+}
+
+.action-zone-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Контент по умолчанию */
+.action-zone-default {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.action-zone-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* Динамический контент */
+.action-zone-content {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: fadeInContent 0.5s ease-in-out;
+}
+
+@keyframes fadeInContent {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.action-zone-title {
+  color: #FFD700;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 20px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.action-zone-content .action-zone-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 0 0 30px;
+  text-align: center;
+}
+
+/* Группы ввода */
+.action-zone-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.action-zone-input {
+  width: 100%;
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
   box-sizing: border-box;
 }
 
-.alchemy-title {
-  color: #ffffff;
-  font-size: 36px;
-  font-weight: 700;
-  margin: 0 0 20px;
+.action-zone-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.action-zone-input:focus {
+  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.action-zone-input[type="date"],
+.action-zone-input[type="number"] {
+  color-scheme: dark;
+}
+
+/* Кнопки */
+.action-zone-button {
+  width: 100%;
+  padding: 15px 30px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.15));
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 12px;
+  color: #FFD700;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.action-zone-button:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.25));
+  border-color: rgba(255, 215, 0, 0.8);
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 0.4),
+    0 4px 16px rgba(255, 215, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.action-zone-button:active {
+  transform: translateY(0);
+}
+
+/* Карты Таро */
+.tarot-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.tarot-card-button {
+  padding: 20px 15px;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(75, 0, 130, 0.15));
+  border: 2px solid rgba(138, 43, 226, 0.5);
+  border-radius: 12px;
+  color: #DA70D6;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
   text-align: center;
 }
 
-.alchemy-description {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
-  line-height: 1.7;
-  text-align: center;
-  margin: 0;
+.tarot-card-button:hover {
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(75, 0, 130, 0.25));
+  border-color: rgba(138, 43, 226, 0.8);
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+  transform: translateY(-2px);
 }
 
+.tarot-result {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(138, 43, 226, 0.1);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  border-radius: 12px;
+  color: #DA70D6;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+/* Амулеты */
+.amulets-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.amulet-button {
+  padding: 20px 15px;
+  background: linear-gradient(135deg, rgba(0, 209, 255, 0.2), rgba(0, 150, 255, 0.15));
+  border: 2px solid rgba(0, 209, 255, 0.5);
+  border-radius: 12px;
+  color: #00D1FF;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.amulet-button:hover {
+  background: linear-gradient(135deg, rgba(0, 209, 255, 0.3), rgba(0, 150, 255, 0.25));
+  border-color: rgba(0, 209, 255, 0.8);
+  box-shadow: 0 0 20px rgba(0, 209, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Обертка для MatrixCalculator */
+.matrix-calculator-wrapper {
+  margin-top: 30px;
+}
+
+/* Кнопка "Вернуться к столу" */
+.back-to-table-button {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 40px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.15));
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 30px;
+  color: #FFD700;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.back-to-table-button:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.25));
+  border-color: rgba(255, 215, 0, 0.8);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(255, 215, 0, 0.4);
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.back-to-table-button:active {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Адаптивность для планшетов */
+@media (max-width: 1024px) {
+  /* Дополнительные стили для Header на планшетах */
+  .alchemy-container .header-block {
+    background: rgba(20, 20, 30, 0.075) !important; /* Прозрачность в 2 раза меньше */
+    padding: 5px 18px 3px 18px !important;
+  }
+
+  .alchemy-container .header-menu-icon-wrapper {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .alchemy-container .header-menu-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .alchemy-container .header-menu-item {
+    min-height: 45px !important;
+    padding: 3px 2px !important;
+    gap: 0 !important;
+  }
+
+  .alchemy-container .header-menu-grid {
+    gap: 3px !important;
+  }
+
+  .alchemy-hero {
+    padding-top: 60px; /* Уменьшенный отступ для планшетов */
+  }
+
+  .alchemy-hero-title {
+    font-size: 22px;
+  }
+
+  .action-zone-title {
+    font-size: 24px;
+  }
+
+  .tarot-cards-container,
+  .amulets-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
-  .alchemy-container {
-    padding-top: 150px; /* Высота header на мобильных: 12px padding + 48px иконка + speech bubble ~50px + 12px padding = ~122px + запас */
+  /* Дополнительные стили для Header на мобильных */
+  .alchemy-container .header-block {
+    background: rgba(20, 20, 30, 0.075) !important; /* Прозрачность в 2 раза меньше */
+    padding: 5px 14px 3px 14px !important;
   }
 
-  .alchemy-content {
-    padding: 30px 16px;
+  .alchemy-container .header-menu-icon-wrapper {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
   }
 
-  .alchemy-section {
+  .alchemy-container .header-menu-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+
+  .alchemy-container .header-menu-item {
+    min-height: 42px !important;
+    padding: 3px 1px !important;
+    gap: 0 !important;
+  }
+
+  .alchemy-container .header-menu-grid {
+    gap: 3px !important;
+  }
+
+  .alchemy-hero {
+    height: 100vh;
+    padding-top: 55px; /* Уменьшенный отступ для мобильных */
+    /* Адаптация под вертикальное соотношение 9:16 */
+    aspect-ratio: 9 / 16;
+  }
+
+  .alchemy-hero-background {
+    /* Для мобильных устройств - адаптируем под вертикальный формат */
+    background-size: cover;
+    background-position: center top;
+  }
+
+  .alchemy-hero-greeting {
+    padding: 15px 20px;
+    margin-top: 10px;
+  }
+
+  .alchemy-hero-title {
+    font-size: 18px;
+  }
+
+  /* Интерактивные зоны на мобильных */
+  .artifact-zone {
+    opacity: 0.4; /* Слегка видимые для мобильных */
+    border: 1px solid rgba(255, 215, 0, 0.2);
+  }
+
+  .artifact-zone:active {
+    opacity: 1;
+    border-color: rgba(255, 215, 0, 0.8);
+    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.1);
+  }
+
+  .artifact-zone::after {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  .artifact-mirror {
+    top: 3%;
+    left: 15%;
+    width: 20%;
+    height: 12%;
+  }
+
+  .artifact-crystal {
+    top: 5%;
+    right: 15%;
+    width: 18%;
+    height: 10%;
+  }
+
+  .artifact-astrolabe {
+    top: 25%;
+    width: 35%;
+    height: 25%;
+  }
+
+  .artifact-candle {
+    top: 35%;
+    left: 5%;
+    width: 15%;
+    height: 12%;
+  }
+
+  .artifact-snitch {
+    top: 40%;
+    right: 10%;
+    width: 15%;
+    height: 10%;
+  }
+
+  .artifact-tarot {
+    bottom: 30%;
+    left: 10%;
+    width: 18%;
+    height: 12%;
+  }
+
+  .artifact-hourglass {
+    bottom: 25%;
+    width: 15%;
+    height: 12%;
+  }
+
+  .artifact-chalice {
+    bottom: 30%;
+    right: 15%;
+    width: 15%;
+    height: 10%;
+  }
+
+  .artifact-amulets {
+    bottom: 3%;
+    width: 30%;
+    height: 8%;
+  }
+
+  .action-zone {
+    padding: 60px 16px 100px;
+  }
+
+  .action-zone-content {
     padding: 30px 20px;
   }
 
-  .alchemy-title {
-    font-size: 28px;
+  .action-zone-title {
+    font-size: 22px;
   }
 
-  .alchemy-description {
+  .action-zone-content .action-zone-text {
+    font-size: 14px;
+  }
+
+  .action-zone-input {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .action-zone-button {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+
+  .tarot-cards-container,
+  .amulets-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tarot-card-button,
+  .amulet-button {
+    padding: 16px 12px;
+    font-size: 13px;
+  }
+
+  .back-to-table-button {
+    bottom: 20px;
+    padding: 12px 30px;
+    font-size: 14px;
+  }
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 480px) {
+  /* Дополнительные стили для Header на очень маленьких экранах */
+  .alchemy-container .header-block {
+    background: rgba(20, 20, 30, 0.075) !important; /* Прозрачность в 2 раза меньше */
+    padding: 4px 10px 2px 10px !important;
+  }
+
+  .alchemy-container .header-menu-icon-wrapper {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+  }
+
+  .alchemy-container .header-menu-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+  }
+
+  .alchemy-container .header-menu-item {
+    min-height: 38px !important;
+    padding: 2px 1px !important;
+    gap: 0 !important;
+  }
+
+  .alchemy-container .header-menu-grid {
+    gap: 2px !important;
+  }
+
+  .alchemy-hero {
+    padding-top: 50px; /* Еще меньший отступ для очень маленьких экранов */
+  }
+
+  .alchemy-hero-title {
     font-size: 16px;
   }
+
+  .action-zone-title {
+    font-size: 20px;
+  }
+
+  .action-zone-content .action-zone-text {
+    font-size: 13px;
+  }
+}
+
+/* Темный режим (для свечи) */
+.alchemy-container.dark-mode {
+  background: #000000 !important;
+}
+
+.alchemy-container.dark-mode .alchemy-hero-background {
+  opacity: 0.3 !important; /* Приглушаем фон при темном режиме */
+  filter: brightness(0.2) !important;
+}
+
+/* Явное восстановление фона когда темный режим выключен */
+.alchemy-container:not(.dark-mode) .alchemy-hero-background {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.alchemy-container.dark-mode .action-zone {
+  background: #000000;
+}
+
+.alchemy-container.dark-mode .action-zone-content {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.alchemy-container.dark-mode .action-zone-title,
+.alchemy-container.dark-mode .action-zone-text {
+  color: #ffffff;
+}
+
+.alchemy-container.dark-mode .action-zone-input {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.alchemy-container.dark-mode .action-zone-button {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.15));
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+}
+
+.alchemy-container.dark-mode .action-zone-button:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.25));
+  border-color: rgba(255, 255, 255, 0.6);
 }
