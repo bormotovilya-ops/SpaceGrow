@@ -18,19 +18,76 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     const getUserName = () => {
       try {
         const tg = window.Telegram?.WebApp
-        if (tg?.initDataUnsafe?.user) {
-          const user = tg.initDataUnsafe.user
-          // Используем first_name, если есть, иначе username
-          const name = user.first_name || user.username || ''
-          if (name) {
-            setUserName(name)
+        
+        // Ждем готовности Telegram WebApp
+        if (tg) {
+          // Если WebApp готов, получаем данные сразу
+          if (tg.readyState === 'ready' || tg.isReady) {
+            tg.ready()
+          }
+          
+          // Пробуем получить данные из initDataUnsafe
+          if (tg.initDataUnsafe?.user) {
+            const user = tg.initDataUnsafe.user
+            const name = user.first_name || user.username || ''
+            if (name) {
+              setUserName(name)
+              return
+            }
+          }
+          
+          // Пробуем получить данные из initData (если initDataUnsafe не работает)
+          if (tg.initData) {
+            try {
+              const params = new URLSearchParams(tg.initData)
+              const userStr = params.get('user')
+              if (userStr) {
+                const user = JSON.parse(decodeURIComponent(userStr))
+                const name = user.first_name || user.username || ''
+                if (name) {
+                  setUserName(name)
+                  return
+                }
+              }
+            } catch (e) {
+              // Игнорируем ошибки парсинга
+            }
           }
         }
       } catch (error) {
         console.error('Ошибка при получении данных пользователя:', error)
       }
     }
+    
+    // Пробуем получить имя сразу
     getUserName()
+    
+    // Если не получилось, пробуем через небольшую задержку (Telegram WebApp может инициализироваться асинхронно)
+    const timeout1 = setTimeout(() => {
+      getUserName()
+    }, 500)
+    
+    // Еще одна попытка через секунду
+    const timeout2 = setTimeout(() => {
+      getUserName()
+    }, 1000)
+    
+    // Также слушаем событие готовности WebApp
+    const tg = window.Telegram?.WebApp
+    if (tg) {
+      tg.ready()
+      tg.expand()
+      
+      // Слушаем событие viewportChanged (когда WebApp полностью загружен)
+      if (tg.onEvent) {
+        tg.onEvent('viewportChanged', getUserName)
+      }
+    }
+    
+    return () => {
+      clearTimeout(timeout1)
+      clearTimeout(timeout2)
+    }
   }, [])
 
   const handleHeaderAvatarClick = () => {

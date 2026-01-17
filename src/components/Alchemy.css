@@ -130,11 +130,14 @@
 }
 
 .alchemy-hero-title {
-  font-size: 24px;
-  font-weight: 700;
+  font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  font-style: italic;
   text-align: center;
   margin: 0;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-transform: capitalize;
   /* Магический градиентный текст */
   background: linear-gradient(
     135deg,
@@ -594,7 +597,8 @@
   }
 
   .alchemy-hero-title {
-    font-size: 22px;
+    font-size: 24px;
+    letter-spacing: 1.5px;
   }
 
   .action-zone-title {
@@ -657,7 +661,8 @@
   }
 
   .alchemy-hero-title {
-    font-size: 18px;
+    font-size: 20px;
+    letter-spacing: 1px;
   }
 
   /* Интерактивные зоны на мобильных */
@@ -818,7 +823,8 @@
   }
 
   .alchemy-hero-title {
-    font-size: 16px;
+    font-size: 18px;
+    letter-spacing: 0.5px;
   }
 
   .action-zone-title {
