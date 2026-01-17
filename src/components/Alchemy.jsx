@@ -17,76 +17,111 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   useEffect(() => {
     const getUserName = () => {
       try {
-        const tg = window.Telegram?.WebApp
+        // Пробуем несколько способов получения данных
+        let tg = null
         
-        // Ждем готовности Telegram WebApp
+        // Способ 1: window.Telegram?.WebApp
+        if (window.Telegram?.WebApp) {
+          tg = window.Telegram.WebApp
+        }
+        // Способ 2: window.TelegramWebApp
+        else if (window.TelegramWebApp) {
+          tg = window.TelegramWebApp
+        }
+        
         if (tg) {
-          // Если WebApp готов, получаем данные сразу
-          if (tg.readyState === 'ready' || tg.isReady) {
+          // Инициализируем WebApp
+          try {
             tg.ready()
+            tg.expand()
+          } catch (e) {
+            console.log('WebApp ready/expand error:', e)
           }
           
-          // Пробуем получить данные из initDataUnsafe
+          // Способ 1: initDataUnsafe.user
           if (tg.initDataUnsafe?.user) {
             const user = tg.initDataUnsafe.user
-            const name = user.first_name || user.username || ''
+            const name = user.first_name || user.username || user.last_name || ''
+            console.log('Получено имя из initDataUnsafe:', name)
             if (name) {
               setUserName(name)
-              return
+              return true
             }
           }
           
-          // Пробуем получить данные из initData (если initDataUnsafe не работает)
+          // Способ 2: initData (парсинг строки)
           if (tg.initData) {
             try {
               const params = new URLSearchParams(tg.initData)
               const userStr = params.get('user')
               if (userStr) {
                 const user = JSON.parse(decodeURIComponent(userStr))
-                const name = user.first_name || user.username || ''
+                const name = user.first_name || user.username || user.last_name || ''
+                console.log('Получено имя из initData:', name)
                 if (name) {
                   setUserName(name)
-                  return
+                  return true
                 }
               }
             } catch (e) {
-              // Игнорируем ошибки парсинга
+              console.log('Ошибка парсинга initData:', e)
             }
           }
+          
+          // Способ 3: Прямой доступ к данным (если доступен)
+          if (tg.platform && tg.version) {
+            console.log('Telegram WebApp доступен, версия:', tg.version, 'платформа:', tg.platform)
+          }
+        } else {
+          console.log('Telegram WebApp не найден. window.Telegram:', window.Telegram)
         }
+        
+        return false
       } catch (error) {
         console.error('Ошибка при получении данных пользователя:', error)
+        return false
       }
     }
     
     // Пробуем получить имя сразу
-    getUserName()
+    let success = getUserName()
     
-    // Если не получилось, пробуем через небольшую задержку (Telegram WebApp может инициализироваться асинхронно)
-    const timeout1 = setTimeout(() => {
-      getUserName()
-    }, 500)
-    
-    // Еще одна попытка через секунду
-    const timeout2 = setTimeout(() => {
-      getUserName()
-    }, 1000)
-    
-    // Также слушаем событие готовности WebApp
-    const tg = window.Telegram?.WebApp
-    if (tg) {
-      tg.ready()
-      tg.expand()
+    // Если не получилось, пробуем через задержки (Telegram WebApp может инициализироваться асинхронно)
+    if (!success) {
+      const timeout1 = setTimeout(() => {
+        success = getUserName()
+      }, 300)
       
-      // Слушаем событие viewportChanged (когда WebApp полностью загружен)
-      if (tg.onEvent) {
-        tg.onEvent('viewportChanged', getUserName)
+      const timeout2 = setTimeout(() => {
+        if (!success) {
+          getUserName()
+        }
+      }, 800)
+      
+      const timeout3 = setTimeout(() => {
+        getUserName()
+      }, 1500)
+      
+      // Также слушаем событие готовности WebApp
+      const tg = window.Telegram?.WebApp || window.TelegramWebApp
+      if (tg && tg.onEvent) {
+        tg.onEvent('viewportChanged', () => {
+          getUserName()
+        })
+        
+        // Слушаем другие события
+        if (tg.onEvent) {
+          tg.onEvent('mainButtonClicked', () => {
+            getUserName()
+          })
+        }
       }
-    }
-    
-    return () => {
-      clearTimeout(timeout1)
-      clearTimeout(timeout2)
+      
+      return () => {
+        clearTimeout(timeout1)
+        clearTimeout(timeout2)
+        clearTimeout(timeout3)
+      }
     }
   }, [])
 
@@ -460,7 +495,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           <div 
             className="artifact-zone artifact-crystal" 
             onClick={() => handleArtifactClick('crystal')}
-            title="Кристалл"
+            title="Кристалл Мудрости"
           ></div>
 
           {/* Астролябия - центральный объект */}
@@ -474,14 +509,14 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           <div 
             className="artifact-zone artifact-candle" 
             onClick={() => handleArtifactClick('candle')}
-            title="Свеча"
+            title="Черная Свеча"
           ></div>
 
           {/* Снитч - правая средняя часть */}
           <div 
             className="artifact-zone artifact-snitch" 
             onClick={() => handleArtifactClick('snitch')}
-            title="Снитч"
+            title="Золотой Снитч"
           ></div>
 
           {/* Карты Таро - левая нижняя часть */}
@@ -495,14 +530,14 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           <div 
             className="artifact-zone artifact-hourglass" 
             onClick={() => handleArtifactClick('hourglass')}
-            title="Песочные часы"
+            title="Песочные Часы"
           ></div>
 
           {/* Чаша - правая нижняя часть */}
           <div 
             className="artifact-zone artifact-chalice" 
             onClick={() => handleArtifactClick('chalice')}
-            title="Чаша"
+            title="Золотая Чаша"
           ></div>
 
           {/* Амулеты/Руны - самый низ */}
