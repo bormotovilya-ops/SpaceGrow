@@ -243,14 +243,15 @@
 .artifact-zone {
   position: absolute;
   cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  opacity: 0; /* Невидимые по умолчанию, видны только при наведении */
+  border: none; /* Убраны границы */
+  background: transparent; /* Прозрачный фон */
+  transition: all 0.2s ease;
+  opacity: 0; /* Полностью невидимые */
   z-index: 6;
-  /* Зоны становятся видимыми при наведении */
+  /* Зоны полностью невидимы, только подписи видны */
   min-width: 80px;
   min-height: 80px;
+  pointer-events: auto; /* Кликабельные */
 }
 
 /* Подпись артефакта - всегда видимая */
@@ -280,91 +281,86 @@
   letter-spacing: 0.5px;
 }
 
-.artifact-zone {
-  cursor: pointer;
-}
-
+/* Зоны остаются невидимыми даже при наведении */
 .artifact-zone:hover {
-  opacity: 1;
-  border-color: rgba(255, 215, 0, 0.8);
-  background: rgba(255, 215, 0, 0.15);
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
-  transform: scale(1.05);
+  opacity: 0; /* Остается невидимой */
+  transform: none; /* Без трансформации */
 }
 
+/* Подпись при наведении становится ярче */
 .artifact-zone:hover::after {
   opacity: 1;
   background: rgba(0, 0, 0, 0.95);
-  border-color: rgba(255, 215, 0, 0.8);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);
-  transform: translateX(-50%) scale(1.05);
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
+  transform: translateX(-50%) scale(1.08);
 }
 
-/* Расположение зон на изображении - увеличенные размеры для удобства клика */
+/* Расположение зон на изображении с учетом contain (центрированная картинка) */
 .artifact-mirror {
-  top: 0%;
+  top: 8%;
   left: 15%;
-  width: 25%;
-  height: 20%;
-}
-
-.artifact-crystal {
-  top: 0%;
-  right: 10%;
   width: 25%;
   height: 18%;
 }
 
+.artifact-crystal {
+  top: 8%;
+  right: 10%;
+  width: 25%;
+  height: 16%;
+}
+
 .artifact-astrolabe {
-  top: 20%;
-  left: 38%;
+  top: 25%;
+  left: 50%;
   transform: translateX(-50%);
-  width: 35%;
-  height: 40%;
+  width: 32%;
+  height: 38%;
 }
 
 .artifact-candle {
-  top: 30%;
-  left: 0%;
-  width: 20%;
-  height: 25%;
-}
-
-.artifact-snitch {
   top: 35%;
-  right: 5%;
-  width: 20%;
-  height: 20%;
-}
-
-.artifact-tarot {
-  bottom: 15%;
-  left: 5%;
-  width: 22%;
-  height: 25%;
-}
-
-.artifact-hourglass {
-  bottom: 10%;
-  left: 40%;
-  transform: translateX(-50%);
-  width: 20%;
-  height: 25%;
-}
-
-.artifact-chalice {
-  bottom: 15%;
-  right: 10%;
+  left: 2%;
   width: 20%;
   height: 22%;
 }
 
-.artifact-amulets {
-  bottom: 0%;
-  left: 40%;
+.artifact-snitch {
+  top: 40%;
+  right: 8%;
+  width: 18%;
+  height: 18%;
+}
+
+.artifact-tarot {
+  bottom: 20%;
+  left: 5%;
+  width: 22%;
+  height: 22%;
+}
+
+.artifact-hourglass {
+  bottom: 15%;
+  left: 50%;
   transform: translateX(-50%);
-  width: 30%;
-  height: 15%;
+  width: 22%;
+  height: 22%;
+}
+
+.artifact-chalice {
+  bottom: 20%;
+  right: 10%;
+  width: 20%;
+  height: 20%;
+}
+
+.artifact-amulets {
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28%;
+  height: 12%;
 }
 
 /* Секция действий */
@@ -655,6 +651,73 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
+
+  /* Координаты для планшетов (1024px) с учетом contain */
+  .artifact-mirror {
+    top: 7%;
+    left: 14%;
+    width: 26%;
+    height: 17%;
+  }
+
+  .artifact-crystal {
+    top: 7%;
+    right: 9%;
+    width: 26%;
+    height: 15%;
+  }
+
+  .artifact-astrolabe {
+    top: 23%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 34%;
+    height: 36%;
+  }
+
+  .artifact-candle {
+    top: 33%;
+    left: 1%;
+    width: 21%;
+    height: 21%;
+  }
+
+  .artifact-snitch {
+    top: 38%;
+    right: 7%;
+    width: 19%;
+    height: 17%;
+  }
+
+  .artifact-tarot {
+    bottom: 19%;
+    left: 4%;
+    width: 23%;
+    height: 21%;
+  }
+
+  .artifact-hourglass {
+    bottom: 14%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 23%;
+    height: 21%;
+  }
+
+  .artifact-chalice {
+    bottom: 19%;
+    right: 9%;
+    width: 21%;
+    height: 19%;
+  }
+
+  .artifact-amulets {
+    bottom: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 29%;
+    height: 11%;
+  }
 }
 
 /* Адаптивность для мобильных устройств */
@@ -721,17 +784,16 @@
     letter-spacing: 0.5px;
   }
 
-  /* Интерактивные зоны на мобильных */
+  /* Интерактивные зоны на мобильных - полностью невидимые */
   .artifact-zone {
-    opacity: 0.4; /* Слегка видимые для мобильных */
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    opacity: 0; /* Полностью невидимые */
+    border: none; /* Нет границ */
+    background: transparent; /* Прозрачный фон */
   }
 
   .artifact-zone:active {
-    opacity: 1;
-    border-color: rgba(255, 215, 0, 0.8);
-    background: rgba(255, 215, 0, 0.2);
-    transform: scale(1.1);
+    opacity: 0; /* Остается невидимой */
+    transform: none; /* Без трансформации */
   }
 
   .artifact-zone::after {
@@ -742,70 +804,71 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4);
   }
 
+  /* Координаты для мобильных устройств (768px) с учетом contain */
   .artifact-mirror {
-    top: 0%;
-    left: 10%;
-    width: 30%;
-    height: 18%;
-  }
-
-  .artifact-crystal {
-    top: 0%;
-    right: 5%;
-    width: 30%;
+    top: 5%;
+    left: 12%;
+    width: 28%;
     height: 16%;
   }
 
+  .artifact-crystal {
+    top: 5%;
+    right: 8%;
+    width: 28%;
+    height: 14%;
+  }
+
   .artifact-astrolabe {
-    top: 18%;
-    left: 35%;
+    top: 20%;
+    left: 50%;
     transform: translateX(-50%);
-    width: 40%;
-    height: 35%;
+    width: 38%;
+    height: 32%;
   }
 
   .artifact-candle {
-    top: 28%;
-    left: 0%;
-    width: 25%;
-    height: 22%;
-  }
-
-  .artifact-snitch {
-    top: 32%;
-    right: 0%;
-    width: 25%;
-    height: 18%;
-  }
-
-  .artifact-tarot {
-    bottom: 12%;
-    left: 0%;
-    width: 28%;
-    height: 22%;
-  }
-
-  .artifact-hourglass {
-    bottom: 8%;
-    left: 38%;
-    transform: translateX(-50%);
-    width: 25%;
-    height: 22%;
-  }
-
-  .artifact-chalice {
-    bottom: 12%;
-    right: 5%;
-    width: 25%;
+    top: 30%;
+    left: 2%;
+    width: 23%;
     height: 20%;
   }
 
-  .artifact-amulets {
-    bottom: 0%;
-    left: 38%;
+  .artifact-snitch {
+    top: 34%;
+    right: 5%;
+    width: 23%;
+    height: 16%;
+  }
+
+  .artifact-tarot {
+    bottom: 18%;
+    left: 3%;
+    width: 26%;
+    height: 20%;
+  }
+
+  .artifact-hourglass {
+    bottom: 12%;
+    left: 50%;
     transform: translateX(-50%);
-    width: 35%;
-    height: 12%;
+    width: 24%;
+    height: 20%;
+  }
+
+  .artifact-chalice {
+    bottom: 18%;
+    right: 8%;
+    width: 23%;
+    height: 18%;
+  }
+
+  .artifact-amulets {
+    bottom: 3%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32%;
+    height: 10%;
   }
   
   .artifact-zone {
@@ -915,6 +978,73 @@
   
   .alchemy-interactive-zones {
     padding-bottom: 130px; /* Отступ снизу для очень маленьких экранов */
+  }
+
+  /* Координаты для очень маленьких экранов (480px) */
+  .artifact-mirror {
+    top: 4%;
+    left: 10%;
+    width: 30%;
+    height: 15%;
+  }
+
+  .artifact-crystal {
+    top: 4%;
+    right: 6%;
+    width: 30%;
+    height: 13%;
+  }
+
+  .artifact-astrolabe {
+    top: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 30%;
+  }
+
+  .artifact-candle {
+    top: 28%;
+    left: 0%;
+    width: 25%;
+    height: 18%;
+  }
+
+  .artifact-snitch {
+    top: 32%;
+    right: 3%;
+    width: 25%;
+    height: 15%;
+  }
+
+  .artifact-tarot {
+    bottom: 20%;
+    left: 0%;
+    width: 28%;
+    height: 18%;
+  }
+
+  .artifact-hourglass {
+    bottom: 14%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26%;
+    height: 18%;
+  }
+
+  .artifact-chalice {
+    bottom: 20%;
+    right: 6%;
+    width: 25%;
+    height: 16%;
+  }
+
+  .artifact-amulets {
+    bottom: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 34%;
+    height: 9%;
   }
 
   .action-zone-title {
