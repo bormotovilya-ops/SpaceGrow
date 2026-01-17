@@ -447,6 +447,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         <div className="alchemy-hero-background" ref={heroBackgroundRef}></div>
 
         {/* Интерактивные кликабельные зоны */}
+        {!selectedArtifact && (
         <div className="alchemy-interactive-zones">
           {/* Зеркало - верхняя часть */}
           <div 

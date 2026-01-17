@@ -127,9 +127,10 @@
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 30px rgba(255, 215, 0, 0.2);
   animation: fadeInGreeting 1s ease-in-out;
-  width: 90%;
-  max-width: 600px;
+  width: fit-content;
+  max-width: 90%;
   box-sizing: border-box;
+  white-space: normal;
 }
 
 .alchemy-hero-subtitle {
@@ -244,7 +245,7 @@
   border: 2px solid transparent;
   border-radius: 12px;
   transition: all 0.3s ease;
-  opacity: 0.2; /* Слегка видимые для лучшей ориентации */
+  opacity: 0; /* Невидимые по умолчанию, видны только при наведении */
   z-index: 6;
   /* Зоны становятся видимыми при наведении */
   min-width: 80px;
