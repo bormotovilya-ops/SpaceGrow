@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Header from './Header'
 import Funnel3D from './Funnel3D'
@@ -310,12 +310,80 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick, onHom
     })
   })
 
+  // Функции для работы с cookies
+  const COOKIE_PREFIX = 'diagnostics_'
+  const COOKIE_STEP = COOKIE_PREFIX + 'step'
+  const COOKIE_ANSWERS = COOKIE_PREFIX + 'answers'
+
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) return parts.pop().split(';').shift()
+    return null
+  }
+
+  const setCookie = (name, value, days = 7) => {
+    const expires = new Date()
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`
+  }
+
+  const deleteCookie = (name) => {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`
+  }
+
+  const clearDiagnosticsCookies = () => {
+    deleteCookie(COOKIE_STEP)
+    deleteCookie(COOKIE_ANSWERS)
+  }
+
+  // Загрузка состояния из cookies при монтировании
+  useEffect(() => {
+    const savedStep = getCookie(COOKIE_STEP)
+    const savedAnswers = getCookie(COOKIE_ANSWERS)
+    
+    if (savedStep && savedAnswers) {
+      try {
+        const step = parseInt(savedStep, 10)
+        const answers = JSON.parse(decodeURIComponent(savedAnswers))
+        
+        // Проверяем, что сохраненное состояние валидно
+        if (step > 0 && step <= totalQuestions + 1 && typeof answers === 'object') {
+          setCurrentStep(step)
+          setAnswers(answers)
+          // Если это результаты, показываем их
+          if (step === totalQuestions + 1) {
+            setShowResults(true)
+          }
+        }
+      } catch (e) {
+        console.error('Error loading diagnostics from cookies:', e)
+        clearDiagnosticsCookies()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Запускаем только при монтировании, totalQuestions не меняется
+
   const [currentStep, setCurrentStep] = useState(0) // 0 = intro, 1-N = questions, totalQuestions+1 = results
   const [answers, setAnswers] = useState({}) // { questionId: value }
   const [showResults, setShowResults] = useState(false)
 
+  // Сохранение состояния в cookies при изменении
+  useEffect(() => {
+    if (currentStep > 0) {
+      setCookie(COOKIE_STEP, currentStep.toString())
+    }
+  }, [currentStep])
+
+  useEffect(() => {
+    if (Object.keys(answers).length > 0) {
+      setCookie(COOKIE_ANSWERS, encodeURIComponent(JSON.stringify(answers)))
+    }
+  }, [answers])
+
   const handleStart = () => {
     yandexMetricaReachGoal(null, 'diagnostics_start', { totalQuestions })
+    clearDiagnosticsCookies() // Очищаем cookies при начале заново
     setCurrentStep(1)
   }
 
@@ -335,6 +403,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick, onHom
         yandexMetricaReachGoal(null, 'diagnostics_complete', { totalQuestions })
         setShowResults(true)
         setCurrentStep(totalQuestions + 1)
+        clearDiagnosticsCookies() // Очищаем cookies при завершении диагностики
       }, 300)
     }
   }
@@ -343,6 +412,7 @@ function Diagnostics({ onBack, onAvatarClick, onAlchemyClick, onChatClick, onHom
     // Top CTA in Header must always open Diagnostics.
     // If we're already here — restart to intro screen.
     yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'diagnostics' })
+    clearDiagnosticsCookies() // Очищаем cookies при начале заново
     setAnswers({})
     setShowResults(false)
     setCurrentStep(0)
