@@ -1,3 +1,12 @@
+/* Шрифт Harry Potter - используем декоративный альтернативный шрифт */
+@font-face {
+  font-family: 'HarryPotter';
+  src: local('Harry Potter'), local('HarryPotter');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Контейнер страницы */
 .alchemy-container {
   min-height: 100vh;
@@ -102,7 +111,7 @@
   position: relative;
   z-index: 10;
   margin-top: 20px;
-  padding: 15px 30px;
+  padding: 20px 35px;
   background: linear-gradient(
     135deg,
     rgba(0, 0, 0, 0.7),
@@ -116,6 +125,19 @@
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 30px rgba(255, 215, 0, 0.2);
   animation: fadeInGreeting 1s ease-in-out;
+}
+
+.alchemy-hero-subtitle {
+  font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  color: rgba(255, 215, 0, 0.9);
+  font-size: 18px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+  letter-spacing: 1px;
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes fadeInGreeting {
@@ -135,9 +157,13 @@
   font-weight: 600;
   font-style: italic;
   text-align: center;
-  margin: 0;
-  letter-spacing: 2px;
+  margin: 0 0 15px 0;
+  letter-spacing: 4px;
   text-transform: capitalize;
+  font-variant: small-caps;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: rgba(255, 215, 0, 0.5);
   /* Магический градиентный текст */
   background: linear-gradient(
     135deg,
@@ -214,11 +240,13 @@
   position: absolute;
   cursor: pointer;
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease;
-  opacity: 0;
+  opacity: 0.2; /* Слегка видимые для лучшей ориентации */
   z-index: 6;
   /* Зоны становятся видимыми при наведении */
+  min-width: 80px;
+  min-height: 80px;
 }
 
 .artifact-zone::after {
@@ -255,71 +283,71 @@
   opacity: 1;
 }
 
-/* Расположение зон на изображении */
+/* Расположение зон на изображении - увеличенные размеры для удобства клика */
 .artifact-mirror {
-  top: 5%;
-  left: 20%;
-  width: 15%;
-  height: 15%;
+  top: 0%;
+  left: 15%;
+  width: 25%;
+  height: 20%;
 }
 
 .artifact-crystal {
-  top: 8%;
-  right: 20%;
-  width: 12%;
-  height: 12%;
+  top: 0%;
+  right: 10%;
+  width: 25%;
+  height: 18%;
 }
 
 .artifact-astrolabe {
-  top: 30%;
-  left: 50%;
+  top: 20%;
+  left: 38%;
   transform: translateX(-50%);
-  width: 25%;
-  height: 30%;
+  width: 35%;
+  height: 40%;
 }
 
 .artifact-candle {
-  top: 40%;
-  left: 10%;
-  width: 10%;
-  height: 15%;
+  top: 30%;
+  left: 0%;
+  width: 20%;
+  height: 25%;
 }
 
 .artifact-snitch {
-  top: 45%;
-  right: 15%;
-  width: 10%;
-  height: 10%;
+  top: 35%;
+  right: 5%;
+  width: 20%;
+  height: 20%;
 }
 
 .artifact-tarot {
-  bottom: 25%;
-  left: 15%;
-  width: 12%;
-  height: 15%;
+  bottom: 15%;
+  left: 5%;
+  width: 22%;
+  height: 25%;
 }
 
 .artifact-hourglass {
-  bottom: 20%;
-  left: 50%;
+  bottom: 10%;
+  left: 40%;
   transform: translateX(-50%);
-  width: 10%;
-  height: 15%;
+  width: 20%;
+  height: 25%;
 }
 
 .artifact-chalice {
-  bottom: 25%;
-  right: 20%;
-  width: 10%;
-  height: 12%;
+  bottom: 15%;
+  right: 10%;
+  width: 20%;
+  height: 22%;
 }
 
 .artifact-amulets {
-  bottom: 5%;
-  left: 50%;
+  bottom: 0%;
+  left: 40%;
   transform: translateX(-50%);
-  width: 20%;
-  height: 10%;
+  width: 30%;
+  height: 15%;
 }
 
 /* Секция действий */
@@ -662,7 +690,12 @@
 
   .alchemy-hero-title {
     font-size: 20px;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+  }
+  
+  .alchemy-hero-subtitle {
+    font-size: 14px;
+    letter-spacing: 0.5px;
   }
 
   /* Интерактивные зоны на мобильных */
@@ -684,63 +717,79 @@
   }
 
   .artifact-mirror {
-    top: 3%;
-    left: 15%;
-    width: 20%;
-    height: 12%;
+    top: 0%;
+    left: 10%;
+    width: 30%;
+    height: 18%;
   }
 
   .artifact-crystal {
-    top: 5%;
-    right: 15%;
-    width: 18%;
-    height: 10%;
+    top: 0%;
+    right: 5%;
+    width: 30%;
+    height: 16%;
   }
 
   .artifact-astrolabe {
-    top: 25%;
-    width: 35%;
-    height: 25%;
+    top: 18%;
+    left: 35%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 35%;
   }
 
   .artifact-candle {
-    top: 35%;
-    left: 5%;
-    width: 15%;
-    height: 12%;
+    top: 28%;
+    left: 0%;
+    width: 25%;
+    height: 22%;
   }
 
   .artifact-snitch {
-    top: 40%;
-    right: 10%;
-    width: 15%;
-    height: 10%;
+    top: 32%;
+    right: 0%;
+    width: 25%;
+    height: 18%;
   }
 
   .artifact-tarot {
-    bottom: 30%;
-    left: 10%;
-    width: 18%;
-    height: 12%;
+    bottom: 12%;
+    left: 0%;
+    width: 28%;
+    height: 22%;
   }
 
   .artifact-hourglass {
-    bottom: 25%;
-    width: 15%;
-    height: 12%;
+    bottom: 8%;
+    left: 38%;
+    transform: translateX(-50%);
+    width: 25%;
+    height: 22%;
   }
 
   .artifact-chalice {
-    bottom: 30%;
-    right: 15%;
-    width: 15%;
-    height: 10%;
+    bottom: 12%;
+    right: 5%;
+    width: 25%;
+    height: 20%;
   }
 
   .artifact-amulets {
-    bottom: 3%;
-    width: 30%;
-    height: 8%;
+    bottom: 0%;
+    left: 38%;
+    transform: translateX(-50%);
+    width: 35%;
+    height: 12%;
+  }
+  
+  .artifact-zone {
+    min-width: 80px;
+    min-height: 80px;
+  }
+  
+  .alchemy-hero-subtitle {
+    font-size: 14px;
+    letter-spacing: 0.5px;
   }
 
   .action-zone {
@@ -824,7 +873,12 @@
 
   .alchemy-hero-title {
     font-size: 18px;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.5px;
+  }
+  
+  .alchemy-hero-subtitle {
+    font-size: 12px;
+    letter-spacing: 0.3px;
   }
 
   .action-zone-title {

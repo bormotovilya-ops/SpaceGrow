@@ -451,6 +451,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           <h1 className="alchemy-hero-title">
             {userName ? `Добро пожаловать, ${userName}!` : 'Добро пожаловать!'}
           </h1>
+          {!selectedArtifact && (
+            <p className="alchemy-hero-subtitle">
+              Выберите артефакт на столе, чтобы начать.
+            </p>
+          )}
         </div>
 
         {/* Интерактивные кликабельные зоны */}
