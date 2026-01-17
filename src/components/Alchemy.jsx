@@ -512,6 +512,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             title="Амулеты и Руны"
           ></div>
         </div>
+        )}
         
         {/* Приветствие - внизу, чтобы не загораживать артефакты */}
         <div className="alchemy-hero-greeting">
