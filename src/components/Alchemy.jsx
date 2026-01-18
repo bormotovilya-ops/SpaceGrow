@@ -349,6 +349,42 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }
   }, [selectedArtifact]) // Пересчитываем при изменении выбранного артефакта
 
+  // Корректировка позиции пламени для десктопа из Telegram WebView
+  useEffect(() => {
+    const updateFlamePositionForDesktop = () => {
+      const flame = candleFlameRef.current
+      if (!flame) return
+
+      // Определяем, открыто ли приложение из Telegram WebView на десктопе
+      const isTelegramWebView = window.Telegram?.WebApp || window.TelegramWebApp
+      const isDesktop = window.innerWidth > 768
+      
+      if (isTelegramWebView && isDesktop) {
+        // Для десктопа из Telegram: сдвигаем левее и выше на 5%
+        flame.style.left = '8%' // 13% - 5%
+        flame.style.top = '-17%' // -22% + 5%
+      } else if (isDesktop && !isTelegramWebView) {
+        // Для обычного веб-браузера: используем CSS значения (left: 13%, top: -22%)
+        flame.style.left = ''
+        flame.style.top = ''
+      }
+    }
+
+    // Обновляем при загрузке и изменении размера
+    updateFlamePositionForDesktop()
+    window.addEventListener('resize', updateFlamePositionForDesktop)
+    
+    // Также обновляем после задержки для гарантии
+    const timeoutId = setTimeout(updateFlamePositionForDesktop, 100)
+    const timeoutId2 = setTimeout(updateFlamePositionForDesktop, 500)
+    
+    return () => {
+      window.removeEventListener('resize', updateFlamePositionForDesktop)
+      clearTimeout(timeoutId)
+      clearTimeout(timeoutId2)
+    }
+  }, [selectedArtifact])
+
   // Эффект для восстановления фона при сбросе темного режима
   useEffect(() => {
     if (!isDarkMode) {
