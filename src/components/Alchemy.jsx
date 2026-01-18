@@ -813,7 +813,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             <div 
               className="artifact-zone artifact-snitch" 
               onClick={() => handleArtifactClick('snitch')}
-              title="Золотой Снитч"
+              title="Снитч"
             ></div>
 
             {/* Карты - левая нижняя часть */}
@@ -834,7 +834,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             <div 
               className="artifact-zone artifact-chalice" 
               onClick={() => handleArtifactClick('chalice')}
-              title="Золотая Чаша"
+              title="Чаша"
             ></div>
 
             {/* Амулеты/Руны - самый низ */}
