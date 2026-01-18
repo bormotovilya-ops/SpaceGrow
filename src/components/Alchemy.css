@@ -637,9 +637,14 @@
 
 .action-zone-text {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
+  font-size: 18px !important; /* Фиксированный размер шрифта, не зависит от ширины экрана */
   line-height: 1.8;
   margin: 0;
+}
+
+/* Фиксированный размер шрифта для текста в блоке "Выберите артефакт" */
+.action-zone-default .action-zone-text {
+  font-size: 18px !important; /* Всегда 18px, независимо от ширины экрана */
 }
 
 /* Динамический контент */
