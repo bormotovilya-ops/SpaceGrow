@@ -36,12 +36,12 @@ const digitalRoot = (num) => {
 
 // Методики для сканирования
 const methods = [
-  { id: 'matrix', name: 'Матрица судьбы' },
-  { id: 'money', name: 'Код денег' },
-  { id: 'humandesign', name: 'HumanDesign' },
-  { id: 'pythagoras', name: 'Квадрат Пифагора' },
-  { id: 'soul', name: 'Дизайн Души' },
-  { id: 'jung', name: 'Архетипы по Юнгу' }
+  { id: 'matrix', name: '🔮 Матрица судьбы' },
+  { id: 'money', name: '💰 Код денег' },
+  { id: 'humandesign', name: '⚡ HumanDesign' },
+  { id: 'pythagoras', name: '🌟 Квадрат Пифагора' },
+  { id: 'soul', name: '✨ Дизайн Души' },
+  { id: 'jung', name: '🎭 Архетипы по Юнгу' }
 ]
 
 // Описания методов
@@ -552,7 +552,7 @@ function MatrixCalculator() {
                   >
                     {method.name}
                   </h4>
-                  <p className="card-result">{results[method.id]?.result}</p>
+                  <p className="card-result">✨ {results[method.id]?.result}</p>
                   <motion.button
                     className="card-download-button"
                     onClick={() => handleDownloadPDF(method.id, method.name)}

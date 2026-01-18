@@ -15,6 +15,124 @@
   overflow-x: hidden;
 }
 
+/* Кнопка управления музыкой */
+.alchemy-music-toggle {
+  position: fixed;
+  top: 90px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 215, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.alchemy-music-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 215, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.alchemy-music-toggle:active {
+  transform: scale(0.95);
+}
+
+.alchemy-music-toggle svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+  transition: all 0.3s ease;
+}
+
+.alchemy-music-toggle:hover svg {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
+}
+
+/* Кнопка режима отладки */
+.alchemy-debug-toggle {
+  position: fixed;
+  top: 90px;
+  right: 84px; /* Рядом с кнопкой музыки (48px + 24px + 12px gap) */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 0, 0, 0.5);
+  color: #ff4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.alchemy-debug-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 0, 0, 0.7);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.alchemy-debug-toggle:active {
+  transform: scale(0.95);
+}
+
+.alchemy-debug-toggle svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
+  transition: all 0.3s ease;
+}
+
+.alchemy-debug-toggle:hover svg {
+  filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.8));
+}
+
+/* Когда режим отладки активен - более яркая рамка */
+.alchemy-debug-toggle.active {
+  border-color: rgba(255, 0, 0, 0.9);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 25px rgba(255, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.alchemy-debug-toggle.active:hover {
+  border-color: rgba(255, 0, 0, 1);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 35px rgba(255, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
 .alchemy-container.dark-mode {
   background: #000000; /* Черный фон только в темном режиме */
 }
@@ -25,7 +143,7 @@
   backdrop-filter: blur(15px) saturate(120%);
   -webkit-backdrop-filter: blur(15px) saturate(120%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-  padding: 12px 24px 8px 24px !important; /* Стандартный padding как на других страницах */
+  padding: 8px 24px 4px 24px !important; /* Уменьшенный padding для компактного header без подписей */
 }
 
 /* Возвращаем обычный размер иконок на странице Alchemy */
@@ -41,17 +159,22 @@
   border-radius: 16px !important;
 }
 
-/* Возвращаем обычную высоту кнопок меню с подписями */
+/* Уменьшенная высота кнопок меню без подписей */
 .alchemy-container .header-menu-item {
   background: rgba(255, 255, 255, 0.01) !important;
-  min-height: 90px !important; /* Обычная высота */
-  padding: 8px 4px !important;
-  gap: 6px !important; /* Возвращаем gap для подписей */
-  justify-content: flex-start !important;
+  min-height: 80px !important; /* Уменьшено с 90px (только иконка + padding) */
+  padding: 4px 4px !important; /* Уменьшен padding */
+  gap: 0 !important; /* Убираем gap, так как подписей нет */
+  justify-content: center !important; /* Центрируем иконку */
 }
 
 .alchemy-container .header-menu-item:hover {
   background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Скрываем подписи к кнопкам на странице Alchemy */
+.alchemy-container .header-menu-label {
+  display: none !important;
 }
 
 /* Скрываем speech bubble для профиля на странице Alchemy */
@@ -75,24 +198,34 @@
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  padding-top: 70px; /* Отступ для уменьшенного Header */
+  padding-top: 60px; /* Отступ для уменьшенного Header без подписей */
+}
+
+/* Контейнер для фонового изображения и интерактивных зон */
+.alchemy-image-container {
+  position: relative;
+  width: 100%;
+  max-width: 450px; /* Ограничение ширины для десктопа */
+  aspect-ratio: 9 / 16;
+  margin: 0 auto; /* Центрирование на десктопе */
+  z-index: 1;
+  overflow: hidden; /* Скрываем подписи, выходящие за границы картинки */
 }
 
 /* Фоновое изображение */
 .alchemy-hero-background {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  display: block;
   background-color: #0a0a0a; /* Темный фон для заполнения */
   background-image: url('/images/i.webp');
-  background-size: contain; /* Изменено с cover на contain */
+  background-size: cover; /* Заполняет контейнер с сохранением пропорций */
   background-position: center center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
   z-index: 1;
-  /* Адаптация под вертикальное соотношение 9:16 для мобильных */
 }
 
 /* Эффект параллакса при прокрутке */
@@ -105,7 +238,7 @@
 /* Приветствие - перемещено вниз */
 .alchemy-hero-greeting {
   position: absolute;
-  bottom: 30px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
@@ -117,8 +250,9 @@
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
+  border-radius: 16px 16px 0 0;
   border: 1px solid rgba(255, 215, 0, 0.3);
+  border-bottom: none;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 30px rgba(255, 215, 0, 0.2);
@@ -127,6 +261,13 @@
   max-width: 90%;
   box-sizing: border-box;
   white-space: normal;
+  transition: padding 0.5s ease-in-out, border-radius 0.5s ease-in-out;
+}
+
+/* Компактный вид блока приветствия (после скрытия "Добро пожаловать") */
+.alchemy-hero-greeting.greeting-compact {
+  padding: 10px 30px;
+  border-radius: 12px 12px 0 0;
 }
 
 .alchemy-hero-subtitle {
@@ -188,6 +329,8 @@
   /* Анимация пульсации свечения */
   animation: magicGlow 3s ease-in-out infinite, gradientShift 4s ease infinite;
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+  transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out, margin 0.5s ease-in-out;
+  overflow: hidden;
 }
 
 /* Анимация пульсации свечения */
@@ -228,35 +371,54 @@
 
 /* Интерактивные зоны */
 .alchemy-interactive-zones {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   z-index: 5;
-  padding-bottom: 180px; /* Отступ снизу для приветствия */
 }
 
 .artifact-zone {
   position: absolute;
   cursor: pointer;
-  border: none; /* Убраны границы */
+  border: none; /* Убираем границу, чтобы зона была невидимой */
   background: transparent; /* Прозрачный фон */
   transition: all 0.2s ease;
   z-index: 6;
+  box-sizing: border-box; /* Граница включается в размер, чтобы проценты работали правильно */
   /* Зоны полностью невидимы, только подписи видны */
-  min-width: 80px;
-  min-height: 80px;
-  pointer-events: auto; /* Кликабельные */
-  /* Делаем сам элемент невидимым, но без opacity, чтобы ::after был виден */
-  visibility: hidden;
+  pointer-events: auto; /* Кликабельные - вся зона кликабельна */
+  /* Элемент виден для браузера, чтобы получать события, но визуально невидим (без границы и фона) */
+  visibility: visible;
 }
 
-/* Подпись артефакта - всегда видимая, по центру зоны */
+/* Режим отладки - показывает зоны с полупрозрачным фоном */
+.alchemy-container.debug-mode .artifact-zone,
+.artifact-zone.debug-visible {
+  visibility: visible !important;
+  background: rgba(255, 0, 0, 0.1) !important; /* Полупрозрачный красный фон */
+  border: 2px solid red !important; /* Более толстая красная рамка */
+}
+
+/* В режиме отладки подписи также видимы поверх зон */
+.alchemy-container.debug-mode .artifact-zone::after,
+.artifact-zone.debug-visible::after {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 2px solid rgba(255, 0, 0, 0.8) !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  z-index: 11 !important;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important;
+}
+
+/* Подпись артефакта - всегда видимая, внизу зоны */
 .artifact-zone::after {
   content: attr(title);
   position: absolute;
-  top: 50%;
+  bottom: 8%; /* Располагаем подпись ближе к нижнему краю зоны */
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%); /* Центрируем по горизонтали */
   padding: 6px 12px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -279,7 +441,8 @@
 
 /* Зоны остаются невидимыми даже при наведении */
 .artifact-zone:hover {
-  visibility: hidden; /* Остается невидимой */
+  background: transparent; /* Остается невидимой */
+  border: none; /* Без границы */
   transform: none; /* Без трансформации */
 }
 
@@ -293,85 +456,146 @@
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 215, 0, 0.9);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6);
-  transform: translate(-50%, -50%) scale(1.08);
+  transform: translateX(-50%) scale(1.08); /* Обновлен transform для новой позиции */
 }
 
 /* Убираем transform у элементов с translateX при hover, чтобы подпись не улетала */
-.artifact-hourglass:hover,
-.artifact-astrolabe:hover,
-.artifact-amulets:hover {
-  transform: none !important;
+.artifact-hourglass:hover {
+  transform: translateX(-50%) !important;
 }
 
-/* Расположение зон на изображении с учетом contain (центрированная картинка) */
+.artifact-amulets:hover {
+  transform: translateX(-50%) !important;
+}
+
+/* Расположение зон на изображении с учетом соотношения 9:16 (вертикальный формат) */
+/* Позиции пересчитаны из пикселей в проценты для адаптивности */
+/* Все проценты рассчитываются относительно размера родительского контейнера .alchemy-image-container */
 .artifact-mirror {
-  top: 8%;
-  left: 15%;
-  width: 25%;
-  height: 18%;
+  top: 1.875%;
+  left: 16.94%;
+  width: 44.44%; /* 200px / 450px * 100 */
+  height: 18.75%; /* 150px / 800px * 100 */
 }
 
 .artifact-crystal {
-  top: 8%;
-  right: 10%;
-  width: 25%;
-  height: 16%;
+  top: 10.11%; /* 80.913px / 800px * 100 */
+  left: 67.11%; /* 302px / 450px * 100 */
+  width: 28.89%; /* 130px / 450px * 100 */
+  height: 20%; /* 160px / 800px * 100 */
 }
 
 .artifact-astrolabe {
-  top: 107px;
-  left: 178px;
-  width: 32%;
-  height: 38%;
+  top: 30.78%;
+  left: 21.11%; /* Процент от ширины контейнера - масштабируется автоматически */
+  width: 55.56%; /* Процент от ширины контейнера - масштабируется автоматически */
+  height: 30%; /* Процент от высоты контейнера - масштабируется автоматически */
 }
 
 .artifact-candle {
-  top: 35%;
-  left: 2%;
-  width: 20%;
-  height: 22%;
+  top: 20%; /* Процент от высоты контейнера */
+  left: 4.67%; /* 21px при max-width 450px (21/450*100) - относительное значение */
+  width: 13.33%; /* Процент от ширины контейнера */
+  height: 20%; /* Процент от высоты контейнера */
+  /* Легкое свечение от свечи */
+  filter: drop-shadow(0 0 4px rgba(255, 170, 0, 0.2));
+}
+
+/* Эффект горения свечи - пламя */
+.artifact-candle .candle-flame {
+  position: absolute;
+  top: -22%; /* Выше верхнего края зоны свечи на 22% от её высоты */
+  left: 60%; /* Относительно ширины зоны свечи */
+  transform: translateX(0); /* Убираем центрирование, используем прямой left */
+  width: 12px; /* Ширина пламени */
+  height: 40%; /* Относительно высоты зоны свечи */
+  background: linear-gradient(
+    to top,
+    #006400 0%,      /* Темно-зеленый внизу */
+    #32CD32 40%,     /* Лаймовый */
+    #90EE90 70%,     /* Светло-зеленый */
+    #FFFF00 100%     /* Желтый наверху */
+  );
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Форма пламени */
+  opacity: 1 !important; /* Полная непрозрачность с приоритетом */
+  z-index: 1000 !important; /* Очень высокий z-index поверх всех элементов */
+  pointer-events: none; /* Пламя не мешает кликам */
+  animation: candleFlame 1.5s ease-in-out infinite alternate;
+  box-shadow: 
+    0 0 12px rgba(50, 205, 50, 1),
+    0 0 18px rgba(144, 238, 144, 0.9),
+    0 0 30px rgba(0, 255, 0, 0.7),
+    0 0 40px rgba(0, 200, 0, 0.5),
+    inset 0 -2px 8px rgba(255, 255, 0, 0.3);
+  display: block !important; /* Убеждаемся, что элемент отображается */
+}
+
+/* Анимация покачивания пламени */
+@keyframes candleFlame {
+  0% {
+    transform: translateX(-50%) rotate(-2deg) scale(1, 1);
+  }
+  25% {
+    transform: translateX(-50%) rotate(1deg) scale(1.05, 0.95);
+  }
+  50% {
+    transform: translateX(-50%) rotate(-1.5deg) scale(0.95, 1.1);
+  }
+  75% {
+    transform: translateX(-50%) rotate(1deg) scale(1.08, 0.9);
+  }
+  100% {
+    transform: translateX(-50%) rotate(-2deg) scale(1, 1);
+  }
 }
 
 .artifact-snitch {
-  top: 40%;
-  right: 8%;
-  width: 18%;
-  height: 18%;
+  top: 40%; /* Позиция снитча */
+  left: 78%; /* Сдвинуто внутрь чтобы подпись не выходила за правую границу (было 82.22%) */
+  width: 11%; /* Процент от ширины контейнера - масштабируется автоматически */
+  height: 7%;
 }
 
 .artifact-tarot {
-  bottom: 20%;
-  left: 5%;
-  width: 22%;
-  height: 22%;
+  top: 60.375%; /* Процент от высоты контейнера - масштабируется автоматически */
+  left: 2%; /* Сдвинуто внутрь чтобы подпись не выходила за левую границу (было -12%) */
+  width: 44.44%; /* Изменено с 76% (342px) на 44.44% (200px при max-width 450px) */
+  height: 20.53%; /* Процент от высоты контейнера - масштабируется автоматически */
 }
 
 .artifact-hourglass {
-  bottom: 15%;
-  left: 50%;
-  width: 22%;
-  height: 22%;
+  top: 62.5%; /* 500px / 800px * 100 */
+  left: 55.56%; /* 250px / 450px * 100 */
+  width: 14%;
+  height: 22.5%; /* 180px / 800px * 100 */
 }
 
 .artifact-chalice {
-  bottom: 20%;
-  right: 10%;
-  width: 20%;
-  height: 20%;
+  top: 57.5%; /* 460px / 800px * 100 */
+  left: 77.78%; /* 350px / 450px * 100 */
+  width: 22.22%; /* 100px / 450px * 100 */
+  height: 25%; /* 200px / 800px * 100 */
 }
 
 .artifact-amulets {
-  bottom: 5%;
+  bottom: 3%;
   left: 50%;
+  transform: translateX(-50%);
   width: 28%;
   height: 12%;
 }
 
 /* Секция действий */
 .action-zone {
-  position: relative;
+  position: fixed; /* Фиксируем позицию, чтобы нельзя было прокрутить к столу */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden; /* Отключаем прокрутку - к столу возвращаемся только кнопкой */
   background: #1a1a1a;
   background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
   padding: 80px 20px 120px;
@@ -382,6 +606,17 @@
 .action-zone-inner {
   max-width: 800px;
   margin: 0 auto;
+  height: 100%;
+  overflow-y: auto; /* Включаем прокрутку внутри контента - форма и результаты прокручиваются вместе */
+  overflow-x: hidden;
+  padding: 0 20px; /* Добавляем отступы для красоты */
+  /* Скрываем полосу прокрутки */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.action-zone-inner::-webkit-scrollbar {
+  display: none;
 }
 
 /* Контент по умолчанию */
@@ -645,6 +880,18 @@
     padding-top: 60px; /* Уменьшенный отступ для планшетов */
   }
 
+  .alchemy-music-toggle {
+    top: 75px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .alchemy-music-toggle svg {
+    width: 22px;
+    height: 22px;
+  }
+
   .alchemy-hero-title {
     font-size: 24px;
     letter-spacing: 1.5px;
@@ -660,69 +907,7 @@
     gap: 10px;
   }
 
-  /* Координаты для планшетов (1024px) с учетом contain */
-  .artifact-mirror {
-    top: 7%;
-    left: 14%;
-    width: 26%;
-    height: 17%;
-  }
-
-  .artifact-crystal {
-    top: 7%;
-    right: 9%;
-    width: 26%;
-    height: 15%;
-  }
-
-  .artifact-astrolabe {
-    top: 23%;
-    left: 50%;
-    width: 34%;
-    height: 36%;
-  }
-
-  .artifact-candle {
-    top: 33%;
-    left: 1%;
-    width: 21%;
-    height: 21%;
-  }
-
-  .artifact-snitch {
-    top: 38%;
-    right: 7%;
-    width: 19%;
-    height: 17%;
-  }
-
-  .artifact-tarot {
-    bottom: 19%;
-    left: 4%;
-    width: 23%;
-    height: 21%;
-  }
-
-  .artifact-hourglass {
-    bottom: 14%;
-    left: 50%;
-    width: 23%;
-    height: 21%;
-  }
-
-  .artifact-chalice {
-    bottom: 19%;
-    right: 9%;
-    width: 21%;
-    height: 19%;
-  }
-
-  .artifact-amulets {
-    bottom: 4%;
-    left: 50%;
-    width: 29%;
-    height: 11%;
-  }
+  /* Позиции artifact-zone универсальны для всех устройств (используются проценты с соотношением 9:16) */
 }
 
 /* Адаптивность для мобильных устройств */
@@ -766,17 +951,35 @@
     aspect-ratio: 9 / 16;
   }
 
+  .alchemy-music-toggle {
+    top: 65px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .alchemy-music-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
   .alchemy-hero-background {
-    /* Для мобильных устройств - адаптируем под вертикальный формат */
-    background-size: contain; /* Изменено с cover на contain */
+    /* Для мобильных устройств - используем cover для заполнения */
+    background-size: cover;
     background-position: center center;
-    background-color: #050505; /* Темный фон для заполнения */
+    background-color: #0a0a0a; /* Темный фон для заполнения */
   }
 
   .alchemy-hero-greeting {
-    bottom: 20px;
+    bottom: 0;
     padding: 12px 18px;
     width: 95%;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+  }
+
+  .alchemy-hero-greeting.greeting-compact {
+    padding: 8px 18px;
   }
   
   .alchemy-interactive-zones {
@@ -793,22 +996,23 @@
     letter-spacing: 0.5px;
   }
 
-  /* Интерактивные зоны на мобильных - полностью невидимые */
+  /* Интерактивные зоны на мобильных - полностью невидимые, но кликабельные */
   .artifact-zone {
-    visibility: hidden; /* Полностью невидимые */
+    visibility: visible; /* Элемент виден для браузера, чтобы получать события */
     border: none; /* Нет границ */
     background: transparent; /* Прозрачный фон */
   }
 
   .artifact-zone:active {
-    visibility: hidden; /* Остается невидимой */
+    background: transparent; /* Остается невидимой */
+    border: none; /* Нет границ */
     transform: none; /* Без трансформации */
   }
 
   .artifact-zone::after {
-    top: 50%;
+    bottom: 8%; /* Располагаем подпись ближе к нижнему краю зоны на мобильных */
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%); /* Центрируем по горизонтали */
     font-size: 11px;
     padding: 5px 10px;
     opacity: 0.95; /* Хорошо видимая на мобильных */
@@ -818,73 +1022,9 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4);
   }
 
-  /* Координаты для мобильных устройств (768px) с учетом contain */
-  .artifact-mirror {
-    top: 5%;
-    left: 12%;
-    width: 28%;
-    height: 16%;
-  }
-
-  .artifact-crystal {
-    top: 5%;
-    right: 8%;
-    width: 28%;
-    height: 14%;
-  }
-
-  .artifact-astrolabe {
-    top: 20%;
-    left: 50%;
-    width: 38%;
-    height: 32%;
-  }
-
-  .artifact-candle {
-    top: 30%;
-    left: 2%;
-    width: 23%;
-    height: 20%;
-  }
-
-  .artifact-snitch {
-    top: 34%;
-    right: 5%;
-    width: 23%;
-    height: 16%;
-  }
-
-  .artifact-tarot {
-    bottom: 18%;
-    left: 3%;
-    width: 26%;
-    height: 20%;
-  }
-
-  .artifact-hourglass {
-    bottom: 12%;
-    left: 50%;
-    width: 24%;
-    height: 20%;
-  }
-
-  .artifact-chalice {
-    bottom: 18%;
-    right: 8%;
-    width: 23%;
-    height: 18%;
-  }
-
-  .artifact-amulets {
-    bottom: 3%;
-    left: 50%;
-    width: 32%;
-    height: 10%;
-  }
-  
+  /* Позиции artifact-zone универсальны для всех устройств (используются проценты с соотношением 9:16) */
   .artifact-zone {
-    min-width: 80px;
-    min-height: 80px;
+    /* Убрали min-width и min-height чтобы проценты масштабировались правильно для всех размеров */
   }
   
   .alchemy-hero-subtitle {
@@ -975,10 +1115,28 @@
     padding-top: 50px; /* Еще меньший отступ для очень маленьких экранов */
   }
 
+  .alchemy-music-toggle {
+    top: 60px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .alchemy-music-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
   .alchemy-hero-greeting {
-    bottom: 15px;
+    bottom: 0;
     padding: 10px 15px;
     width: 95%;
+    border-radius: 10px 10px 0 0;
+    border-bottom: none;
+  }
+
+  .alchemy-hero-greeting.greeting-compact {
+    padding: 6px 15px;
   }
 
   .alchemy-hero-title {
@@ -995,69 +1153,7 @@
     padding-bottom: 130px; /* Отступ снизу для очень маленьких экранов */
   }
 
-  /* Координаты для очень маленьких экранов (480px) */
-  .artifact-mirror {
-    top: 4%;
-    left: 10%;
-    width: 30%;
-    height: 15%;
-  }
-
-  .artifact-crystal {
-    top: 4%;
-    right: 6%;
-    width: 30%;
-    height: 13%;
-  }
-
-  .artifact-astrolabe {
-    top: 18%;
-    left: 50%;
-    width: 40%;
-    height: 30%;
-  }
-
-  .artifact-candle {
-    top: 28%;
-    left: 0%;
-    width: 25%;
-    height: 18%;
-  }
-
-  .artifact-snitch {
-    top: 32%;
-    right: 3%;
-    width: 25%;
-    height: 15%;
-  }
-
-  .artifact-tarot {
-    bottom: 20%;
-    left: 0%;
-    width: 28%;
-    height: 18%;
-  }
-
-  .artifact-hourglass {
-    bottom: 14%;
-    left: 50%;
-    width: 26%;
-    height: 18%;
-  }
-
-  .artifact-chalice {
-    bottom: 20%;
-    right: 6%;
-    width: 25%;
-    height: 16%;
-  }
-
-  .artifact-amulets {
-    bottom: 2%;
-    left: 50%;
-    width: 34%;
-    height: 9%;
-  }
+  /* Позиции artifact-zone универсальны для всех устройств (используются проценты с соотношением 9:16) */
 
   .action-zone-title {
     font-size: 20px;
