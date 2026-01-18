@@ -1001,8 +1001,28 @@
 
   /* Корректировка позиции пламени на мобильных */
   .artifact-candle .candle-flame {
-    left: 18%; /* Увеличено с 13% для мобильных устройств */
-    top: -15%; /* Опущено ниже с -22% для мобильных устройств */
+    left: 18% !important; /* Увеличено с 13% для мобильных устройств */
+    top: -15% !important; /* Опущено ниже с -22% для мобильных устройств */
+    transform: translateX(0) !important; /* Убираем центрирование для мобильных */
+  }
+
+  /* Корректировка анимации пламени на мобильных */
+  @keyframes candleFlame {
+    0% {
+      transform: translateX(0) rotate(-2deg) scale(1, 1) !important;
+    }
+    25% {
+      transform: translateX(0) rotate(1deg) scale(1.05, 0.95) !important;
+    }
+    50% {
+      transform: translateX(0) rotate(-1.5deg) scale(0.95, 1.1) !important;
+    }
+    75% {
+      transform: translateX(0) rotate(1deg) scale(1.08, 0.9) !important;
+    }
+    100% {
+      transform: translateX(0) rotate(-2deg) scale(1, 1) !important;
+    }
   }
 
   .alchemy-hero-title {
@@ -1174,8 +1194,9 @@
 
   /* Корректировка позиции пламени на очень маленьких экранах */
   .artifact-candle .candle-flame {
-    left: 18%; /* Увеличено с 13% для очень маленьких экранов */
-    top: -15%; /* Опущено ниже с -22% для очень маленьких экранов */
+    left: 18% !important; /* Увеличено с 13% для очень маленьких экранов */
+    top: -15% !important; /* Опущено ниже с -22% для очень маленьких экранов */
+    transform: translateX(0) !important; /* Убираем центрирование для очень маленьких экранов */
   }
 
   /* Позиции artifact-zone универсальны для всех устройств (используются проценты с соотношением 9:16) */
