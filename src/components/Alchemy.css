@@ -614,6 +614,7 @@
 
 .action-zone-inner {
   max-width: 800px;
+  width: 100%;
   margin: 0 auto;
   height: 100%;
   overflow-y: auto; /* Включаем прокрутку внутри контента - форма и результаты прокручиваются вместе */
@@ -622,6 +623,7 @@
   /* Скрываем полосу прокрутки */
   scrollbar-width: none;
   -ms-overflow-style: none;
+  box-sizing: border-box;
 }
 
 .action-zone-inner::-webkit-scrollbar {
@@ -633,6 +635,10 @@
   text-align: center;
   padding: 60px 20px;
   animation: fadeInContent 0.5s ease-in-out; /* Та же анимация снизу */
+  max-width: 800px; /* Ограничиваем максимальную ширину, чтобы панель не растягивалась */
+  width: 100%;
+  margin: 0 auto; /* Центрируем */
+  box-sizing: border-box;
 }
 
 .action-zone-text {
