@@ -41,18 +41,13 @@
   border-radius: 16px !important;
 }
 
-/* Убираем подписи под картинками */
-.alchemy-container .header-menu-label {
-  display: none !important;
-}
-
-/* Возвращаем обычную высоту кнопок меню, но без подписей высота будет меньше */
+/* Возвращаем обычную высоту кнопок меню с подписями */
 .alchemy-container .header-menu-item {
   background: rgba(255, 255, 255, 0.01) !important;
   min-height: 90px !important; /* Обычная высота */
   padding: 8px 4px !important;
-  gap: 0 !important; /* Убираем gap так как нет подписей */
-  justify-content: center !important;
+  gap: 6px !important; /* Возвращаем gap для подписей */
+  justify-content: flex-start !important;
 }
 
 .alchemy-container .header-menu-item:hover {
