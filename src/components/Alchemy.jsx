@@ -373,7 +373,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   useEffect(() => {
     const updateFlamePositionForDesktop = () => {
       const flame = candleFlameRef.current
-      if (!flame) return
+      const flameContainer = document.querySelector('.artifact-candle')
+      
+      if (!flame || !flameContainer) return
 
       // Определяем, открыто ли приложение из Telegram WebView на десктопе
       const isTelegramWebView = window.Telegram?.WebApp || window.TelegramWebApp
@@ -382,14 +384,19 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       if (isTelegramWebView && isDesktop) {
         // Для десктопа из Telegram: сдвигаем левее и выше на 5%
         // Используем проценты от родителя (artifact-candle), а не от других элементов
-        flame.style.left = '8%' // 13% - 5%
-        flame.style.top = '-17%' // -22% + 5%
-        flame.style.position = 'absolute' // Фиксируем позиционирование
+        // Фиксируем позицию независимо от изменений других элементов страницы
+        flame.style.position = 'absolute'
+        flame.style.left = '8%' // 13% - 5% относительно ширины .artifact-candle
+        flame.style.top = '-17%' // -22% + 5% относительно высоты .artifact-candle
+        flame.style.margin = '0' // Убираем все отступы
+        flame.style.transform = 'none' // Убираем трансформации, кроме анимации
       } else if (isDesktop && !isTelegramWebView) {
         // Для обычного веб-браузера: используем CSS значения (left: 13%, top: -22%)
         flame.style.left = ''
         flame.style.top = ''
         flame.style.position = ''
+        flame.style.margin = ''
+        flame.style.transform = ''
       }
     }
 
@@ -397,20 +404,56 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     updateFlamePositionForDesktop()
     window.addEventListener('resize', updateFlamePositionForDesktop)
     
-    // Обновляем при изменении состояния приветствия (может изменить высоту контейнера)
+    // Обновляем после задержек для гарантии стабилизации
     const timeoutId = setTimeout(updateFlamePositionForDesktop, 100)
     const timeoutId2 = setTimeout(updateFlamePositionForDesktop, 500)
-    const timeoutId3 = setTimeout(updateFlamePositionForDesktop, 1000) // Дополнительная задержка для стабилизации
+    const timeoutId3 = setTimeout(updateFlamePositionForDesktop, 1000)
+    const timeoutId4 = setTimeout(updateFlamePositionForDesktop, 2000) // Дополнительная задержка для полной стабилизации
     
-    // Используем ResizeObserver для отслеживания изменений размеров контейнера
+    // Используем ResizeObserver для отслеживания изменений размеров контейнера свечи
     const flameContainer = document.querySelector('.artifact-candle')
     let resizeObserver = null
     
     if (flameContainer && window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
-        updateFlamePositionForDesktop()
+        // Небольшая задержка для стабилизации после изменения размера
+        setTimeout(updateFlamePositionForDesktop, 50)
       })
       resizeObserver.observe(flameContainer)
+      
+      // Также отслеживаем изменения родительского контейнера
+      const interactiveZones = document.querySelector('.alchemy-interactive-zones')
+      if (interactiveZones) {
+        resizeObserver.observe(interactiveZones)
+      }
+    }
+    
+    // Отслеживаем изменения в DOM (например, когда меняется текст "Выберите артефакт")
+    const observer = new MutationObserver(() => {
+      // Небольшая задержка для стабилизации после изменения DOM
+      setTimeout(updateFlamePositionForDesktop, 50)
+    })
+    
+    // Наблюдаем за изменениями в контейнере с артефактами и action-zone
+    const heroContainer = document.querySelector('.alchemy-hero')
+    const actionZone = document.querySelector('.action-zone')
+    
+    if (heroContainer) {
+      observer.observe(heroContainer, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
+      })
+    }
+    
+    if (actionZone) {
+      observer.observe(actionZone, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
+      })
     }
     
     return () => {
@@ -418,12 +461,19 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       clearTimeout(timeoutId)
       clearTimeout(timeoutId2)
       clearTimeout(timeoutId3)
+      clearTimeout(timeoutId4)
       
       if (resizeObserver && flameContainer) {
         resizeObserver.unobserve(flameContainer)
+        const interactiveZones = document.querySelector('.alchemy-interactive-zones')
+        if (interactiveZones) {
+          resizeObserver.unobserve(interactiveZones)
+        }
       }
+      
+      observer.disconnect()
     }
-  }, [selectedArtifact, showWelcome]) // Добавляем showWelcome в зависимости, чтобы обновлялось при изменении приветствия
+  }, [selectedArtifact]) // Убираем showWelcome, так как теперь используем MutationObserver
 
   // Эффект для восстановления фона при сбросе темного режима
   useEffect(() => {
