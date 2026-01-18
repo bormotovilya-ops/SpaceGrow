@@ -27,6 +27,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const fadeIntervalRef = useRef(null)
   const userInteractedRef = useRef(false)
   const imageContainerRef = useRef(null)
+  const candleFlameRef = useRef(null)
+  const candleFlameRef = useRef(null)
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
@@ -806,7 +808,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               title="Свеча"
             >
               {/* Элемент пламени */}
-              <div className="candle-flame"></div>
+              <div className="candle-flame" ref={candleFlameRef}></div>
             </div>
 
             {/* Снитч - правая средняя часть */}
