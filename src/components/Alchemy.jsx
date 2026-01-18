@@ -28,7 +28,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const userInteractedRef = useRef(false)
   const imageContainerRef = useRef(null)
   const candleFlameRef = useRef(null)
-  const candleFlameRef = useRef(null)
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
