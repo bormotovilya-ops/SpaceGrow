@@ -241,12 +241,13 @@
   border: none; /* Убраны границы */
   background: transparent; /* Прозрачный фон */
   transition: all 0.2s ease;
-  opacity: 0; /* Полностью невидимые */
   z-index: 6;
   /* Зоны полностью невидимы, только подписи видны */
   min-width: 80px;
   min-height: 80px;
   pointer-events: auto; /* Кликабельные */
+  /* Делаем сам элемент невидимым, но без opacity, чтобы ::after был виден */
+  visibility: hidden;
 }
 
 /* Подпись артефакта - всегда видимая */
@@ -265,6 +266,7 @@
   border-radius: 6px;
   white-space: nowrap;
   opacity: 0.9; /* Всегда видимая */
+  visibility: visible; /* Явно делаем видимой */
   pointer-events: auto; /* Кликабельная */
   transition: all 0.3s ease;
   margin-bottom: 6px;
@@ -278,8 +280,12 @@
 
 /* Зоны остаются невидимыми даже при наведении */
 .artifact-zone:hover {
-  opacity: 0; /* Остается невидимой */
+  visibility: hidden; /* Остается невидимой */
   transform: none; /* Без трансформации */
+}
+
+.artifact-zone:hover::after {
+  visibility: visible; /* Подпись остается видимой при наведении */
 }
 
 /* Подпись при наведении становится ярче */
@@ -620,7 +626,11 @@
   .alchemy-container .header-menu-item {
     min-height: 85px !important;
     padding: 8px 4px !important;
-    gap: 0 !important;
+    gap: 6px !important;
+  }
+
+  .alchemy-container .header-menu-label {
+    display: none !important;
   }
 
   .alchemy-container .header-menu-grid {
@@ -737,7 +747,11 @@
   .alchemy-container .header-menu-item {
     min-height: 75px !important;
     padding: 6px 2px !important;
-    gap: 0 !important;
+    gap: 4px !important;
+  }
+
+  .alchemy-container .header-menu-label {
+    display: none !important;
   }
 
   .alchemy-container .header-menu-grid {
@@ -780,13 +794,13 @@
 
   /* Интерактивные зоны на мобильных - полностью невидимые */
   .artifact-zone {
-    opacity: 0; /* Полностью невидимые */
+    visibility: hidden; /* Полностью невидимые */
     border: none; /* Нет границ */
     background: transparent; /* Прозрачный фон */
   }
 
   .artifact-zone:active {
-    opacity: 0; /* Остается невидимой */
+    visibility: hidden; /* Остается невидимой */
     transform: none; /* Без трансформации */
   }
 
@@ -794,6 +808,7 @@
     font-size: 11px;
     padding: 5px 10px;
     opacity: 0.95; /* Хорошо видимая на мобильных */
+    visibility: visible; /* Явно делаем видимой */
     border: 1px solid rgba(255, 215, 0, 0.6);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4);
   }
@@ -943,7 +958,11 @@
   .alchemy-container .header-menu-item {
     min-height: 70px !important;
     padding: 4px 1px !important;
-    gap: 0 !important;
+    gap: 3px !important;
+  }
+
+  .alchemy-container .header-menu-label {
+    display: none !important;
   }
 
   .alchemy-container .header-menu-grid {
