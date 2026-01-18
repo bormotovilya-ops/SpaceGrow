@@ -637,7 +637,7 @@
 
 .action-zone-text {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 18px !important; /* Фиксированный размер шрифта, не зависит от ширины экрана */
+  font-size: 18px;
   line-height: 1.8;
   margin: 0;
 }
