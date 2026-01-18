@@ -1001,8 +1001,8 @@
 
   /* Корректировка позиции пламени на мобильных */
   .artifact-candle .candle-flame {
-    left: 36% !important; /* Позиция для мобильных устройств */
-    top: -8% !important; /* Позиция для мобильных устройств */
+    left: 38% !important; /* Позиция для мобильных устройств */
+    top: -6% !important; /* Позиция для мобильных устройств */
     animation: candleFlameMobile 1.5s ease-in-out infinite alternate !important; /* Используем локальную анимацию для мобильных */
   }
 
@@ -1194,8 +1194,8 @@
 
   /* Корректировка позиции пламени на очень маленьких экранах */
   .artifact-candle .candle-flame {
-    left: 36% !important; /* Позиция для очень маленьких экранов */
-    top: -8% !important; /* Позиция для очень маленьких экранов */
+    left: 38% !important; /* Позиция для очень маленьких экранов */
+    top: -6% !important; /* Позиция для очень маленьких экранов */
     animation: candleFlameMobile 1.5s ease-in-out infinite alternate !important; /* Используем локальную анимацию для очень маленьких экранов */
   }
 
