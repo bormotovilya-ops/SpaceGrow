@@ -304,6 +304,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       const containerRect = container.getBoundingClientRect()
       const containerWidth = containerRect.width
       const containerHeight = containerRect.height
+      
+      // Проверяем, что размеры контейнера валидны
+      if (containerWidth === 0 || containerHeight === 0) return
+      
       const containerAspect = containerWidth / containerHeight
       
       // Пропорции картинки (9:16 = 0.5625)
@@ -338,14 +342,30 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     updateImageBounds()
     window.addEventListener('resize', updateImageBounds)
     
-    // Также обновляем после небольшой задержки для гарантии загрузки картинки
+    // Для Telegram WebView на десктопе добавляем дополнительные триггеры
+    const isTelegramWebView = window.Telegram?.WebApp || window.TelegramWebApp
+    if (isTelegramWebView) {
+      // Подписываемся на события изменения viewport в Telegram
+      if (window.Telegram?.WebApp?.onEvent) {
+        window.Telegram.WebApp.onEvent('viewportChanged', updateImageBounds)
+      }
+    }
+    
+    // Обновляем после небольших задержек для гарантии загрузки картинки
     const timeoutId = setTimeout(updateImageBounds, 100)
     const timeoutId2 = setTimeout(updateImageBounds, 500) // Дополнительная задержка для мобильных
+    const timeoutId3 = setTimeout(updateImageBounds, 1000) // Дополнительная задержка для Telegram WebView на десктопе
     
     return () => {
       window.removeEventListener('resize', updateImageBounds)
       clearTimeout(timeoutId)
       clearTimeout(timeoutId2)
+      clearTimeout(timeoutId3)
+      
+      // Отписываемся от событий Telegram
+      if (isTelegramWebView && window.Telegram?.WebApp?.offEvent) {
+        window.Telegram.WebApp.offEvent('viewportChanged', updateImageBounds)
+      }
     }
   }, [selectedArtifact]) // Пересчитываем при изменении выбранного артефакта
 
