@@ -482,9 +482,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         childList: true,
         subtree: true,
         attributes: false,
-        characterData: false,
-        // Фильтруем мутации, чтобы игнорировать изменения в action-zone
-        attributeFilter: null
+        characterData: false
+        // attributeFilter не нужен, так как attributes: false
       })
     }
     
