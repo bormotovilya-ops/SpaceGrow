@@ -489,6 +489,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-mirror" 
             onClick={() => handleArtifactClick('mirror')}
             title="Зеркало"
+            style={{ left: '176px', top: '-8px' }}
           ></div>
 
           {/* Кристалл - верхняя правая часть */}
@@ -496,6 +497,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-crystal" 
             onClick={() => handleArtifactClick('crystal')}
             title="Кристалл Мудрости"
+            style={{ left: '309px', top: '19px' }}
           ></div>
 
           {/* Астролябия - центральный объект */}
@@ -510,6 +512,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-candle" 
             onClick={() => handleArtifactClick('candle')}
             title="Черная Свеча"
+            style={{ left: '86px', top: '42px' }}
           ></div>
 
           {/* Снитч - правая средняя часть */}
@@ -517,6 +520,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-snitch" 
             onClick={() => handleArtifactClick('snitch')}
             title="Золотой Снитч"
+            style={{ left: '350px', top: '154px' }}
           ></div>
 
           {/* Карты Таро - левая нижняя часть */}
@@ -524,6 +528,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-tarot" 
             onClick={() => handleArtifactClick('tarot')}
             title="Карты Таро"
+            style={{ left: '110px', top: '289px' }}
           ></div>
 
           {/* Песочные часы - центральная нижняя часть */}
@@ -531,6 +536,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-hourglass" 
             onClick={() => handleArtifactClick('hourglass')}
             title="Песочные Часы"
+            style={{ left: '314px', top: '296px' }}
           ></div>
 
           {/* Чаша - правая нижняя часть */}

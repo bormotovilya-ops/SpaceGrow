@@ -28,17 +28,17 @@
   padding: 6px 20px 4px 20px !important; /* Еще меньше padding для меньшей высоты */
 }
 
-/* Уменьшаем размер иконок на странице Alchemy */
+/* Возвращаем обычный размер иконок на странице Alchemy */
 .alchemy-container .header-menu-icon-wrapper {
-  width: 36px !important;
-  height: 36px !important;
-  border-radius: 10px !important;
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 16px !important;
 }
 
 .alchemy-container .header-menu-icon {
-  width: 36px !important;
-  height: 36px !important;
-  border-radius: 10px !important;
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 16px !important;
 }
 
 /* Убираем подписи под картинками */
@@ -46,11 +46,11 @@
   display: none !important;
 }
 
-/* Уменьшаем высоту кнопок меню */
+/* Возвращаем обычную высоту кнопок меню, но без подписей высота будет меньше */
 .alchemy-container .header-menu-item {
   background: rgba(255, 255, 255, 0.01) !important;
-  min-height: 50px !important; /* Еще меньше минимальная высота */
-  padding: 4px 2px !important;
+  min-height: 90px !important; /* Обычная высота */
+  padding: 8px 4px !important;
   gap: 0 !important; /* Убираем gap так как нет подписей */
   justify-content: center !important;
 }
@@ -312,9 +312,8 @@
 }
 
 .artifact-astrolabe {
-  top: 25%;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 107px;
+  left: 178px;
   width: 32%;
   height: 38%;
 }
@@ -612,20 +611,20 @@
   }
 
   .alchemy-container .header-menu-icon-wrapper {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 14px !important;
   }
 
   .alchemy-container .header-menu-icon {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 14px !important;
   }
 
   .alchemy-container .header-menu-item {
-    min-height: 45px !important;
-    padding: 3px 2px !important;
+    min-height: 85px !important;
+    padding: 8px 4px !important;
     gap: 0 !important;
   }
 
@@ -729,20 +728,20 @@
   }
 
   .alchemy-container .header-menu-icon-wrapper {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 12px !important;
   }
 
   .alchemy-container .header-menu-icon {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 8px !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 12px !important;
   }
 
   .alchemy-container .header-menu-item {
-    min-height: 42px !important;
-    padding: 3px 1px !important;
+    min-height: 75px !important;
+    padding: 6px 2px !important;
     gap: 0 !important;
   }
 
@@ -935,20 +934,20 @@
   }
 
   .alchemy-container .header-menu-icon-wrapper {
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 7px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 10px !important;
   }
 
   .alchemy-container .header-menu-icon {
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 7px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 10px !important;
   }
 
   .alchemy-container .header-menu-item {
-    min-height: 38px !important;
-    padding: 2px 1px !important;
+    min-height: 70px !important;
+    padding: 4px 1px !important;
     gap: 0 !important;
   }
 
