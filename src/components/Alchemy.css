@@ -25,7 +25,7 @@
   backdrop-filter: blur(15px) saturate(120%);
   -webkit-backdrop-filter: blur(15px) saturate(120%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-  padding: 6px 20px 4px 20px !important; /* Еще меньше padding для меньшей высоты */
+  padding: 12px 24px 8px 24px !important; /* Стандартный padding как на других страницах */
 }
 
 /* Возвращаем обычный размер иконок на странице Alchemy */
@@ -59,9 +59,9 @@
   display: none !important;
 }
 
-/* Уменьшаем gap в сетке меню */
+/* Стандартный gap в сетке меню как на других страницах */
 .alchemy-container .header-menu-grid {
-  gap: 4px !important;
+  gap: 8px !important;
 }
 
 /* Hero Section */
@@ -296,6 +296,13 @@
   transform: translate(-50%, -50%) scale(1.08);
 }
 
+/* Убираем transform у элементов с translateX при hover, чтобы подпись не улетала */
+.artifact-hourglass:hover,
+.artifact-astrolabe:hover,
+.artifact-amulets:hover {
+  transform: none !important;
+}
+
 /* Расположение зон на изображении с учетом contain (центрированная картинка) */
 .artifact-mirror {
   top: 8%;
@@ -342,7 +349,6 @@
 .artifact-hourglass {
   bottom: 15%;
   left: 50%;
-  transform: translateX(-50%);
   width: 22%;
   height: 22%;
 }
@@ -357,7 +363,6 @@
 .artifact-amulets {
   bottom: 5%;
   left: 50%;
-  transform: translateX(-50%);
   width: 28%;
   height: 12%;
 }
@@ -607,7 +612,7 @@
   /* Дополнительные стили для Header на планшетах */
   .alchemy-container .header-block {
     background: rgba(20, 20, 30, 0.075) !important; /* Прозрачность в 2 раза меньше */
-    padding: 5px 18px 3px 18px !important;
+    padding: 12px 24px 8px 24px !important; /* Стандартный padding как на других страницах */
   }
 
   .alchemy-container .header-menu-icon-wrapper {
@@ -633,7 +638,7 @@
   }
 
   .alchemy-container .header-menu-grid {
-    gap: 3px !important;
+    gap: 8px !important; /* Стандартный gap как на других страницах */
   }
 
   .alchemy-hero {
@@ -673,7 +678,6 @@
   .artifact-astrolabe {
     top: 23%;
     left: 50%;
-    transform: translateX(-50%);
     width: 34%;
     height: 36%;
   }
@@ -702,7 +706,6 @@
   .artifact-hourglass {
     bottom: 14%;
     left: 50%;
-    transform: translateX(-50%);
     width: 23%;
     height: 21%;
   }
@@ -717,7 +720,6 @@
   .artifact-amulets {
     bottom: 4%;
     left: 50%;
-    transform: translateX(-50%);
     width: 29%;
     height: 11%;
   }
@@ -728,7 +730,7 @@
   /* Дополнительные стили для Header на мобильных */
   .alchemy-container .header-block {
     background: rgba(20, 20, 30, 0.075) !important; /* Прозрачность в 2 раза меньше */
-    padding: 5px 14px 3px 14px !important;
+    padding: 10px 16px 6px 16px !important; /* Стандартный padding как на других страницах */
   }
 
   .alchemy-container .header-menu-icon-wrapper {
@@ -754,7 +756,7 @@
   }
 
   .alchemy-container .header-menu-grid {
-    gap: 3px !important;
+    gap: 4px !important; /* Стандартный gap как на других страницах */
   }
 
   .alchemy-hero {
@@ -834,7 +836,6 @@
   .artifact-astrolabe {
     top: 20%;
     left: 50%;
-    transform: translateX(-50%);
     width: 38%;
     height: 32%;
   }
@@ -863,7 +864,6 @@
   .artifact-hourglass {
     bottom: 12%;
     left: 50%;
-    transform: translateX(-50%);
     width: 24%;
     height: 20%;
   }
@@ -878,7 +878,6 @@
   .artifact-amulets {
     bottom: 3%;
     left: 50%;
-    transform: translateX(-50%);
     width: 32%;
     height: 10%;
   }
@@ -943,7 +942,7 @@
   /* Дополнительные стили для Header на очень маленьких экранах */
   .alchemy-container .header-block {
     background: rgba(20, 20, 30, 0.075) !important; /* Прозрачность в 2 раза меньше */
-    padding: 4px 10px 2px 10px !important;
+    padding: 8px 12px 4px 12px !important; /* Стандартный padding как на других страницах */
   }
 
   .alchemy-container .header-menu-icon-wrapper {
@@ -969,7 +968,7 @@
   }
 
   .alchemy-container .header-menu-grid {
-    gap: 2px !important;
+    gap: 3px !important; /* Стандартный gap как на других страницах */
   }
 
   .alchemy-hero {
@@ -1014,7 +1013,6 @@
   .artifact-astrolabe {
     top: 18%;
     left: 50%;
-    transform: translateX(-50%);
     width: 40%;
     height: 30%;
   }
@@ -1043,7 +1041,6 @@
   .artifact-hourglass {
     bottom: 14%;
     left: 50%;
-    transform: translateX(-50%);
     width: 26%;
     height: 18%;
   }
@@ -1058,7 +1055,6 @@
   .artifact-amulets {
     bottom: 2%;
     left: 50%;
-    transform: translateX(-50%);
     width: 34%;
     height: 9%;
   }

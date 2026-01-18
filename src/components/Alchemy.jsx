@@ -512,7 +512,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-candle" 
             onClick={() => handleArtifactClick('candle')}
             title="Черная Свеча"
-            style={{ left: '86px', top: '42px' }}
+            style={{ left: '82px', top: '70px' }}
           ></div>
 
           {/* Снитч - правая средняя часть */}
@@ -520,7 +520,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-snitch" 
             onClick={() => handleArtifactClick('snitch')}
             title="Золотой Снитч"
-            style={{ left: '350px', top: '154px' }}
+            style={{ left: '352px', top: '180px' }}
           ></div>
 
           {/* Карты Таро - левая нижняя часть */}
@@ -536,7 +536,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-hourglass" 
             onClick={() => handleArtifactClick('hourglass')}
             title="Песочные Часы"
-            style={{ left: '314px', top: '296px' }}
+            style={{ left: '330px', top: '301px' }}
           ></div>
 
           {/* Чаша - правая нижняя часть */}
@@ -544,6 +544,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             className="artifact-zone artifact-chalice" 
             onClick={() => handleArtifactClick('chalice')}
             title="Золотая Чаша"
+            style={{ left: '378px', top: '292px' }}
           ></div>
 
           {/* Амулеты/Руны - самый низ */}
