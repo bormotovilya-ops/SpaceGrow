@@ -26,6 +26,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const audioRef = useRef(null)
   const fadeIntervalRef = useRef(null)
   const userInteractedRef = useRef(false)
+  const imageContainerRef = useRef(null)
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
@@ -290,6 +291,63 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Вычисление размера видимой области картинки и привязка блоков к ней
+  useEffect(() => {
+    const updateImageBounds = () => {
+      const container = imageContainerRef.current
+      const background = heroBackgroundRef.current
+      const interactiveZones = document.querySelector('.alchemy-interactive-zones')
+      
+      if (!container || !background || !interactiveZones) return
+
+      const containerRect = container.getBoundingClientRect()
+      const containerWidth = containerRect.width
+      const containerHeight = containerRect.height
+      const containerAspect = containerWidth / containerHeight
+      
+      // Пропорции картинки (9:16 = 0.5625)
+      const imageAspect = 9 / 16
+      
+      let imageWidth, imageHeight, imageLeft, imageTop
+      
+      // Вычисляем размеры видимой области картинки при background-size: contain
+      if (containerAspect > imageAspect) {
+        // Контейнер шире - картинка заполняет по высоте
+        imageHeight = containerHeight
+        imageWidth = imageHeight * imageAspect
+        imageLeft = (containerWidth - imageWidth) / 2
+        imageTop = 0
+      } else {
+        // Контейнер выше - картинка заполняет по ширине
+        imageWidth = containerWidth
+        imageHeight = imageWidth / imageAspect
+        imageLeft = 0
+        imageTop = (containerHeight - imageHeight) / 2
+      }
+      
+      // Применяем размеры и позицию к контейнеру интерактивных зон
+      interactiveZones.style.width = `${imageWidth}px`
+      interactiveZones.style.height = `${imageHeight}px`
+      interactiveZones.style.left = `${imageLeft}px`
+      interactiveZones.style.top = `${imageTop}px`
+      interactiveZones.style.position = 'absolute'
+    }
+
+    // Обновляем при загрузке и изменении размера
+    updateImageBounds()
+    window.addEventListener('resize', updateImageBounds)
+    
+    // Также обновляем после небольшой задержки для гарантии загрузки картинки
+    const timeoutId = setTimeout(updateImageBounds, 100)
+    const timeoutId2 = setTimeout(updateImageBounds, 500) // Дополнительная задержка для мобильных
+    
+    return () => {
+      window.removeEventListener('resize', updateImageBounds)
+      clearTimeout(timeoutId)
+      clearTimeout(timeoutId2)
+    }
+  }, [selectedArtifact]) // Пересчитываем при изменении выбранного артефакта
+
   // Эффект для восстановления фона при сбросе темного режима
   useEffect(() => {
     if (!isDarkMode) {
@@ -392,6 +450,12 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             clearInterval(fadeIntervalRef.current)
             fadeIntervalRef.current = null
           }
+          
+          // Если громкость стала 0 (mute), останавливаем музыку
+          if (targetVolume === 0 && audio.volume <= 0.01) {
+            audio.pause()
+            audio.currentTime = 0
+          }
         }
       }, stepDuration)
     }
@@ -448,6 +512,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         }
       } else {
         // Если выключаем музыку (mute), уменьшаем громкость до 0
+        // Музыка остановится автоматически в startFadeIn когда volume достигнет 0
         console.log('Выключаем музыку, уменьшаем громкость')
         startFadeIn(targetVolume, 500)
       }
@@ -461,8 +526,12 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         clearInterval(fadeIntervalRef.current)
         fadeIntervalRef.current = null
       }
-      // НЕ делаем fade-out здесь - это вызовет конфликты при изменении isMuted
-      // Fade-out должен происходить через обычную логику с startFadeIn
+      // Останавливаем музыку при размонтировании компонента (переход на другой раздел)
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current.volume = 0
+      }
     }
   }, [isMuted])
 
@@ -696,33 +765,19 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         )}
       </button>
 
-      {/* Кнопка режима отладки */}
-      <button 
-        className={`alchemy-debug-toggle ${debugMode ? 'active' : ''}`}
-        onClick={handleToggleDebug}
-        title={debugMode ? 'Выключить отладку' : 'Включить отладку (показать зоны)'}
-        aria-label={debugMode ? 'Выключить отладку' : 'Включить отладку'}
-      >
-        {debugMode ? (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="currentColor"/>
-          </svg>
-        ) : (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
-          </svg>
-        )}
-      </button>
       
       {/* Hero Section с фоном */}
       <div className="alchemy-hero">
         {/* Контейнер для фонового изображения и интерактивных зон */}
-        <div className="alchemy-image-container">
+        <div className="alchemy-image-container" ref={imageContainerRef}>
+          {/* Черный фон для заполнения пустых областей */}
+          <div className="alchemy-background-fill"></div>
+          {/* Картинка */}
           <div className="alchemy-hero-background" ref={heroBackgroundRef}></div>
-
-          {/* Интерактивные кликабельные зоны */}
+          
+          {/* Интерактивные кликабельные зоны - привязаны к контейнеру, который совпадает с картинкой */}
           {!selectedArtifact && (
-          <div className="alchemy-interactive-zones">
+            <div className="alchemy-interactive-zones">
             {/* Зеркало - верхняя часть */}
             <div 
               className="artifact-zone artifact-mirror" 
@@ -761,11 +816,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               title="Золотой Снитч"
             ></div>
 
-            {/* Карты Таро - левая нижняя часть */}
+            {/* Карты - левая нижняя часть */}
             <div 
               className="artifact-zone artifact-tarot" 
               onClick={() => handleArtifactClick('tarot')}
-              title="Карты Таро"
+              title="Карты"
             ></div>
 
             {/* Песочные часы - центральная нижняя часть */}
@@ -788,7 +843,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               onClick={() => handleArtifactClick('amulets')}
               title="Амулеты и Руны"
             ></div>
-          </div>
+            </div>
           )}
         </div>
         
