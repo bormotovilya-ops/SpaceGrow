@@ -862,6 +862,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               onClick={() => handleArtifactClick('candle')}
               title="Свеча"
             >
+              {/* Тело свечи */}
+              <div className="candle-body"></div>
               {/* Элемент пламени */}
               <div className="candle-flame" ref={candleFlameRef}></div>
             </div>
