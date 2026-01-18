@@ -381,12 +381,15 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       
       if (isTelegramWebView && isDesktop) {
         // Для десктопа из Telegram: сдвигаем левее и выше на 5%
+        // Используем проценты от родителя (artifact-candle), а не от других элементов
         flame.style.left = '8%' // 13% - 5%
         flame.style.top = '-17%' // -22% + 5%
+        flame.style.position = 'absolute' // Фиксируем позиционирование
       } else if (isDesktop && !isTelegramWebView) {
         // Для обычного веб-браузера: используем CSS значения (left: 13%, top: -22%)
         flame.style.left = ''
         flame.style.top = ''
+        flame.style.position = ''
       }
     }
 
@@ -394,16 +397,33 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     updateFlamePositionForDesktop()
     window.addEventListener('resize', updateFlamePositionForDesktop)
     
-    // Также обновляем после задержки для гарантии
+    // Обновляем при изменении состояния приветствия (может изменить высоту контейнера)
     const timeoutId = setTimeout(updateFlamePositionForDesktop, 100)
     const timeoutId2 = setTimeout(updateFlamePositionForDesktop, 500)
+    const timeoutId3 = setTimeout(updateFlamePositionForDesktop, 1000) // Дополнительная задержка для стабилизации
+    
+    // Используем ResizeObserver для отслеживания изменений размеров контейнера
+    const flameContainer = document.querySelector('.artifact-candle')
+    let resizeObserver = null
+    
+    if (flameContainer && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        updateFlamePositionForDesktop()
+      })
+      resizeObserver.observe(flameContainer)
+    }
     
     return () => {
       window.removeEventListener('resize', updateFlamePositionForDesktop)
       clearTimeout(timeoutId)
       clearTimeout(timeoutId2)
+      clearTimeout(timeoutId3)
+      
+      if (resizeObserver && flameContainer) {
+        resizeObserver.unobserve(flameContainer)
+      }
     }
-  }, [selectedArtifact])
+  }, [selectedArtifact, showWelcome]) // Добавляем showWelcome в зависимости, чтобы обновлялось при изменении приветствия
 
   // Эффект для восстановления фона при сбросе темного режима
   useEffect(() => {
@@ -862,8 +882,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               onClick={() => handleArtifactClick('candle')}
               title="Свеча"
             >
-              {/* Тело свечи */}
-              <div className="candle-body"></div>
               {/* Элемент пламени */}
               <div className="candle-flame" ref={candleFlameRef}></div>
             </div>
