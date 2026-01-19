@@ -12,6 +12,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const [showNovella, setShowNovella] = useState(false)
   const [userName, setUserName] = useState('') // Имя пользователя
   const [showWelcome, setShowWelcome] = useState(true) // Показывать "Добро пожаловать" первые 5 секунд
+  const [mirrorMessages, setMirrorMessages] = useState([]) // Сообщения чата зеркала
+  const [mirrorInput, setMirrorInput] = useState('') // Текст в поле ввода зеркала
+  const [isLoadingMirror, setIsLoadingMirror] = useState(false) // Загрузка ответа зеркала
   const [isMuted, setIsMuted] = useState(() => {
     // Загружаем состояние из localStorage
     const saved = localStorage.getItem('alchemy-music-muted')
@@ -100,6 +103,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     setSelectedArtifact(null)
     setIsDarkMode(false)
     
+    // Очищаем сообщения зеркала при возврате к столу
+    setMirrorMessages([])
+    setMirrorInput('')
+    
     // Восстанавливаем фон немедленно
     const container = document.querySelector('.alchemy-container')
     const heroBackground = heroBackgroundRef.current || document.querySelector('.alchemy-hero-background')
@@ -134,12 +141,139 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }, 50)
   }
 
-  const handleAskEternity = () => {
-    // Используем имя пользователя для персонализации ответа
-    const name = userName || 'Путник'
-    // Здесь можно добавить логику обработки вопроса
-    alert(`${name}, ваш вопрос отправлен во Вселенную: ${userQuestion}`)
-    setUserQuestion('')
+  // Функция для очистки markdown-символов из ответа зеркала
+  const cleanMirrorResponse = (text) => {
+    if (!text) return text
+    
+    // Убираем markdown-символы
+    let cleaned = text
+      .replace(/\*\*/g, '') // Убираем **
+      .replace(/###/g, '') // Убираем ###
+      .replace(/\|\|/g, '') // Убираем ||
+      .replace(/-----+/g, '') // Убираем ----- и более
+      .replace(/---+/g, '') // Убираем --- и более
+      .trim()
+    
+    return cleaned
+  }
+
+  const handleMirrorSend = async () => {
+    if (!mirrorInput.trim() || isLoadingMirror) return
+
+    const userQuestion = mirrorInput.trim()
+    setMirrorInput('')
+
+    console.log('💬 Отправка сообщения зеркалу:', userQuestion)
+    
+    // Добавляем вопрос пользователя
+    setMirrorMessages(prev => [...prev, { role: 'user', content: userQuestion }])
+    setIsLoadingMirror(true)
+
+    try {
+      // Считаем количество сообщений пользователя (только user сообщения)
+      const userMessageCount = mirrorMessages.filter(msg => msg.role === 'user').length + 1
+      
+      console.log('📡 Отправка запроса к /api/chat...', { messageCount: userMessageCount, promptType: 'mirror' })
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          message: userQuestion,
+          messageCount: userMessageCount,
+          promptType: 'mirror'
+        }),
+      })
+
+      console.log('📊 Ответ получен:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Не удалось прочитать ошибку')
+        console.error('❌ Ошибка ответа сервера:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        })
+        
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+        } catch (e) {
+          errorData = { error: errorText || `Ошибка сервера (статус: ${response.status})` }
+        }
+        
+        console.error('❌ Parsed error data:', errorData)
+        let errorMessage = errorData.error || 'Извините, произошла ошибка.'
+        
+        // Более понятные сообщения для пользователя
+        if (errorMessage.includes('API key') || errorMessage.includes('authentication') || errorMessage.includes('401')) {
+          errorMessage = 'Ошибка авторизации. Проверьте, что токен Groq указан правильно в файле .env'
+        } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+          errorMessage = 'Превышен лимит запросов. Попробуйте позже.'
+        } else if (errorMessage.includes('model') || errorMessage.includes('404') || errorMessage.includes('not found')) {
+          errorMessage = 'Временно недоступно. Используется режим заглушки.'
+        } else if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Failed to fetch') || errorMessage.includes('Network')) {
+          errorMessage = 'Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server).'
+        }
+        
+        setMirrorMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `${errorMessage} Если проблема сохраняется, свяжитесь напрямую: @ilyaborm в Telegram.`
+        }])
+        setIsLoadingMirror(false)
+        return
+      }
+
+      const data = await response.json()
+      console.log('✅ Данные получены:', {
+        hasResponse: !!data.response,
+        responseLength: data.response?.length,
+        responsePreview: data.response?.substring(0, 100) + '...',
+        source: data.source || 'unknown'
+      })
+      if (data.source) {
+        console.log('📊 Источник ответа:', data.source === 'groq' ? '✅ Groq API' : '⚠️ Заглушка (mock)')
+      }
+
+      if (data.response) {
+        // Очищаем ответ от markdown-символов
+        const cleanedResponse = cleanMirrorResponse(data.response)
+        console.log('🧹 Очищенный ответ:', cleanedResponse.substring(0, 100) + '...')
+        setMirrorMessages(prev => [...prev, { role: 'assistant', content: cleanedResponse }])
+      } else {
+        console.warn('⚠️ Нет поля response в ответе:', data)
+        setMirrorMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'Не удалось получить ответ. Попробуйте еще раз или свяжитесь напрямую: @ilyaborm в Telegram.'
+        }])
+      }
+    } catch (error) {
+      console.error('❌ Network Error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
+      setMirrorMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
+      }])
+    } finally {
+      setIsLoadingMirror(false)
+      console.log('✅ Запрос завершен')
+    }
+  }
+
+  const handleMirrorKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleMirrorSend()
+    }
   }
 
   const handleGetAdvice = () => {
@@ -538,21 +672,52 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     switch (selectedArtifact) {
       case 'mirror':
         return (
-          <div className="action-zone-content">
+          <div className="action-zone-content action-zone-mirror">
             <h2 className="action-zone-title">Врата Вечности</h2>
             <p className="action-zone-text">
               Зеркало отражает не только реальность, но и бесконечные просторы космоса. Задайте свой вопрос и получите ответ от вселенского разума.
             </p>
-            <div className="action-zone-input-group">
+            
+            {/* Диалог с зеркалом */}
+            <div className="mirror-dialog-messages">
+              {mirrorMessages.map((msg, index) => (
+                <div key={index} className={`mirror-message ${msg.role === 'user' ? 'mirror-message-user' : 'mirror-message-assistant'}`}>
+                  <p>{msg.content}</p>
+                </div>
+              ))}
+              
+              {isLoadingMirror && (
+                <div className="mirror-message mirror-message-assistant">
+                  <p className="typing-indicator">
+                    <span className="typing-dot">.</span>
+                    <span className="typing-dot">.</span>
+                    <span className="typing-dot">.</span>
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Поле ввода для вопросов */}
+            <div className="mirror-input-container">
               <input
                 type="text"
-                className="action-zone-input"
+                className="mirror-input"
                 placeholder="Ваш вопрос..."
-                value={userQuestion}
-                onChange={(e) => setUserQuestion(e.target.value)}
+                value={mirrorInput}
+                onChange={(e) => setMirrorInput(e.target.value)}
+                onKeyPress={handleMirrorKeyPress}
+                disabled={isLoadingMirror}
               />
-              <button className="action-zone-button" onClick={handleAskEternity}>
-                Спросить Вечность
+              <button
+                className="mirror-send-btn"
+                onClick={handleMirrorSend}
+                disabled={!mirrorInput.trim() || isLoadingMirror}
+                aria-label="Отправить"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
               </button>
             </div>
           </div>

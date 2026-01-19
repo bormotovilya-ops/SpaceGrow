@@ -188,6 +188,19 @@ async function loadKnowledgeFiles() {
   }
 }
 
+// Функция для загрузки промпта зеркала
+async function loadMirrorPrompt() {
+  try {
+    // В Vercel Serverless Functions путь относительно корня проекта
+    const mirrorPrompt = await readFile(join(process.cwd(), 'scripts', 'Mirrior.txt'), 'utf-8').catch(() => null)
+    
+    return mirrorPrompt || 'Файл scripts/Mirrior.txt не найден'
+  } catch (error) {
+    console.error('❌ Ошибка при загрузке промпта зеркала:', error)
+    return 'Ошибка загрузки scripts/Mirrior.txt'
+  }
+}
+
 // Функция для умной обрезки текста по предложениям (без потери смысла)
 function truncateText(text, maxChars = 5000) {
   if (!text || text.length <= maxChars) return text
@@ -215,7 +228,14 @@ function truncateText(text, maxChars = 5000) {
 }
 
 // Функция для формирования полного промпта с файлами знаний
-async function buildSystemContext(shouldAddCTA = false) {
+async function buildSystemContext(shouldAddCTA = false, promptType = 'profile') {
+  // Если это зеркало, используем специальный промпт
+  if (promptType === 'mirror') {
+    const mirrorPrompt = await loadMirrorPrompt()
+    return mirrorPrompt
+  }
+
+  // Стандартный промпт для профиля
   const knowledge = await loadKnowledgeFiles()
   
   // Файл теперь короткий (около 4000 символов), используем полностью без обрезки
@@ -411,14 +431,14 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  const { message, messageCount = 0 } = req.body
+  const { message, messageCount = 0, promptType = 'profile' } = req.body
 
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
   }
 
-  // Определяем, нужно ли добавлять CTA (каждое 3-е сообщение)
-  const shouldAddCTA = messageCount > 0 && messageCount % 3 === 0
+  // Определяем, нужно ли добавлять CTA (каждое 3-е сообщение, только для профиля)
+  const shouldAddCTA = promptType === 'profile' && messageCount > 0 && messageCount % 3 === 0
 
   // Проверяем режим заглушки
   const USE_MOCK = process.env.USE_MOCK_RESPONSES === 'true'
@@ -427,6 +447,7 @@ export default async function handler(req, res) {
 
   console.log('🔍 API Debug:', {
     USE_MOCK,
+    promptType,
     hasGROQ_API_KEY: !!GROQ_API_KEY,
     GROQ_API_KEY_preview: GROQ_API_KEY ? GROQ_API_KEY.substring(0, 15) + '...' : 'missing',
     GROQ_API_KEY_length: GROQ_API_KEY ? GROQ_API_KEY.length : 0,
@@ -435,7 +456,7 @@ export default async function handler(req, res) {
   })
 
   // Загружаем файлы знаний и формируем полный промпт
-  const systemContext = await buildSystemContext(shouldAddCTA)
+  const systemContext = await buildSystemContext(shouldAddCTA, promptType)
 
   if (USE_MOCK) {
     console.log('⚠️ Using mock response: USE_MOCK_RESPONSES=true')
@@ -471,8 +492,8 @@ export default async function handler(req, res) {
           content: message
         }
       ],
-      temperature: 0.7,
-      max_tokens: 150 // Уменьшил до 150, чтобы модель сама контролировала длину, но могла закончить мысль
+      temperature: promptType === 'mirror' ? 0.8 : 0.7, // Для зеркала немного выше температура для более творческих ответов
+      max_tokens: promptType === 'mirror' ? 200 : 150 // Для зеркала больше токенов, так как ответы могут быть длиннее
     }
 
     console.log('📡 Sending request to Groq API...')
@@ -522,8 +543,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
-    // Очищаем ответ от markdown-символов и форматируем
-    const cleanedResponse = formatFinalResponse(assistantMessage, shouldAddCTA)
+    // Очищаем ответ от markdown-символов и форматируем (только для профиля, для зеркала не форматируем)
+    const cleanedResponse = promptType === 'mirror' 
+      ? cleanResponse(assistantMessage) 
+      : formatFinalResponse(assistantMessage, shouldAddCTA)
 
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedResponse, { messageCount, shouldAddCTA, source: 'groq' }, req).catch(() => {})
