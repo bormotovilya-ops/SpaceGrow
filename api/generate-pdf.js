@@ -1,8 +1,7 @@
 // Vercel Serverless Function для генерации PDF на сервере
-// Используем Puppeteer для рендеринга HTML в PDF (поддержка кириллицы)
+// Используем jsPDF для генерации PDF (с правильной обработкой UTF-8)
 
-import puppeteer from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
+import { jsPDF } from 'jspdf'
 
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
@@ -162,59 +161,81 @@ export default async function handler(req, res) {
     let base64Data = null
     let pdfBase64 = null
     
-    // Пытаемся сгенерировать PDF через Puppeteer
+    // Генерируем PDF используя jsPDF
     try {
-      console.log('🚀 Запуск Puppeteer для генерации PDF...')
+      console.log('🚀 Запуск генерации PDF через jsPDF...')
       
-      // Настраиваем Chromium для Vercel
-      chromium.setGraphicsMode(false)
-      
-      // Запускаем Puppeteer
-      const browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+      // Создаем PDF документ
+      const pdf = new jsPDF({
+        unit: 'mm',
+        format: 'a4',
+        orientation: 'portrait',
+        compress: true
       })
-      
-      console.log('✅ Puppeteer запущен')
-      
-      const page = await browser.newPage()
-      
-      // Устанавливаем HTML контент
-      await page.setContent(htmlContent, {
-        waitUntil: 'networkidle0',
-        timeout: 30000
+
+      // Настройка для правильного отображения текста
+      pdf.setProperties({
+        title: methodName,
+        author: 'SpaceGrow',
+        subject: 'Результат расчета',
+        keywords: 'PDF, результат'
       })
+
+      // Заголовок
+      pdf.setFontSize(20)
+      pdf.setTextColor(255, 215, 0)
+      // Используем text() напрямую - jsPDF поддерживает UTF-8
+      pdf.text(methodName, 105, 30, { align: 'center' })
       
-      console.log('✅ HTML контент загружен')
+      // Дата рождения
+      pdf.setFontSize(12)
+      pdf.setTextColor(0, 0, 0)
+      pdf.text(`Дата рождения: ${birthDate}`, 20, 50)
       
-      // Генерируем PDF
-      pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '0',
-          right: '0',
-          bottom: '0',
-          left: '0'
-        },
-        timeout: 30000
-      })
+      // Разделительная линия
+      pdf.setDrawColor(255, 215, 0)
+      pdf.setLineWidth(0.5)
+      pdf.line(20, 55, 190, 55)
       
-      console.log('✅ PDF сгенерирован, размер:', pdfBuffer.length, 'bytes')
+      // Основной текст результата
+      pdf.setFontSize(11)
+      pdf.setTextColor(40, 40, 40)
+      const textContent = resultData?.result || 'Результат расчета недоступен'
       
-      await browser.close()
+      // Разбиваем текст на строки (jsPDF автоматически обрабатывает длинные строки)
+      const lines = pdf.splitTextToSize(textContent, 170)
       
-      // Конвертируем в base64
+      // Добавляем текст (jsPDF поддерживает UTF-8 через text())
+      let yPos = 65
+      for (const line of lines) {
+        if (yPos > pdf.internal.pageSize.getHeight() - 30) {
+          pdf.addPage()
+          yPos = 20
+        }
+        pdf.text(line, 20, yPos)
+        yPos += 7
+      }
+      
+      // Ключевое значение, если есть
+      if (resultData?.value) {
+        const finalYPos = pdf.internal.pageSize.getHeight() - 40
+        pdf.setFontSize(12)
+        pdf.setTextColor(200, 150, 0)
+        pdf.text(`Ключевое значение: ${resultData.value}`, 20, finalYPos)
+      }
+
+      // Генерируем PDF как Buffer (для отправки в Telegram)
+      pdfBuffer = Buffer.from(pdf.output('arraybuffer'))
+      
+      // Конвертируем в base64 для клиента
       base64Data = pdfBuffer.toString('base64')
       pdfBase64 = `data:application/pdf;base64,${base64Data}`
       
+      console.log('✅ PDF сгенерирован через jsPDF, размер:', pdfBuffer.length, 'bytes')
+      
     } catch (pdfError) {
-      console.error('❌ Ошибка генерации PDF через Puppeteer:', pdfError)
+      console.error('❌ Ошибка генерации PDF через jsPDF:', pdfError)
       console.error('Error stack:', pdfError.stack)
-      // Если ошибка - возвращаем ошибку, но не блокируем отправку в Telegram
-      // PDF не будет отправлен, но сообщение отправится
       throw new Error(`Ошибка генерации PDF: ${pdfError.message}`)
     }
 
