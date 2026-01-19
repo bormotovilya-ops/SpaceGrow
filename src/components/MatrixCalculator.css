@@ -480,6 +480,8 @@
 /* Результаты */
 .results-container {
   margin-top: 40px;
+  width: 100%;
+  box-sizing: border-box;
   /* Убираем ограничения высоты - прокрутка теперь на уровне action-zone-inner */
 }
 
