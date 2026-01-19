@@ -155,50 +155,77 @@ export default async function handler(req, res) {
     // Генерируем HTML-контент
     const htmlContent = generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails)
     
-    // Настраиваем Chromium для Vercel
-    chromium.setGraphicsMode(false)
-    
-    // Запускаем Puppeteer
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    })
-    
-    const page = await browser.newPage()
-    
-    // Устанавливаем HTML контент
-    await page.setContent(htmlContent, {
-      waitUntil: 'networkidle0'
-    })
-    
-    // Генерируем PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '0',
-        right: '0',
-        bottom: '0',
-        left: '0'
-      }
-    })
-    
-    await browser.close()
-    
-    // Конвертируем в base64
-    const base64Data = pdfBuffer.toString('base64')
-    const pdfBase64 = `data:application/pdf;base64,${base64Data}`
-    
     // Формируем имя файла
     const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
+    
+    let pdfBuffer = null
+    let base64Data = null
+    let pdfBase64 = null
+    
+    // Пытаемся сгенерировать PDF через Puppeteer
+    try {
+      console.log('🚀 Запуск Puppeteer для генерации PDF...')
+      
+      // Настраиваем Chromium для Vercel
+      chromium.setGraphicsMode(false)
+      
+      // Запускаем Puppeteer
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      })
+      
+      console.log('✅ Puppeteer запущен')
+      
+      const page = await browser.newPage()
+      
+      // Устанавливаем HTML контент
+      await page.setContent(htmlContent, {
+        waitUntil: 'networkidle0',
+        timeout: 30000
+      })
+      
+      console.log('✅ HTML контент загружен')
+      
+      // Генерируем PDF
+      pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '0',
+          right: '0',
+          bottom: '0',
+          left: '0'
+        },
+        timeout: 30000
+      })
+      
+      console.log('✅ PDF сгенерирован, размер:', pdfBuffer.length, 'bytes')
+      
+      await browser.close()
+      
+      // Конвертируем в base64
+      base64Data = pdfBuffer.toString('base64')
+      pdfBase64 = `data:application/pdf;base64,${base64Data}`
+      
+    } catch (pdfError) {
+      console.error('❌ Ошибка генерации PDF через Puppeteer:', pdfError)
+      console.error('Error stack:', pdfError.stack)
+      // Если ошибка - возвращаем ошибку, но не блокируем отправку в Telegram
+      // PDF не будет отправлен, но сообщение отправится
+      throw new Error(`Ошибка генерации PDF: ${pdfError.message}`)
+    }
 
     // Отправляем PDF в Telegram бот, если указан telegramUserId
     let telegramSent = false
     
-    if (telegramUserId && process.env.TELEGRAM_BOT_TOKEN) {
+    // ВАЖНО: Отправляем PDF в Telegram ТОЛЬКО если PDF успешно сгенерирован
+    if (telegramUserId && process.env.TELEGRAM_BOT_TOKEN && pdfBuffer) {
       try {
+        console.log('📤 Отправка PDF в Telegram для пользователя:', telegramUserId)
+        
         // Создаем multipart/form-data вручную
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
         const crlf = '\r\n'
@@ -225,6 +252,8 @@ export default async function handler(req, res) {
         // Объединяем все части
         const fullBody = Buffer.concat(parts)
         
+        console.log('📤 Размер отправляемого файла:', fullBody.length, 'bytes')
+        
         // Отправляем PDF в Telegram
         const botResponse = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendDocument`, {
           method: 'POST',
@@ -236,12 +265,12 @@ export default async function handler(req, res) {
         })
         
         const responseText = await botResponse.text()
-        console.log('Telegram API Response Status:', botResponse.status)
-        console.log('Telegram API Response:', responseText.substring(0, 500))
+        console.log('📊 Telegram API Response Status:', botResponse.status)
+        console.log('📊 Telegram API Response:', responseText.substring(0, 500))
         
         if (botResponse.ok) {
           telegramSent = true
-          console.log('✅ PDF успешно отправлен в Telegram')
+          console.log('✅ PDF успешно отправлен в Telegram!')
         } else {
           let errorMsg = 'Unknown error'
           try {
@@ -252,53 +281,23 @@ export default async function handler(req, res) {
           }
           
           console.error('❌ Ошибка отправки PDF в Telegram:', errorMsg)
-          
-          // Отправляем сообщение с уведомлением
-          try {
-            const message = `📄 Ваш PDF "${methodName}" готов!\n\n` +
-              `Дата рождения: ${birthDate}\n` +
-              `Ключевое значение: ${resultData?.value || 'Н/Д'}\n\n` +
-              `Файл доступен для скачивания в приложении.`
-            
-            await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                chat_id: telegramUserId,
-                text: message
-              })
-            })
-          } catch (msgError) {
-            console.error('Ошибка отправки сообщения:', msgError)
-          }
+          throw new Error(`Telegram API error: ${errorMsg}`)
         }
       } catch (error) {
-        console.error('❌ Ошибка отправки в Telegram бот:', error.message)
+        console.error('❌ Критическая ошибка отправки в Telegram бот:', error.message)
         console.error('Error stack:', error.stack)
         
-        // Отправляем сообщение с информацией
-        try {
-          const message = `📄 Ваш PDF "${methodName}" готов!\n\n` +
-            `Дата рождения: ${birthDate}\n` +
-            `Ключевое значение: ${resultData?.value || 'Н/Д'}\n\n` +
-            `Файл доступен для скачивания в приложении.`
-          
-          await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              chat_id: telegramUserId,
-              text: message
-            })
-          })
-        } catch (msgError) {
-          console.error('Ошибка отправки сообщения:', msgError)
-        }
+        // Не отправляем fallback сообщение - пусть пользователь видит, что файл можно скачать в приложении
+        // Ошибка уже логируется выше
       }
+    } else if (telegramUserId && process.env.TELEGRAM_BOT_TOKEN && !pdfBuffer) {
+      console.warn('⚠️ PDF не был сгенерирован, пропускаем отправку в Telegram')
+    } else {
+      console.log('ℹ️ Отправка в Telegram пропущена:', {
+        hasUserId: !!telegramUserId,
+        hasToken: !!process.env.TELEGRAM_BOT_TOKEN,
+        hasPdfBuffer: !!pdfBuffer
+      })
     }
 
     return res.status(200).json({

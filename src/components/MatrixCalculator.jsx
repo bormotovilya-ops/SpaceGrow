@@ -760,6 +760,7 @@ function base64ToBlob(base64String) {
 }
 
 // Функция для показа PDF после генерации на сервере
+// Функция для показа PDF после генерации на сервере
 function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) {
   const modal = document.createElement('div')
   modal.style.cssText = `
@@ -804,9 +805,9 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) 
   
   const text = document.createElement('p')
   if (telegramSent) {
-    text.textContent = 'PDF успешно сгенерирован на сервере и отправлен вам в Telegram! Проверьте сообщения в боте.'
+    text.innerHTML = '✅ PDF успешно сгенерирован на сервере и отправлен вам в Telegram!<br><br>📱 Проверьте сообщения в боте.'
   } else {
-    text.textContent = 'PDF успешно сгенерирован на сервере! Используйте ссылку ниже для получения файла.'
+    text.innerHTML = '✅ PDF успешно сгенерирован на сервере!<br><br>💾 Используйте кнопки ниже для скачивания файла.'
   }
   text.style.cssText = `
     color: rgba(255, 255, 255, 0.9);
