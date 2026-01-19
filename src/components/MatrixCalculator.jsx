@@ -738,7 +738,554 @@ const calculateAllMethods = async (dateString, timeString, cityName) => {
   }
 }
 
-// Функция для показа PDF в Telegram MiniApp
+// Функция для показа PDF с 5 тестовыми вариантами передачи
+function showPDFTestModal(pdfBlob, pdfDataUri, blobUrl, fileName, methodName) {
+  const tg = window.Telegram?.WebApp || window.TelegramWebApp
+  const isTelegram = !!tg
+  
+  const modal = document.createElement('div')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  `
+  
+  const content = document.createElement('div')
+  content.style.cssText = `
+    background: linear-gradient(135deg, rgba(26, 26, 35, 0.98) 0%, rgba(15, 15, 25, 0.98) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin: 20px 0;
+  `
+  
+  const title = document.createElement('h3')
+  title.textContent = 'Выберите способ передачи PDF'
+  title.style.cssText = `
+    color: #FFD700;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    letter-spacing: 1px;
+  `
+  
+  const text = document.createElement('p')
+  text.textContent = 'Попробуйте разные варианты и выберите тот, который работает:'
+  text.style.cssText = `
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 0 0 25px 0;
+    line-height: 1.6;
+  `
+  
+  const buttonsContainer = document.createElement('div')
+  buttonsContainer.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  `
+  
+  // ВАРИАНТ 1: Отправка через Telegram Bot API
+  const btn1 = createTestButton('1️⃣ Отправить через бота', () => {
+    sendPDFViaBot(pdfBlob, fileName, methodName, tg)
+  })
+  
+  // ВАРИАНТ 2: Показ QR-кода с data URI
+  const btn2 = createTestButton('2️⃣ Показать QR-код', () => {
+    showPDFQRCode(pdfDataUri, fileName, methodName)
+  })
+  
+  // ВАРИАНТ 3: Конвертация в изображения
+  const btn3 = createTestButton('3️⃣ Показать как изображения', () => {
+    showPDFAsImages(pdfBlob, fileName, methodName)
+  })
+  
+  // ВАРИАНТ 4: Открытие через Telegram Link
+  const btn4 = createTestButton('4️⃣ Открыть через Telegram Link', () => {
+    openPDFViaTelegramLink(pdfBlob, fileName, methodName, tg)
+  })
+  
+  // ВАРИАНТ 5: Показ base64 для копирования
+  const btn5 = createTestButton('5️⃣ Показать base64 для копирования', () => {
+    showPDFBase64(pdfDataUri, fileName, methodName)
+  })
+  
+  buttonsContainer.appendChild(btn1)
+  buttonsContainer.appendChild(btn2)
+  buttonsContainer.appendChild(btn3)
+  buttonsContainer.appendChild(btn4)
+  buttonsContainer.appendChild(btn5)
+  
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = '✕'
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  `
+  
+  const closeModal = () => {
+    if (modal.parentNode) {
+      document.body.removeChild(modal)
+    }
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000)
+  }
+  
+  closeBtn.onclick = closeModal
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal()
+    }
+  }
+  
+  content.appendChild(closeBtn)
+  content.appendChild(title)
+  content.appendChild(text)
+  content.appendChild(buttonsContainer)
+  modal.appendChild(content)
+  document.body.appendChild(modal)
+  
+  setTimeout(() => {
+    if (modal.parentNode) {
+      closeModal()
+    }
+  }, 300000) // 5 минут
+}
+
+// Функция создания тестовой кнопки
+function createTestButton(text, onClick) {
+  const btn = document.createElement('button')
+  btn.textContent = text
+  btn.style.cssText = `
+    width: 100%;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    cursor: pointer;
+    transition: transform 0.2s;
+  `
+  btn.onclick = onClick
+  btn.onmouseover = () => {
+    btn.style.transform = 'translateY(-2px)'
+    btn.style.boxShadow = '0 6px 25px rgba(255, 215, 0, 0.6)'
+  }
+  btn.onmouseout = () => {
+    btn.style.transform = 'translateY(0)'
+    btn.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
+  }
+  return btn
+}
+
+// ВАРИАНТ 1: Отправка через Telegram Bot API
+async function sendPDFViaBot(pdfBlob, fileName, methodName, tg) {
+  if (!tg) {
+    alert('Telegram WebApp не доступен')
+    return
+  }
+  
+  try {
+    // Конвертируем blob в base64
+    const reader = new FileReader()
+    reader.onloadend = async () => {
+      const base64 = reader.result.split(',')[1]
+      
+      // Получаем данные пользователя
+      const user = tg.initDataUnsafe?.user
+      const userId = user?.id
+      
+      if (!userId) {
+        alert('Не удалось получить ID пользователя')
+        return
+      }
+      
+      // Открываем бота с параметрами для отправки файла
+      const botUsername = 'SpaceGrowthBot' // Замените на имя вашего бота
+      const message = encodeURIComponent(`Пожалуйста, отправьте мне PDF файл: ${methodName}`)
+      const botUrl = `https://t.me/${botUsername}?start=sendpdf_${userId}_${Date.now()}`
+      
+      if (tg.openTelegramLink) {
+        tg.openTelegramLink(botUrl)
+      } else if (tg.openLink) {
+        tg.openLink(botUrl)
+      } else {
+        window.open(botUrl, '_blank')
+      }
+      
+      // Показываем инструкцию
+      alert('Бот откроется в Telegram. Отправьте ему сообщение с текстом "PDF" и он отправит вам файл.')
+    }
+    reader.readAsDataURL(pdfBlob)
+  } catch (error) {
+    console.error('Ошибка при отправке через бота:', error)
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+// ВАРИАНТ 2: Показ QR-кода с data URI
+function showPDFQRCode(pdfDataUri, fileName, methodName) {
+  // Создаем простой QR-код через SVG (без библиотек)
+  const qrSize = 300
+  const qrData = pdfDataUri.substring(0, 2000) // Ограничиваем размер для QR
+  
+  const modal = document.createElement('div')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  `
+  
+  const content = document.createElement('div')
+  content.style.cssText = `
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 400px;
+  `
+  
+  const title = document.createElement('h3')
+  title.textContent = 'QR-код для скачивания'
+  title.style.cssText = `margin: 0 0 20px 0; color: #000;`
+  
+  const qrText = document.createElement('p')
+  qrText.textContent = 'Отсканируйте QR-код другим устройством для получения PDF'
+  qrText.style.cssText = `margin: 0 0 20px 0; color: #666; font-size: 14px;`
+  
+  // Простой текстовый QR-код (заглушка)
+  const qrPlaceholder = document.createElement('div')
+  qrPlaceholder.textContent = 'QR-код будет здесь\n(требуется библиотека qrcode)'
+  qrPlaceholder.style.cssText = `
+    width: ${qrSize}px;
+    height: ${qrSize}px;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: #999;
+    text-align: center;
+    padding: 20px;
+  `
+  
+  const linkText = document.createElement('textarea')
+  linkText.value = pdfDataUri
+  linkText.style.cssText = `
+    width: 100%;
+    height: 100px;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 12px;
+    word-break: break-all;
+  `
+  linkText.readOnly = true
+  
+  const copyBtn = document.createElement('button')
+  copyBtn.textContent = '📋 Скопировать data URI'
+  copyBtn.style.cssText = `
+    padding: 10px 20px;
+    background: #FFD700;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+  `
+  copyBtn.onclick = async () => {
+    await navigator.clipboard.writeText(pdfDataUri)
+    copyBtn.textContent = '✓ Скопировано!'
+    setTimeout(() => copyBtn.textContent = '📋 Скопировать data URI', 2000)
+  }
+  
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = 'Закрыть'
+  closeBtn.style.cssText = `
+    padding: 10px 20px;
+    background: #ccc;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+  `
+  closeBtn.onclick = () => {
+    if (modal.parentNode) document.body.removeChild(modal)
+  }
+  
+  content.appendChild(title)
+  content.appendChild(qrText)
+  content.appendChild(qrPlaceholder)
+  content.appendChild(linkText)
+  content.appendChild(copyBtn)
+  content.appendChild(closeBtn)
+  modal.appendChild(content)
+  document.body.appendChild(modal)
+}
+
+// ВАРИАНТ 3: Конвертация в изображения
+async function showPDFAsImages(pdfBlob, fileName, methodName) {
+  try {
+    // Конвертируем PDF в изображения через canvas
+    const pdfDataUri = URL.createObjectURL(pdfBlob)
+    
+    // Создаем iframe для загрузки PDF
+    const iframe = document.createElement('iframe')
+    iframe.src = pdfDataUri
+    iframe.style.display = 'none'
+    document.body.appendChild(iframe)
+    
+    // Показываем модальное окно с iframe
+    const modal = document.createElement('div')
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    `
+    
+    const content = document.createElement('div')
+    content.style.cssText = `
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+    `
+    
+    const title = document.createElement('h3')
+    title.textContent = `PDF: ${methodName}`
+    title.style.cssText = `margin: 0 0 20px 0; color: #000;`
+    
+    const pdfFrame = document.createElement('iframe')
+    pdfFrame.src = pdfDataUri
+    pdfFrame.style.cssText = `
+      width: 100%;
+      height: 80vh;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    `
+    
+    const closeBtn = document.createElement('button')
+    closeBtn.textContent = 'Закрыть'
+    closeBtn.style.cssText = `
+      padding: 10px 20px;
+      background: #FFD700;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    `
+    closeBtn.onclick = () => {
+      if (modal.parentNode) document.body.removeChild(modal)
+      if (iframe.parentNode) document.body.removeChild(iframe)
+      URL.revokeObjectURL(pdfDataUri)
+    }
+    
+    content.appendChild(title)
+    content.appendChild(pdfFrame)
+    content.appendChild(closeBtn)
+    modal.appendChild(content)
+    document.body.appendChild(modal)
+  } catch (error) {
+    console.error('Ошибка при показе PDF как изображения:', error)
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+// ВАРИАНТ 4: Открытие через Telegram Link
+function openPDFViaTelegramLink(pdfBlob, fileName, methodName, tg) {
+  if (!tg) {
+    alert('Telegram WebApp не доступен')
+    return
+  }
+  
+  try {
+    // Конвертируем blob в base64
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64 = reader.result.split(',')[1]
+      
+      // Создаем специальную ссылку для бота
+      const botUsername = 'SpaceGrowthBot'
+      const encodedData = encodeURIComponent(base64.substring(0, 1000)) // Ограничиваем размер
+      const botUrl = `https://t.me/${botUsername}?start=pdf_${encodedData}`
+      
+      if (tg.openTelegramLink) {
+        tg.openTelegramLink(botUrl)
+      } else if (tg.openLink) {
+        tg.openLink(botUrl)
+      } else {
+        window.open(botUrl, '_blank')
+      }
+      
+      alert('Открывается бот в Telegram. Он должен получить данные и отправить вам PDF.')
+    }
+    reader.readAsDataURL(pdfBlob)
+  } catch (error) {
+    console.error('Ошибка при открытии через Telegram Link:', error)
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+// ВАРИАНТ 5: Показ base64 для копирования
+function showPDFBase64(pdfDataUri, fileName, methodName) {
+  const modal = document.createElement('div')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  `
+  
+  const content = document.createElement('div')
+  content.style.cssText = `
+    background: linear-gradient(135deg, rgba(26, 26, 35, 0.98) 0%, rgba(15, 15, 25, 0.98) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 90%;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  `
+  
+  const title = document.createElement('h3')
+  title.textContent = 'Base64 данные PDF'
+  title.style.cssText = `
+    color: #FFD700;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+  `
+  
+  const text = document.createElement('p')
+  text.textContent = 'Скопируйте данные ниже и вставьте в любой base64 декодер для получения PDF:'
+  text.style.cssText = `
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    margin: 0 0 20px 0;
+  `
+  
+  const textarea = document.createElement('textarea')
+  textarea.value = pdfDataUri
+  textarea.style.cssText = `
+    width: 100%;
+    height: 300px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    color: #fff;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    margin-bottom: 20px;
+  `
+  textarea.readOnly = true
+  
+  const copyBtn = document.createElement('button')
+  copyBtn.textContent = '📋 Скопировать base64'
+  copyBtn.style.cssText = `
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+  `
+  copyBtn.onclick = async () => {
+    await navigator.clipboard.writeText(pdfDataUri)
+    copyBtn.textContent = '✓ Скопировано!'
+    setTimeout(() => copyBtn.textContent = '📋 Скопировать base64', 2000)
+  }
+  
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = 'Закрыть'
+  closeBtn.style.cssText = `
+    padding: 15px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+  `
+  closeBtn.onclick = () => {
+    if (modal.parentNode) document.body.removeChild(modal)
+  }
+  
+  content.appendChild(title)
+  content.appendChild(text)
+  content.appendChild(textarea)
+  content.appendChild(copyBtn)
+  content.appendChild(closeBtn)
+  modal.appendChild(content)
+  document.body.appendChild(modal)
+}
+
+// Функция для показа PDF в Telegram MiniApp (старая версия, оставлена для совместимости)
 function showPDFTelegramModal(pdfDataUri, blobUrl, fileName, methodName, tg) {
   const modal = document.createElement('div')
   modal.style.cssText = `
@@ -1549,15 +2096,8 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
           // Конвертируем PDF в base64 data URL
           const pdfDataUri = pdf.output('datauristring')
           
-          // Пытаемся использовать Telegram WebApp API
-          const tg = window.Telegram?.WebApp || window.TelegramWebApp
-          if (tg && tg.openLink) {
-            // Для Telegram показываем специальное модальное окно
-            showPDFTelegramModal(pdfDataUri, blobUrl, fileName, methodName, tg)
-          } else {
-            // Для обычных мобильных браузеров показываем в модальном окне
-            showPDFInModal(blobUrl, fileName, methodName)
-          }
+          // Показываем модальное окно с 5 вариантами передачи PDF
+          showPDFTestModal(pdfBlob, pdfDataUri, blobUrl, fileName, methodName)
         } else {
           // Для десктопа используем стандартный метод скачивания
           pdf.save(fileName)
