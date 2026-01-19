@@ -2209,26 +2209,64 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
       imgWidth: finalWidth,
       imgHeight: contentHeight
     })
-    pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, contentHeight)
-    console.log('✅ Изображение добавлено в PDF')
-    
-    // Сохраняем PDF сразу (без второй страницы для отладки)
-    const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
-    console.log('💾 Сохраняем PDF...', { fileName })
-    
-    // Проверяем размер PDF перед сохранением
-    const pdfBlob = pdf.output('blob')
-    console.log('✅ PDF blob создан, размер:', pdfBlob.size, 'bytes')
-    
-    if (pdfBlob.size < 100) {
-      console.error('❌ PDF слишком маленький!', pdfBlob.size)
-      alert('Ошибка: PDF слишком маленький (' + pdfBlob.size + ' bytes). Проверьте консоль.')
-      throw new Error('PDF слишком маленький: ' + pdfBlob.size + ' bytes')
+    // Добавляем изображение в PDF
+    try {
+      pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, contentHeight)
+      console.log('✅ Изображение добавлено в PDF')
+    } catch (addImageError) {
+      console.error('❌ Ошибка при добавлении изображения в PDF:', addImageError)
+      throw new Error('Не удалось добавить изображение в PDF: ' + addImageError.message)
     }
     
-    // Для веб-версии всегда используем стандартный метод
-    pdf.save(fileName)
-    console.log('✅ PDF saved successfully')
+    // Проверяем размер PDF перед сохранением
+    let pdfBlob
+    try {
+      pdfBlob = pdf.output('blob')
+      console.log('✅ PDF blob создан, размер:', pdfBlob.size, 'bytes')
+    } catch (outputError) {
+      console.error('❌ Ошибка при создании PDF blob:', outputError)
+      // Пробуем использовать datauri string вместо blob
+      const pdfDataUri = pdf.output('datauristring')
+      console.log('✅ PDF datauri создан, размер:', pdfDataUri.length, 'символов')
+      
+      if (!pdfDataUri || pdfDataUri.length < 100) {
+        throw new Error('PDF datauri пустой или слишком маленький')
+      }
+      
+      // Используем blob из datauri
+      pdfBlob = base64ToBlob(pdfDataUri)
+      console.log('✅ PDF blob из datauri создан, размер:', pdfBlob.size, 'bytes')
+    }
+    
+    if (!pdfBlob || pdfBlob.size < 100) {
+      console.error('❌ PDF слишком маленький!', pdfBlob?.size || 0)
+      alert('Ошибка: PDF слишком маленький (' + (pdfBlob?.size || 0) + ' bytes). Проверьте консоль.')
+      throw new Error('PDF слишком маленький: ' + (pdfBlob?.size || 0) + ' bytes')
+    }
+    
+    // Сохраняем PDF
+    const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
+    console.log('💾 Сохраняем PDF...', { fileName, size: pdfBlob.size })
+    
+    try {
+      // Используем стандартный метод сохранения
+      pdf.save(fileName)
+      console.log('✅ PDF saved successfully')
+    } catch (saveError) {
+      console.error('❌ Ошибка при сохранении PDF через pdf.save():', saveError)
+      // Fallback - используем blob URL
+      console.log('⚠️ Используем fallback метод сохранения через blob URL')
+      const blobUrl = URL.createObjectURL(pdfBlob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = fileName
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
+      console.log('✅ PDF saved via blob URL fallback')
+    }
     
     // Удаляем основной элемент
     setTimeout(() => {

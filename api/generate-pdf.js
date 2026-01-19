@@ -277,8 +277,8 @@ export default async function handler(req, res) {
           // Дополнительная пауза для загрузки изображения
           await new Promise(resolve => setTimeout(resolve, 1000))
           
-          // Генерируем PDF из изображения
-          pdfBuffer = await pdfPage.pdf({
+          // Генерируем первую страницу PDF из изображения
+          const firstPageBuffer = await pdfPage.pdf({
             format: 'A4',
             printBackground: true,
             margin: {
@@ -289,11 +289,207 @@ export default async function handler(req, res) {
             }
           })
           
-          if (!pdfBuffer || pdfBuffer.length === 0) {
-            throw new Error('PDF buffer пустой после генерации из скриншота')
+          if (!firstPageBuffer || firstPageBuffer.length === 0) {
+            throw new Error('PDF buffer первой страницы пустой после генерации из скриншота')
           }
           
-          console.log('✅ PDF создан из скриншота, размер:', pdfBuffer.length, 'bytes')
+          console.log('✅ Первая страница PDF создана, размер:', firstPageBuffer.length, 'bytes')
+          
+          // Создаем вторую страницу с демо-припиской
+          console.log('📄 Создаем вторую страницу с демо-припиской...')
+          const demoPage = await browser.newPage()
+          
+          try {
+            await demoPage.setViewport({
+              width: 794,
+              height: 1123,
+              deviceScaleFactor: 1
+            })
+            
+            // Генерируем HTML для второй страницы
+            const demoHTML = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <style>
+                  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+                  * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                  }
+                  body {
+                    font-family: 'Inter', 'Arial', sans-serif;
+                    width: 794px;
+                    min-height: 1123px;
+                    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+                    padding: 60px 30px;
+                    box-sizing: border-box;
+                  }
+                </style>
+              </head>
+              <body>
+                <!-- Премиальный промо-блок DemoFooter -->
+                <div style="
+                  margin-top: 70px;
+                  padding: 40px 30px;
+                  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(255, 215, 0, 0.15) 100%);
+                  border: 2px solid rgba(255, 215, 0, 0.5);
+                  border-radius: 20px;
+                  position: relative;
+                  box-shadow: 0 12px 50px rgba(255, 215, 0, 0.3);
+                ">
+                  <h3 style="
+                    color: #191923;
+                    font-size: 22px;
+                    font-weight: 700;
+                    text-align: center;
+                    margin: 0 0 25px 0;
+                    font-family: 'Inter', 'Arial', sans-serif;
+                  ">🌌 Космический тест-драйв пройден!</h3>
+                  
+                  <div style="
+                    width: 80px;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+                    margin: 0 auto 25px;
+                  "></div>
+                  
+                  <p style="
+                    color: #3a3a3a;
+                    font-size: 13px;
+                    line-height: 1.9;
+                    margin: 0 0 20px 0;
+                    text-align: justify;
+                    font-family: 'Inter', 'Arial', sans-serif;
+                  ">Перед вами — демонстрация работы нашего аналитического движка. Мы подготовили этот экспресс-анализ, чтобы показать, как алгоритмы могут мгновенно превращать сухие цифры и эфемериды в живой текст.</p>
+                  
+                  <p style="
+                    color: #3a3a3a;
+                    font-size: 13px;
+                    line-height: 1.9;
+                    margin: 0 0 20px 0;
+                    text-align: justify;
+                    font-family: 'Inter', 'Arial', sans-serif;
+                  ">Это лишь верхушка айсберга: мы намеренно не стали погружать вас в бесконечные таблицы и сложные аспекты, чтобы оставить интерфейс легким, а интригу — живой.</p>
+                  
+                  <p style="
+                    color: #3a3a3a;
+                    font-size: 13px;
+                    line-height: 1.9;
+                    margin: 0 0 30px 0;
+                    text-align: justify;
+                    font-family: 'Inter', 'Arial', sans-serif;
+                  ">Мы создаем подобные инструменты «под ключ». Если вам нужен корректный астрологический, нумерологический или любой другой расчетный модуль для вашего бота, сайта или приложения — вы по адресу. Мы берем на себя всю математику и логику.</p>
+                  
+                  <div style="
+                    width: 100%;
+                    height: 1px;
+                    background: linear-gradient(90deg, transparent 0%, rgba(255, 215, 0, 0.4) 50%, transparent 100%);
+                    margin: 35px 0;
+                  "></div>
+                  
+                  <div style="
+                    text-align: center;
+                    margin-top: 30px;
+                  ">
+                    <a href="https://t.me/SpaceGrowthBot" style="
+                      color: #FFD700;
+                      font-size: 16px;
+                      font-weight: 700;
+                      text-decoration: none;
+                      font-family: 'Inter', 'Arial', sans-serif;
+                      display: inline-block;
+                      padding: 12px 30px;
+                      border: 2px solid #FFD700;
+                      border-radius: 10px;
+                      background: rgba(255, 215, 0, 0.1);
+                      transition: all 0.3s;
+                    ">👉 Написать в Telegram</a>
+                  </div>
+                </div>
+                
+                <!-- Премиальный футер -->
+                <div style="
+                  margin-top: 40px;
+                  text-align: center;
+                  padding: 20px;
+                  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 215, 0, 0.04) 100%);
+                  border-radius: 10px;
+                  border-top: 1px solid rgba(255, 215, 0, 0.3);
+                ">
+                  <p style="
+                    margin: 0;
+                    color: #969696;
+                    font-size: 11px;
+                    font-style: italic;
+                    font-family: 'Inter', 'Arial', sans-serif;
+                  ">✨ Цифровая Алхимия - Персональная расшифровка ✨</p>
+                </div>
+              </body>
+              </html>
+            `
+            
+            await demoPage.setContent(demoHTML, {
+              waitUntil: 'networkidle0',
+              timeout: 30000
+            })
+            
+            await demoPage.evaluateHandle(() => document.fonts.ready)
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            
+            // Делаем скриншот второй страницы
+            const demoScreenshot = await demoPage.screenshot({
+              type: 'png',
+              fullPage: true,
+              printBackground: true
+            })
+            
+            await demoPage.close()
+            
+            // Создаем страницу с изображением второй страницы
+            const demoPdfPage = await browser.newPage()
+            const demoImageBase64 = demoScreenshot.toString('base64')
+            
+            await demoPdfPage.setContent(`
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { margin: 0; padding: 0; width: 794px; height: auto; }
+                  img { width: 100%; height: auto; display: block; }
+                </style>
+              </head>
+              <body>
+                <img src="data:image/png;base64,${demoImageBase64}" alt="Demo Page" />
+              </body>
+              </html>
+            `, { waitUntil: 'load', timeout: 30000 })
+            
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            
+            // Генерируем вторую страницу PDF
+            const secondPageBuffer = await demoPdfPage.pdf({
+              format: 'A4',
+              printBackground: true,
+              margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' }
+            })
+            
+            await demoPdfPage.close()
+            
+            // Объединяем страницы в один PDF
+            console.log('📎 Объединяем страницы в один PDF...')
+            pdfBuffer = Buffer.concat([firstPageBuffer, secondPageBuffer])
+            
+            console.log('✅ PDF с двумя страницами создан, размер:', pdfBuffer.length, 'bytes')
+            
+          } catch (demoError) {
+            console.error('⚠️ Ошибка при создании второй страницы, используем только первую:', demoError)
+            pdfBuffer = firstPageBuffer // Используем только первую страницу при ошибке
+          }
           
         } finally {
           // Закрываем страницу с PDF
