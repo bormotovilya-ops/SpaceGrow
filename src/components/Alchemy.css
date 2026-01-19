@@ -1433,8 +1433,8 @@
   min-height: 50px;
   box-sizing: border-box;
   flex-shrink: 0;
-  width: calc(100% - 0px);
-  max-width: calc(100% - 0px);
+  width: 100%;
+  max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
   overflow: hidden;
