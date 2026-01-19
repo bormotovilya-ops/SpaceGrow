@@ -1,5 +1,5 @@
 // Vercel Serverless Function для генерации PDF на сервере
-import { jsPDF } from 'jspdf'
+import PDFDocument from 'pdfkit'
 
 export default async function handler(req, res) {
   // Разрешаем только POST запросы
@@ -19,47 +19,72 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Отсутствуют обязательные поля' })
     }
 
-    // Генерируем PDF используя jsPDF
-    const pdf = new jsPDF({
-      unit: 'mm',
-      format: 'a4',
-      orientation: 'portrait'
+    // Используем pdfkit для генерации PDF с поддержкой кириллицы
+    const chunks = []
+    const doc = new PDFDocument({
+      size: 'A4',
+      margin: 20
     })
-
+    
+    // Собираем PDF в буфер через события
+    doc.on('data', chunk => chunks.push(chunk))
+    
     // Заголовок
-    pdf.setFontSize(20)
-    pdf.setTextColor(255, 215, 0) // Золотой цвет
-    pdf.text(methodName, 105, 30, { align: 'center' })
+    doc.fontSize(20)
+      .fillColor('#FFD700')
+      .text(methodName, {
+        align: 'center',
+        width: doc.page.width - 40
+      })
     
     // Дата рождения
-    pdf.setFontSize(12)
-    pdf.setTextColor(0, 0, 0)
-    pdf.text(`Дата рождения: ${birthDate}`, 20, 50)
+    doc.fontSize(12)
+      .fillColor('#000000')
+      .moveDown(0.5)
+      .text(`Дата рождения: ${birthDate}`)
     
     // Разделительная линия
-    pdf.setDrawColor(255, 215, 0)
-    pdf.setLineWidth(0.5)
-    pdf.line(20, 55, 190, 55)
+    const lineY = doc.y
+    doc.moveDown(0.5)
+      .strokeColor('#FFD700')
+      .lineWidth(0.5)
+      .moveTo(20, doc.y)
+      .lineTo(doc.page.width - 20, doc.y)
+      .stroke()
     
     // Основной текст результата
-    pdf.setFontSize(11)
+    doc.moveDown(1)
+      .fontSize(11)
+      .fillColor('#282828')
     const textContent = resultData?.result || 'Результат расчета недоступен'
-    const lines = pdf.splitTextToSize(textContent, 170)
-    pdf.text(lines, 20, 65)
+    doc.text(textContent, {
+      width: doc.page.width - 40,
+      align: 'justify',
+      lineGap: 2
+    })
     
     // Ключевое значение, если есть
     if (resultData?.value) {
-      const yPos = pdf.internal.pageSize.getHeight() - 40
-      pdf.setFontSize(12)
-      pdf.setTextColor(200, 150, 0)
-      pdf.text(`Ключевое значение: ${resultData.value}`, 20, yPos)
+      doc.moveDown(2)
+        .fontSize(12)
+        .fillColor('#C89600')
+        .text(`Ключевое значение: ${resultData.value}`, {
+          width: doc.page.width - 40
+        })
     }
-
-    // Генерируем base64
-    const pdfBase64 = pdf.output('datauristring')
     
-    // Получаем только base64 данные (без префикса data:...)
-    const base64Data = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64
+    // Завершаем документ
+    doc.end()
+    
+    // Ждем завершения генерации
+    await new Promise((resolve) => {
+      doc.on('end', resolve)
+    })
+    
+    // Конвертируем буфер в base64
+    const pdfBuffer = Buffer.concat(chunks)
+    const base64Data = pdfBuffer.toString('base64')
+    const pdfBase64 = `data:application/pdf;base64,${base64Data}`
     
     // Формируем имя файла
     const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
@@ -69,9 +94,7 @@ export default async function handler(req, res) {
     
     if (telegramUserId && process.env.TELEGRAM_BOT_TOKEN) {
       try {
-        // Конвертируем base64 в Buffer
-        const pdfBuffer = Buffer.from(base64Data, 'base64')
-        
+        // Используем уже готовый буфер
         // Создаем multipart/form-data вручную (более надежно для Vercel)
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
         const crlf = '\r\n'
