@@ -717,6 +717,18 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                 value={mirrorInput}
                 onChange={(e) => setMirrorInput(e.target.value)}
                 onKeyPress={handleMirrorKeyPress}
+                onFocus={() => {
+                  const actionZone = document.getElementById('action-zone')
+                  if (actionZone) {
+                    actionZone.classList.add('input-focused')
+                  }
+                }}
+                onBlur={() => {
+                  const actionZone = document.getElementById('action-zone')
+                  if (actionZone) {
+                    actionZone.classList.remove('input-focused')
+                  }
+                }}
                 disabled={isLoadingMirror}
               />
               <button
@@ -821,6 +833,18 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                 placeholder="Число минут"
                 value={numberInput}
                 onChange={(e) => setNumberInput(e.target.value)}
+                onFocus={() => {
+                  const actionZone = document.getElementById('action-zone')
+                  if (actionZone) {
+                    actionZone.classList.add('input-focused')
+                  }
+                }}
+                onBlur={() => {
+                  const actionZone = document.getElementById('action-zone')
+                  if (actionZone) {
+                    actionZone.classList.remove('input-focused')
+                  }
+                }}
                 min="1"
               />
               <button className="action-zone-button" onClick={handleAccelerateTime}>

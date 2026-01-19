@@ -1534,6 +1534,9 @@ function MatrixCalculator() {
             setBirthTime(value)
             setError('')
           }}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          onKeyUp={handleInputKeyUp}
           maxLength={5}
           disabled={isScanning}
         />
@@ -1550,6 +1553,9 @@ function MatrixCalculator() {
             placeholder="Начните вводить название города..."
             value={city}
             onChange={(e) => setCity(e.target.value)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyUp={handleInputKeyUp}
             disabled={isScanning}
           />
           {citySuggestions.length > 0 && (
