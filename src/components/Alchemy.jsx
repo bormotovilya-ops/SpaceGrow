@@ -800,7 +800,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
           {/* Анимированная свеча поверх стола (масштабируется вместе с фоном) */}
           <img
-            src="/assets/candle_animated.webp"
+            src="/images/Свеча.gif"
             alt="Свеча"
             className="alchemy-candle-image"
           />
