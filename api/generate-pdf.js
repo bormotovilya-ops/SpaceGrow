@@ -1,11 +1,15 @@
 // Vercel Serverless Function для генерации PDF на сервере
 // Используем pdfmake для генерации PDF с поддержкой кириллицы
 
-import PdfPrinter from 'pdfmake/src/Printer.js'
-import virtualfs from 'pdfmake/src/virtual-fs.js'
-import URLResolver from 'pdfmake/src/URLResolver.js'
 import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { join, createRequire } from 'module'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+// Для динамического импорта CommonJS модулей
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const require = createRequire(import.meta.url)
 
 // Встроенные шрифты pdfmake для поддержки кириллицы
 // Используем стандартные шрифты из pdfmake, которые поддерживают UTF-8
@@ -207,6 +211,11 @@ export default async function handler(req, res) {
       
       // Загружаем шрифты для pdfmake
       const fonts = await loadPdfMakeFonts()
+      
+      // Импортируем CommonJS модули pdfmake через require
+      const PdfPrinter = require('pdfmake/js/Printer.js').default
+      const virtualfs = require('pdfmake/js/virtual-fs.js').default
+      const URLResolver = require('pdfmake/js/URLResolver.js').default
       
       // Создаем URLResolver для pdfmake
       const urlResolver = new URLResolver(virtualfs)
