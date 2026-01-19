@@ -2188,9 +2188,9 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
     const usableWidth = pdfWidth - 2 * margin
     const usableHeight = pdfHeight - 2 * margin
     
-    // Размеры canvas в мм (canvas.width в пикселях с учетом scale=1.5)
-    const imgWidth = (canvas.width / 1.5) * 0.264583 // конвертируем пиксели в мм
-    const imgHeight = (canvas.height / 1.5) * 0.264583
+    // Размеры canvas в мм (canvas.width в пикселях с учетом scale=2)
+    const imgWidth = (canvas.width / 2) * 0.264583 // конвертируем пиксели в мм
+    const imgHeight = (canvas.height / 2) * 0.264583
     
     // Рассчитываем масштаб для вписывания в доступную область
     const ratio = Math.min(usableWidth / imgWidth, usableHeight / imgHeight)
