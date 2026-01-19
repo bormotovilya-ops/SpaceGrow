@@ -1,7 +1,9 @@
 // Vercel Serverless Function для генерации PDF на сервере
 // Используем pdfmake для генерации PDF с поддержкой кириллицы
 
-import PdfPrinter from 'pdfmake'
+import PdfPrinter from 'pdfmake/src/Printer.js'
+import virtualfs from 'pdfmake/src/virtual-fs.js'
+import URLResolver from 'pdfmake/src/URLResolver.js'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
@@ -206,8 +208,11 @@ export default async function handler(req, res) {
       // Загружаем шрифты для pdfmake
       const fonts = await loadPdfMakeFonts()
       
+      // Создаем URLResolver для pdfmake
+      const urlResolver = new URLResolver(virtualfs)
+      
       // Создаем принтер PDF
-      const printer = new PdfPrinter(fonts)
+      const printer = new PdfPrinter(fonts, virtualfs, urlResolver)
       
       // Определяем документ PDF
       const docDefinition = {
@@ -314,13 +319,12 @@ export default async function handler(req, res) {
         }
       }
 
-      // Генерируем PDF
-      const pdfDoc = printer.createPdfKitDocument(docDefinition)
+      // Генерируем PDF (createPdfKitDocument возвращает Promise)
+      const pdfDoc = await printer.createPdfKitDocument(docDefinition)
       
       // Конвертируем в Buffer
       const chunks = []
       pdfDoc.on('data', (chunk) => chunks.push(chunk))
-      pdfDoc.on('end', () => {})
       
       pdfDoc.end()
       
