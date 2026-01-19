@@ -240,6 +240,18 @@
   background-position: center center; /* Центрирование картинки */
   background-repeat: no-repeat; /* Картинка не повторяется */
   z-index: 1;
+  animation: fadeInBackground 0.8s ease-in-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeInBackground {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Эффект параллакса при прокрутке */
@@ -270,7 +282,9 @@
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.5),
     0 0 30px rgba(255, 215, 0, 0.2);
-  animation: fadeInGreeting 1s ease-in-out;
+  animation: fadeInGreeting 1s ease-in-out 0.8s;
+  animation-fill-mode: both;
+  opacity: 0;
   width: fit-content;
   max-width: 90%;
   box-sizing: border-box;
@@ -390,6 +404,18 @@
   z-index: 5;
   /* Блоки внутри позиционируются относительно этого контейнера (который точно совпадает с видимой областью картинки) */
   box-sizing: border-box;
+  animation: fadeInZones 1s ease-in-out 0.8s;
+  animation-fill-mode: both;
+  opacity: 0;
+}
+
+@keyframes fadeInZones {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .artifact-zone {
@@ -528,6 +554,18 @@
   width: 21%;   /* Предыдущее значение ширины */
   pointer-events: none; /* Клики проходят сквозь картинку к артефакту */
   z-index: 5;
+  animation: fadeInCandle 1s ease-in-out 0.8s;
+  animation-fill-mode: both;
+  opacity: 0;
+}
+
+@keyframes fadeInCandle {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .artifact-snitch {
@@ -1376,6 +1414,11 @@
   .action-zone {
     padding: 100px 16px 100px; /* Увеличен padding-top для header на мобильных (10px padding + 56px иконка + 6px padding + запас) */
   }
+  
+  /* Для астролябии на планшетах - увеличиваем padding-top */
+  .action-zone-astrolabe {
+    padding-top: 100px !important;
+  }
 
   .action-zone-content {
     padding: 30px 20px;
@@ -1389,6 +1432,14 @@
   
   .action-zone-tarot .action-zone-content {
     min-height: 800px; /* Минимальная высота для размещения всех карт на планшетах */
+  }
+  
+  /* Для астролябии (калькулятора) на планшетах - убираем ограничение высоты */
+  .action-zone-astrolabe .action-zone-inner {
+    max-height: none !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow-y: visible !important;
   }
 
   .action-zone-title {
@@ -1471,6 +1522,39 @@
     padding-bottom: 200px !important; /* Увеличенный отступ снизу для карт */
   }
   
+  /* Для астролябии (калькулятора) на мобильных - убираем ограничение высоты и включаем прокрутку */
+  .action-zone-astrolabe {
+    overflow-y: auto !important; /* Включаем прокрутку для астролябии */
+    overflow-x: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+  }
+  
+  .action-zone-astrolabe .action-zone-inner {
+    max-height: none !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    padding-bottom: 150px !important; /* Отступ снизу для кнопки */
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Убеждаемся, что контент калькулятора виден и прокручивается */
+  .action-zone-astrolabe .matrix-calculator-wrapper {
+    width: 100% !important;
+    overflow: visible !important;
+    min-height: fit-content !important;
+  }
+  
+  .action-zone-astrolabe .results-container {
+    width: 100% !important;
+    overflow: visible !important;
+    min-height: fit-content !important;
+  }
+  
   .action-zone-tarot .action-zone-content,
   .action-zone-content.action-zone-tarot {
     min-height: 650px !important; /* Минимальная высота для размещения всех карт (3 карты по 180px + отступы + текст) */
@@ -1541,6 +1625,11 @@
 
   .action-zone {
     padding: 90px 12px 100px; /* Отступ для header на очень маленьких экранах (8px padding + 70px min-height + 4px padding + запас) */
+  }
+  
+  /* Для астролябии на мобильных - увеличиваем padding-top чтобы не заезжала под верхнюю панель */
+  .action-zone-astrolabe {
+    padding-top: 90px !important;
   }
 
   .alchemy-music-toggle {

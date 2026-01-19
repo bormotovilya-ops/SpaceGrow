@@ -1430,23 +1430,15 @@ function MatrixCalculator() {
     setCompletedMethods([])
   }
 
-  const handleInputFocus = () => {
+  const handleInputFocus = (e) => {
     // Скрываем кнопку "Вернуться к столу" при фокусе на поле ввода
     const actionZone = document.getElementById('action-zone')
     if (actionZone) {
       actionZone.classList.add('input-focused')
     }
     
-    // При фокусе на поле ввода скроллим к кнопке "Рассчитать"
-    setTimeout(() => {
-      if (calculateButtonRef.current) {
-        calculateButtonRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-          inline: 'nearest'
-        })
-      }
-    }, 300) // Небольшая задержка для появления клавиатуры
+    // НЕ скроллим - оставляем поле ввода видимым
+    // Пользователь должен видеть поле, в которое вводит
   }
 
   const handleInputBlur = () => {
@@ -1458,22 +1450,7 @@ function MatrixCalculator() {
   }
 
   const handleInputKeyUp = () => {
-    // При вводе текста также проверяем видимость кнопки и скроллим к ней
-    setTimeout(() => {
-      if (calculateButtonRef.current) {
-        const rect = calculateButtonRef.current.getBoundingClientRect()
-        const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
-        
-        // Если кнопка не видна, скроллим к ней
-        if (!isVisible) {
-          calculateButtonRef.current.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-            inline: 'nearest'
-          })
-        }
-      }
-    }, 100)
+    // НЕ скроллим при вводе - пользователь должен видеть поле ввода
   }
 
   const handleDownloadPDF = (methodId, methodName) => {

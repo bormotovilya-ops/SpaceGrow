@@ -483,6 +483,7 @@
   margin-top: 40px;
   width: 100%;
   box-sizing: border-box;
+  min-height: fit-content; /* Минимальная высота по содержимому */
   /* Убираем ограничения высоты - прокрутка теперь на уровне action-zone-inner */
 }
 
