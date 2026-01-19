@@ -738,8 +738,8 @@ const calculateAllMethods = async (dateString, timeString, cityName) => {
   }
 }
 
-// Функция для показа ссылки на PDF (для мобильных устройств)
-function showPDFLink(url, fileName, methodName) {
+// Функция для показа PDF встроенным в модальное окно (для мобильных устройств)
+function showPDFInModal(url, fileName, methodName) {
   // Создаем модальное окно с ссылкой
   const modal = document.createElement('div')
   modal.style.cssText = `
@@ -781,39 +781,91 @@ function showPDFLink(url, fileName, methodName) {
   `
   
   const text = document.createElement('p')
-  text.textContent = 'Нажмите на ссылку ниже, чтобы открыть PDF файл:'
+  text.textContent = 'PDF файл готов. Вы можете просмотреть его ниже или открыть в новом окне:'
   text.style.cssText = `
     color: rgba(255, 255, 255, 0.9);
     font-size: 16px;
-    margin: 0 0 25px 0;
+    margin: 0 0 20px 0;
     line-height: 1.6;
   `
   
-  const link = document.createElement('a')
-  link.href = url
-  link.target = '_blank'
-  link.textContent = `📄 Открыть ${methodName}`
-  link.style.cssText = `
+  // Создаем iframe для встроенного просмотра PDF
+  const iframe = document.createElement('iframe')
+  iframe.src = url
+  iframe.style.cssText = `
+    width: 100%;
+    height: 60vh;
+    min-height: 400px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    background: #ffffff;
+  `
+  
+  // Кнопка для открытия в новом окне
+  const openLink = document.createElement('a')
+  openLink.href = url
+  openLink.target = '_blank'
+  openLink.textContent = `📄 Открыть ${methodName} в новом окне`
+  openLink.style.cssText = `
     display: inline-block;
-    padding: 15px 30px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
     color: #0a0a0f;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: 8px;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 14px;
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
     transition: transform 0.2s;
+    margin-right: 10px;
   `
   
-  link.onmouseover = () => {
-    link.style.transform = 'translateY(-2px)'
-    link.style.boxShadow = '0 6px 25px rgba(255, 215, 0, 0.6)'
+  openLink.onmouseover = () => {
+    openLink.style.transform = 'translateY(-2px)'
+    openLink.style.boxShadow = '0 6px 25px rgba(255, 215, 0, 0.6)'
   }
-  link.onmouseout = () => {
-    link.style.transform = 'translateY(0)'
-    link.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
+  openLink.onmouseout = () => {
+    openLink.style.transform = 'translateY(0)'
+    openLink.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
   }
+  
+  // Кнопка для скачивания (fallback)
+  const downloadLink = document.createElement('a')
+  downloadLink.href = url
+  downloadLink.download = fileName
+  downloadLink.textContent = '💾 Скачать PDF'
+  downloadLink.style.cssText = `
+    display: inline-block;
+    padding: 12px 24px;
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    color: #FFD700;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.2s;
+  `
+  
+  downloadLink.onmouseover = () => {
+    downloadLink.style.background = 'rgba(255, 215, 0, 0.3)'
+    downloadLink.style.borderColor = 'rgba(255, 215, 0, 0.8)'
+  }
+  downloadLink.onmouseout = () => {
+    downloadLink.style.background = 'rgba(255, 215, 0, 0.2)'
+    downloadLink.style.borderColor = 'rgba(255, 215, 0, 0.5)'
+  }
+  
+  const buttonsContainer = document.createElement('div')
+  buttonsContainer.style.cssText = `
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  `
+  buttonsContainer.appendChild(openLink)
+  buttonsContainer.appendChild(downloadLink)
   
   const closeBtn = document.createElement('button')
   closeBtn.textContent = '✕'
@@ -866,7 +918,8 @@ function showPDFLink(url, fileName, methodName) {
   content.appendChild(closeBtn)
   content.appendChild(title)
   content.appendChild(text)
-  content.appendChild(link)
+  content.appendChild(iframe)
+  content.appendChild(buttonsContainer)
   modal.appendChild(content)
   document.body.appendChild(modal)
   
@@ -1314,28 +1367,14 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
         const tg = window.Telegram?.WebApp || window.TelegramWebApp
         const isTelegram = !!tg
         
-        // Для мобильных устройств и Telegram открываем PDF в браузере или показываем ссылку
+        // Для мобильных устройств и Telegram показываем PDF встроенным на странице
         if (isMobile || isTelegram) {
           // Создаем blob
           const pdfBlob = pdf.output('blob')
           const url = URL.createObjectURL(pdfBlob)
           
-          // Пытаемся открыть PDF в новом окне/вкладке
-          try {
-            const newWindow = window.open(url, '_blank')
-            
-            if (newWindow) {
-              // Если открылось успешно, освобождаем URL через 15 секунд
-              setTimeout(() => URL.revokeObjectURL(url), 15000)
-            } else {
-              // Если открытие заблокировано, показываем видимую ссылку для открытия
-              showPDFLink(url, fileName, methodName)
-            }
-          } catch (error) {
-            console.error('Ошибка при открытии PDF:', error)
-            // Показываем видимую ссылку
-            showPDFLink(url, fileName, methodName)
-          }
+          // Показываем PDF встроенным в модальное окно
+          showPDFInModal(url, fileName, methodName)
         } else {
           // Для десктопа используем стандартный метод скачивания
           pdf.save(fileName)
