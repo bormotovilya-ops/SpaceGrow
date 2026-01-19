@@ -1,8 +1,17 @@
 // Vercel Serverless Function для генерации PDF на сервере
-// Используем Puppeteer для рендеринга HTML в PDF (решает проблему с кириллицей)
+// Используем Puppeteer для скриншота HTML, затем конвертируем в PDF (решает проблему с кириллицей)
 
 import puppeteer from 'puppeteer-core'
 import chromium from '@sparticuz/chromium'
+import { JSDOM } from 'jsdom'
+import { createCanvas, loadImage } from 'canvas'
+
+// Альтернатива: используем jspdf для конвертации PNG в PDF
+// Но на Vercel может быть проблема с canvas/jspdf
+// Проще использовать Puppeteer page.pdf() но с правильными настройками для скриншота
+
+// Или используем библиотеку для конвертации PNG -> PDF
+// Но проще всего - использовать Puppeteer для скриншота, а затем pdfkit/jspdf для конвертации
 
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
@@ -209,8 +218,52 @@ export default async function handler(req, res) {
         // Дополнительная пауза для полной загрузки всех ресурсов
         await new Promise(resolve => setTimeout(resolve, 2000))
         
-        // Генерируем PDF
-        pdfBuffer = await page.pdf({
+        // Делаем скриншот HTML страницы (решает проблему с кодировкой)
+        console.log('📸 Делаем скриншот HTML страницы...')
+        const screenshotBuffer = await page.screenshot({
+          type: 'png',
+          fullPage: true,
+          printBackground: true
+        })
+        
+        if (!screenshotBuffer || screenshotBuffer.length === 0) {
+          throw new Error('Screenshot buffer пустой после генерации')
+        }
+        
+        console.log('✅ Скриншот создан, размер:', screenshotBuffer.length, 'bytes')
+        
+        // Конвертируем скриншот в base64
+        const imageBase64 = screenshotBuffer.toString('base64')
+        
+        // Создаем новую страницу с изображением и генерируем PDF
+        console.log('📄 Создаем PDF из скриншота...')
+        const pdfPage = await browser.newPage()
+        
+        // Создаем HTML с изображением, оптимизированным для A4
+        await pdfPage.setContent(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+              }
+              img {
+                width: 100%;
+                height: auto;
+                display: block;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="data:image/png;base64,${imageBase64}" alt="PDF Content" />
+          </body>
+          </html>
+        `, { waitUntil: 'networkidle0' })
+        
+        // Генерируем PDF из изображения
+        pdfBuffer = await pdfPage.pdf({
           format: 'A4',
           printBackground: true,
           margin: {
@@ -222,8 +275,10 @@ export default async function handler(req, res) {
         })
         
         if (!pdfBuffer || pdfBuffer.length === 0) {
-          throw new Error('PDF buffer пустой после генерации')
+          throw new Error('PDF buffer пустой после генерации из скриншота')
         }
+        
+        console.log('✅ PDF создан из скриншота, размер:', pdfBuffer.length, 'bytes')
         
         // Конвертируем в base64 для клиента
         base64Data = pdfBuffer.toString('base64')
