@@ -510,52 +510,16 @@
   filter: drop-shadow(0 0 4px rgba(255, 170, 0, 0.2));
 }
 
-/* Эффект горения свечи - пламя */
-.artifact-candle .candle-flame {
+/* Анимированная свеча (GIF/WEBP), наложенная поверх стола.
+   Находится в том же контейнере с aspect-ratio 9/16, что и фон,
+   поэтому проценты считаются от одной и той же базы. */
+.alchemy-candle-image {
   position: absolute;
-  top: -22%; /* Выше верхнего края зоны свечи на 22% от её высоты */
-  left: 13%; /* Уменьшено еще на 10% с 23% относительно ширины зоны свечи */
-  transform: translateX(0); /* Убираем центрирование, используем прямой left */
-  width: 12.6px; /* Ширина пламени (увеличено на 5% с 12px) */
-  height: 44%; /* Относительно высоты зоны свечи (увеличено на 10% с 40%) */
-  background: linear-gradient(
-    to top,
-    #006400 0%,      /* Темно-зеленый внизу */
-    #32CD32 40%,     /* Лаймовый */
-    #90EE90 70%,     /* Светло-зеленый */
-    #FFFF00 100%     /* Желтый наверху */
-  );
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; /* Форма пламени */
-  opacity: 1 !important; /* Полная непрозрачность с приоритетом */
-  z-index: 1000 !important; /* Очень высокий z-index поверх всех элементов */
-  pointer-events: none; /* Пламя не мешает кликам */
-  animation: candleFlame 1.5s ease-in-out infinite alternate;
-  box-shadow: 
-    0 0 12px rgba(50, 205, 50, 1),
-    0 0 18px rgba(144, 238, 144, 0.9),
-    0 0 30px rgba(0, 255, 0, 0.7),
-    0 0 40px rgba(0, 200, 0, 0.5),
-    inset 0 -2px 8px rgba(255, 255, 0, 0.3);
-  display: block !important; /* Убеждаемся, что элемент отображается */
-}
-
-/* Анимация покачивания пламени */
-@keyframes candleFlame {
-  0% {
-    transform: translateX(-50%) rotate(-2deg) scale(1, 1);
-  }
-  25% {
-    transform: translateX(-50%) rotate(1deg) scale(1.05, 0.95);
-  }
-  50% {
-    transform: translateX(-50%) rotate(-1.5deg) scale(0.95, 1.1);
-  }
-  75% {
-    transform: translateX(-50%) rotate(1deg) scale(1.08, 0.9);
-  }
-  100% {
-    transform: translateX(-50%) rotate(-2deg) scale(1, 1);
-  }
+  left: 28%;  /* Горизонтальная позиция относительно стола */
+  top: 35%;   /* Вертикальная позиция — подобрана, чтобы пламя легло по центру свечи на фоне */
+  width: 8%;  /* Ширина относительно стола */
+  pointer-events: none; /* Клики проходят сквозь картинку к артефакту */
+  z-index: 5;
 }
 
 .artifact-snitch {
@@ -1014,32 +978,6 @@
     padding-bottom: 150px; /* Отступ снизу для мобильных */
   }
 
-  /* Корректировка позиции пламени на мобильных */
-  .artifact-candle .candle-flame {
-    left: 42% !important; /* Позиция для мобильных устройств */
-    top: -3% !important; /* Позиция для мобильных устройств */
-    animation: candleFlameMobile 1.5s ease-in-out infinite alternate !important; /* Используем локальную анимацию для мобильных */
-  }
-
-  /* Корректировка анимации пламени на мобильных */
-  @keyframes candleFlameMobile {
-    0% {
-      transform: translateX(0) rotate(-2deg) scale(1, 1);
-    }
-    25% {
-      transform: translateX(0) rotate(1deg) scale(1.05, 0.95);
-    }
-    50% {
-      transform: translateX(0) rotate(-1.5deg) scale(0.95, 1.1);
-    }
-    75% {
-      transform: translateX(0) rotate(1deg) scale(1.08, 0.9);
-    }
-    100% {
-      transform: translateX(0) rotate(-2deg) scale(1, 1);
-    }
-  }
-
   .alchemy-hero-title {
     font-size: 20px;
     letter-spacing: 2px;
@@ -1206,14 +1144,6 @@
   .alchemy-interactive-zones {
     padding-bottom: 130px; /* Отступ снизу для очень маленьких экранов */
   }
-
-  /* Корректировка позиции пламени на очень маленьких экранах */
-  .artifact-candle .candle-flame {
-    left: 42% !important; /* Позиция для очень маленьких экранов */
-    top: -3% !important; /* Позиция для очень маленьких экранов */
-    animation: candleFlameMobile 1.5s ease-in-out infinite alternate !important; /* Используем локальную анимацию для очень маленьких экранов */
-  }
-
   /* Позиции artifact-zone универсальны для всех устройств (используются проценты с соотношением 9:16) */
 
   .action-zone-title {

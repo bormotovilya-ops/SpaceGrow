@@ -27,7 +27,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const fadeIntervalRef = useRef(null)
   const userInteractedRef = useRef(false)
   const imageContainerRef = useRef(null)
-  const candleFlameRef = useRef(null)
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
@@ -369,138 +368,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }
   }, [selectedArtifact]) // Пересчитываем при изменении выбранного артефакта
 
-  // Корректировка позиции пламени для десктопа из Telegram WebView
-  // ВАЖНО: Позиция пламени должна быть полностью независима от размеров action-zone
-  // и других элементов, которые могут изменяться при растяжении блока "Выберите артефакт"
-  useEffect(() => {
-    const updateFlamePositionForDesktop = () => {
-      const flame = candleFlameRef.current
-      const flameContainer = document.querySelector('.artifact-candle')
-      
-      if (!flame || !flameContainer) return
-
-      // Определяем, открыто ли приложение из Telegram WebView на десктопе
-      const isTelegramWebView = window.Telegram?.WebApp || window.TelegramWebApp
-      const isDesktop = window.innerWidth > 768
-      
-      if (isTelegramWebView && isDesktop) {
-        // Для десктопа из Telegram: сдвигаем левее и выше на 5%
-        // КРИТИЧЕСКИ ВАЖНО: Используем проценты от родителя (.artifact-candle),
-        // а НЕ от других элементов. Позиция должна быть фиксирована относительно
-        // размеров .artifact-candle, независимо от изменений размеров action-zone,
-        // alchemy-hero или других контейнеров.
-        flame.style.position = 'absolute'
-        flame.style.left = '8%' // 13% - 5% относительно ширины .artifact-candle
-        flame.style.top = '-17%' // -22% + 5% относительно высоты .artifact-candle
-        flame.style.margin = '0' // Убираем все отступы
-        flame.style.transform = 'none' // Убираем трансформации, кроме анимации
-        flame.style.boxSizing = 'border-box' // Фиксируем box-sizing
-        flame.style.width = '12.6px' // Фиксированная ширина
-        flame.style.height = '44%' // Высота относительно .artifact-candle
-        // Убеждаемся, что пламя не зависит от размеров родительских контейнеров
-        // путем явного указания, что позиция относительно .artifact-candle
-        flame.style.right = 'auto' // Отключаем right, используем только left
-        flame.style.bottom = 'auto' // Отключаем bottom, используем только top
-      } else if (isDesktop && !isTelegramWebView) {
-        // Для обычного веб-браузера: используем CSS значения (left: 13%, top: -22%)
-        flame.style.left = ''
-        flame.style.top = ''
-        flame.style.position = ''
-        flame.style.margin = ''
-        flame.style.transform = ''
-        flame.style.boxSizing = ''
-        flame.style.width = ''
-        flame.style.height = ''
-        flame.style.right = ''
-        flame.style.bottom = ''
-      }
-    }
-
-    // Обновляем при загрузке и изменении размера окна
-    updateFlamePositionForDesktop()
-    window.addEventListener('resize', updateFlamePositionForDesktop)
-    
-    // Обновляем после задержек для гарантии стабилизации
-    const timeoutId = setTimeout(updateFlamePositionForDesktop, 100)
-    const timeoutId2 = setTimeout(updateFlamePositionForDesktop, 500)
-    const timeoutId3 = setTimeout(updateFlamePositionForDesktop, 1000)
-    const timeoutId4 = setTimeout(updateFlamePositionForDesktop, 2000)
-    
-    // Используем ResizeObserver ТОЛЬКО для отслеживания изменений размеров .artifact-candle
-    // НЕ отслеживаем изменения других контейнеров, чтобы пламя не зависело от них
-    const flameContainer = document.querySelector('.artifact-candle')
-    let resizeObserver = null
-    
-    if (flameContainer && window.ResizeObserver) {
-      resizeObserver = new ResizeObserver((entries) => {
-        // Обновляем позицию только если изменился размер .artifact-candle
-        // Игнорируем изменения других элементов
-        for (const entry of entries) {
-          if (entry.target === flameContainer) {
-            // Небольшая задержка для стабилизации после изменения размера
-            setTimeout(updateFlamePositionForDesktop, 50)
-            break
-          }
-        }
-      })
-      resizeObserver.observe(flameContainer)
-    }
-    
-    // Отслеживаем изменения в DOM, но НЕ реагируем на изменения в action-zone
-    // чтобы пламя не зависело от растяжения блока "Выберите артефакт"
-    const observer = new MutationObserver((mutations) => {
-      // Фильтруем мутации: игнорируем изменения в action-zone
-      const relevantMutations = mutations.filter(mutation => {
-        const target = mutation.target
-        // Игнорируем изменения в action-zone и его дочерних элементах
-        if (target.closest && target.closest('.action-zone')) {
-          return false
-        }
-        // Игнорируем изменения в action-zone-default и action-zone-text
-        if (target.classList && (
-          target.classList.contains('action-zone-default') ||
-          target.classList.contains('action-zone-text') ||
-          target.classList.contains('action-zone-inner')
-        )) {
-          return false
-        }
-        return true
-      })
-      
-      // Обновляем позицию только если есть релевантные мутации
-      if (relevantMutations.length > 0) {
-        setTimeout(updateFlamePositionForDesktop, 50)
-      }
-    })
-    
-    // Наблюдаем ТОЛЬКО за изменениями в контейнере с артефактами
-    // НЕ наблюдаем за action-zone, чтобы пламя не зависело от его размеров
-    const heroContainer = document.querySelector('.alchemy-hero')
-    
-    if (heroContainer) {
-      observer.observe(heroContainer, {
-        childList: true,
-        subtree: true,
-        attributes: false,
-        characterData: false
-        // attributeFilter не нужен, так как attributes: false
-      })
-    }
-    
-    return () => {
-      window.removeEventListener('resize', updateFlamePositionForDesktop)
-      clearTimeout(timeoutId)
-      clearTimeout(timeoutId2)
-      clearTimeout(timeoutId3)
-      clearTimeout(timeoutId4)
-      
-      if (resizeObserver && flameContainer) {
-        resizeObserver.unobserve(flameContainer)
-      }
-      
-      observer.disconnect()
-    }
-  }, [selectedArtifact]) // Пересчитываем только при изменении выбранного артефакта
+  // Логика анимации и позиционирования старого пламени удалена —
+  // теперь используется готовое анимированное изображение свечи поверх стола.
 
   // Эффект для восстановления фона при сбросе темного режима
   useEffect(() => {
@@ -654,7 +523,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                     .catch(e => console.log('Повторная ошибка воспроизведения:', e))
                 }, 200)
               })
-          } else {
+      } else {
             // Для старых браузеров, где play() не возвращает промис
             console.log('Браузер не поддерживает промис от play(), начинаем fade-in')
             startFadeIn(targetVolume, 3000)
@@ -922,16 +791,23 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       
       {/* Hero Section с фоном */}
       <div className="alchemy-hero">
-        {/* Контейнер для фонового изображения и интерактивных зон */}
+        {/* Контейнер для фонового изображения, анимированной свечи и интерактивных зон */}
         <div className="alchemy-image-container" ref={imageContainerRef}>
           {/* Черный фон для заполнения пустых областей */}
           <div className="alchemy-background-fill"></div>
           {/* Картинка */}
           <div className="alchemy-hero-background" ref={heroBackgroundRef}></div>
-          
+
+          {/* Анимированная свеча поверх стола (масштабируется вместе с фоном) */}
+          <img
+            src="/assets/candle_animated.webp"
+            alt="Свеча"
+            className="alchemy-candle-image"
+          />
+
           {/* Интерактивные кликабельные зоны - привязаны к контейнеру, который совпадает с картинкой */}
           {!selectedArtifact && (
-            <div className="alchemy-interactive-zones">
+          <div className="alchemy-interactive-zones">
             {/* Зеркало - верхняя часть */}
             <div 
               className="artifact-zone artifact-mirror" 
@@ -958,10 +834,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               className="artifact-zone artifact-candle" 
               onClick={() => handleArtifactClick('candle')}
               title="Свеча"
-            >
-              {/* Элемент пламени */}
-              <div className="candle-flame" ref={candleFlameRef}></div>
-            </div>
+            ></div>
 
             {/* Снитч - правая средняя часть */}
             <div 
@@ -997,7 +870,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               onClick={() => handleArtifactClick('amulets')}
               title="Амулеты и Руны"
             ></div>
-            </div>
+          </div>
           )}
         </div>
         
