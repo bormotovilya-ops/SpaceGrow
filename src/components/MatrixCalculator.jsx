@@ -738,7 +738,283 @@ const calculateAllMethods = async (dateString, timeString, cityName) => {
   }
 }
 
-// Функция для показа PDF на мобильных устройствах (только рабочие варианты)
+// Функция для показа вариантов отправки PDF через бота
+function showPDFBotModal(pdfBlob, pdfDataUri, fileName, methodName) {
+  const tg = window.Telegram?.WebApp || window.TelegramWebApp
+  const isTelegram = !!tg
+  
+  const modal = document.createElement('div')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  `
+  
+  const content = document.createElement('div')
+  content.style.cssText = `
+    background: linear-gradient(135deg, rgba(26, 26, 35, 0.98) 0%, rgba(15, 15, 25, 0.98) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin: 20px 0;
+  `
+  
+  const title = document.createElement('h3')
+  title.textContent = 'Отправка PDF через бота'
+  title.style.cssText = `
+    color: #FFD700;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    letter-spacing: 1px;
+  `
+  
+  const text = document.createElement('p')
+  text.textContent = 'Выберите способ отправки PDF файла:'
+  text.style.cssText = `
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 0 0 25px 0;
+    line-height: 1.6;
+  `
+  
+  const buttonsContainer = document.createElement('div')
+  buttonsContainer.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  `
+  
+  // ВАРИАНТ 1: Открытие бота с параметрами через openTelegramLink
+  const btn1 = createPDFButton('1️⃣ Открыть бота для отправки', () => {
+    sendPDFViaTelegramLink(pdfBlob, pdfDataUri, fileName, methodName, tg)
+  })
+  
+  // ВАРИАНТ 2: Использование sendData для передачи данных боту
+  const btn2 = createPDFButton('2️⃣ Передать данные через sendData', () => {
+    sendPDFViaSendData(pdfBlob, pdfDataUri, fileName, methodName, tg)
+  })
+  
+  // ВАРИАНТ 3: Создание ссылки на файл и открытие бота
+  const btn3 = createPDFButton('3️⃣ Открыть бота со ссылкой на файл', () => {
+    sendPDFViaFileLink(pdfBlob, pdfDataUri, fileName, methodName, tg)
+  })
+  
+  // ВАРИАНТ 4: Показ QR-кода с data URI (fallback)
+  const btn4 = createPDFButton('4️⃣ Показать QR-код (data URI)', () => {
+    if (modal.parentNode) document.body.removeChild(modal)
+    showPDFQRCode(pdfDataUri, fileName, methodName)
+  })
+  
+  // ВАРИАНТ 5: Показ base64 для копирования (fallback)
+  const btn5 = createPDFButton('5️⃣ Показать base64 для копирования', () => {
+    if (modal.parentNode) document.body.removeChild(modal)
+    showPDFBase64(pdfDataUri, fileName, methodName)
+  })
+  
+  buttonsContainer.appendChild(btn1)
+  buttonsContainer.appendChild(btn2)
+  buttonsContainer.appendChild(btn3)
+  buttonsContainer.appendChild(btn4)
+  buttonsContainer.appendChild(btn5)
+  
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = '✕'
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all 0.3s;
+  `
+  
+  closeBtn.onmouseover = () => {
+    closeBtn.style.background = 'rgba(255, 215, 0, 0.2)'
+    closeBtn.style.borderColor = '#FFD700'
+    closeBtn.style.color = '#FFD700'
+  }
+  closeBtn.onmouseout = () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+    closeBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+    closeBtn.style.color = '#ffffff'
+  }
+  
+  const closeModal = () => {
+    if (modal.parentNode) {
+      document.body.removeChild(modal)
+    }
+  }
+  
+  closeBtn.onclick = closeModal
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal()
+    }
+  }
+  
+  content.appendChild(closeBtn)
+  content.appendChild(title)
+  content.appendChild(text)
+  content.appendChild(buttonsContainer)
+  modal.appendChild(content)
+  document.body.appendChild(modal)
+  
+  setTimeout(() => {
+    if (modal.parentNode) {
+      closeModal()
+    }
+  }, 300000) // 5 минут
+}
+
+// ВАРИАНТ 1: Открытие бота через openTelegramLink с параметрами
+function sendPDFViaTelegramLink(pdfBlob, pdfDataUri, fileName, methodName, tg) {
+  if (!tg) {
+    alert('Telegram WebApp не доступен')
+    return
+  }
+  
+  try {
+    // Получаем данные пользователя
+    const user = tg.initDataUnsafe?.user
+    const userId = user?.id || 'unknown'
+    
+    // Создаем короткий идентификатор файла на основе данных
+    const fileId = btoa(`${userId}_${Date.now()}_${methodName}`).substring(0, 20)
+    
+    // Сохраняем PDF в localStorage с этим ID
+    try {
+      localStorage.setItem(`pdf_${fileId}`, pdfDataUri)
+      localStorage.setItem(`pdf_${fileId}_name`, fileName)
+      localStorage.setItem(`pdf_${fileId}_method`, methodName)
+      localStorage.setItem(`pdf_${fileId}_time`, Date.now().toString())
+    } catch (e) {
+      console.error('Ошибка сохранения в localStorage:', e)
+    }
+    
+    // Открываем бота с параметрами
+    const botUsername = 'SpaceGrowthBot'
+    const botUrl = `https://t.me/${botUsername}?start=pdf_${fileId}`
+    
+    if (tg.openTelegramLink) {
+      tg.openTelegramLink(botUrl)
+      alert(`Бот откроется с ID файла: ${fileId}\nБот должен получить файл по этому ID.`)
+    } else if (tg.openLink) {
+      tg.openLink(botUrl)
+      alert(`Бот откроется с ID файла: ${fileId}\nБот должен получить файл по этому ID.`)
+    } else {
+      window.open(botUrl, '_blank')
+    }
+  } catch (error) {
+    console.error('Ошибка при отправке через Telegram Link:', error)
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+// ВАРИАНТ 2: Использование sendData для передачи данных боту
+function sendPDFViaSendData(pdfBlob, pdfDataUri, fileName, methodName, tg) {
+  if (!tg) {
+    alert('Telegram WebApp не доступен')
+    return
+  }
+  
+  try {
+    // Создаем JSON с данными о PDF
+    const pdfData = {
+      type: 'pdf',
+      fileName: fileName,
+      methodName: methodName,
+      dataUri: pdfDataUri.substring(0, 10000), // Ограничиваем размер для sendData
+      timestamp: Date.now()
+    }
+    
+    const dataString = JSON.stringify(pdfData)
+    
+    // Используем sendData для передачи данных боту
+    if (tg.sendData) {
+      tg.sendData(dataString)
+      alert('Данные отправлены боту через sendData. Проверьте сообщения от бота.')
+    } else {
+      alert('sendData недоступен в этом приложении')
+    }
+  } catch (error) {
+    console.error('Ошибка при отправке через sendData:', error)
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+// ВАРИАНТ 3: Создание ссылки на файл и открытие бота
+async function sendPDFViaFileLink(pdfBlob, pdfDataUri, fileName, methodName, tg) {
+  if (!tg) {
+    alert('Telegram WebApp не доступен')
+    return
+  }
+  
+  try {
+    // Конвертируем blob в base64 для передачи
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64 = reader.result.split(',')[1]
+      
+      // Создаем короткую ссылку на файл (используя первые символы base64 как ID)
+      const fileHash = btoa(base64.substring(0, 100)).substring(0, 20).replace(/[+/=]/g, '')
+      
+      // Сохраняем в localStorage
+      try {
+        localStorage.setItem(`pdf_link_${fileHash}`, pdfDataUri)
+        localStorage.setItem(`pdf_link_${fileHash}_name`, fileName)
+      } catch (e) {
+        console.error('Ошибка сохранения:', e)
+      }
+      
+      // Открываем бота с параметрами
+      const botUsername = 'SpaceGrowthBot'
+      const botUrl = `https://t.me/${botUsername}?start=file_${fileHash}`
+      
+      if (tg.openTelegramLink) {
+        tg.openTelegramLink(botUrl)
+        alert(`Открывается бот со ссылкой на файл.\nХеш файла: ${fileHash}`)
+      } else if (tg.openLink) {
+        tg.openLink(botUrl)
+        alert(`Открывается бот со ссылкой на файл.\nХеш файла: ${fileHash}`)
+      } else {
+        window.open(botUrl, '_blank')
+      }
+    }
+    reader.readAsDataURL(pdfBlob)
+  } catch (error) {
+    console.error('Ошибка при создании ссылки на файл:', error)
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+// Функция для показа PDF на мобильных устройствах (старая версия, для fallback)
 function showPDFMobileModal(pdfDataUri, fileName, methodName) {
   const modal = document.createElement('div')
   modal.style.cssText = `
@@ -2000,21 +2276,12 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
         
         // Для мобильных устройств и Telegram показываем PDF встроенным на странице
         if (isMobile || isTelegram) {
-          // Конвертируем PDF в base64 data URL
+          // Создаем blob и data URI
+          const pdfBlob = pdf.output('blob')
           const pdfDataUri = pdf.output('datauristring')
           
-          // Автоматически открываем PDF в новом окне браузера
-          try {
-            const newWindow = window.open(pdfDataUri, '_blank')
-            if (!newWindow) {
-              // Если открытие заблокировано, показываем модальное окно с вариантами
-              showPDFMobileModal(pdfDataUri, fileName, methodName)
-            }
-          } catch (error) {
-            console.error('Ошибка при открытии PDF:', error)
-            // Если ошибка, показываем модальное окно с вариантами
-            showPDFMobileModal(pdfDataUri, fileName, methodName)
-          }
+          // Показываем модальное окно с вариантами отправки через бота
+          showPDFBotModal(pdfBlob, pdfDataUri, fileName, methodName)
         } else {
           // Для десктопа используем стандартный метод скачивания
           pdf.save(fileName)
