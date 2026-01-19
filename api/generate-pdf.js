@@ -1,49 +1,11 @@
 // Vercel Serverless Function для генерации PDF на сервере
-// Используем pdfmake для генерации PDF с поддержкой кириллицы
+// Используем Puppeteer для рендеринга HTML в PDF (решает проблему с кириллицей)
 
-import { readFile } from 'fs/promises'
-import { join, createRequire } from 'module'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
 
-// Для динамического импорта CommonJS модулей
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const require = createRequire(import.meta.url)
-
-// Встроенные шрифты pdfmake для поддержки кириллицы
-// Используем стандартные шрифты из pdfmake, которые поддерживают UTF-8
-let pdfmakeFonts = null
-
-async function loadPdfMakeFonts() {
-  if (pdfmakeFonts) return pdfmakeFonts
-  
-  try {
-    // Пытаемся загрузить шрифты Roboto из pdfmake/fonts/Roboto/
-    const robotoPath = join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto')
-    
-    console.log('🔍 Пытаемся загрузить шрифты из:', robotoPath)
-    
-    pdfmakeFonts = {
-      Roboto: {
-        normal: await readFile(join(robotoPath, 'Roboto-Regular.ttf')),
-        bold: await readFile(join(robotoPath, 'Roboto-Medium.ttf')),
-        italics: await readFile(join(robotoPath, 'Roboto-Italic.ttf')),
-        bolditalics: await readFile(join(robotoPath, 'Roboto-MediumItalic.ttf'))
-      }
-    }
-    
-    console.log('✅ Шрифты Roboto загружены успешно')
-    return pdfmakeFonts
-  } catch (error) {
-    console.error('❌ Ошибка загрузки шрифтов Roboto:', error.message)
-    console.error('Error stack:', error.stack)
-    // Используем пустой объект - pdfmake будет использовать стандартные шрифты
-    // Стандартные шрифты не поддерживают кириллицу, но это позволит избежать ошибки
-    pdfmakeFonts = {}
-    return pdfmakeFonts
-  }
-}
+// Настройка Chromium для Vercel
+chromium.setGraphicsMode(false)
 
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
@@ -203,155 +165,55 @@ export default async function handler(req, res) {
     let base64Data = null
     let pdfBase64 = null
     
-    // Генерируем PDF используя pdfmake (с поддержкой кириллицы)
+    // Генерируем PDF используя Puppeteer (рендеринг HTML в PDF - решает проблему с кириллицей)
     try {
-      console.log('🚀 Запуск генерации PDF через pdfmake...')
+      console.log('🚀 Запуск генерации PDF через Puppeteer (HTML -> PDF)...')
       
-      const textContent = resultData?.result || 'Результат расчета недоступен'
-      
-      // Загружаем шрифты для pdfmake
-      const fonts = await loadPdfMakeFonts()
-      
-      // Импортируем CommonJS модули pdfmake через require
-      const PdfPrinter = require('pdfmake/js/Printer.js').default
-      const virtualfs = require('pdfmake/js/virtual-fs.js').default
-      const URLResolver = require('pdfmake/js/URLResolver.js').default
-      
-      // Создаем URLResolver для pdfmake
-      const urlResolver = new URLResolver(virtualfs)
-      
-      // Создаем принтер PDF
-      const printer = new PdfPrinter(fonts, virtualfs, urlResolver)
-      
-      // Определяем документ PDF
-      const docDefinition = {
-        pageSize: 'A4',
-        pageMargins: [20, 20, 20, 20],
-        defaultStyle: {
-          font: fonts.Roboto ? 'Roboto' : 'Helvetica',
-          fontSize: 11,
-          color: '#282828'
-        },
-        content: [
-          // Золотая полоса сверху (симуляция через цветной блок)
-          {
-            canvas: [
-              {
-                type: 'rect',
-                x: 0,
-                y: 0,
-                w: 595, // ширина A4 в точках
-                h: 13.23, // ~45px в мм
-                color: '#FFD700'
-              }
-            ],
-            absolutePosition: { x: 0, y: 0 }
-          },
-          
-          // Темный блок для заголовка
-          {
-            canvas: [
-              {
-                type: 'rect',
-                x: 0,
-                y: 13.23,
-                w: 595,
-                h: 50,
-                color: '#191923'
-              }
-            ],
-            absolutePosition: { x: 0, y: 13.23 }
-          },
-          
-          // Заголовок
-          {
-            text: methodName,
-            fontSize: 20,
-            color: '#FFD700',
-            bold: true,
-            alignment: 'center',
-            margin: [0, 70, 0, 20]
-          },
-          
-          // Дата рождения
-          {
-            text: `📅 Дата рождения: ${birthDate}`,
-            fontSize: 12,
-            color: '#191923',
-            alignment: 'center',
-            margin: [0, 0, 0, 15],
-            background: '#FFF9E6',
-            fillColor: '#FFF9E6'
-          },
-          
-          // Разделительная линия
-          {
-            canvas: [
-              {
-                type: 'line',
-                x1: 85,
-                x2: 510,
-                y1: 0,
-                y2: 0,
-                lineWidth: 2,
-                lineColor: '#FFD700'
-              }
-            ],
-            margin: [0, 0, 0, 15]
-          },
-          
-          // Основной текст результата
-          {
-            text: textContent,
-            fontSize: 11,
-            color: '#282828',
-            alignment: 'justify',
-            lineHeight: 1.8,
-            margin: [0, 0, 0, 20]
-          },
-          
-          // Ключевое значение, если есть
-          ...(resultData?.value ? [{
-            text: `✨ Ключевое значение: ${resultData.value}`,
-            fontSize: 12,
-            color: '#C89600',
-            bold: true,
-            margin: [0, 10, 0, 0],
-            background: '#FFF6E6',
-            fillColor: '#FFF6E6'
-          }] : [])
-        ],
-        info: {
-          title: methodName,
-          author: 'SpaceGrow',
-          subject: 'Результат расчета'
-        }
-      }
-
-      // Генерируем PDF (createPdfKitDocument возвращает Promise)
-      const pdfDoc = await printer.createPdfKitDocument(docDefinition)
-      
-      // Конвертируем в Buffer
-      const chunks = []
-      pdfDoc.on('data', (chunk) => chunks.push(chunk))
-      
-      pdfDoc.end()
-      
-      // Ждем завершения генерации
-      await new Promise((resolve) => {
-        pdfDoc.on('end', resolve)
+      // Запускаем браузер с Chromium для Vercel
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
       })
       
-      pdfBuffer = Buffer.concat(chunks)
-      
-      // Конвертируем в base64 для клиента
-      base64Data = pdfBuffer.toString('base64')
-      pdfBase64 = `data:application/pdf;base64,${base64Data}`
-      
-      console.log('✅ PDF сгенерирован через pdfmake, размер:', pdfBuffer.length, 'bytes')
+      try {
+        // Создаем новую страницу
+        const page = await browser.newPage()
+        
+        // Устанавливаем контент HTML
+        await page.setContent(htmlContent, {
+          waitUntil: 'networkidle0'
+        })
+        
+        // Ждем загрузки шрифтов Google Fonts
+        await page.evaluateHandle(() => document.fonts.ready)
+        
+        // Генерируем PDF
+        pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: {
+            top: '0mm',
+            right: '0mm',
+            bottom: '0mm',
+            left: '0mm'
+          }
+        })
+        
+        // Конвертируем в base64 для клиента
+        base64Data = pdfBuffer.toString('base64')
+        pdfBase64 = `data:application/pdf;base64,${base64Data}`
+        
+        console.log('✅ PDF сгенерирован через Puppeteer, размер:', pdfBuffer.length, 'bytes')
+        
+      } finally {
+        // Закрываем браузер
+        await browser.close()
+      }
       
     } catch (pdfError) {
-      console.error('❌ Ошибка генерации PDF через pdfmake:', pdfError)
+      console.error('❌ Ошибка генерации PDF через Puppeteer:', pdfError)
       console.error('Error stack:', pdfError.stack)
       throw new Error(`Ошибка генерации PDF: ${pdfError.message}`)
     }
