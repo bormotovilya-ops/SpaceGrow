@@ -1174,21 +1174,36 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
         const tg = window.Telegram?.WebApp || window.TelegramWebApp
         const isTelegram = !!tg
         
-        // Для мобильных устройств используем window.open (работает надежнее)
+        // Для мобильных устройств и Telegram используем метод с ссылкой (более надежно)
         if (isMobile || isTelegram) {
-          // Создаем blob и открываем в новом окне
+          // Создаем blob
           const pdfBlob = pdf.output('blob')
           const url = URL.createObjectURL(pdfBlob)
           
-          // Открываем PDF в новом окне/вкладке
-          const newWindow = window.open(url, '_blank')
+          // Создаем невидимую ссылку и автоматически кликаем по ней
+          const link = document.createElement('a')
+          link.href = url
+          link.download = fileName
+          link.style.display = 'none'
+          link.style.position = 'absolute'
+          link.style.left = '-9999px'
+          document.body.appendChild(link)
           
-          if (!newWindow) {
-            // Если открытие заблокировано (popup blocker), создаем видимую ссылку
-            const link = document.createElement('a')
-            link.href = url
-            link.download = fileName
-            link.target = '_blank'
+          // Кликаем по ссылке для скачивания
+          try {
+            link.click()
+            
+            // Удаляем ссылку через небольшую задержку
+            setTimeout(() => {
+              if (link.parentNode) {
+                document.body.removeChild(link)
+              }
+              // Освобождаем URL через 5 секунд
+              setTimeout(() => URL.revokeObjectURL(url), 5000)
+            }, 100)
+          } catch (error) {
+            console.error('Ошибка при скачивании PDF:', error)
+            // Если автоматический клик не сработал, показываем видимую ссылку
             link.style.display = 'block'
             link.style.position = 'fixed'
             link.style.top = '50%'
@@ -1203,22 +1218,14 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
             link.style.zIndex = '999999'
             link.textContent = 'Нажмите для скачивания PDF'
             link.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'
-            document.body.appendChild(link)
             
-            // Автоматически кликаем
+            // Удаляем ссылку через 10 секунд
             setTimeout(() => {
-              link.click()
-              // Удаляем ссылку через 2 секунды
-              setTimeout(() => {
-                if (link.parentNode) {
-                  document.body.removeChild(link)
-                }
-                setTimeout(() => URL.revokeObjectURL(url), 5000)
-              }, 2000)
-            }, 100)
-          } else {
-            // Освобождаем URL через 15 секунд после открытия
-            setTimeout(() => URL.revokeObjectURL(url), 15000)
+              if (link.parentNode) {
+                document.body.removeChild(link)
+              }
+              setTimeout(() => URL.revokeObjectURL(url), 5000)
+            }, 10000)
           }
         } else {
           // Для десктопа используем стандартный метод
