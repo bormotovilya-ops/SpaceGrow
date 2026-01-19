@@ -1,7 +1,9 @@
 // Vercel Serverless Function для генерации PDF на сервере
-// Используем jsPDF для генерации PDF (с правильной обработкой UTF-8)
+// Используем pdfmake для генерации PDF с поддержкой кириллицы
 
-import { jsPDF } from 'jspdf'
+import PdfPrinter from 'pdfmake'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
@@ -161,80 +163,167 @@ export default async function handler(req, res) {
     let base64Data = null
     let pdfBase64 = null
     
-    // Генерируем PDF используя jsPDF
+    // Генерируем PDF используя pdfmake (с поддержкой кириллицы)
     try {
-      console.log('🚀 Запуск генерации PDF через jsPDF...')
+      console.log('🚀 Запуск генерации PDF через pdfmake...')
       
-      // Создаем PDF документ
-      const pdf = new jsPDF({
-        unit: 'mm',
-        format: 'a4',
-        orientation: 'portrait',
-        compress: true
-      })
-
-      // Настройка для правильного отображения текста
-      pdf.setProperties({
-        title: methodName,
-        author: 'SpaceGrow',
-        subject: 'Результат расчета',
-        keywords: 'PDF, результат'
-      })
-
-      // Заголовок
-      pdf.setFontSize(20)
-      pdf.setTextColor(255, 215, 0)
-      // Используем text() напрямую - jsPDF поддерживает UTF-8
-      pdf.text(methodName, 105, 30, { align: 'center' })
-      
-      // Дата рождения
-      pdf.setFontSize(12)
-      pdf.setTextColor(0, 0, 0)
-      pdf.text(`Дата рождения: ${birthDate}`, 20, 50)
-      
-      // Разделительная линия
-      pdf.setDrawColor(255, 215, 0)
-      pdf.setLineWidth(0.5)
-      pdf.line(20, 55, 190, 55)
-      
-      // Основной текст результата
-      pdf.setFontSize(11)
-      pdf.setTextColor(40, 40, 40)
       const textContent = resultData?.result || 'Результат расчета недоступен'
       
-      // Разбиваем текст на строки (jsPDF автоматически обрабатывает длинные строки)
-      const lines = pdf.splitTextToSize(textContent, 170)
+      // Загружаем шрифты для pdfmake (с поддержкой кириллицы)
+      // На Vercel используем пути относительно process.cwd()
+      const fontPath = join(process.cwd(), 'node_modules', 'pdfmake', 'build', 'fonts', 'Roboto')
       
-      // Добавляем текст (jsPDF поддерживает UTF-8 через text())
-      let yPos = 65
-      for (const line of lines) {
-        if (yPos > pdf.internal.pageSize.getHeight() - 30) {
-          pdf.addPage()
-          yPos = 20
+      let fonts
+      try {
+        // Пытаемся загрузить шрифты из node_modules
+        fonts = {
+          Roboto: {
+            normal: await readFile(join(fontPath, 'Roboto-Regular.ttf')),
+            bold: await readFile(join(fontPath, 'Roboto-Medium.ttf')),
+            italics: await readFile(join(fontPath, 'Roboto-Italic.ttf')),
+            bolditalics: await readFile(join(fontPath, 'Roboto-MediumItalic.ttf'))
+          }
         }
-        pdf.text(line, 20, yPos)
-        yPos += 7
+        console.log('✅ Шрифты Roboto загружены')
+      } catch (fontError) {
+        console.warn('⚠️ Не удалось загрузить шрифты, используем стандартные:', fontError.message)
+        // Fallback: используем стандартные шрифты (могут не поддерживать кириллицу)
+        fonts = {}
       }
       
-      // Ключевое значение, если есть
-      if (resultData?.value) {
-        const finalYPos = pdf.internal.pageSize.getHeight() - 40
-        pdf.setFontSize(12)
-        pdf.setTextColor(200, 150, 0)
-        pdf.text(`Ключевое значение: ${resultData.value}`, 20, finalYPos)
+      // Создаем принтер PDF
+      const printer = new PdfPrinter(fonts)
+      
+      // Определяем документ PDF
+      const docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [20, 20, 20, 20],
+        defaultStyle: {
+          font: Object.keys(fonts).length > 0 ? 'Roboto' : 'Helvetica',
+          fontSize: 11,
+          color: '#282828'
+        },
+        content: [
+          // Золотая полоса сверху (симуляция через цветной блок)
+          {
+            canvas: [
+              {
+                type: 'rect',
+                x: 0,
+                y: 0,
+                w: 595, // ширина A4 в точках
+                h: 13.23, // ~45px в мм
+                color: '#FFD700'
+              }
+            ],
+            absolutePosition: { x: 0, y: 0 }
+          },
+          
+          // Темный блок для заголовка
+          {
+            canvas: [
+              {
+                type: 'rect',
+                x: 0,
+                y: 13.23,
+                w: 595,
+                h: 50,
+                color: '#191923'
+              }
+            ],
+            absolutePosition: { x: 0, y: 13.23 }
+          },
+          
+          // Заголовок
+          {
+            text: methodName,
+            fontSize: 20,
+            color: '#FFD700',
+            bold: true,
+            alignment: 'center',
+            margin: [0, 70, 0, 20]
+          },
+          
+          // Дата рождения
+          {
+            text: `📅 Дата рождения: ${birthDate}`,
+            fontSize: 12,
+            color: '#191923',
+            alignment: 'center',
+            margin: [0, 0, 0, 15],
+            background: '#FFF9E6',
+            fillColor: '#FFF9E6'
+          },
+          
+          // Разделительная линия
+          {
+            canvas: [
+              {
+                type: 'line',
+                x1: 85,
+                x2: 510,
+                y1: 0,
+                y2: 0,
+                lineWidth: 2,
+                lineColor: '#FFD700'
+              }
+            ],
+            margin: [0, 0, 0, 15]
+          },
+          
+          // Основной текст результата
+          {
+            text: textContent,
+            fontSize: 11,
+            color: '#282828',
+            alignment: 'justify',
+            lineHeight: 1.8,
+            margin: [0, 0, 0, 20]
+          },
+          
+          // Ключевое значение, если есть
+          ...(resultData?.value ? [{
+            text: `✨ Ключевое значение: ${resultData.value}`,
+            fontSize: 12,
+            color: '#C89600',
+            bold: true,
+            margin: [0, 10, 0, 0],
+            background: '#FFF6E6',
+            fillColor: '#FFF6E6'
+          }] : [])
+        ],
+        info: {
+          title: methodName,
+          author: 'SpaceGrow',
+          subject: 'Результат расчета'
+        }
       }
 
-      // Генерируем PDF как Buffer (для отправки в Telegram)
-      pdfBuffer = Buffer.from(pdf.output('arraybuffer'))
+      // Генерируем PDF
+      const pdfDoc = printer.createPdfKitDocument(docDefinition)
+      
+      // Конвертируем в Buffer
+      const chunks = []
+      pdfDoc.on('data', (chunk) => chunks.push(chunk))
+      pdfDoc.on('end', () => {})
+      
+      pdfDoc.end()
+      
+      // Ждем завершения генерации
+      await new Promise((resolve) => {
+        pdfDoc.on('end', resolve)
+      })
+      
+      pdfBuffer = Buffer.concat(chunks)
       
       // Конвертируем в base64 для клиента
       base64Data = pdfBuffer.toString('base64')
       pdfBase64 = `data:application/pdf;base64,${base64Data}`
       
-      console.log('✅ PDF сгенерирован через jsPDF, размер:', pdfBuffer.length, 'bytes')
+      console.log('✅ PDF сгенерирован через pdfmake, размер:', pdfBuffer.length, 'bytes')
       
     } catch (pdfError) {
-      console.error('❌ Ошибка генерации PDF через jsPDF:', pdfError)
+      console.error('❌ Ошибка генерации PDF через pdfmake:', pdfError)
       console.error('Error stack:', pdfError.stack)
       throw new Error(`Ошибка генерации PDF: ${pdfError.message}`)
     }
