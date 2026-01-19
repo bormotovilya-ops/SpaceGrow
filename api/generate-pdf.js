@@ -237,48 +237,79 @@ export default async function handler(req, res) {
         
         // Создаем новую страницу с изображением и генерируем PDF
         console.log('📄 Создаем PDF из скриншота...')
-        const pdfPage = await browser.newPage()
+        let pdfPage = null
         
-        // Создаем HTML с изображением, оптимизированным для A4
-        await pdfPage.setContent(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body {
-                margin: 0;
-                padding: 0;
-              }
-              img {
-                width: 100%;
-                height: auto;
-                display: block;
-              }
-            </style>
-          </head>
-          <body>
-            <img src="data:image/png;base64,${imageBase64}" alt="PDF Content" />
-          </body>
-          </html>
-        `, { waitUntil: 'networkidle0' })
-        
-        // Генерируем PDF из изображения
-        pdfBuffer = await pdfPage.pdf({
-          format: 'A4',
-          printBackground: true,
-          margin: {
-            top: '0mm',
-            right: '0mm',
-            bottom: '0mm',
-            left: '0mm'
+        try {
+          pdfPage = await browser.newPage()
+          
+          // Устанавливаем размер страницы для A4
+          await pdfPage.setViewport({
+            width: 794, // A4 width in pixels at 96 DPI
+            height: 1123, // A4 height in pixels at 96 DPI
+            deviceScaleFactor: 1
+          })
+          
+          // Создаем HTML с изображением, оптимизированным для A4
+          await pdfPage.setContent(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                * {
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+                }
+                body {
+                  margin: 0;
+                  padding: 0;
+                  width: 794px;
+                  height: auto;
+                }
+                img {
+                  width: 100%;
+                  height: auto;
+                  display: block;
+                }
+              </style>
+            </head>
+            <body>
+              <img src="data:image/png;base64,${imageBase64}" alt="PDF Content" />
+            </body>
+            </html>
+          `, { 
+            waitUntil: 'load',
+            timeout: 30000
+          })
+          
+          // Дополнительная пауза для загрузки изображения
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // Генерируем PDF из изображения
+          pdfBuffer = await pdfPage.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: {
+              top: '0mm',
+              right: '0mm',
+              bottom: '0mm',
+              left: '0mm'
+            }
+          })
+          
+          if (!pdfBuffer || pdfBuffer.length === 0) {
+            throw new Error('PDF buffer пустой после генерации из скриншота')
           }
-        })
-        
-        if (!pdfBuffer || pdfBuffer.length === 0) {
-          throw new Error('PDF buffer пустой после генерации из скриншота')
+          
+          console.log('✅ PDF создан из скриншота, размер:', pdfBuffer.length, 'bytes')
+          
+        } finally {
+          // Закрываем страницу с PDF
+          if (pdfPage) {
+            await pdfPage.close()
+          }
         }
-        
-        console.log('✅ PDF создан из скриншота, размер:', pdfBuffer.length, 'bytes')
         
         // Конвертируем в base64 для клиента
         base64Data = pdfBuffer.toString('base64')
