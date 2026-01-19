@@ -1268,14 +1268,6 @@
     padding: 15px;
   }
 
-  .action-zone-mirror .action-zone-title {
-    font-size: 18px;
-  }
-
-  .action-zone-mirror .action-zone-text {
-    font-size: 12px;
-  }
-
   .mirror-dialog-messages {
     min-height: 120px;
     max-height: calc(100vh - 250px);
