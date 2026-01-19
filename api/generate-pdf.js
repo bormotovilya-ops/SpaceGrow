@@ -1,6 +1,5 @@
 // Vercel Serverless Function для генерации PDF на сервере
 import { jsPDF } from 'jspdf'
-import FormData from 'form-data'
 
 export default async function handler(req, res) {
   // Разрешаем только POST запросы
@@ -67,36 +66,74 @@ export default async function handler(req, res) {
 
     // Отправляем PDF в Telegram бот, если указан telegramUserId
     let telegramSent = false
+    
     if (telegramUserId && process.env.TELEGRAM_BOT_TOKEN) {
       try {
         // Конвертируем base64 в Buffer
         const pdfBuffer = Buffer.from(base64Data, 'base64')
         
-        // Создаем FormData для отправки файла
-        const formData = new FormData()
-        formData.append('chat_id', telegramUserId.toString())
-        formData.append('caption', `📄 ${methodName}\nДата рождения: ${birthDate}${resultData?.value ? `\nКлючевое значение: ${resultData.value}` : ''}`)
-        formData.append('document', pdfBuffer, {
-          filename: fileName,
-          contentType: 'application/pdf'
-        })
+        // Создаем multipart/form-data вручную (более надежно для Vercel)
+        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
+        const crlf = '\r\n'
+        const parts = []
+        
+        // chat_id
+        parts.push(Buffer.from(`--${boundary}${crlf}`, 'utf-8'))
+        parts.push(Buffer.from(`Content-Disposition: form-data; name="chat_id"${crlf}${crlf}`, 'utf-8'))
+        parts.push(Buffer.from(`${telegramUserId}${crlf}`, 'utf-8'))
+        
+        // caption
+        const caption = `📄 ${methodName}\nДата рождения: ${birthDate}${resultData?.value ? `\nКлючевое значение: ${resultData.value}` : ''}`
+        parts.push(Buffer.from(`--${boundary}${crlf}`, 'utf-8'))
+        parts.push(Buffer.from(`Content-Disposition: form-data; name="caption"${crlf}${crlf}`, 'utf-8'))
+        parts.push(Buffer.from(`${caption}${crlf}`, 'utf-8'))
+        
+        // document
+        parts.push(Buffer.from(`--${boundary}${crlf}`, 'utf-8'))
+        parts.push(Buffer.from(`Content-Disposition: form-data; name="document"; filename="${fileName}"${crlf}`, 'utf-8'))
+        parts.push(Buffer.from(`Content-Type: application/pdf${crlf}${crlf}`, 'utf-8'))
+        parts.push(pdfBuffer)
+        parts.push(Buffer.from(`${crlf}--${boundary}--${crlf}`, 'utf-8'))
+        
+        // Объединяем все части
+        const fullBody = Buffer.concat(parts)
         
         // Отправляем PDF в Telegram
         const botResponse = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendDocument`, {
           method: 'POST',
-          body: formData,
-          headers: formData.getHeaders()
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Content-Length': fullBody.length.toString()
+          },
+          body: fullBody
         })
+        
+        const responseText = await botResponse.text()
+        console.log('Telegram API Response Status:', botResponse.status)
+        console.log('Telegram API Response:', responseText.substring(0, 500))
         
         if (botResponse.ok) {
           telegramSent = true
           console.log('✅ PDF успешно отправлен в Telegram')
         } else {
-          const errorText = await botResponse.text()
-          console.error('❌ Ошибка отправки PDF в Telegram:', errorText)
-          
-          // Fallback: отправляем текстовое сообщение
+          // Если ошибка - пытаемся разобрать JSON ошибки
+          let errorMsg = 'Unknown error'
           try {
+            const errorObj = JSON.parse(responseText)
+            errorMsg = errorObj.description || responseText
+          } catch {
+            errorMsg = responseText
+          }
+          
+          console.error('❌ Ошибка отправки PDF в Telegram:', errorMsg)
+          
+          // Отправляем сообщение с уведомлением и инструкцией
+          try {
+            const message = `📄 Ваш PDF "${methodName}" готов!\n\n` +
+              `Дата рождения: ${birthDate}\n` +
+              `Ключевое значение: ${resultData?.value || 'Н/Д'}\n\n` +
+              `Файл доступен для скачивания в приложении.`
+            
             await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
               method: 'POST',
               headers: {
@@ -104,18 +141,26 @@ export default async function handler(req, res) {
               },
               body: JSON.stringify({
                 chat_id: telegramUserId,
-                text: `📄 Ваш PDF "${methodName}" готов!\n\nДата рождения: ${birthDate}\nКлючевое значение: ${resultData?.value || 'Н/Д'}\n\nСкачайте файл в приложении.`
+                text: message
               })
             })
           } catch (msgError) {
             console.error('Ошибка отправки сообщения:', msgError)
           }
+          
+          throw new Error(`Telegram API error: ${errorMsg}`)
         }
       } catch (error) {
-        console.error('❌ Ошибка отправки в Telegram бот:', error)
+        console.error('❌ Ошибка отправки в Telegram бот:', error.message)
+        console.error('Error stack:', error.stack)
         
-        // Fallback: отправляем текстовое сообщение
+        // Отправляем сообщение с информацией
         try {
+          const message = `📄 Ваш PDF "${methodName}" готов!\n\n` +
+            `Дата рождения: ${birthDate}\n` +
+            `Ключевое значение: ${resultData?.value || 'Н/Д'}\n\n` +
+            `Файл доступен для скачивания в приложении.`
+          
           await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
             method: 'POST',
             headers: {
@@ -123,7 +168,7 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
               chat_id: telegramUserId,
-              text: `📄 Ваш PDF "${methodName}" готов!\n\nДата рождения: ${birthDate}\nКлючевое значение: ${resultData?.value || 'Н/Д'}\n\nСкачайте файл в приложении.`
+              text: message
             })
           })
         } catch (msgError) {
