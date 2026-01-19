@@ -879,7 +879,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
       case 'tarot':
         return (
-          <div className="action-zone-content">
+          <div className="action-zone-content action-zone-tarot">
             <h2 className="action-zone-title">Расклад Судьбы</h2>
             <p className="action-zone-text">
               Выберите одну из карт, чтобы узнать о событиях ближайшего будущего.
