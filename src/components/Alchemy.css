@@ -1061,13 +1061,19 @@
   
   .action-zone-mirror.action-zone-content {
     padding: 20px;
+    padding-top: 30px;
+  }
+  
+  .action-zone-mirror {
+    padding-top: 30px;
   }
 
   .mirror-dialog-messages {
     min-height: 120px;
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 380px);
     padding: 10px;
     gap: 10px;
+    margin-top: 10px;
   }
 
   .mirror-message {
@@ -1088,9 +1094,10 @@
   }
 
   .mirror-input-container {
-    padding-top: 15px;
-    padding-bottom: 8px;
+    padding: 15px 0;
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .mirror-input {
@@ -1272,9 +1279,10 @@
 
   .mirror-dialog-messages {
     min-height: 120px;
-    max-height: calc(100vh - 250px);
+    max-height: calc(100vh - 320px);
     padding: 6px;
     gap: 8px;
+    margin-top: 10px;
   }
 
   .mirror-message {
@@ -1294,9 +1302,10 @@
   }
 
   .mirror-input-container {
-    padding-top: 12px;
-    padding-bottom: 6px;
+    padding: 12px 0;
     gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .mirror-input {
@@ -1395,6 +1404,7 @@
   min-height: 0;
   box-sizing: border-box;
   width: 100%;
+  scroll-padding-top: 10px;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.6),
     inset 0 0 60px rgba(255, 215, 0, 0.08),
@@ -1510,14 +1520,15 @@
   gap: 12px;
   align-items: center;
   flex-shrink: 0;
-  padding-top: 20px;
+  padding: 20px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: auto;
-  background: rgba(26, 26, 26, 0.95);
-  backdrop-filter: blur(10px);
-  padding-bottom: 80px;
+  background: transparent;
+  backdrop-filter: none;
   z-index: 10;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mirror-input {
