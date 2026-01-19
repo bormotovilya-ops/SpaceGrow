@@ -414,6 +414,13 @@
   border: none !important; /* Убираем красную рамку отладки */
 }
 
+/* В режиме отладки подсвечиваем также картинку свечи,
+   чтобы было проще подбирать координаты */
+.alchemy-container.debug-mode .alchemy-candle-image {
+  outline: 2px solid rgba(255, 0, 0, 0.7);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+}
+
 /* В режиме отладки подписи также видимы поверх зон */
 .alchemy-container.debug-mode .artifact-zone::after,
 .artifact-zone.debug-visible::after {
