@@ -738,11 +738,32 @@ const calculateAllMethods = async (dateString, timeString, cityName) => {
   }
 }
 
-// Функция для показа PDF на мобильных устройствах (только рабочие варианты)
-function showPDFMobileModal(pdfDataUri, fileName, methodName) {
+// Helper: Конвертация base64 в Blob
+function base64ToBlob(base64String) {
+  // Убираем префикс data:application/pdf;base64, если он есть
+  const base64Data = base64String.includes(',') 
+    ? base64String.split(',')[1] 
+    : base64String
+  
+  // Конвертируем base64 в бинарные данные
+  const byteCharacters = atob(base64Data)
+  const byteNumbers = new Array(byteCharacters.length)
+  
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i)
+  }
+  
+  const byteArray = new Uint8Array(byteNumbers)
+  
+  // Создаем Blob с типом application/pdf
+  return new Blob([byteArray], { type: 'application/pdf' })
+}
 
-// Функция для показа PDF на мобильных устройствах (старая версия, для fallback)
+// Функция для показа PDF на мобильных устройствах с 5 методами
 function showPDFMobileModal(pdfDataUri, fileName, methodName) {
+  // Конвертируем base64 в Blob для всех методов
+  const blob = base64ToBlob(pdfDataUri)
+  
   const modal = document.createElement('div')
   modal.style.cssText = `
     position: fixed;
@@ -800,20 +821,117 @@ function showPDFMobileModal(pdfDataUri, fileName, methodName) {
     gap: 15px;
   `
   
-  // ВАРИАНТ 1: Показ QR-кода с data URI
-  const btn1 = createPDFButton('📱 Показать QR-код', () => {
-    if (modal.parentNode) document.body.removeChild(modal)
-    showPDFQRCode(pdfDataUri, fileName, methodName)
+  // Проверка поддержки Web Share API
+  const supportsShare = navigator.share && navigator.canShare
+  
+  // КНОПКА 1: Стандартный Blob
+  const btn1 = createPDFButton('📥 Стандартный Blob', () => {
+    try {
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = fileName || 'result.pdf'
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Очищаем память после небольшой задержки
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl)
+      }, 100)
+      
+      if (modal.parentNode) document.body.removeChild(modal)
+    } catch (error) {
+      console.error('Ошибка при скачивании через Blob:', error)
+      alert('Ошибка при скачивании файла. Попробуйте другой способ.')
+    }
   })
   
-  // ВАРИАНТ 2: Показ base64 для копирования
-  const btn2 = createPDFButton('📋 Показать base64 для копирования', () => {
-    if (modal.parentNode) document.body.removeChild(modal)
-    showPDFBase64(pdfDataUri, fileName, methodName)
+  // КНОПКА 2: Поделиться (Native Share API)
+  const btn2 = createPDFButton('📤 Поделиться (Native Share)', async () => {
+    if (!supportsShare) {
+      alert('Ваш браузер не поддерживает функцию "Поделиться". Попробуйте другой способ.')
+      return
+    }
+    
+    try {
+      const file = new File([blob], fileName || 'result.pdf', { type: 'application/pdf' })
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: methodName || 'PDF результат',
+          text: 'PDF файл с результатами'
+        })
+        
+        if (modal.parentNode) document.body.removeChild(modal)
+      } else {
+        alert('Этот файл нельзя поделиться через Web Share API. Попробуйте другой способ.')
+      }
+    } catch (error) {
+      // Пользователь отменил шаринг - это нормально, не показываем ошибку
+      if (error.name !== 'AbortError') {
+        console.error('Ошибка при использовании Web Share API:', error)
+        alert('Ошибка при использовании функции "Поделиться". Попробуйте другой способ.')
+      }
+    }
+  })
+  
+  // Если Web Share API не поддерживается, скрываем кнопку
+  if (!supportsShare) {
+    btn2.style.display = 'none'
+  }
+  
+  // КНОПКА 3: Просмотр в новой вкладке
+  const btn3 = createPDFButton('🔍 Просмотр в новой вкладке', () => {
+    try {
+      const blobUrl = URL.createObjectURL(blob)
+      window.open(blobUrl, '_blank')
+      
+      // Очищаем память через некоторое время
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl)
+      }, 60000) // 60 секунд должно хватить для открытия
+      
+      if (modal.parentNode) document.body.removeChild(modal)
+    } catch (error) {
+      console.error('Ошибка при открытии в новой вкладке:', error)
+      alert('Ошибка при открытии файла. Попробуйте другой способ.')
+    }
+  })
+  
+  // КНОПКА 4: Концепция сервера (Log)
+  const btn4 = createPDFButton('🌐 Концепция сервера (Log)', () => {
+    const message = 'Здесь должен быть запрос POST /upload, который сохранит PDF на бэкенде и вернет прямую ссылку https://site.com/file.pdf'
+    console.log(message)
+    alert(message)
+  })
+  
+  // КНОПКА 5: Копировать ссылку (Base64)
+  const btn5 = createPDFButton('📋 Копировать данные в буфер', async () => {
+    try {
+      await navigator.clipboard.writeText(pdfDataUri)
+      btn5.textContent = '✓ Скопировано!'
+      btn5.style.background = 'linear-gradient(135deg, #40E0D0 0%, #20B2AA 100%)'
+      
+      setTimeout(() => {
+        btn5.textContent = '📋 Копировать данные в буфер'
+        btn5.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
+      }, 3000)
+    } catch (error) {
+      console.error('Ошибка копирования:', error)
+      alert('Ошибка копирования. Попробуйте вручную скопировать данные.')
+    }
   })
   
   buttonsContainer.appendChild(btn1)
-  buttonsContainer.appendChild(btn2)
+  if (supportsShare) {
+    buttonsContainer.appendChild(btn2)
+  }
+  buttonsContainer.appendChild(btn3)
+  buttonsContainer.appendChild(btn4)
+  buttonsContainer.appendChild(btn5)
   
   const closeBtn = document.createElement('button')
   closeBtn.textContent = '✕'
@@ -875,32 +993,51 @@ function showPDFMobileModal(pdfDataUri, fileName, methodName) {
   }, 300000) // 5 минут
 }
 
-// Функция создания кнопки для PDF
+// Функция создания кнопки для PDF (крупные кнопки для мобильных устройств)
 function createPDFButton(text, onClick) {
   const btn = document.createElement('button')
   btn.textContent = text
   btn.style.cssText = `
     width: 100%;
-    padding: 15px 20px;
+    min-height: 60px;
+    padding: 18px 24px;
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
     color: #0a0a0f;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 18px;
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
   `
   btn.onclick = onClick
+  
+  // Для мобильных устройств добавляем активное состояние при касании
+  btn.ontouchstart = () => {
+    btn.style.transform = 'scale(0.98)'
+    btn.style.boxShadow = '0 2px 10px rgba(255, 215, 0, 0.5)'
+  }
+  
+  btn.ontouchend = () => {
+    btn.style.transform = 'translateY(0)'
+    btn.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
+  }
+  
+  // Для десктопа
   btn.onmouseover = () => {
     btn.style.transform = 'translateY(-2px)'
     btn.style.boxShadow = '0 6px 25px rgba(255, 215, 0, 0.6)'
   }
+  
   btn.onmouseout = () => {
     btn.style.transform = 'translateY(0)'
     btn.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
   }
+  
   return btn
 }
 
@@ -1179,8 +1316,17 @@ function showPDFBase64(pdfDataUri, fileName, methodName) {
     font-size: 16px;
     cursor: pointer;
   `
-  closeBtn.onclick = () => {
-    if (modal.parentNode) document.body.removeChild(modal)
+  const closeModal = () => {
+    if (modal.parentNode) {
+      document.body.removeChild(modal)
+    }
+  }
+  
+  closeBtn.onclick = closeModal
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal()
+    }
   }
   
   content.appendChild(title)
@@ -2001,12 +2147,12 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
         const tg = window.Telegram?.WebApp || window.TelegramWebApp
         const isTelegram = !!tg
         
-        // Для мобильных устройств и Telegram показываем PDF встроенным на странице
+        // Для мобильных устройств и Telegram показываем модальное окно с 5 методами получения PDF
         if (isMobile || isTelegram) {
           // Конвертируем PDF в base64 data URL
           const pdfDataUri = pdf.output('datauristring')
           
-          // Показываем модальное окно только с рабочими вариантами (QR-код и base64)
+          // Показываем модальное окно с 5 кнопками для разных методов получения PDF
           showPDFMobileModal(pdfDataUri, fileName, methodName)
         } else {
           // Для десктопа используем стандартный метод скачивания
