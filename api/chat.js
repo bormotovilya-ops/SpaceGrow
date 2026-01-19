@@ -189,12 +189,19 @@ async function loadKnowledgeFiles() {
 }
 
 // Функция для загрузки промпта зеркала
-async function loadMirrorPrompt() {
+async function loadMirrorPrompt(userName = 'Путник') {
   try {
     // В Vercel Serverless Functions путь относительно корня проекта
     const mirrorPrompt = await readFile(join(process.cwd(), 'scripts', 'Mirrior.txt'), 'utf-8').catch(() => null)
     
-    return mirrorPrompt || 'Файл scripts/Mirrior.txt не найден'
+    if (!mirrorPrompt) {
+      return 'Файл scripts/Mirrior.txt не найден'
+    }
+    
+    // Заменяем плейсхолдер имени пользователя в промпте
+    const promptWithName = mirrorPrompt.replace(/\{userName\}/g, userName)
+    
+    return promptWithName
   } catch (error) {
     console.error('❌ Ошибка при загрузке промпта зеркала:', error)
     return 'Ошибка загрузки scripts/Mirrior.txt'
@@ -228,10 +235,10 @@ function truncateText(text, maxChars = 5000) {
 }
 
 // Функция для формирования полного промпта с файлами знаний
-async function buildSystemContext(shouldAddCTA = false, promptType = 'profile') {
+async function buildSystemContext(shouldAddCTA = false, promptType = 'profile', userName = 'Путник') {
   // Если это зеркало, используем специальный промпт
   if (promptType === 'mirror') {
-    const mirrorPrompt = await loadMirrorPrompt()
+    const mirrorPrompt = await loadMirrorPrompt(userName)
     return mirrorPrompt
   }
 
@@ -431,7 +438,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  const { message, messageCount = 0, promptType = 'profile' } = req.body
+  const { message, messageCount = 0, promptType = 'profile', userName = 'Путник' } = req.body
 
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
@@ -448,6 +455,7 @@ export default async function handler(req, res) {
   console.log('🔍 API Debug:', {
     USE_MOCK,
     promptType,
+    userName,
     hasGROQ_API_KEY: !!GROQ_API_KEY,
     GROQ_API_KEY_preview: GROQ_API_KEY ? GROQ_API_KEY.substring(0, 15) + '...' : 'missing',
     GROQ_API_KEY_length: GROQ_API_KEY ? GROQ_API_KEY.length : 0,
@@ -456,7 +464,7 @@ export default async function handler(req, res) {
   })
 
   // Загружаем файлы знаний и формируем полный промпт
-  const systemContext = await buildSystemContext(shouldAddCTA, promptType)
+  const systemContext = await buildSystemContext(shouldAddCTA, promptType, userName)
 
   if (USE_MOCK) {
     console.log('⚠️ Using mock response: USE_MOCK_RESPONSES=true')

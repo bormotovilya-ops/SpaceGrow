@@ -173,7 +173,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       // Считаем количество сообщений пользователя (только user сообщения)
       const userMessageCount = mirrorMessages.filter(msg => msg.role === 'user').length + 1
       
-      console.log('📡 Отправка запроса к /api/chat...', { messageCount: userMessageCount, promptType: 'mirror' })
+      console.log('📡 Отправка запроса к /api/chat...', { messageCount: userMessageCount, promptType: 'mirror', userName })
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -182,7 +182,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         body: JSON.stringify({ 
           message: userQuestion,
           messageCount: userMessageCount,
-          promptType: 'mirror'
+          promptType: 'mirror',
+          userName: userName || 'Путник'
         }),
       })
 
