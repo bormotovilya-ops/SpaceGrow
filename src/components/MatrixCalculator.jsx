@@ -2148,26 +2148,38 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
   }
   
   // Используем html2canvas с оптимизированными настройками для меньшего размера файла
+  console.log('🔵 Начинаем генерацию canvas из элемента...')
   html2canvas(element, {
-    scale: 1.5, // Уменьшаем scale для меньшего размера файла
+    scale: 2, // Увеличиваем scale для лучшего качества
     useCORS: true,
     letterRendering: true,
-    logging: false,
+    logging: true, // Включаем логирование для отладки
     backgroundColor: '#ffffff',
     allowTaint: true,
     scrollX: 0,
     scrollY: 0
     // НЕ указываем width и height - пусть html2canvas сам определит
   }).then((canvas) => {
-    console.log('Canvas created:', canvas.width, 'x', canvas.height)
+    console.log('✅ Canvas created:', canvas.width, 'x', canvas.height)
     
-    // Используем JPEG для меньшего размера файла (качество 0.85 - хороший баланс)
-    const imgData = canvas.toDataURL('image/jpeg', 0.85)
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Canvas пустой или имеет нулевые размеры')
+    }
+    
+    // Используем PNG для лучшего качества (можем вернуться к JPEG позже)
+    const imgData = canvas.toDataURL('image/png', 1.0)
+    console.log('✅ Изображение сгенерировано, размер base64:', imgData.length)
+    
+    if (!imgData || imgData.length < 100) {
+      throw new Error('Изображение пустое или слишком маленькое')
+    }
+    
     const pdf = new jsPDF({
       unit: 'mm',
       format: 'a4',
       orientation: 'portrait'
     })
+    console.log('✅ PDF объект создан')
     
     // Размеры A4 в мм
     const pdfWidth = pdf.internal.pageSize.getWidth()
@@ -2190,165 +2202,41 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
     const contentHeight = Math.min(finalHeight, maxContentHeight)
     
     // Добавляем первую страницу с основным контентом
-    pdf.addImage(imgData, 'JPEG', margin, margin, finalWidth, contentHeight)
+    console.log('📄 Добавляем изображение в PDF...', {
+      margin,
+      finalWidth,
+      contentHeight,
+      imgWidth: finalWidth,
+      imgHeight: contentHeight
+    })
+    pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, contentHeight)
+    console.log('✅ Изображение добавлено в PDF')
     
-    // Создаем вторую страницу с демо-припиской
-    pdf.addPage()
+    // Сохраняем PDF сразу (без второй страницы для отладки)
+    const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
+    console.log('💾 Сохраняем PDF...', { fileName })
     
-    // Создаем отдельный элемент для второй страницы
-    const demoElement = document.createElement('div')
-    demoElement.id = 'pdf-demo-content'
-    demoElement.style.position = 'absolute'
-    demoElement.style.left = '-9999px'
-    demoElement.style.top = '0'
-    demoElement.style.width = '794px'
-    demoElement.style.background = 'transparent'
-    demoElement.style.color = '#FFD700'
-    demoElement.style.fontFamily = "'Inter', 'Arial', sans-serif"
-    demoElement.style.visibility = 'visible'
-    demoElement.style.opacity = '1'
-    demoElement.style.display = 'block'
+    // Проверяем размер PDF перед сохранением
+    const pdfBlob = pdf.output('blob')
+    console.log('✅ PDF blob создан, размер:', pdfBlob.size, 'bytes')
     
-    demoElement.innerHTML = `
-      <div style="
-        width: 100%;
-        min-height: 1123px;
-        background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
-        padding: 60px 30px;
-        box-sizing: border-box;
-        position: relative;
-      ">
-        ${generateDemoFooter()}
-        
-        <!-- Премиальный футер -->
-        <div style="
-          margin-top: 40px;
-          text-align: center;
-          padding: 20px;
-          background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 215, 0, 0.04) 100%);
-          border-radius: 10px;
-          border-top: 1px solid rgba(255, 215, 0, 0.3);
-        ">
-          <p style="
-            margin: 0; 
-            padding: 0;
-            color: #969696;
-            font-size: 11px;
-            font-style: italic;
-            font-family: 'Inter', 'Arial', sans-serif;
-            font-weight: 500;
-            letter-spacing: 1px;
-          ">✨ Цифровая Алхимия - Персональная расшифровка ✨</p>
-        </div>
-      </div>
-    `
+    if (pdfBlob.size < 100) {
+      console.error('❌ PDF слишком маленький!', pdfBlob.size)
+      alert('Ошибка: PDF слишком маленький (' + pdfBlob.size + ' bytes). Проверьте консоль.')
+      throw new Error('PDF слишком маленький: ' + pdfBlob.size + ' bytes')
+    }
     
-    document.body.appendChild(demoElement)
+    // Для веб-версии всегда используем стандартный метод
+    pdf.save(fileName)
+    console.log('✅ PDF saved successfully')
     
-    // Генерируем canvas для второй страницы
+    // Удаляем основной элемент
     setTimeout(() => {
-      html2canvas(demoElement, {
-        scale: 1.5,
-        useCORS: true,
-        letterRendering: true,
-        logging: false,
-        backgroundColor: '#0a0a0f',
-        allowTaint: true,
-        scrollX: 0,
-        scrollY: 0
-      }).then((demoCanvas) => {
-        const demoImgData = demoCanvas.toDataURL('image/jpeg', 0.85)
-        const demoImgWidth = (demoCanvas.width / 1.5) * 0.264583
-        const demoImgHeight = (demoCanvas.height / 1.5) * 0.264583
-        const demoRatio = Math.min(usableWidth / demoImgWidth, usableHeight / demoImgHeight)
-        const demoFinalWidth = demoImgWidth * demoRatio
-        const demoFinalHeight = demoImgHeight * demoRatio
-        
-        pdf.setPage(2)
-        pdf.addImage(demoImgData, 'JPEG', margin, margin, demoFinalWidth, demoFinalHeight)
-        
-        // Добавляем ссылку на текстовую ссылку на второй странице
-        const textLink = demoElement.querySelector('#pdf-text-link')
-        if (textLink) {
-          const textRect = textLink.getBoundingClientRect()
-          const demoElementRect = demoElement.getBoundingClientRect()
-          
-          const relativeTop = textRect.top - demoElementRect.top
-          const relativeLeft = textRect.left - demoElementRect.left
-          const textWidth = textRect.width
-          const textHeight = textRect.height
-          
-          const textTopMM = margin + (relativeTop / 1.5) * 0.264583 * demoRatio
-          const textLeftMM = margin + (relativeLeft / 1.5) * 0.264583 * demoRatio
-          const textWidthMM = (textWidth / 1.5) * 0.264583 * demoRatio
-          const textHeightMM = (textHeight / 1.5) * 0.264583 * demoRatio
-          
-          const pdfHeight = pdf.internal.pageSize.getHeight()
-          const linkY = pdfHeight - textTopMM - textHeightMM
-          
-          pdf.link(textLeftMM, linkY, textWidthMM, textHeightMM, {
-            url: 'https://t.me/SpaceGrowthBot'
-          })
-        }
-        
-        // Удаляем демо-элемент
-        setTimeout(() => {
-          if (demoElement.parentNode) {
-            document.body.removeChild(demoElement)
-          }
-        }, 500)
-        
-        // Сохраняем PDF (поддержка мобильных устройств)
-        const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
-        
-        // Определяем мобильное устройство более точно
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                        (window.innerWidth < 768 || 'ontouchstart' in window)
-        const tg = window.Telegram?.WebApp || window.TelegramWebApp
-        const isTelegram = !!tg
-        
-        // Для мобильных устройств используем простой метод скачивания
-        // Больше НЕ показываем модальное окно с 5 кнопками - используем серверную генерацию
-        if (isMobile || isTelegram) {
-          // Конвертируем PDF в base64 data URL
-          const pdfDataUri = pdf.output('datauristring')
-          
-          // Используем простое скачивание вместо модального окна с 5 кнопками
-          // Серверная генерация должна быть основным методом
-          const blob = base64ToBlob(pdfDataUri)
-          const blobUrl = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = blobUrl
-          link.download = fileName
-          link.style.display = 'none'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
-        } else {
-          // Для десктопа используем стандартный метод скачивания
-          pdf.save(fileName)
-        }
-        
-        console.log('PDF saved successfully (fallback)')
-        
-        // Удаляем основной элемент
-        setTimeout(() => {
-          if (element.parentNode) {
-            document.body.removeChild(element)
-          }
-        }, 500)
-      }).catch((error) => {
-        console.error('Ошибка при генерации второй страницы PDF:', error)
-        // Удаляем элементы в случае ошибки
-        if (demoElement.parentNode) {
-          document.body.removeChild(demoElement)
-        }
-        if (element.parentNode) {
-          document.body.removeChild(element)
-        }
-      })
+      if (element.parentNode) {
+        document.body.removeChild(element)
+      }
     }, 500)
+    
   }).catch((error) => {
     console.error('Ошибка при генерации PDF:', error)
     if (element.parentNode) {
