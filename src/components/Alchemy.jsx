@@ -9,6 +9,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const [userQuestion, setUserQuestion] = useState('')
   const [numberInput, setNumberInput] = useState('')
   const [tarotCard, setTarotCard] = useState(null)
+  const [selectedCardIndex, setSelectedCardIndex] = useState(null) // Индекс выбранной карты (0, 1, 2)
+  const [flippedCards, setFlippedCards] = useState([false, false, false]) // Состояние переворота для каждой карты
   const [showNovella, setShowNovella] = useState(false)
   const [userName, setUserName] = useState('') // Имя пользователя
   const [showWelcome, setShowWelcome] = useState(true) // Показывать "Добро пожаловать" первые 5 секунд
@@ -27,6 +29,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     return saved === 'true'
   })
   const [candleImageError, setCandleImageError] = useState(false)
+  const [isLightAnimating, setIsLightAnimating] = useState(false)
   const heroBackgroundRef = useRef(null)
   const audioRef = useRef(null)
   const fadeIntervalRef = useRef(null)
@@ -94,6 +97,13 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     } else {
       setIsDarkMode(false)
     }
+    
+    // При открытии блока "Расклад судьбы" сбрасываем состояние карт
+    if (artifact === 'tarot') {
+      setSelectedCardIndex(null)
+      setFlippedCards([false, false, false])
+      setTarotCard(null)
+    }
 
     // Плавная прокрутка к action-zone
     setTimeout(() => {
@@ -105,6 +115,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   }
 
   const handleBackToTable = () => {
+    // Проверяем, возвращаемся ли мы из блока свечи
+    const wasCandle = selectedArtifact === 'candle'
+    
     // Сначала сбрасываем состояние
     setSelectedArtifact(null)
     setIsDarkMode(false)
@@ -124,10 +137,22 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }
     
     if (heroBackground) {
-      // Удаляем inline стили, чтобы CSS правила применились
-      heroBackground.style.removeProperty('opacity')
-      heroBackground.style.removeProperty('filter')
-      heroBackground.style.removeProperty('brightness')
+      // Если возвращаемся из блока свечи, запускаем анимацию появления света
+      if (wasCandle) {
+        setIsLightAnimating(true)
+        heroBackground.classList.add('light-appearing')
+        
+        // Убираем класс анимации после завершения
+        setTimeout(() => {
+          heroBackground.classList.remove('light-appearing')
+          setIsLightAnimating(false)
+        }, 2000) // Длительность анимации 2 секунды
+      } else {
+        // Для других блоков просто восстанавливаем фон
+        heroBackground.style.removeProperty('opacity')
+        heroBackground.style.removeProperty('filter')
+        heroBackground.style.removeProperty('brightness')
+      }
     }
     
     // Прокручиваем наверх
@@ -318,13 +343,52 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     // Здесь можно добавить логику для открытия новеллы
   }
 
-  const handleDrawTarotCard = (cardNumber) => {
-    const cards = [
-      'Карта 1: Путешествие в неизвестность ждет вас. Будьте готовы к переменам.',
-      'Карта 2: Внутренняя сила поможет преодолеть препятствия. Доверьтесь себе.',
-      'Карта 3: Новая возможность откроется перед вами. Будьте внимательны к знакам.'
-    ]
-    setTarotCard(cards[cardNumber - 1])
+  // Массив карт алхимии
+  const alchemyCards = [
+    {
+      id: 1,
+      name: 'Ртуть',
+      element: 'Поток',
+      message: 'Ртуть нельзя схватить — ей можно только стать. Твоя сила сейчас в гибкости, а не в контроле.',
+      motive: 'Ты имитируешь бурную деятельность, чтобы не замечать, что стоишь на месте.',
+      image: '/images/card1.png'
+    },
+    {
+      id: 2,
+      name: 'Кремень',
+      element: 'Искра',
+      message: 'Твердость полезна, но без удара она мертва. Твой внутренний огонь ждет внешнего вызова.',
+      motive: 'Ты копишь силы из страха их потратить, но они просто перегорают внутри тебя.',
+      image: '/images/card2.png'
+    },
+    {
+      id: 3,
+      name: 'Эфир',
+      element: 'Прозрачность',
+      message: 'Самое важное в комнате — это не мебель, а пространство. Ищи ответы между строк.',
+      motive: 'Ты заваливаешь себя чужими целями, чтобы не слышать пугающей тишины собственного выбора.',
+      image: '/images/card3.png'
+    }
+  ]
+
+  const handleDrawTarotCard = (cardIndex) => {
+    // Если карта уже выбрана, не позволяем выбирать другую
+    if (selectedCardIndex !== null) return
+    
+    // Устанавливаем выбранную карту
+    setSelectedCardIndex(cardIndex)
+    
+    // Переворачиваем карту
+    const newFlippedCards = [...flippedCards]
+    newFlippedCards[cardIndex] = true
+    setFlippedCards(newFlippedCards)
+    
+    // Формируем персонализированное сообщение
+    const card = alchemyCards[cardIndex]
+    const displayName = userName || 'Путник'
+    const interpretation = `${displayName}, твоё состояние сегодня — ${card.name} (${card.element}).\n\n${card.message}\n\n${card.motive}`
+    
+    setTarotCard(interpretation)
   }
 
   const handleAccelerateTime = () => {
@@ -795,10 +859,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
       case 'candle':
         return (
-          <div className="action-zone-content">
-            <h2 className="action-zone-title">Пламя Тайн</h2>
-            <p className="action-zone-text">
-              Свеча выключена. Во тьме открываются скрытые истины. Прислушайтесь к тишине...
+          <div className="action-zone-candle-text">
+            <p className="action-zone-candle-description">
+              Свеча потушена. Во тьме открываются скрытые истины. Прислушайтесь к тишине...
             </p>
           </div>
         )
@@ -822,19 +885,26 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               Выберите одну из карт, чтобы узнать о событиях ближайшего будущего.
             </p>
             <div className="tarot-cards-container">
-              <button className="tarot-card-button" onClick={() => handleDrawTarotCard(1)}>
-                Тянуть карту 1
-              </button>
-              <button className="tarot-card-button" onClick={() => handleDrawTarotCard(2)}>
-                Тянуть карту 2
-              </button>
-              <button className="tarot-card-button" onClick={() => handleDrawTarotCard(3)}>
-                Тянуть карту 3
-              </button>
+              {alchemyCards.map((card, index) => (
+                <div 
+                  key={card.id}
+                  className={`tarot-card-wrapper ${flippedCards[index] ? 'flipped' : ''} ${selectedCardIndex !== null && selectedCardIndex !== index ? 'disabled' : ''}`}
+                  onClick={() => handleDrawTarotCard(index)}
+                >
+                  <div className="tarot-card-inner">
+                    <div className="tarot-card-front">
+                      <img src="/images/card0.png" alt="Рубашка карты" className="tarot-card-image" />
+                    </div>
+                    <div className="tarot-card-back">
+                      <img src={card.image} alt={card.name} className="tarot-card-image" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
             {tarotCard && (
               <div className="tarot-result">
-                <p>{tarotCard}</p>
+                <p className="tarot-result-text">{tarotCard}</p>
               </div>
             )}
           </div>
@@ -920,7 +990,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         onAvatarClick={handleHeaderAvatarClick}
         onConsultation={handleConsultation}
         onBack={onBack}
-        onAlchemyClick={() => {}}
+        onAlchemyClick={handleBackToTable}
         onHomeClick={handleHeaderHomeClick}
         activeMenuId="alchemy"
       />
@@ -1062,7 +1132,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       {selectedArtifact && (
         <section 
           id="action-zone" 
-          className={`action-zone ${selectedArtifact === 'astrolabe' ? 'action-zone-astrolabe' : ''}`}
+          className={`action-zone ${selectedArtifact === 'astrolabe' ? 'action-zone-astrolabe' : ''} ${selectedArtifact === 'tarot' ? 'action-zone-tarot' : ''}`}
         >
           <div className="action-zone-inner">
             {renderActionContent()}
