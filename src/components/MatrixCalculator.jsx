@@ -1165,8 +1165,65 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
           }
         }, 500)
         
-        // Сохраняем PDF
-        pdf.save(`${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`)
+        // Сохраняем PDF (поддержка мобильных устройств)
+        const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
+        
+        // Определяем мобильное устройство более точно
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
+                        (window.innerWidth < 768 || 'ontouchstart' in window)
+        const tg = window.Telegram?.WebApp || window.TelegramWebApp
+        const isTelegram = !!tg
+        
+        // Для мобильных устройств используем window.open (работает надежнее)
+        if (isMobile || isTelegram) {
+          // Создаем blob и открываем в новом окне
+          const pdfBlob = pdf.output('blob')
+          const url = URL.createObjectURL(pdfBlob)
+          
+          // Открываем PDF в новом окне/вкладке
+          const newWindow = window.open(url, '_blank')
+          
+          if (!newWindow) {
+            // Если открытие заблокировано (popup blocker), создаем видимую ссылку
+            const link = document.createElement('a')
+            link.href = url
+            link.download = fileName
+            link.target = '_blank'
+            link.style.display = 'block'
+            link.style.position = 'fixed'
+            link.style.top = '50%'
+            link.style.left = '50%'
+            link.style.transform = 'translate(-50%, -50%)'
+            link.style.padding = '15px 30px'
+            link.style.backgroundColor = '#FFD700'
+            link.style.color = '#191923'
+            link.style.textDecoration = 'none'
+            link.style.borderRadius = '8px'
+            link.style.fontWeight = 'bold'
+            link.style.zIndex = '999999'
+            link.textContent = 'Нажмите для скачивания PDF'
+            link.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'
+            document.body.appendChild(link)
+            
+            // Автоматически кликаем
+            setTimeout(() => {
+              link.click()
+              // Удаляем ссылку через 2 секунды
+              setTimeout(() => {
+                if (link.parentNode) {
+                  document.body.removeChild(link)
+                }
+                setTimeout(() => URL.revokeObjectURL(url), 5000)
+              }, 2000)
+            }, 100)
+          } else {
+            // Освобождаем URL через 15 секунд после открытия
+            setTimeout(() => URL.revokeObjectURL(url), 15000)
+          }
+        } else {
+          // Для десктопа используем стандартный метод
+          pdf.save(fileName)
+        }
         
         console.log('PDF saved successfully (fallback)')
         
