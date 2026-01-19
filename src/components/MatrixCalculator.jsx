@@ -2593,8 +2593,17 @@ function MatrixCalculator() {
 
       const data = await response.json()
       
-      if (data.success) {
+      console.log('📥 Ответ от сервера:', {
+        success: data.success,
+        hasPdfUrl: !!data.pdfUrl,
+        fileName: data.fileName,
+        telegramSent: data.telegramSent,
+        error: data.error
+      })
+      
+      if (data.success && data.pdfUrl) {
         // Показываем модальное окно с информацией о PDF
+        console.log('✅ Показываем модальное окно серверной генерации')
         showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
       } else {
         throw new Error(data.error || 'Неизвестная ошибка')
