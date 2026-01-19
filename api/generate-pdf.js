@@ -4,9 +4,6 @@
 import puppeteer from 'puppeteer-core'
 import chromium from '@sparticuz/chromium'
 
-// Настройка Chromium для Vercel
-chromium.setGraphicsMode(false)
-
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
   const textContent = resultData?.result || 'Результат расчета недоступен'
