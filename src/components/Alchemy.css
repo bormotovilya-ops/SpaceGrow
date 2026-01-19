@@ -1275,6 +1275,7 @@
   .action-zone-mirror {
     gap: 12px;
     padding: 15px;
+    padding-top: 25px;
   }
 
   .mirror-dialog-messages {
