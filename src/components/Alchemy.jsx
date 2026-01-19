@@ -15,6 +15,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const [mirrorMessages, setMirrorMessages] = useState([]) // Сообщения чата зеркала
   const [mirrorInput, setMirrorInput] = useState('') // Текст в поле ввода зеркала
   const [isLoadingMirror, setIsLoadingMirror] = useState(false) // Загрузка ответа зеркала
+  const [mirrorUserName, setMirrorUserName] = useState('Путник') // Имя для зеркала (только first name)
   const [isMuted, setIsMuted] = useState(() => {
     // Загружаем состояние из localStorage
     const saved = localStorage.getItem('alchemy-music-muted')
@@ -53,13 +54,18 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         // Используем first_name, если есть, иначе username, иначе "Путник"
         const name = firstName || username || 'Путник'
         setUserName(name)
+        
+        // Для зеркала используем только имя (first name), без фамилии
+        setMirrorUserName(firstName || username || 'Путник')
       } else {
         // Если приложение запущено в браузере (вне Telegram), используем дефолтное имя
         setUserName('Путник')
+        setMirrorUserName('Путник')
       }
     } else {
       // Если Telegram WebApp не доступен (браузер), используем дефолтное имя
       setUserName('Путник')
+      setMirrorUserName('Путник')
     }
   }, [])
 
@@ -183,7 +189,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           message: userQuestion,
           messageCount: userMessageCount,
           promptType: 'mirror',
-          userName: userName || 'Путник'
+          userName: mirrorUserName || 'Путник'
         }),
       })
 
@@ -285,6 +291,14 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       mirrorMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [mirrorMessages, isLoadingMirror])
+
+  // Сброс сообщений зеркала при возврате к столу
+  useEffect(() => {
+    if (!selectedArtifact || selectedArtifact !== 'mirror') {
+      setMirrorMessages([])
+      setMirrorInput('')
+    }
+  }, [selectedArtifact])
 
   const handleGetAdvice = () => {
     const advice = [
@@ -681,15 +695,21 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
     switch (selectedArtifact) {
       case 'mirror':
+        // Приветственное сообщение от зеркала (показываем только если нет других сообщений)
+        const welcomeMessage = mirrorMessages.length === 0 ? {
+          role: 'assistant',
+          content: `Врата Вечности открыты. Зеркало отражает не только реальность, но и бесконечные просторы космоса. Задай свой вопрос, ${mirrorUserName}, и получи ответ от вселенского разума.`
+        } : null
+
         return (
           <div className="action-zone-content action-zone-mirror">
-            <h2 className="action-zone-title">Врата Вечности</h2>
-            <p className="action-zone-text">
-              Зеркало отражает не только реальность, но и бесконечные просторы космоса. Задайте свой вопрос и получите ответ от вселенского разума.
-            </p>
-            
             {/* Диалог с зеркалом */}
             <div className="mirror-dialog-messages">
+              {welcomeMessage && (
+                <div className="mirror-message mirror-message-assistant visible">
+                  <p>{welcomeMessage.content}</p>
+                </div>
+              )}
               {mirrorMessages.map((msg, index) => (
                 <div key={index} className={`mirror-message ${msg.role === 'user' ? 'mirror-message-user' : 'mirror-message-assistant'}`}>
                   <p>{msg.content}</p>
