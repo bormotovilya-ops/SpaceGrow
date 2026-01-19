@@ -3,15 +3,6 @@
 
 import puppeteer from 'puppeteer-core'
 import chromium from '@sparticuz/chromium'
-import { JSDOM } from 'jsdom'
-import { createCanvas, loadImage } from 'canvas'
-
-// Альтернатива: используем jspdf для конвертации PNG в PDF
-// Но на Vercel может быть проблема с canvas/jspdf
-// Проще использовать Puppeteer page.pdf() но с правильными настройками для скриншота
-
-// Или используем библиотеку для конвертации PNG -> PDF
-// Но проще всего - использовать Puppeteer для скриншота, а затем pdfkit/jspdf для конвертации
 
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
