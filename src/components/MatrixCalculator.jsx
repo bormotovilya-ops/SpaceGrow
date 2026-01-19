@@ -2003,8 +2003,18 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
           // Конвертируем PDF в base64 data URL
           const pdfDataUri = pdf.output('datauristring')
           
-          // Показываем модальное окно с рабочими вариантами (QR-код и base64)
-          showPDFMobileModal(pdfDataUri, fileName, methodName)
+          // Автоматически открываем PDF в новом окне браузера
+          try {
+            const newWindow = window.open(pdfDataUri, '_blank')
+            if (!newWindow) {
+              // Если открытие заблокировано, показываем модальное окно с вариантами
+              showPDFMobileModal(pdfDataUri, fileName, methodName)
+            }
+          } catch (error) {
+            console.error('Ошибка при открытии PDF:', error)
+            // Если ошибка, показываем модальное окно с вариантами
+            showPDFMobileModal(pdfDataUri, fileName, methodName)
+          }
         } else {
           // Для десктопа используем стандартный метод скачивания
           pdf.save(fileName)
