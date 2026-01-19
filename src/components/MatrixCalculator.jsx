@@ -2590,8 +2590,8 @@ function MatrixCalculator() {
       }
     } catch (error) {
       console.error('Ошибка генерации PDF на сервере:', error)
-      // Fallback: используем локальную генерацию
-      generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
+      // Показываем ошибку пользователю вместо fallback на локальную генерацию
+      alert(`Ошибка генерации PDF на сервере: ${error.message}\n\nПожалуйста, попробуйте еще раз или обратитесь в поддержку.`)
     }
   }
 

@@ -271,17 +271,22 @@ export default async function handler(req, res) {
         if (botResponse.ok) {
           telegramSent = true
           console.log('✅ PDF успешно отправлен в Telegram!')
+          const responseData = JSON.parse(responseText)
+          console.log('📄 Telegram response:', JSON.stringify(responseData, null, 2))
         } else {
           let errorMsg = 'Unknown error'
           try {
             const errorObj = JSON.parse(responseText)
             errorMsg = errorObj.description || responseText
+            console.error('❌ Telegram API Error Details:', JSON.stringify(errorObj, null, 2))
           } catch {
             errorMsg = responseText
+            console.error('❌ Telegram API Raw Error:', responseText)
           }
           
           console.error('❌ Ошибка отправки PDF в Telegram:', errorMsg)
-          throw new Error(`Telegram API error: ${errorMsg}`)
+          // НЕ выбрасываем ошибку - пусть PDF все равно возвращается клиенту
+          // telegramSent останется false, но файл будет доступен для скачивания
         }
       } catch (error) {
         console.error('❌ Критическая ошибка отправки в Telegram бот:', error.message)
