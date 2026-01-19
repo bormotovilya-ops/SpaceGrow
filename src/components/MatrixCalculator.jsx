@@ -2566,52 +2566,62 @@ function MatrixCalculator() {
     // Для Формулы Души передаем details для полного отчета
     const soulDetails = methodId === 'soul' && results[methodId].details ? results[methodId].details : null
     
-    // Получаем telegramUserId, если доступен Telegram WebApp
+    // Определяем мобильное устройство
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
+                    (window.innerWidth < 768 || 'ontouchstart' in window)
     const tg = window.Telegram?.WebApp || window.TelegramWebApp
+    const isTelegram = !!tg
     const telegramUserId = tg?.initDataUnsafe?.user?.id || tg?.initData?.user?.id || null
     
-    try {
-      // Отправляем данные на сервер для генерации PDF
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          methodName,
-          methodId,
-          resultData: results[methodId],
-          birthDate,
-          soulDetails,
-          telegramUserId
+    // Для мобильных устройств и Telegram используем серверную генерацию
+    if (isMobile || isTelegram) {
+      try {
+        // Отправляем данные на сервер для генерации PDF
+        const response = await fetch('/api/generate-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            methodName,
+            methodId,
+            resultData: results[methodId],
+            birthDate,
+            soulDetails,
+            telegramUserId
+          })
         })
-      })
 
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`)
-      }
+        if (!response.ok) {
+          throw new Error(`Ошибка сервера: ${response.status}`)
+        }
 
-      const data = await response.json()
-      
-      console.log('📥 Ответ от сервера:', {
-        success: data.success,
-        hasPdfUrl: !!data.pdfUrl,
-        fileName: data.fileName,
-        telegramSent: data.telegramSent,
-        error: data.error
-      })
-      
-      if (data.success && data.pdfUrl) {
-        // Показываем модальное окно с информацией о PDF
-        console.log('✅ Показываем модальное окно серверной генерации')
-        showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
-      } else {
-        throw new Error(data.error || 'Неизвестная ошибка')
+        const data = await response.json()
+        
+        console.log('📥 Ответ от сервера:', {
+          success: data.success,
+          hasPdfUrl: !!data.pdfUrl,
+          fileName: data.fileName,
+          telegramSent: data.telegramSent,
+          error: data.error
+        })
+        
+        if (data.success && data.pdfUrl) {
+          // Показываем модальное окно с информацией о PDF
+          console.log('✅ Показываем модальное окно серверной генерации')
+          showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
+        } else {
+          throw new Error(data.error || 'Неизвестная ошибка')
+        }
+      } catch (error) {
+        console.error('Ошибка генерации PDF на сервере:', error)
+        // Fallback на локальную генерацию для мобильных
+        console.log('⚠️ Fallback на локальную генерацию PDF')
+        generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
       }
-    } catch (error) {
-      console.error('Ошибка генерации PDF на сервере:', error)
-      // Показываем ошибку пользователю вместо fallback на локальную генерацию
-      alert(`Ошибка генерации PDF на сервере: ${error.message}\n\nПожалуйста, попробуйте еще раз или обратитесь в поддержку.`)
+    } else {
+      // Для веб-версии используем локальную генерацию (старый рабочий метод)
+      generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
     }
   }
 
