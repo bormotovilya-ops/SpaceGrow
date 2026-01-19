@@ -663,6 +663,13 @@
   overflow: hidden;
 }
 
+/* Для астролябии (калькулятора) убираем ограничение высоты и overflow */
+.action-zone-astrolabe .action-zone-content {
+  max-height: none;
+  overflow: visible;
+  max-width: 800px;
+}
+
 /* Специальные стили для зеркала - переопределяем фон */
 .action-zone-mirror.action-zone-content {
   background-image: 
@@ -846,6 +853,9 @@
 /* Обертка для MatrixCalculator */
 .matrix-calculator-wrapper {
   margin-top: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 /* Кнопка "Вернуться к столу" */

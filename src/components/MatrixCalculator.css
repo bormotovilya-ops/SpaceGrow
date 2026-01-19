@@ -2,7 +2,8 @@
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px 20px 140px 20px; /* Увеличен нижний отступ, чтобы освободить место под кнопку */
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .matrix-input-section {

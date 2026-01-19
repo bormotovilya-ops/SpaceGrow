@@ -703,6 +703,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
         return (
           <div className="action-zone-content action-zone-mirror">
+            <h2 className="action-zone-title">Зеркало вечности</h2>
             {/* Диалог с зеркалом */}
             <div className="mirror-dialog-messages">
               {welcomeMessage && (
