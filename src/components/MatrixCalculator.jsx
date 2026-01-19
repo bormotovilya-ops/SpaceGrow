@@ -759,6 +759,165 @@ function base64ToBlob(base64String) {
   return new Blob([byteArray], { type: 'application/pdf' })
 }
 
+// Функция для показа PDF после генерации на сервере
+function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) {
+  const modal = document.createElement('div')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  `
+  
+  const content = document.createElement('div')
+  content.style.cssText = `
+    background: linear-gradient(135deg, rgba(26, 26, 35, 0.98) 0%, rgba(15, 15, 25, 0.98) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+    margin: 20px 0;
+  `
+  
+  const title = document.createElement('h3')
+  title.textContent = '✅ PDF готов'
+  title.style.cssText = `
+    color: #FFD700;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    letter-spacing: 1px;
+  `
+  
+  const text = document.createElement('p')
+  if (telegramSent) {
+    text.textContent = 'PDF успешно сгенерирован на сервере и отправлен вам в Telegram! Проверьте сообщения в боте.'
+  } else {
+    text.textContent = 'PDF успешно сгенерирован на сервере! Используйте ссылку ниже для получения файла.'
+  }
+  text.style.cssText = `
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 0 0 25px 0;
+    line-height: 1.6;
+  `
+  
+  // Конвертируем base64 в Blob для использования в кнопках
+  const blob = base64ToBlob(pdfUrl)
+  
+  const buttonsContainer = document.createElement('div')
+  buttonsContainer.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  `
+  
+  // Кнопка для открытия/скачивания PDF
+  const openBtn = createPDFButton('📥 Скачать PDF', () => {
+    try {
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = fileName || 'result.pdf'
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
+    } catch (error) {
+      console.error('Ошибка скачивания:', error)
+      alert('Ошибка скачивания файла')
+    }
+  })
+  
+  // Кнопка для просмотра в новой вкладке
+  const viewBtn = createPDFButton('🔍 Просмотреть PDF', () => {
+    try {
+      const blobUrl = URL.createObjectURL(blob)
+      window.open(blobUrl, '_blank')
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+    } catch (error) {
+      console.error('Ошибка открытия:', error)
+      alert('Ошибка открытия файла')
+    }
+  })
+  
+  buttonsContainer.appendChild(openBtn)
+  buttonsContainer.appendChild(viewBtn)
+  
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = '✕'
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all 0.3s;
+  `
+  
+  closeBtn.onmouseover = () => {
+    closeBtn.style.background = 'rgba(255, 215, 0, 0.2)'
+    closeBtn.style.borderColor = '#FFD700'
+    closeBtn.style.color = '#FFD700'
+  }
+  closeBtn.onmouseout = () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+    closeBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+    closeBtn.style.color = '#ffffff'
+  }
+  
+  const closeModal = () => {
+    if (modal.parentNode) {
+      document.body.removeChild(modal)
+    }
+  }
+  
+  closeBtn.onclick = closeModal
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal()
+    }
+  }
+  
+  content.appendChild(closeBtn)
+  content.appendChild(title)
+  content.appendChild(text)
+  content.appendChild(buttonsContainer)
+  modal.appendChild(content)
+  document.body.appendChild(modal)
+  
+  setTimeout(() => {
+    if (modal.parentNode) {
+      closeModal()
+    }
+  }, 300000) // 5 минут
+}
+
 // Функция для показа PDF на мобильных устройствах с 5 методами
 function showPDFMobileModal(pdfDataUri, fileName, methodName) {
   // Конвертируем base64 в Blob для всех методов
@@ -2387,10 +2546,50 @@ function MatrixCalculator() {
     // НЕ скроллим при вводе - пользователь должен видеть поле ввода
   }
 
-  const handleDownloadPDF = (methodId, methodName) => {
-    if (results && results[methodId]) {
-      // Для Формулы Души передаем details для полного отчета
-      const soulDetails = methodId === 'soul' && results[methodId].details ? results[methodId].details : null
+  const handleDownloadPDF = async (methodId, methodName) => {
+    if (!results || !results[methodId]) {
+      return
+    }
+
+    // Для Формулы Души передаем details для полного отчета
+    const soulDetails = methodId === 'soul' && results[methodId].details ? results[methodId].details : null
+    
+    // Получаем telegramUserId, если доступен Telegram WebApp
+    const tg = window.Telegram?.WebApp || window.TelegramWebApp
+    const telegramUserId = tg?.initDataUnsafe?.user?.id || tg?.initData?.user?.id || null
+    
+    try {
+      // Отправляем данные на сервер для генерации PDF
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          methodName,
+          methodId,
+          resultData: results[methodId],
+          birthDate,
+          soulDetails,
+          telegramUserId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      if (data.success) {
+        // Показываем модальное окно с информацией о PDF
+        showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
+      } else {
+        throw new Error(data.error || 'Неизвестная ошибка')
+      }
+    } catch (error) {
+      console.error('Ошибка генерации PDF на сервере:', error)
+      // Fallback: используем локальную генерацию
       generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
     }
   }
