@@ -166,25 +166,48 @@ export default async function handler(req, res) {
     try {
       console.log('🚀 Запуск генерации PDF через Puppeteer (HTML -> PDF)...')
       
+      // Проверяем, что HTML контент сгенерирован
+      if (!htmlContent || htmlContent.length === 0) {
+        throw new Error('HTML контент пустой или не сгенерирован')
+      }
+      
+      console.log('📄 HTML контент подготовлен, длина:', htmlContent.length, 'символов')
+      
       // Запускаем браузер с Chromium для Vercel
       const browser = await puppeteer.launch({
-        args: chromium.args,
+        args: [
+          ...chromium.args,
+          '--hide-scrollbars',
+          '--disable-web-security',
+        ],
         defaultViewport: chromium.defaultViewport,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
       })
       
+      console.log('🌐 Браузер запущен успешно')
+      
       try {
         // Создаем новую страницу
         const page = await browser.newPage()
+        console.log('📄 Страница создана')
+        
+        // Устанавливаем таймаут для загрузки
+        page.setDefaultNavigationTimeout(60000)
         
         // Устанавливаем контент HTML
         await page.setContent(htmlContent, {
-          waitUntil: 'networkidle0'
+          waitUntil: 'networkidle0',
+          timeout: 60000
         })
+        console.log('✅ HTML контент установлен на странице')
         
         // Ждем загрузки шрифтов Google Fonts
         await page.evaluateHandle(() => document.fonts.ready)
+        console.log('✅ Шрифты загружены')
+        
+        // Дополнительная пауза для полной загрузки всех ресурсов
+        await new Promise(resolve => setTimeout(resolve, 2000))
         
         // Генерируем PDF
         pdfBuffer = await page.pdf({
@@ -198,19 +221,30 @@ export default async function handler(req, res) {
           }
         })
         
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+          throw new Error('PDF buffer пустой после генерации')
+        }
+        
         // Конвертируем в base64 для клиента
         base64Data = pdfBuffer.toString('base64')
         pdfBase64 = `data:application/pdf;base64,${base64Data}`
         
         console.log('✅ PDF сгенерирован через Puppeteer, размер:', pdfBuffer.length, 'bytes')
         
+      } catch (pageError) {
+        console.error('❌ Ошибка при работе со страницей Puppeteer:', pageError)
+        throw pageError
       } finally {
         // Закрываем браузер
+        console.log('🔒 Закрываем браузер...')
         await browser.close()
+        console.log('✅ Браузер закрыт')
       }
       
     } catch (pdfError) {
       console.error('❌ Ошибка генерации PDF через Puppeteer:', pdfError)
+      console.error('Error name:', pdfError.name)
+      console.error('Error message:', pdfError.message)
       console.error('Error stack:', pdfError.stack)
       throw new Error(`Ошибка генерации PDF: ${pdfError.message}`)
     }
