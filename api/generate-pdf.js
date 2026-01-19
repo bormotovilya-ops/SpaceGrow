@@ -5,6 +5,40 @@ import PdfPrinter from 'pdfmake'
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
+// Встроенные шрифты pdfmake для поддержки кириллицы
+// Используем стандартные шрифты из pdfmake, которые поддерживают UTF-8
+let pdfmakeFonts = null
+
+async function loadPdfMakeFonts() {
+  if (pdfmakeFonts) return pdfmakeFonts
+  
+  try {
+    // Пытаемся загрузить шрифты Roboto из pdfmake/fonts/Roboto/
+    const robotoPath = join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto')
+    
+    console.log('🔍 Пытаемся загрузить шрифты из:', robotoPath)
+    
+    pdfmakeFonts = {
+      Roboto: {
+        normal: await readFile(join(robotoPath, 'Roboto-Regular.ttf')),
+        bold: await readFile(join(robotoPath, 'Roboto-Medium.ttf')),
+        italics: await readFile(join(robotoPath, 'Roboto-Italic.ttf')),
+        bolditalics: await readFile(join(robotoPath, 'Roboto-MediumItalic.ttf'))
+      }
+    }
+    
+    console.log('✅ Шрифты Roboto загружены успешно')
+    return pdfmakeFonts
+  } catch (error) {
+    console.error('❌ Ошибка загрузки шрифтов Roboto:', error.message)
+    console.error('Error stack:', error.stack)
+    // Используем пустой объект - pdfmake будет использовать стандартные шрифты
+    // Стандартные шрифты не поддерживают кириллицу, но это позволит избежать ошибки
+    pdfmakeFonts = {}
+    return pdfmakeFonts
+  }
+}
+
 // Функция генерации HTML-контента (аналогично клиентской версии)
 function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
   const textContent = resultData?.result || 'Результат расчета недоступен'
@@ -169,27 +203,8 @@ export default async function handler(req, res) {
       
       const textContent = resultData?.result || 'Результат расчета недоступен'
       
-      // Загружаем шрифты для pdfmake (с поддержкой кириллицы)
-      // На Vercel используем пути относительно process.cwd()
-      const fontPath = join(process.cwd(), 'node_modules', 'pdfmake', 'build', 'fonts', 'Roboto')
-      
-      let fonts
-      try {
-        // Пытаемся загрузить шрифты из node_modules
-        fonts = {
-          Roboto: {
-            normal: await readFile(join(fontPath, 'Roboto-Regular.ttf')),
-            bold: await readFile(join(fontPath, 'Roboto-Medium.ttf')),
-            italics: await readFile(join(fontPath, 'Roboto-Italic.ttf')),
-            bolditalics: await readFile(join(fontPath, 'Roboto-MediumItalic.ttf'))
-          }
-        }
-        console.log('✅ Шрифты Roboto загружены')
-      } catch (fontError) {
-        console.warn('⚠️ Не удалось загрузить шрифты, используем стандартные:', fontError.message)
-        // Fallback: используем стандартные шрифты (могут не поддерживать кириллицу)
-        fonts = {}
-      }
+      // Загружаем шрифты для pdfmake
+      const fonts = await loadPdfMakeFonts()
       
       // Создаем принтер PDF
       const printer = new PdfPrinter(fonts)
@@ -199,7 +214,7 @@ export default async function handler(req, res) {
         pageSize: 'A4',
         pageMargins: [20, 20, 20, 20],
         defaultStyle: {
-          font: Object.keys(fonts).length > 0 ? 'Roboto' : 'Helvetica',
+          font: fonts.Roboto ? 'Roboto' : 'Helvetica',
           fontSize: 11,
           color: '#282828'
         },
