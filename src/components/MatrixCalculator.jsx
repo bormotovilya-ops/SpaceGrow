@@ -2307,13 +2307,24 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
         const tg = window.Telegram?.WebApp || window.TelegramWebApp
         const isTelegram = !!tg
         
-        // Для мобильных устройств и Telegram показываем модальное окно с 5 методами получения PDF
+        // Для мобильных устройств используем простой метод скачивания
+        // Больше НЕ показываем модальное окно с 5 кнопками - используем серверную генерацию
         if (isMobile || isTelegram) {
           // Конвертируем PDF в base64 data URL
           const pdfDataUri = pdf.output('datauristring')
           
-          // Показываем модальное окно с 5 кнопками для разных методов получения PDF
-          showPDFMobileModal(pdfDataUri, fileName, methodName)
+          // Используем простое скачивание вместо модального окна с 5 кнопками
+          // Серверная генерация должна быть основным методом
+          const blob = base64ToBlob(pdfDataUri)
+          const blobUrl = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = blobUrl
+          link.download = fileName
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
         } else {
           // Для десктопа используем стандартный метод скачивания
           pdf.save(fileName)
