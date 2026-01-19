@@ -2209,70 +2209,102 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
       imgWidth: finalWidth,
       imgHeight: contentHeight
     })
-    // Добавляем изображение в PDF
+    // Добавляем изображение ПЕРВОЙ страницы с результатами в PDF
     try {
       pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, contentHeight)
-      console.log('✅ Изображение добавлено в PDF')
+      console.log('✅ Первая страница (результаты) добавлена в PDF')
     } catch (addImageError) {
       console.error('❌ Ошибка при добавлении изображения в PDF:', addImageError)
       throw new Error('Не удалось добавить изображение в PDF: ' + addImageError.message)
     }
     
-    // Проверяем размер PDF перед сохранением
-    let pdfBlob
-    try {
-      pdfBlob = pdf.output('blob')
-      console.log('✅ PDF blob создан, размер:', pdfBlob.size, 'bytes')
-    } catch (outputError) {
-      console.error('❌ Ошибка при создании PDF blob:', outputError)
-      // Пробуем использовать datauri string вместо blob
-      const pdfDataUri = pdf.output('datauristring')
-      console.log('✅ PDF datauri создан, размер:', pdfDataUri.length, 'символов')
-      
-      if (!pdfDataUri || pdfDataUri.length < 100) {
-        throw new Error('PDF datauri пустой или слишком маленький')
-      }
-      
-      // Используем blob из datauri
-      pdfBlob = base64ToBlob(pdfDataUri)
-      console.log('✅ PDF blob из datauri создан, размер:', pdfBlob.size, 'bytes')
-    }
-    
-    if (!pdfBlob || pdfBlob.size < 100) {
-      console.error('❌ PDF слишком маленький!', pdfBlob?.size || 0)
-      alert('Ошибка: PDF слишком маленький (' + (pdfBlob?.size || 0) + ' bytes). Проверьте консоль.')
-      throw new Error('PDF слишком маленький: ' + (pdfBlob?.size || 0) + ' bytes')
-    }
-    
-    // Сохраняем PDF
-    const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
-    console.log('💾 Сохраняем PDF...', { fileName, size: pdfBlob.size })
-    
-    try {
-      // Используем стандартный метод сохранения
-      pdf.save(fileName)
-      console.log('✅ PDF saved successfully')
-    } catch (saveError) {
-      console.error('❌ Ошибка при сохранении PDF через pdf.save():', saveError)
-      // Fallback - используем blob URL
-      console.log('⚠️ Используем fallback метод сохранения через blob URL')
-      const blobUrl = URL.createObjectURL(pdfBlob)
-      const link = document.createElement('a')
-      link.href = blobUrl
-      link.download = fileName
-      link.style.display = 'none'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
-      console.log('✅ PDF saved via blob URL fallback')
-    }
-    
     // Удаляем основной элемент
+    if (element.parentNode) {
+      document.body.removeChild(element)
+    }
+    
+    // Создаем ВТОРУЮ страницу с демо-припиской
+    pdf.addPage()
+    console.log('📄 Добавляем вторую страницу с демо-припиской...')
+    
+    // Создаем элемент для второй страницы
+    const demoElement = document.createElement('div')
+    demoElement.id = 'pdf-demo-page'
+    demoElement.style.position = 'absolute'
+    demoElement.style.left = '-9999px'
+    demoElement.style.top = '0'
+    demoElement.style.width = '794px'
+    demoElement.style.minHeight = '1123px'
+    demoElement.style.background = 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)'
+    demoElement.style.padding = '60px 30px'
+    demoElement.style.boxSizing = 'border-box'
+    demoElement.style.visibility = 'visible'
+    demoElement.style.opacity = '1'
+    demoElement.style.display = 'block'
+    demoElement.innerHTML = generateDemoFooter()
+    
+    document.body.appendChild(demoElement)
+    
+    // Даем время на рендеринг второй страницы
     setTimeout(() => {
-      if (element.parentNode) {
-        document.body.removeChild(element)
-      }
+      html2canvas(demoElement, {
+        scale: 2,
+        useCORS: true,
+        letterRendering: true,
+        logging: true,
+        backgroundColor: '#ffffff',
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0
+      }).then((demoCanvas) => {
+        console.log('✅ Canvas второй страницы создан:', demoCanvas.width, 'x', demoCanvas.height)
+        
+        const demoImgData = demoCanvas.toDataURL('image/png', 1.0)
+        
+        // Размеры второй страницы
+        const demoImgWidth = (demoCanvas.width / 2) * 0.264583
+        const demoImgHeight = (demoCanvas.height / 2) * 0.264583
+        const demoRatio = Math.min(usableWidth / demoImgWidth, usableHeight / demoImgHeight)
+        const demoFinalWidth = demoImgWidth * demoRatio
+        const demoFinalHeight = demoImgHeight * demoRatio
+        
+        // Добавляем вторую страницу
+        pdf.setPage(2)
+        pdf.addImage(demoImgData, 'PNG', margin, margin, demoFinalWidth, demoFinalHeight)
+        console.log('✅ Вторая страница (демо) добавлена в PDF')
+        
+        // Удаляем элемент второй страницы
+        if (demoElement.parentNode) {
+          document.body.removeChild(demoElement)
+        }
+        
+        // СОХРАНЯЕМ PDF с обеими страницами
+        const fileName = `${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`
+        console.log('💾 Сохраняем PDF с двумя страницами...', { fileName })
+        
+        try {
+          const pdfBlob = pdf.output('blob')
+          console.log('✅ PDF blob создан, размер:', pdfBlob.size, 'bytes')
+          
+          if (pdfBlob.size < 100) {
+            throw new Error('PDF слишком маленький: ' + pdfBlob.size + ' bytes')
+          }
+          
+          pdf.save(fileName)
+          console.log('✅ PDF с двумя страницами saved successfully')
+        } catch (saveError) {
+          console.error('❌ Ошибка при сохранении PDF:', saveError)
+          alert('Ошибка при сохранении PDF: ' + saveError.message)
+        }
+        
+      }).catch((demoError) => {
+        console.error('❌ Ошибка при генерации второй страницы:', demoError)
+        // Сохраняем хотя бы первую страницу
+        if (demoElement.parentNode) {
+          document.body.removeChild(demoElement)
+        }
+        pdf.save(`${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`)
+      })
     }, 500)
     
   }).catch((error) => {
