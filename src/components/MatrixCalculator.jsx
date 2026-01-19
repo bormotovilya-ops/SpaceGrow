@@ -738,6 +738,146 @@ const calculateAllMethods = async (dateString, timeString, cityName) => {
   }
 }
 
+// Функция для показа ссылки на PDF (для мобильных устройств)
+function showPDFLink(url, fileName, methodName) {
+  // Создаем модальное окно с ссылкой
+  const modal = document.createElement('div')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  `
+  
+  const content = document.createElement('div')
+  content.style.cssText = `
+    background: linear-gradient(135deg, rgba(26, 26, 35, 0.98) 0%, rgba(15, 15, 25, 0.98) 100%);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative;
+  `
+  
+  const title = document.createElement('h3')
+  title.textContent = 'PDF готов'
+  title.style.cssText = `
+    color: #FFD700;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    letter-spacing: 1px;
+  `
+  
+  const text = document.createElement('p')
+  text.textContent = 'Нажмите на ссылку ниже, чтобы открыть PDF файл:'
+  text.style.cssText = `
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 0 0 25px 0;
+    line-height: 1.6;
+  `
+  
+  const link = document.createElement('a')
+  link.href = url
+  link.target = '_blank'
+  link.textContent = `📄 Открыть ${methodName}`
+  link.style.cssText = `
+    display: inline-block;
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0a0a0f;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    transition: transform 0.2s;
+  `
+  
+  link.onmouseover = () => {
+    link.style.transform = 'translateY(-2px)'
+    link.style.boxShadow = '0 6px 25px rgba(255, 215, 0, 0.6)'
+  }
+  link.onmouseout = () => {
+    link.style.transform = 'translateY(0)'
+    link.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
+  }
+  
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = '✕'
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all 0.3s;
+  `
+  
+  closeBtn.onmouseover = () => {
+    closeBtn.style.background = 'rgba(255, 215, 0, 0.2)'
+    closeBtn.style.borderColor = '#FFD700'
+    closeBtn.style.color = '#FFD700'
+  }
+  closeBtn.onmouseout = () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+    closeBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+    closeBtn.style.color = '#ffffff'
+  }
+  
+  const closeModal = () => {
+    if (modal.parentNode) {
+      document.body.removeChild(modal)
+    }
+    // Освобождаем URL через 5 секунд после закрытия
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+  
+  closeBtn.onclick = closeModal
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal()
+    }
+  }
+  
+  content.appendChild(closeBtn)
+  content.appendChild(title)
+  content.appendChild(text)
+  content.appendChild(link)
+  modal.appendChild(content)
+  document.body.appendChild(modal)
+  
+  // Автоматически закрываем через 30 секунд
+  setTimeout(() => {
+    if (modal.parentNode) {
+      closeModal()
+    }
+  }, 30000)
+}
+
 // Генерация PDF через HTML (для поддержки кириллицы)
 const generatePDF = (methodName, methodId, resultData, birthDate, soulDetails = null) => {
   // Создаем временный HTML элемент - ПОЛНОСТЬЮ ВИДИМЫЙ на экране
@@ -1174,61 +1314,30 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
         const tg = window.Telegram?.WebApp || window.TelegramWebApp
         const isTelegram = !!tg
         
-        // Для мобильных устройств и Telegram используем метод с ссылкой (более надежно)
+        // Для мобильных устройств и Telegram открываем PDF в браузере или показываем ссылку
         if (isMobile || isTelegram) {
           // Создаем blob
           const pdfBlob = pdf.output('blob')
           const url = URL.createObjectURL(pdfBlob)
           
-          // Создаем невидимую ссылку и автоматически кликаем по ней
-          const link = document.createElement('a')
-          link.href = url
-          link.download = fileName
-          link.style.display = 'none'
-          link.style.position = 'absolute'
-          link.style.left = '-9999px'
-          document.body.appendChild(link)
-          
-          // Кликаем по ссылке для скачивания
+          // Пытаемся открыть PDF в новом окне/вкладке
           try {
-            link.click()
+            const newWindow = window.open(url, '_blank')
             
-            // Удаляем ссылку через небольшую задержку
-            setTimeout(() => {
-              if (link.parentNode) {
-                document.body.removeChild(link)
-              }
-              // Освобождаем URL через 5 секунд
-              setTimeout(() => URL.revokeObjectURL(url), 5000)
-            }, 100)
+            if (newWindow) {
+              // Если открылось успешно, освобождаем URL через 15 секунд
+              setTimeout(() => URL.revokeObjectURL(url), 15000)
+            } else {
+              // Если открытие заблокировано, показываем видимую ссылку для открытия
+              showPDFLink(url, fileName, methodName)
+            }
           } catch (error) {
-            console.error('Ошибка при скачивании PDF:', error)
-            // Если автоматический клик не сработал, показываем видимую ссылку
-            link.style.display = 'block'
-            link.style.position = 'fixed'
-            link.style.top = '50%'
-            link.style.left = '50%'
-            link.style.transform = 'translate(-50%, -50%)'
-            link.style.padding = '15px 30px'
-            link.style.backgroundColor = '#FFD700'
-            link.style.color = '#191923'
-            link.style.textDecoration = 'none'
-            link.style.borderRadius = '8px'
-            link.style.fontWeight = 'bold'
-            link.style.zIndex = '999999'
-            link.textContent = 'Нажмите для скачивания PDF'
-            link.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)'
-            
-            // Удаляем ссылку через 10 секунд
-            setTimeout(() => {
-              if (link.parentNode) {
-                document.body.removeChild(link)
-              }
-              setTimeout(() => URL.revokeObjectURL(url), 5000)
-            }, 10000)
+            console.error('Ошибка при открытии PDF:', error)
+            // Показываем видимую ссылку
+            showPDFLink(url, fileName, methodName)
           }
         } else {
-          // Для десктопа используем стандартный метод
+          // Для десктопа используем стандартный метод скачивания
           pdf.save(fileName)
         }
         
