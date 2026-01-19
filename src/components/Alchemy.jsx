@@ -27,6 +27,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const fadeIntervalRef = useRef(null)
   const userInteractedRef = useRef(false)
   const imageContainerRef = useRef(null)
+  const imageAspectRef = useRef(9 / 16) // Реальное соотношение сторон фоновой картинки (обновим после загрузки)
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
@@ -291,6 +292,19 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Загрузка фонового изображения для получения реального соотношения сторон
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        imageAspectRef.current = img.naturalWidth / img.naturalHeight
+        // Форсируем перерасчёт зоны после получения точного соотношения
+        window.dispatchEvent(new Event('resize'))
+      }
+    }
+    img.src = '/images/i.webp'
+  }, [])
+
   // Вычисление размера видимой области картинки и привязка блоков к ней
   useEffect(() => {
     const updateImageBounds = () => {
@@ -309,8 +323,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       
       const containerAspect = containerWidth / containerHeight
       
-      // Пропорции картинки (9:16 = 0.5625)
-      const imageAspect = 9 / 16
+      // Пропорции картинки — берём реальные значения после загрузки
+      const imageAspect = imageAspectRef.current || (9 / 16)
       
       let imageWidth, imageHeight, imageLeft, imageTop
       
@@ -798,16 +812,15 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           {/* Картинка */}
           <div className="alchemy-hero-background" ref={heroBackgroundRef}></div>
 
-          {/* Анимированная свеча поверх стола (масштабируется вместе с фоном) */}
-          <img
-            src="/images/Свеча.gif"
-            alt="Свеча"
-            className="alchemy-candle-image"
-          />
-
-          {/* Интерактивные кликабельные зоны - привязаны к контейнеру, который совпадает с картинкой */}
+          {/* Интерактивные кликабельные зоны - привязаны к контейнеру, который совпадает с видимой областью картинки */}
           {!selectedArtifact && (
           <div className="alchemy-interactive-zones">
+            {/* Анимированная свеча поверх стола (масштабируется вместе с видимой областью фона) */}
+            <img
+              src="/images/Свеча.gif"
+              alt="Свеча"
+              className="alchemy-candle-image"
+            />
             {/* Зеркало - верхняя часть */}
             <div 
               className="artifact-zone artifact-mirror" 
