@@ -276,6 +276,15 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }
   }
 
+  // Автоматическая прокрутка к последнему сообщению
+  const mirrorMessagesEndRef = useRef(null)
+
+  useEffect(() => {
+    if (mirrorMessagesEndRef.current) {
+      mirrorMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [mirrorMessages, isLoadingMirror])
+
   const handleGetAdvice = () => {
     const advice = [
       'Сегодня день для новых начинаний. Доверьтесь своей интуиции.',
@@ -695,6 +704,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                   </p>
                 </div>
               )}
+              <div ref={mirrorMessagesEndRef} />
             </div>
             
             {/* Поле ввода для вопросов */}
