@@ -22,6 +22,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     const saved = localStorage.getItem('alchemy-debug-mode')
     return saved === 'true'
   })
+  const [candleImageError, setCandleImageError] = useState(false)
   const heroBackgroundRef = useRef(null)
   const audioRef = useRef(null)
   const fadeIntervalRef = useRef(null)
@@ -816,11 +817,25 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           {!selectedArtifact && (
           <div className="alchemy-interactive-zones">
             {/* Анимированная свеча поверх стола (масштабируется вместе с видимой областью фона) */}
-            <img
-              src="/images/Свеча.gif"
-              alt="Свеча"
-              className="alchemy-candle-image"
-            />
+            {!candleImageError ? (
+              <img
+                src="/images/Свеча.gif"
+                alt="Свеча"
+                className="alchemy-candle-image"
+                onError={() => {
+                  console.error('Failed to load Свеча.gif')
+                  setCandleImageError(true)
+                }}
+                loading="lazy"
+              />
+            ) : (
+              <div className="alchemy-candle-image" style={{
+                background: 'radial-gradient(circle, rgba(255, 170, 0, 0.8) 0%, rgba(255, 100, 0, 0.4) 50%, transparent 100%)',
+                borderRadius: '50%',
+                filter: 'blur(8px)',
+                pointerEvents: 'none'
+              }} />
+            )}
             {/* Зеркало - верхняя часть */}
             <div 
               className="artifact-zone artifact-mirror" 
