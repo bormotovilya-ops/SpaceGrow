@@ -143,7 +143,7 @@
   backdrop-filter: blur(15px) saturate(120%);
   -webkit-backdrop-filter: blur(15px) saturate(120%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-  padding: 8px 24px 4px 24px !important; /* Уменьшенный padding для компактного header без подписей */
+  padding: 12px 24px 8px 24px !important; /* Те же координаты, что и на других страницах */
 }
 
 /* Возвращаем обычный размер иконок на странице Alchemy */
@@ -159,13 +159,13 @@
   border-radius: 16px !important;
 }
 
-/* Уменьшенная высота кнопок меню без подписей */
+/* Кнопки меню с теми же координатами, но без подписей */
 .alchemy-container .header-menu-item {
   background: rgba(255, 255, 255, 0.01) !important;
-  min-height: 80px !important; /* Уменьшено с 90px (только иконка + padding) */
-  padding: 4px 4px !important; /* Уменьшен padding */
-  gap: 0 !important; /* Убираем gap, так как подписей нет */
-  justify-content: center !important; /* Центрируем иконку */
+  min-height: 90px !important; /* Та же высота, что и на других страницах */
+  padding: 8px 4px !important; /* Те же координаты, что и на других страницах */
+  gap: 6px !important; /* Тот же gap, что и на других страницах */
+  justify-content: flex-start !important; /* Как на других страницах */
 }
 
 .alchemy-container .header-menu-item:hover {
