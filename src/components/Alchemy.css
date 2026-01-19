@@ -605,19 +605,34 @@
   width: 100%;
   margin: 0 auto;
   min-height: 100%;
+  max-height: calc(100vh - 120px); /* Ограничиваем высоту для появления скролла */
   overflow-y: auto; /* Включаем прокрутку внутри контента - форма и результаты прокручиваются вместе */
   overflow-x: hidden;
   padding: 0 20px 100px; /* Добавляем отступы для красоты и снизу для кнопки */
-  /* Скрываем полосу прокрутки */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  /* Показываем тонкую полосу прокрутки */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 215, 0, 0.3) rgba(255, 255, 255, 0.1);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
 .action-zone-inner::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.action-zone-inner::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.action-zone-inner::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 3px;
+}
+
+.action-zone-inner::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.5);
 }
 
 /* Контент по умолчанию */
