@@ -32,108 +32,31 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
-    const getUserName = () => {
-      try {
-        // Пробуем несколько способов получения данных
-        let tg = null
-        
-        // Способ 1: window.Telegram?.WebApp
-        if (window.Telegram?.WebApp) {
-          tg = window.Telegram.WebApp
-        }
-        // Способ 2: window.TelegramWebApp
-        else if (window.TelegramWebApp) {
-          tg = window.TelegramWebApp
-        }
-        
-        if (!tg) {
-          return false
-        }
-        
-        // Инициализируем WebApp
-        try {
-          if (typeof tg.ready === 'function') {
-            tg.ready()
-          }
-          if (typeof tg.expand === 'function') {
-            tg.expand()
-          }
-        } catch (e) {
-          // Игнорируем ошибки инициализации
-        }
-        
-        // Способ 1: initDataUnsafe.user (самый надежный способ)
-        if (tg.initDataUnsafe?.user) {
-          const user = tg.initDataUnsafe.user
-          const name = user.first_name || user.username || user.last_name || ''
-          if (name) {
-            setUserName(name)
-            return true
-          }
-        }
-        
-        // Способ 2: initData (парсинг строки)
-        if (tg.initData) {
-          try {
-            const params = new URLSearchParams(tg.initData)
-            const userStr = params.get('user')
-            if (userStr) {
-              const user = JSON.parse(decodeURIComponent(userStr))
-              const name = user.first_name || user.username || user.last_name || ''
-              if (name) {
-                setUserName(name)
-                return true
-              }
-            }
-          } catch (e) {
-            // Игнорируем ошибки парсинга
-          }
-        }
-        
-        return false
-      } catch (error) {
-        return false
-      }
-    }
-    
-    // Функция для попытки получения имени с задержкой
-    const tryGetUserName = (delay = 0) => {
-      if (delay > 0) {
-        setTimeout(() => getUserName(), delay)
-      } else {
-        getUserName()
-      }
-    }
-    
-    // Пробуем получить имя сразу
-    tryGetUserName(0)
-    
-    // Пробуем через разные задержки (Telegram WebApp может инициализироваться асинхронно)
-    const delays = [100, 300, 500, 800, 1200, 2000, 3000]
-    const timeouts = delays.map(delay => setTimeout(() => tryGetUserName(), delay))
-    
-    // Слушаем событие готовности WebApp
-    const tg = window.Telegram?.WebApp || window.TelegramWebApp
-    if (tg && typeof tg.onEvent === 'function') {
-      // Слушаем событие ready - самое важное
-      tg.onEvent('ready', () => {
-        tryGetUserName(50)
-      })
+    // Проверяем, что скрипт Telegram WebApp подключен
+    if (window.Telegram && window.Telegram.WebApp) {
+      const webapp = window.Telegram.WebApp
       
-      // Слушаем другие события, которые могут означать готовность
-      tg.onEvent('viewportChanged', () => {
-        tryGetUserName(50)
-      })
-    }
-    
-    // Если WebApp уже готов, пробуем еще раз
-    if (tg && tg.isReady) {
-      setTimeout(() => tryGetUserName(), 100)
-    }
-    
-    // Cleanup
-    return () => {
-      timeouts.forEach(timeout => clearTimeout(timeout))
+      // Сообщаем Telegram, что приложение готово
+      webapp.ready()
+      
+      // Получаем данные пользователя
+      const user = webapp.initDataUnsafe?.user
+      
+      if (user) {
+        const firstName = user.first_name || ''
+        const lastName = user.last_name || ''
+        const username = user.username || ''
+        
+        // Используем first_name, если есть, иначе username, иначе "Путник"
+        const name = firstName || username || 'Путник'
+        setUserName(name)
+      } else {
+        // Если приложение запущено в браузере (вне Telegram), используем дефолтное имя
+        setUserName('Путник')
+      }
+    } else {
+      // Если Telegram WebApp не доступен (браузер), используем дефолтное имя
+      setUserName('Путник')
     }
   }, [])
 
@@ -212,8 +135,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   }
 
   const handleAskEternity = () => {
+    // Используем имя пользователя для персонализации ответа
+    const name = userName || 'Путник'
     // Здесь можно добавить логику обработки вопроса
-    alert('Ваш вопрос отправлен во Вселенную: ' + userQuestion)
+    alert(`${name}, ваш вопрос отправлен во Вселенную: ${userQuestion}`)
     setUserQuestion('')
   }
 
