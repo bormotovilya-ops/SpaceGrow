@@ -607,7 +607,7 @@
   min-height: 100%;
   overflow-y: auto; /* Включаем прокрутку внутри контента - форма и результаты прокручиваются вместе */
   overflow-x: hidden;
-  padding: 0 20px; /* Добавляем отступы для красоты */
+  padding: 0 20px 100px; /* Добавляем отступы для красоты и снизу для кнопки */
   /* Скрываем полосу прокрутки */
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -694,6 +694,7 @@
   flex-direction: column;
   gap: 15px;
   margin-top: 30px;
+  margin-bottom: 20px;
 }
 
 .action-zone-input {
@@ -828,7 +829,7 @@
 /* Кнопка "Вернуться к столу" */
 .back-to-table-button {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 30px;
@@ -1153,7 +1154,7 @@
   }
 
   .back-to-table-button {
-    bottom: 20px;
+    bottom: 80px;
     padding: 12px 30px;
     font-size: 14px;
   }
@@ -1469,7 +1470,7 @@
   margin-top: auto;
   background: rgba(26, 26, 26, 0.95);
   backdrop-filter: blur(10px);
-  padding-bottom: 10px;
+  padding-bottom: 80px;
   z-index: 10;
   position: relative;
 }
