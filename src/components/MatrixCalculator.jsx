@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
+import astroData from '../../scripts/astroData.json'
+import interpretations from '../../scripts/interpretations.json'
 import './MatrixCalculator.css'
 
 // Функция для приведения числа к диапазону 1-22
@@ -40,7 +42,7 @@ const methods = [
   { id: 'money', name: '💰 Код денег' },
   { id: 'humandesign', name: '⚡ HumanDesign' },
   { id: 'pythagoras', name: '🌟 Квадрат Пифагора' },
-  { id: 'soul', name: '✨ Дизайн Души' },
+  { id: 'soul', name: '✨ Формула Души' },
   { id: 'jung', name: '🎭 Архетипы по Юнгу' }
 ]
 
@@ -50,12 +52,629 @@ const methodDescriptions = {
   money: 'Алгоритм вычисления финансовой емкости на основе 9 ключевых энергий.',
   humandesign: 'Механика человека: расчет генетического типа и стратегии принятия решений.',
   pythagoras: 'Анализ сильных сторон личности и врожденных талантов по дате рождения.',
-  soul: 'Астрологическая формула, показывающая положение планет в момент вашего воплощения.',
+  soul: 'Расчет цепочек диспозиторов на основе точного времени и места рождения. Показывает центры Формулы Души, орбиты планет и их баллы.',
   jung: 'Определение доминирующей модели поведения и теневых сторон личности.'
 }
 
+// Планеты для расчета Формулы Души
+const PLANETS = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
+
+// Русские названия планет
+const PLANET_NAMES = {
+  Sun: 'Солнце',
+  Moon: 'Луна',
+  Mercury: 'Меркурий',
+  Venus: 'Венера',
+  Mars: 'Марс',
+  Jupiter: 'Юпитер',
+  Saturn: 'Сатурн',
+  Uranus: 'Уран',
+  Neptune: 'Нептун',
+  Pluto: 'Плутон'
+}
+
+// Иконки планет
+const PLANET_ICONS = {
+  Sun: '☀️',
+  Moon: '🌙',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '♅',
+  Neptune: '♆',
+  Pluto: '♇'
+}
+
+// Русские названия знаков
+const SIGN_NAMES = {
+  Aries: 'Овен',
+  Taurus: 'Телец',
+  Gemini: 'Близнецы',
+  Cancer: 'Рак',
+  Leo: 'Лев',
+  Virgo: 'Дева',
+  Libra: 'Весы',
+  Scorpio: 'Скорпион',
+  Sagittarius: 'Стрелец',
+  Capricorn: 'Козерог',
+  Aquarius: 'Водолей',
+  Pisces: 'Рыбы'
+}
+
+/**
+ * Геокодинг города через Nominatim API
+ */
+async function geocodeCity(cityName) {
+  if (!cityName || !cityName.trim()) {
+    throw new Error('Название города не может быть пустым')
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`,
+      {
+        headers: {
+          'User-Agent': 'SoulFormulaApp/1.0'
+        }
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Ошибка геокодинга: ${response.status}`)
+    }
+
+    const data = await response.json()
+    
+    if (!data || data.length === 0) {
+      throw new Error('Город не найден. Попробуйте указать более точное название.')
+    }
+
+    const result = data[0]
+    return {
+      lat: parseFloat(result.lat),
+      lon: parseFloat(result.lon)
+    }
+  } catch (error) {
+    console.error('Ошибка геокодинга:', error)
+    throw error
+  }
+}
+
+/**
+ * Упрощенный расчет эфемерид (fallback)
+ */
+function calculateSimpleEphemeris(date, time) {
+  const [year, month, day] = date.split('-').map(Number)
+  const dateObj = new Date(year, month - 1, day)
+  const dayOfYear = Math.floor((dateObj - new Date(year, 0, 0)) / 1000 / 60 / 60 / 24)
+  
+  const signs = Object.keys(astroData.rulers)
+  const result = {}
+  
+  PLANETS.forEach((planet, index) => {
+    const signIndex = (dayOfYear + index * 30) % signs.length
+    result[planet] = signs[signIndex]
+  })
+  
+  return result
+}
+
+/**
+ * Получение эфемерид
+ */
+async function getEphemeris(date, time, lat, lon) {
+  try {
+    const response = await fetch(
+      `https://api.freeastrologyapi.com/planets?date=${date}&time=${time}&lat=${lat}&lon=${lon}`,
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      }
+    ).catch(() => null)
+
+    if (response && response.ok) {
+      const data = await response.json()
+      return data
+    }
+
+    console.warn('API недоступен, используем упрощенный расчет')
+    return calculateSimpleEphemeris(date, time)
+  } catch (error) {
+    console.error('Ошибка получения эфемерид:', error)
+    return calculateSimpleEphemeris(date, time)
+  }
+}
+
+/**
+ * Построение графа диспозиторов
+ */
+function buildDispositorGraph(planetSigns) {
+  const graph = {}
+  
+  PLANETS.forEach(planet => {
+    const sign = planetSigns[planet]
+    if (sign && astroData.rulers[sign]) {
+      graph[planet] = astroData.rulers[sign]
+    }
+  })
+  
+  return graph
+}
+
+/**
+ * Поиск центров
+ */
+function findCenters(graph) {
+  const centers = {
+    domiciles: [],
+    mutualReceptions: [],
+    cycles: []
+  }
+  
+  // Обители
+  PLANETS.forEach(planet => {
+    if (graph[planet] === planet) {
+      centers.domiciles.push(planet)
+    }
+  })
+  
+  // Взаимные рецепции
+  const checked = new Set()
+  PLANETS.forEach(planetA => {
+    if (checked.has(planetA)) return
+    
+    const rulerA = graph[planetA]
+    if (rulerA && graph[rulerA] === planetA && planetA !== rulerA) {
+      centers.mutualReceptions.push([planetA, rulerA])
+      checked.add(planetA)
+      checked.add(rulerA)
+    }
+  })
+  
+  // Циклы
+  const visited = new Set()
+  const cyclesFound = new Set()
+  
+  function findCycle(planet, path = []) {
+    const cycleStart = path.indexOf(planet)
+    if (cycleStart !== -1) {
+      const cycle = path.slice(cycleStart)
+      if (cycle.length >= 3) {
+        const cycleKey = cycle.sort().join('-')
+        if (!cyclesFound.has(cycleKey)) {
+          centers.cycles.push([...cycle])
+          cyclesFound.add(cycleKey)
+        }
+      }
+      return
+    }
+    
+    if (visited.has(planet)) {
+      return
+    }
+    
+    visited.add(planet)
+    const newPath = [...path, planet]
+    
+    const nextPlanet = graph[planet]
+    if (nextPlanet) {
+      findCycle(nextPlanet, newPath)
+    }
+    
+    visited.delete(planet)
+  }
+  
+  PLANETS.forEach(planet => {
+    if (graph[planet]) {
+      findCycle(planet)
+    }
+  })
+  
+  const allCenters = new Set()
+  centers.domiciles.forEach(p => allCenters.add(p))
+  centers.mutualReceptions.forEach(pair => {
+    pair.forEach(p => allCenters.add(p))
+  })
+  centers.cycles.forEach(cycle => {
+    cycle.forEach(p => allCenters.add(p))
+  })
+  
+  return {
+    ...centers,
+    all: Array.from(allCenters)
+  }
+}
+
+/**
+ * Определение орбит
+ */
+function calculateOrbits(graph, centers) {
+  const orbits = {}
+  
+  centers.forEach(center => {
+    orbits[center] = 0
+  })
+  
+  const queue = [...centers]
+  const visited = new Set(centers)
+  
+  while (queue.length > 0) {
+    const current = queue.shift()
+    const currentOrbit = orbits[current] || 0
+    
+    PLANETS.forEach(planet => {
+      if (graph[planet] === current && !visited.has(planet)) {
+        orbits[planet] = currentOrbit + 1
+        visited.add(planet)
+        queue.push(planet)
+      }
+    })
+  }
+  
+  PLANETS.forEach(planet => {
+    if (!(planet in orbits)) {
+      orbits[planet] = 999
+    }
+  })
+  
+  return orbits
+}
+
+/**
+ * Расчет баллов планет
+ */
+function calculatePoints(planetSigns) {
+  const points = {}
+  
+  PLANETS.forEach(planet => {
+    const sign = planetSigns[planet]
+    if (!sign) {
+      points[planet] = astroData.default_points
+      return
+    }
+    
+    if (astroData.points[planet] && astroData.points[planet][sign] !== undefined) {
+      points[planet] = astroData.points[planet][sign]
+    } else {
+      points[planet] = astroData.default_points
+    }
+  })
+  
+  return points
+}
+
+/**
+ * Расчет Числа Судьбы (сумма всех цифр даты рождения до однозначного)
+ */
+function calculateDestinyNumber(dateString) {
+  const [day, month, year] = dateString.split('.').map(Number)
+  const dateStr = `${day}${month}${year}`
+  let sum = 0
+  
+  for (let i = 0; i < dateStr.length; i++) {
+    sum += parseInt(dateStr[i])
+  }
+  
+  // Приводим к однозначному числу
+  while (sum > 9) {
+    sum = Math.floor(sum / 10) + (sum % 10)
+  }
+  
+  return sum
+}
+
+/**
+ * Формирование интерпретации для планеты в центре
+ */
+function getPlanetInterpretation(planet, isRetro, points) {
+  const planetData = interpretations.planets[planet]
+  if (!planetData) return ''
+  
+  let text = ''
+  
+  // Выбираем direct или retro
+  if (isRetro) {
+    text = planetData.retro || planetData.direct
+  } else {
+    text = planetData.direct
+  }
+  
+  // Добавляем совет в зависимости от баллов
+  if (points >= 0 && points <= 2) {
+    text += '\n\n💡 ' + planetData.advice_low
+  } else if (points >= 5 && points <= 6) {
+    text += '\n\n💡 ' + planetData.advice_high
+  }
+  
+  return text
+}
+
+/**
+ * Расчет Формулы Души (упрощенная версия для предварительного результата)
+ */
+function calculateSoulFormula(planetSigns, dateString) {
+  const graph = buildDispositorGraph(planetSigns)
+  const centers = findCenters(graph)
+  const orbits = calculateOrbits(graph, centers.all)
+  const points = calculatePoints(planetSigns)
+  
+  // Упрощенный результат без интерпретаций
+  let resultText = 'Формула Души показывает цепочки диспозиторов планет в вашей натальной карте.\n\n'
+  
+  if (centers.all.length > 0) {
+    resultText += 'Центры Формулы Души:\n'
+    
+    if (centers.domiciles.length > 0) {
+      resultText += `Обители: ${centers.domiciles.map(p => PLANET_NAMES[p]).join(', ')}\n`
+    }
+    
+    if (centers.mutualReceptions.length > 0) {
+      resultText += `Взаимные рецепции: ${centers.mutualReceptions.map(pair => 
+        `${PLANET_NAMES[pair[0]]} ↔ ${PLANET_NAMES[pair[1]]}`
+      ).join(', ')}\n`
+    }
+    
+    if (centers.cycles.length > 0) {
+      resultText += `Циклы: ${centers.cycles.map(cycle => 
+        cycle.map(p => PLANET_NAMES[p]).join(' → ')
+      ).join('; ')}\n`
+    }
+    
+    resultText += '\nПланеты по орбитам:\n'
+    const orbitsByLevel = {}
+    PLANETS.forEach(planet => {
+      const orbit = orbits[planet]
+      if (orbit !== 999) {
+        if (!orbitsByLevel[orbit]) {
+          orbitsByLevel[orbit] = []
+        }
+        orbitsByLevel[orbit].push(`${PLANET_NAMES[planet]} (${points[planet]} баллов)`)
+      }
+    })
+    
+    Object.keys(orbitsByLevel).sort((a, b) => Number(a) - Number(b)).forEach(orbit => {
+      resultText += `Орбита ${orbit}: ${orbitsByLevel[orbit].join(', ')}\n`
+    })
+  } else {
+    resultText += 'Центры не найдены. Все планеты находятся на удаленных орбитах.'
+  }
+  
+  return {
+    result: resultText,
+    value: centers.all.length > 0 ? `${centers.all.length} центр(ов)` : 'Нет центров',
+    details: { centers, orbits, points, planetSigns, destinyNumber: calculateDestinyNumber(dateString) }
+  }
+}
+
+/**
+ * Генерация полного отчета Формулы Души с интерпретациями (для PDF)
+ */
+function generateFullSoulFormulaReport(details, dateString) {
+  const { centers, orbits, points, planetSigns, destinyNumber } = details
+  
+  let resultText = '🌟 КОСМИЧЕСКИЙ ПУТЕВОДИТЕЛЬ 🌟\n\n'
+  resultText += '═══════════════════════════════════\n\n'
+  
+  // 1. Ядро вашей личности (Центр)
+  resultText += '⭐ ЯДРО ВАШЕЙ ЛИЧНОСТИ ⭐\n\n'
+  
+  if (centers.all.length > 0) {
+    centers.all.forEach(planet => {
+      const icon = PLANET_ICONS[planet] || '✨'
+      const name = PLANET_NAMES[planet]
+      const planetPoints = points[planet] || 2
+      const isRetro = false // Можно улучшить, получая из API
+      
+      resultText += `${icon} ${name} (${planetPoints} баллов)\n`
+      resultText += getPlanetInterpretation(planet, isRetro, planetPoints)
+      resultText += '\n\n'
+    })
+    
+    if (centers.domiciles.length > 0) {
+      resultText += `🏠 Обители: ${centers.domiciles.map(p => `${PLANET_ICONS[p]} ${PLANET_NAMES[p]}`).join(', ')}\n\n`
+    }
+    
+    if (centers.mutualReceptions.length > 0) {
+      resultText += `🔄 Взаимные рецепции: ${centers.mutualReceptions.map(pair => 
+        `${PLANET_ICONS[pair[0]]} ${PLANET_NAMES[pair[0]]} ↔ ${PLANET_ICONS[pair[1]]} ${PLANET_NAMES[pair[1]]}`
+      ).join(', ')}\n\n`
+    }
+    
+    if (centers.cycles.length > 0) {
+      resultText += `🌀 Циклы: ${centers.cycles.map(cycle => 
+        cycle.map(p => `${PLANET_ICONS[p]} ${PLANET_NAMES[p]}`).join(' → ')
+      ).join('; ')}\n\n`
+    }
+  } else {
+    resultText += 'Центры не найдены. Все планеты находятся на удаленных орбитах.\n\n'
+  }
+  
+  resultText += '═══════════════════════════════════\n\n'
+  
+  // 2. Ваши инструменты (Орбиты)
+  resultText += '🛠️ ВАШИ ИНСТРУМЕНТЫ 🛠️\n\n'
+  
+  const orbitsByLevel = {}
+  PLANETS.forEach(planet => {
+    const orbit = orbits[planet]
+    if (orbit !== 999 && orbit >= 1 && orbit <= 5) {
+      if (!orbitsByLevel[orbit]) {
+        orbitsByLevel[orbit] = []
+      }
+      orbitsByLevel[orbit].push(`${PLANET_ICONS[planet]} ${PLANET_NAMES[planet]}`)
+    }
+  })
+  
+  Object.keys(orbitsByLevel).sort((a, b) => Number(a) - Number(b)).forEach(orbit => {
+    const orbitInfo = interpretations.orbits_info[orbit]
+    if (orbitInfo) {
+      resultText += `Орбита ${orbit}: ${orbitInfo}\n`
+      resultText += `Планеты: ${orbitsByLevel[orbit].join(', ')}\n\n`
+    }
+  })
+  
+  resultText += '═══════════════════════════════════\n\n'
+  
+  // 3. Числовой код (Нумерология)
+  resultText += '🔢 ЧИСЛОВОЙ КОД 🔢\n\n'
+  
+  const numerologyText = interpretations.numerology[destinyNumber.toString()]
+  
+  if (numerologyText) {
+    resultText += `Ваше Число Судьбы: ${destinyNumber}\n\n`
+    resultText += numerologyText + '\n'
+  }
+  
+  return resultText
+}
+
+/**
+ * Генерация промо-блока DemoFooter
+ */
+function generateDemoFooter() {
+  return `
+    <!-- Премиальный промо-блок DemoFooter -->
+    <div style="
+      margin-top: 70px;
+      padding: 40px 30px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(255, 215, 0, 0.15) 100%);
+      border: 2px solid rgba(255, 215, 0, 0.5);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      box-shadow: 0 12px 50px rgba(255, 215, 0, 0.3);
+      overflow: hidden;
+    ">
+      <!-- Декоративные элементы -->
+      <div style="
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+      "></div>
+      <div style="
+        position: absolute;
+        bottom: -30px;
+        left: -30px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 70%);
+        border-radius: 50%;
+      "></div>
+      
+      <!-- Заголовок в премиальном стиле -->
+      <h3 style="
+        color: #191923;
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 25px 0;
+        padding: 0;
+        font-family: 'Inter', 'Arial', sans-serif;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
+      ">🌌 Космический тест-драйв пройден!</h3>
+      
+      <!-- Разделитель -->
+      <div style="
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+        margin: 0 auto 25px;
+        border-radius: 2px;
+      "></div>
+      
+      <!-- Текст в премиальном стиле -->
+      <div style="position: relative; z-index: 1;">
+        <p style="
+          color: #3a3a3a;
+          font-size: 13px;
+          line-height: 1.9;
+          margin: 0 0 20px 0;
+          text-align: justify;
+          font-family: 'Inter', 'Arial', sans-serif;
+          font-weight: 400;
+        ">Перед вами — демонстрация работы нашего аналитического движка. Мы подготовили этот экспресс-анализ, чтобы показать, как алгоритмы могут мгновенно превращать сухие цифры и эфемериды в живой текст.</p>
+        
+        <p style="
+          color: #3a3a3a;
+          font-size: 13px;
+          line-height: 1.9;
+          margin: 0 0 20px 0;
+          text-align: justify;
+          font-family: 'Inter', 'Arial', sans-serif;
+          font-weight: 400;
+        ">Это лишь верхушка айсберга: мы намеренно не стали погружать вас в бесконечные таблицы и сложные аспекты, чтобы оставить интерфейс легким, а интригу — живой.</p>
+        
+        <p style="
+          color: #3a3a3a;
+          font-size: 13px;
+          line-height: 1.9;
+          margin: 0 0 30px 0;
+          text-align: justify;
+          font-family: 'Inter', 'Arial', sans-serif;
+          font-weight: 400;
+        ">Мы создаем подобные инструменты «под ключ». Если вам нужен корректный астрологический, нумерологический или любой другой расчетный модуль для вашего бота, сайта или приложения — вы по адресу. Мы берем на себя всю математику и логику.</p>
+      </div>
+      
+      <!-- Разделитель перед ссылкой -->
+      <div style="
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(255, 215, 0, 0.4) 50%, transparent 100%);
+        margin: 35px 0;
+      "></div>
+      
+      <!-- Текстовая ссылка для PDF в премиальном стиле -->
+      <div style="
+        text-align: center;
+        padding: 15px 20px;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.1) 100%);
+        border: 2px solid rgba(255, 215, 0, 0.4);
+        border-radius: 10px;
+        color: #0066cc;
+        font-size: 14px;
+        font-weight: 700;
+        font-family: 'Inter', 'Arial', sans-serif;
+        text-decoration: underline;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 102, 204, 0.15);
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.3px;
+      " id="pdf-text-link">🛠 Внедрить такой механизм себе: https://t.me/SpaceGrowthBot</div>
+      
+      <!-- Брендовая плашка в премиальном стиле -->
+      <div style="
+        text-align: center;
+        padding-top: 25px;
+        margin-top: 25px;
+        border-top: 1px solid rgba(255, 215, 0, 0.3);
+        color: #808080;
+        font-size: 11px;
+        font-style: italic;
+        font-family: 'Inter', 'Arial', sans-serif;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 1;
+      ">
+        Разработка: Бормотов Илья | SpaceGrow IT-Service
+      </div>
+    </div>
+  `
+}
+
 // Расчет результатов для всех методик
-const calculateAllMethods = (dateString) => {
+const calculateAllMethods = async (dateString, timeString, cityName) => {
   const [day, month, year] = dateString.split('.').map(Number)
   const daySum = sumDigits(day)
   const monthSum = sumDigits(month)
@@ -66,7 +685,6 @@ const calculateAllMethods = (dateString) => {
   const matrixResult = `Ваш аркан дня рождения — ${matrixArcana}. Это ключевая энергия, определяющая вашу жизненную силу и предназначение. Аркан ${matrixArcana} раскрывает ваши скрытые таланты и жизненный путь.`
   
   // Код денег - цифровой корень от суммы всех цифр даты рождения (1-9)
-  // Суммируем все цифры даты отдельно
   const allDigitsSum = daySum + monthSum + yearSum
   const moneyCode = digitalRoot(allDigitsSum)
   const moneyResult = `Ваш код денег — ${moneyCode}. Эта энергия определяет ваши финансовые возможности и способы привлечения изобилия. Код ${moneyCode} показывает, как вы взаимодействуете с денежными потоками.`
@@ -87,10 +705,19 @@ const calculateAllMethods = (dateString) => {
   const pythagorasType = pythagorasTypes[month % 4]
   const pythagorasResult = `Ваш профиль — ${pythagorasType}. Вы обладаете ${month % 2 === 0 ? 'логическим мышлением и системным подходом к решению задач' : 'глубокой интуицией и творческим видением мира'}.`
   
-  // Дизайн Души - на основе четности года
-  const soulTypes = ['Солнечный', 'Лунный', 'Звездный', 'Планетарный']
-  const soulType = soulTypes[year % 4]
-  const soulResult = `Ваш дизайн — ${soulType}. Ваша душа стремится к ${year % 2 === 0 ? 'активному проявлению, лидерству и влиянию на окружающих' : 'внутренней гармонии, созерцанию и глубокому пониманию жизни'}.`
+  // Формула Души - расчет на основе времени и места рождения
+  let soulResult = { result: 'Для расчета Формулы Души необходимо указать время и место рождения.', value: 'Не указано' }
+  if (timeString && cityName) {
+    try {
+      // Конвертируем дату из ДД.ММ.ГГГГ в ГГГГ-ММ-ДД
+      const dateForAPI = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const coords = await geocodeCity(cityName)
+      const planetSigns = await getEphemeris(dateForAPI, timeString, coords.lat, coords.lon)
+      soulResult = calculateSoulFormula(planetSigns, dateString)
+    } catch (error) {
+      soulResult = { result: `Ошибка расчета Формулы Души: ${error.message}`, value: 'Ошибка' }
+    }
+  }
   
   // Архетипы по Юнгу - остаток от деления дня на 12
   const jungArchetypes = [
@@ -106,13 +733,13 @@ const calculateAllMethods = (dateString) => {
     money: { result: moneyResult, value: moneyCode },
     humandesign: { result: humanDesignResult, value: humanDesignType },
     pythagoras: { result: pythagorasResult, value: pythagorasType },
-    soul: { result: soulResult, value: soulType },
+    soul: soulResult,
     jung: { result: jungResult, value: jungArchetype }
   }
 }
 
 // Генерация PDF через HTML (для поддержки кириллицы)
-const generatePDF = (methodName, methodId, resultData, birthDate) => {
+const generatePDF = (methodName, methodId, resultData, birthDate, soulDetails = null) => {
   // Создаем временный HTML элемент - ПОЛНОСТЬЮ ВИДИМЫЙ на экране
   const element = document.createElement('div')
   element.id = 'pdf-content'
@@ -141,29 +768,51 @@ const generatePDF = (methodName, methodId, resultData, birthDate) => {
     <div style="
       width: 100%;
       min-height: 1123px;
-      background: #ffffff;
+      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
       padding: 0;
       margin: 0;
       box-sizing: border-box;
       position: relative;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
     ">
-      <!-- Золотая полоса сверху -->
+      <!-- Премиальная золотая полоса сверху с градиентом -->
       <div style="
         width: 100%;
-        height: 38px;
-        background: #FFD700;
+        height: 45px;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
         margin: 0;
         padding: 0;
-      "></div>
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        position: relative;
+      ">
+        <div style="
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+        "></div>
+      </div>
       
-      <!-- Темная область для заголовка -->
+      <!-- Премиальная темная область для заголовка с градиентом -->
       <div style="
         width: 100%;
-        background: #191923;
-        padding: 57px 76px;
+        background: linear-gradient(135deg, #191923 0%, #1a1a24 50%, #191923 100%);
+        padding: 50px 30px;
         margin: 0;
         box-sizing: border-box;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       ">
+        <div style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+        "></div>
         <h1 style="
           color: #FFD700;
           font-size: 28px;
@@ -173,80 +822,104 @@ const generatePDF = (methodName, methodId, resultData, birthDate) => {
           padding: 0;
           letter-spacing: 1px;
           font-family: 'Inter', 'Arial', sans-serif;
+          line-height: 1.3;
         ">${methodName}</h1>
       </div>
       
-      <!-- Белый контент -->
+      <!-- Премиальный контент с фоном -->
       <div style="
         width: 100%;
         background: #ffffff;
-        padding: 76px;
+        padding: 40px 30px;
         box-sizing: border-box;
         position: relative;
         min-height: calc(1123px - 152px);
       ">
-        <!-- Дата рождения -->
-        <p style="
-          color: #505050;
-          font-size: 14px;
+        <!-- Дата рождения в премиальном стиле -->
+        <div style="
           text-align: center;
-          margin: 0 0 38px 0;
-          padding: 0;
-          font-family: 'Inter', 'Arial', sans-serif;
-        ">Дата рождения: ${birthDate}</p>
+          margin: 0 0 30px 0;
+          padding: 12px;
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 215, 0, 0.3);
+        ">
+          <p style="
+            color: #191923;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Arial', sans-serif;
+            letter-spacing: 0.5px;
+          ">📅 Дата рождения: <span style="color: #C89600; font-weight: 700; font-size: 14px;">${birthDate}</span></p>
+        </div>
         
-        <!-- Разделительная линия -->
+        <!-- Премиальная разделительная линия -->
         <div style="
           width: 100%;
           height: 2px;
-          background: #FFD700;
-          margin: 0 0 57px 0;
+          background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+          margin: 0 0 35px 0;
+          border-radius: 2px;
         "></div>
         
-        <!-- Основной текст -->
+        <!-- Основной текст в премиальном контейнере -->
         <div style="
           color: #282828;
-          font-size: 13px;
+          font-size: 12px;
           line-height: 1.8;
-          margin: 0 0 57px 0;
+          margin: 0 0 25px 0;
           text-align: justify;
           font-family: 'Inter', 'Arial', sans-serif;
-        ">${resultData.result.replace(/\n/g, '<br>')}</div>
+          white-space: pre-line;
+          background: #ffffff;
+          padding: 25px 20px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 215, 0, 0.2);
+          position: relative;
+        ">
+          <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 12px 0 0 12px;
+          "></div>
+          <div style="padding-left: 15px; color: #282828;">
+            ${(methodId === 'soul' && soulDetails 
+              ? generateFullSoulFormulaReport(soulDetails, birthDate) 
+              : (resultData?.result || 'Результат расчета недоступен')).replace(/\n/g, '<br>')}
+          </div>
+        </div>
         
         ${resultData.value ? `
-        <!-- Ключевое значение -->
+        <!-- Ключевое значение в премиальном стиле -->
         <div style="
-          background: #FFF6E6;
-          border-left: 4px solid #FFD700;
-          padding: 30px;
-          margin: 57px 0;
-          border-radius: 4px;
+          background: linear-gradient(135deg, #FFF6E6 0%, #FFEECC 50%, #FFF6E6 100%);
+          border-left: 5px solid #FFD700;
+          padding: 25px;
+          margin: 30px 0 0 0;
+          border-radius: 10px;
+          box-shadow: 0 4px 15px rgba(255, 215, 0, 0.15);
+          position: relative;
+          border: 1px solid rgba(255, 215, 0, 0.3);
         ">
           <p style="
-            color: #C89600;
+            color: #8B6914;
             font-size: 13px;
             font-weight: 700;
             margin: 0;
             padding: 0;
             font-family: 'Inter', 'Arial', sans-serif;
-          ">Ключевое значение: ${resultData.value}</p>
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+          ">✨ Ключевое значение: <span style="color: #C89600; font-size: 16px; font-weight: 800;">${resultData.value}</span></p>
         </div>
         ` : ''}
-        
-        <!-- Футер -->
-        <div style="
-          position: absolute;
-          bottom: 38px;
-          left: 76px;
-          right: 76px;
-          text-align: center;
-          color: #969696;
-          font-size: 10px;
-          font-style: italic;
-          font-family: 'Inter', 'Arial', sans-serif;
-        ">
-          <p style="margin: 0; padding: 0;">Цифровая Алхимия - Персональная расшифровка</p>
-        </div>
       </div>
     </div>
   `
@@ -254,127 +927,352 @@ const generatePDF = (methodName, methodId, resultData, birthDate) => {
   // Добавляем элемент в DOM - он будет видимым на экране
   document.body.appendChild(element)
   
-  // Ждем полного рендеринга и генерируем PDF напрямую через html2canvas
+  // Проверяем, что контент действительно есть
+  const contentText = methodId === 'soul' && soulDetails 
+    ? generateFullSoulFormulaReport(soulDetails, birthDate) 
+    : (resultData?.result || 'Нет данных')
+  
+  console.log('PDF Generation Debug:', {
+    methodName,
+    methodId,
+    hasResultData: !!resultData,
+    hasResult: !!resultData?.result,
+    hasSoulDetails: !!soulDetails,
+    contentLength: contentText.length,
+    contentPreview: contentText.substring(0, 100),
+    elementHTML: element.innerHTML.substring(0, 200)
+  })
+  
+  // Проверяем, что контент не пустой
+  if (!contentText || contentText.length < 10 || contentText === 'Нет данных') {
+    console.error('PDF content is empty!', { methodId, resultData, soulDetails })
+    alert('Ошибка: нет данных для генерации PDF. Пожалуйста, сначала выполните расчет.')
+    if (element.parentNode) {
+      document.body.removeChild(element)
+    }
+    return
+  }
+  
+  // Используем надежный метод с html2canvas и jsPDF
+  // Даем время на рендеринг DOM
   setTimeout(() => {
-    // Важно: убираем overflow и maxHeight, чтобы html2canvas видел весь контент
-    element.style.overflow = 'visible'
-    element.style.maxHeight = 'none'
-    element.style.height = 'auto'
-    
-    // Получаем реальные размеры контента
-    const contentDiv = element.querySelector('div')
-    const contentHeight = contentDiv ? contentDiv.scrollHeight : element.scrollHeight
-    const contentWidth = element.offsetWidth || 794
-    
-    console.log('Generating PDF:', {
-      elementWidth: element.offsetWidth,
-      elementHeight: element.offsetHeight,
-      scrollHeight: element.scrollHeight,
-      contentHeight: contentHeight
-    })
-    
-    // Используем html2canvas БЕЗ указания фиксированных размеров
-    html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      allowTaint: true,
-      scrollX: 0,
-      scrollY: 0
-      // НЕ указываем width и height - пусть html2canvas сам определит
-    }).then((canvas) => {
-      console.log('Canvas created:', canvas.width, 'x', canvas.height)
-      
-      // Создаем PDF из canvas
-      const imgData = canvas.toDataURL('image/png', 1.0) // Используем PNG для лучшего качества
-      const pdf = new jsPDF({
-        unit: 'mm',
-        format: 'a4',
-        orientation: 'portrait'
-      })
-      
-      // Размеры A4 в мм
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
-      const margin = 10 // отступы по 10мм
-      const usableWidth = pdfWidth - 2 * margin
-      const usableHeight = pdfHeight - 2 * margin
-      
-      // Размеры canvas в мм (canvas.width в пикселях с учетом scale=2)
-      const imgWidth = (canvas.width / 2) * 0.264583 // конвертируем пиксели в мм
-      const imgHeight = (canvas.height / 2) * 0.264583
-      
-      // Рассчитываем масштаб для вписывания в доступную область
-      const ratio = Math.min(usableWidth / imgWidth, usableHeight / imgHeight)
-      const finalWidth = imgWidth * ratio
-      const finalHeight = imgHeight * ratio
-      
-      // Если контент не помещается на одну страницу, разбиваем на несколько
-      if (finalHeight > usableHeight) {
-        // Разбиваем на несколько страниц
-        const pageHeight = usableHeight
-        let yPosition = 0
-        let pageNum = 0
-        
-        while (yPosition < canvas.height) {
-          if (pageNum > 0) {
-            pdf.addPage()
-          }
-          
-          // Высота части, которую поместим на эту страницу
-          const sourceHeight = Math.min(pageHeight / (ratio * 0.264583 * 2), canvas.height - yPosition)
-          
-          // Создаем canvas для этой части
-          const pageCanvas = document.createElement('canvas')
-          pageCanvas.width = canvas.width
-          pageCanvas.height = sourceHeight
-          const ctx = pageCanvas.getContext('2d')
-          ctx.drawImage(canvas, 0, yPosition, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight)
-          
-          const pageImgData = pageCanvas.toDataURL('image/png', 1.0)
-          const pageFinalHeight = (sourceHeight / 2) * 0.264583 * ratio
-          
-          pdf.addImage(pageImgData, 'PNG', margin, margin, usableWidth, pageFinalHeight)
-          
-          yPosition += sourceHeight
-          pageNum++
-        }
-      } else {
-        // Контент помещается на одну страницу
-        pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, finalHeight)
-      }
-      
-      // Сохраняем PDF
-      pdf.save(`${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`)
-      
-      console.log('PDF saved successfully')
-      
-      // Удаляем элемент
-      setTimeout(() => {
-        if (element.parentNode) {
-          document.body.removeChild(element)
-        }
-      }, 500)
-    }).catch((error) => {
-      console.error('Ошибка при генерации PDF:', error)
+    // Проверяем, что элемент действительно отрендерен
+    const checkElement = document.getElementById('pdf-content')
+    if (!checkElement || checkElement.innerHTML.length < 100) {
+      console.error('Element not properly rendered!')
+      alert('Ошибка при подготовке PDF. Пожалуйста, попробуйте еще раз.')
       if (element.parentNode) {
         document.body.removeChild(element)
       }
-    })
-  }, 1000)
+      return
+    }
+    
+    generatePDFFallback(element, methodName, methodId, resultData, birthDate, soulDetails)
+  }, 1500)
 }
+
+// Fallback метод для генерации PDF (старый способ)
+function generatePDFFallback(element, methodName, methodId, resultData, birthDate, soulDetails) {
+  // Важно: убираем overflow и maxHeight, чтобы html2canvas видел весь контент
+  element.style.overflow = 'visible'
+  element.style.maxHeight = 'none'
+  element.style.height = 'auto'
+  // Перемещаем элемент за пределы экрана, но оставляем видимым для html2canvas
+  element.style.position = 'absolute'
+  element.style.left = '-9999px'
+  element.style.top = '0'
+  element.style.visibility = 'visible'
+  element.style.opacity = '1'
+  element.style.display = 'block'
+  
+  // Получаем реальные размеры контента
+  const contentDiv = element.querySelector('div')
+  const contentHeight = contentDiv ? contentDiv.scrollHeight : element.scrollHeight
+  const contentWidth = element.offsetWidth || 794
+  
+  // Проверяем, что контент есть
+  const innerHTML = element.innerHTML
+  console.log('Generating PDF (fallback):', {
+    elementWidth: element.offsetWidth,
+    elementHeight: element.offsetHeight,
+    scrollHeight: element.scrollHeight,
+    contentHeight: contentHeight,
+    hasContent: innerHTML.length > 0,
+    contentPreview: innerHTML.substring(0, 200),
+    computedStyle: window.getComputedStyle(element).display
+  })
+  
+  if (!innerHTML || innerHTML.length < 100) {
+    console.error('PDF content is empty or too short!', {
+      innerHTML: innerHTML,
+      length: innerHTML?.length
+    })
+    alert('Ошибка: контент для PDF пуст. Пожалуйста, попробуйте еще раз.')
+    if (element.parentNode) {
+      document.body.removeChild(element)
+    }
+    return
+  }
+  
+  // Используем html2canvas с оптимизированными настройками для меньшего размера файла
+  html2canvas(element, {
+    scale: 1.5, // Уменьшаем scale для меньшего размера файла
+    useCORS: true,
+    letterRendering: true,
+    logging: false,
+    backgroundColor: '#ffffff',
+    allowTaint: true,
+    scrollX: 0,
+    scrollY: 0
+    // НЕ указываем width и height - пусть html2canvas сам определит
+  }).then((canvas) => {
+    console.log('Canvas created:', canvas.width, 'x', canvas.height)
+    
+    // Используем JPEG для меньшего размера файла (качество 0.85 - хороший баланс)
+    const imgData = canvas.toDataURL('image/jpeg', 0.85)
+    const pdf = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    })
+    
+    // Размеры A4 в мм
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = pdf.internal.pageSize.getHeight()
+    const margin = 10 // отступы по 10мм
+    const usableWidth = pdfWidth - 2 * margin
+    const usableHeight = pdfHeight - 2 * margin
+    
+    // Размеры canvas в мм (canvas.width в пикселях с учетом scale=1.5)
+    const imgWidth = (canvas.width / 1.5) * 0.264583 // конвертируем пиксели в мм
+    const imgHeight = (canvas.height / 1.5) * 0.264583
+    
+    // Рассчитываем масштаб для вписывания в доступную область
+    const ratio = Math.min(usableWidth / imgWidth, usableHeight / imgHeight)
+    const finalWidth = imgWidth * ratio
+    const finalHeight = imgHeight * ratio
+    
+    // Основной контент всегда на первой странице (ограничиваем высоту)
+    const maxContentHeight = usableHeight * 0.95 // Оставляем небольшой запас
+    const contentHeight = Math.min(finalHeight, maxContentHeight)
+    
+    // Добавляем первую страницу с основным контентом
+    pdf.addImage(imgData, 'JPEG', margin, margin, finalWidth, contentHeight)
+    
+    // Создаем вторую страницу с демо-припиской
+    pdf.addPage()
+    
+    // Создаем отдельный элемент для второй страницы
+    const demoElement = document.createElement('div')
+    demoElement.id = 'pdf-demo-content'
+    demoElement.style.position = 'absolute'
+    demoElement.style.left = '-9999px'
+    demoElement.style.top = '0'
+    demoElement.style.width = '794px'
+    demoElement.style.background = 'transparent'
+    demoElement.style.color = '#FFD700'
+    demoElement.style.fontFamily = "'Inter', 'Arial', sans-serif"
+    demoElement.style.visibility = 'visible'
+    demoElement.style.opacity = '1'
+    demoElement.style.display = 'block'
+    
+    demoElement.innerHTML = `
+      <div style="
+        width: 100%;
+        min-height: 1123px;
+        background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+        padding: 60px 30px;
+        box-sizing: border-box;
+        position: relative;
+      ">
+        ${generateDemoFooter()}
+        
+        <!-- Премиальный футер -->
+        <div style="
+          margin-top: 40px;
+          text-align: center;
+          padding: 20px;
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 215, 0, 0.04) 100%);
+          border-radius: 10px;
+          border-top: 1px solid rgba(255, 215, 0, 0.3);
+        ">
+          <p style="
+            margin: 0; 
+            padding: 0;
+            color: #969696;
+            font-size: 11px;
+            font-style: italic;
+            font-family: 'Inter', 'Arial', sans-serif;
+            font-weight: 500;
+            letter-spacing: 1px;
+          ">✨ Цифровая Алхимия - Персональная расшифровка ✨</p>
+        </div>
+      </div>
+    `
+    
+    document.body.appendChild(demoElement)
+    
+    // Генерируем canvas для второй страницы
+    setTimeout(() => {
+      html2canvas(demoElement, {
+        scale: 1.5,
+        useCORS: true,
+        letterRendering: true,
+        logging: false,
+        backgroundColor: '#0a0a0f',
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0
+      }).then((demoCanvas) => {
+        const demoImgData = demoCanvas.toDataURL('image/jpeg', 0.85)
+        const demoImgWidth = (demoCanvas.width / 1.5) * 0.264583
+        const demoImgHeight = (demoCanvas.height / 1.5) * 0.264583
+        const demoRatio = Math.min(usableWidth / demoImgWidth, usableHeight / demoImgHeight)
+        const demoFinalWidth = demoImgWidth * demoRatio
+        const demoFinalHeight = demoImgHeight * demoRatio
+        
+        pdf.setPage(2)
+        pdf.addImage(demoImgData, 'JPEG', margin, margin, demoFinalWidth, demoFinalHeight)
+        
+        // Добавляем ссылку на текстовую ссылку на второй странице
+        const textLink = demoElement.querySelector('#pdf-text-link')
+        if (textLink) {
+          const textRect = textLink.getBoundingClientRect()
+          const demoElementRect = demoElement.getBoundingClientRect()
+          
+          const relativeTop = textRect.top - demoElementRect.top
+          const relativeLeft = textRect.left - demoElementRect.left
+          const textWidth = textRect.width
+          const textHeight = textRect.height
+          
+          const textTopMM = margin + (relativeTop / 1.5) * 0.264583 * demoRatio
+          const textLeftMM = margin + (relativeLeft / 1.5) * 0.264583 * demoRatio
+          const textWidthMM = (textWidth / 1.5) * 0.264583 * demoRatio
+          const textHeightMM = (textHeight / 1.5) * 0.264583 * demoRatio
+          
+          const pdfHeight = pdf.internal.pageSize.getHeight()
+          const linkY = pdfHeight - textTopMM - textHeightMM
+          
+          pdf.link(textLeftMM, linkY, textWidthMM, textHeightMM, {
+            url: 'https://t.me/SpaceGrowthBot'
+          })
+        }
+        
+        // Удаляем демо-элемент
+        setTimeout(() => {
+          if (demoElement.parentNode) {
+            document.body.removeChild(demoElement)
+          }
+        }, 500)
+        
+        // Сохраняем PDF
+        pdf.save(`${methodName.replace(/\s+/g, '_')}_${birthDate.replace(/\./g, '_')}.pdf`)
+        
+        console.log('PDF saved successfully (fallback)')
+        
+        // Удаляем основной элемент
+        setTimeout(() => {
+          if (element.parentNode) {
+            document.body.removeChild(element)
+          }
+        }, 500)
+      }).catch((error) => {
+        console.error('Ошибка при генерации второй страницы PDF:', error)
+        // Удаляем элементы в случае ошибки
+        if (demoElement.parentNode) {
+          document.body.removeChild(demoElement)
+        }
+        if (element.parentNode) {
+          document.body.removeChild(element)
+        }
+      })
+    }, 500)
+  }).catch((error) => {
+    console.error('Ошибка при генерации PDF:', error)
+    if (element.parentNode) {
+      document.body.removeChild(element)
+    }
+  })
+}
+
 
 function MatrixCalculator() {
   const [birthDate, setBirthDate] = useState('')
+  const [birthTime, setBirthTime] = useState('')
+  const [city, setCity] = useState('')
+  const [citySuggestions, setCitySuggestions] = useState([])
   const [isScanning, setIsScanning] = useState(false)
   const [completedMethods, setCompletedMethods] = useState([])
   const [results, setResults] = useState(null)
   const [error, setError] = useState('')
   const [selectedMethod, setSelectedMethod] = useState(null)
+  const calculateButtonRef = useRef(null)
+  const resultsRef = useRef(null)
+  const scanningRef = useRef(null)
+  const cityInputRef = useRef(null)
+  const suggestionsRef = useRef(null)
 
-  const handleCalculate = () => {
+  // Автодополнение города
+  useEffect(() => {
+    if (!city || city.length < 2) {
+      setCitySuggestions([])
+      return
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=5&addressdetails=1`,
+          {
+            headers: {
+              'User-Agent': 'SoulFormulaApp/1.0'
+            }
+          }
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+          const suggestions = data
+            .filter(item => item.type === 'city' || item.type === 'town' || item.type === 'village')
+            .map(item => ({
+              name: item.display_name.split(',')[0],
+              fullName: item.display_name,
+              lat: parseFloat(item.lat),
+              lon: parseFloat(item.lon)
+            }))
+          setCitySuggestions(suggestions)
+        }
+      } catch (err) {
+        console.error('Ошибка автодополнения:', err)
+      }
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [city])
+
+  // Закрытие подсказок при клике вне
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target) &&
+        cityInputRef.current &&
+        !cityInputRef.current.contains(event.target)
+      ) {
+        setCitySuggestions([])
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleCitySelect = (suggestion) => {
+    setCity(suggestion.name)
+    setCitySuggestions([])
+  }
+
+  const handleCalculate = async () => {
     if (!birthDate) {
       setError('Пожалуйста, введите дату рождения')
       return
@@ -414,6 +1312,27 @@ function MatrixCalculator() {
     setCompletedMethods([])
     setResults(null)
 
+    // Сразу скроллим вниз, чтобы видеть процесс сканирования
+    setTimeout(() => {
+      // Пытаемся скроллить к блоку сканирования
+      if (scanningRef.current) {
+        scanningRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        })
+      } else {
+        // Если блок еще не отрендерился, скроллим к кнопке или просто вниз
+        const actionZoneInner = document.querySelector('.action-zone-inner')
+        if (actionZoneInner) {
+          actionZoneInner.scrollTo({
+            top: actionZoneInner.scrollHeight,
+            behavior: 'smooth'
+          })
+        }
+      }
+    }, 100)
+
     // Анимация сканирования - последовательное появление галочек
     methods.forEach((method, index) => {
       setTimeout(() => {
@@ -421,10 +1340,16 @@ function MatrixCalculator() {
         
         // После завершения всех методов показываем результаты
         if (index === methods.length - 1) {
-          setTimeout(() => {
-            const calculatedResults = calculateAllMethods(birthDate)
-            setResults(calculatedResults)
-            setIsScanning(false)
+          setTimeout(async () => {
+            try {
+              const calculatedResults = await calculateAllMethods(birthDate, birthTime, city)
+              setResults(calculatedResults)
+            } catch (err) {
+              setError('Ошибка при расчете. Попробуйте еще раз.')
+              console.error('Ошибка расчета:', err)
+            } finally {
+              setIsScanning(false)
+            }
           }, 800)
         }
       }, (index + 1) * 800) // Задержка 0.8 секунды между каждым методом
@@ -448,11 +1373,72 @@ function MatrixCalculator() {
     setCompletedMethods([])
   }
 
-  const handleDownloadPDF = (methodId, methodName) => {
-    if (results && results[methodId]) {
-      generatePDF(methodName, methodId, results[methodId], birthDate)
+  const handleInputFocus = () => {
+    // Скрываем кнопку "Вернуться к столу" при фокусе на поле ввода
+    const actionZone = document.getElementById('action-zone')
+    if (actionZone) {
+      actionZone.classList.add('input-focused')
+    }
+    
+    // При фокусе на поле ввода скроллим к кнопке "Рассчитать"
+    setTimeout(() => {
+      if (calculateButtonRef.current) {
+        calculateButtonRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        })
+      }
+    }, 300) // Небольшая задержка для появления клавиатуры
+  }
+
+  const handleInputBlur = () => {
+    // Показываем кнопку "Вернуться к столу" при потере фокуса
+    const actionZone = document.getElementById('action-zone')
+    if (actionZone) {
+      actionZone.classList.remove('input-focused')
     }
   }
+
+  const handleInputKeyUp = () => {
+    // При вводе текста также проверяем видимость кнопки и скроллим к ней
+    setTimeout(() => {
+      if (calculateButtonRef.current) {
+        const rect = calculateButtonRef.current.getBoundingClientRect()
+        const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
+        
+        // Если кнопка не видна, скроллим к ней
+        if (!isVisible) {
+          calculateButtonRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          })
+        }
+      }
+    }, 100)
+  }
+
+  const handleDownloadPDF = (methodId, methodName) => {
+    if (results && results[methodId]) {
+      // Для Формулы Души передаем details для полного отчета
+      const soulDetails = methodId === 'soul' && results[methodId].details ? results[methodId].details : null
+      generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
+    }
+  }
+
+  // Скроллим к результатам после их появления
+  useEffect(() => {
+    if (results && !isScanning && resultsRef.current) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        })
+      }, 500) // Задержка для завершения анимации появления
+    }
+  }, [results, isScanning])
 
   return (
     <div className="matrix-calculator">
@@ -467,19 +1453,74 @@ function MatrixCalculator() {
           placeholder="ДД.ММ.ГГГГ"
           value={birthDate}
           onChange={handleDateChange}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          onKeyUp={handleInputKeyUp}
           maxLength={10}
           disabled={isScanning}
         />
+        
+        <label htmlFor="birthTime" className="matrix-label">
+          Время рождения
+        </label>
+        <input
+          id="birthTime"
+          type="text"
+          className="matrix-input"
+          placeholder="ЧЧ:ММ"
+          value={birthTime}
+          onChange={(e) => {
+            let value = e.target.value.replace(/\D/g, '')
+            if (value.length >= 2) {
+              value = value.slice(0, 2) + ':' + value.slice(2, 4)
+            }
+            setBirthTime(value)
+            setError('')
+          }}
+          maxLength={5}
+          disabled={isScanning}
+        />
+        
+        <label htmlFor="city" className="matrix-label">
+          Город рождения
+        </label>
+        <div className="matrix-city-wrapper">
+          <input
+            ref={cityInputRef}
+            id="city"
+            type="text"
+            className="matrix-input"
+            placeholder="Начните вводить название города..."
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            disabled={isScanning}
+          />
+          {citySuggestions.length > 0 && (
+            <div ref={suggestionsRef} className="matrix-suggestions">
+              {citySuggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="matrix-suggestion-item"
+                  onClick={() => handleCitySelect(suggestion)}
+                >
+                  {suggestion.fullName}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
         {error && <div className="matrix-error">{error}</div>}
         
         <motion.button
+          ref={calculateButtonRef}
           className="matrix-button"
           onClick={handleCalculate}
           disabled={isScanning}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {isScanning ? 'Сканирование...' : 'Рассчитать влияние планет на судьбу'}
+          {isScanning ? 'Сканирование...' : 'Рассчитать'}
         </motion.button>
       </div>
 
@@ -487,6 +1528,7 @@ function MatrixCalculator() {
       <AnimatePresence>
         {isScanning && (
           <motion.div
+            ref={scanningRef}
             className="scanning-container"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -530,6 +1572,7 @@ function MatrixCalculator() {
       <AnimatePresence>
         {results && !isScanning && (
           <motion.div
+            ref={resultsRef}
             className="results-container"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

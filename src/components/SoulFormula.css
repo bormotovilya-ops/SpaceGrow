@@ -1,0 +1,294 @@
+.soul-formula {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.soul-formula-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.soul-formula-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #FFD700;
+  margin-bottom: 10px;
+}
+
+.soul-formula-description {
+  font-size: 14px;
+  color: #969696;
+  line-height: 1.6;
+}
+
+.soul-formula-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.soul-formula-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.soul-formula-city-group {
+  position: relative;
+}
+
+.soul-formula-city-wrapper {
+  position: relative;
+}
+
+.soul-formula-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #282828;
+}
+
+.soul-formula-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #282828;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.soul-formula-input:focus {
+  outline: none;
+  border-color: #FFD700;
+}
+
+.soul-formula-input:disabled {
+  background: #F5F5F5;
+  cursor: not-allowed;
+}
+
+.soul-formula-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 2px solid #FFD700;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.soul-formula-suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.soul-formula-suggestion-item:hover {
+  background-color: #FFF6E6;
+}
+
+.soul-formula-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.soul-formula-error {
+  padding: 12px;
+  background: #FFE6E6;
+  border: 2px solid #FF6B6B;
+  border-radius: 8px;
+  color: #C92A2A;
+  font-size: 14px;
+}
+
+.soul-formula-button {
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #191923;
+  background: #FFD700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.soul-formula-button:hover:not(:disabled) {
+  background: #FFC700;
+}
+
+.soul-formula-button:disabled {
+  background: #CCCCCC;
+  cursor: not-allowed;
+}
+
+.soul-formula-result {
+  margin-top: 40px;
+  padding: 30px;
+  background: #F9F9F9;
+  border-radius: 12px;
+  border: 2px solid #FFD700;
+}
+
+.soul-formula-result-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #191923;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.soul-formula-section {
+  margin-bottom: 30px;
+}
+
+.soul-formula-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #191923;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #FFD700;
+}
+
+.soul-formula-center-type {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  border-left: 4px solid #FFD700;
+}
+
+.soul-formula-center-type strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #191923;
+  font-size: 16px;
+}
+
+.soul-formula-center-type ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.soul-formula-center-type li {
+  margin-bottom: 8px;
+  color: #505050;
+  line-height: 1.6;
+}
+
+.soul-formula-no-centers {
+  padding: 16px;
+  background: #FFF6E6;
+  border-radius: 8px;
+  color: #C89600;
+  text-align: center;
+  font-style: italic;
+}
+
+.soul-formula-orbits {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.soul-formula-orbit {
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  border-left: 4px solid #FFD700;
+}
+
+.soul-formula-orbit strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #191923;
+  font-size: 16px;
+}
+
+.soul-formula-orbit ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.soul-formula-orbit li {
+  margin-bottom: 8px;
+  color: #505050;
+  line-height: 1.6;
+}
+
+.soul-formula-planets-table {
+  overflow-x: auto;
+}
+
+.soul-formula-planets-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.soul-formula-planets-table thead {
+  background: #191923;
+  color: #FFD700;
+}
+
+.soul-formula-planets-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.soul-formula-planets-table td {
+  padding: 12px;
+  border-bottom: 1px solid #F0F0F0;
+  color: #505050;
+  font-size: 14px;
+}
+
+.soul-formula-planets-table tbody tr:hover {
+  background: #FFF6E6;
+}
+
+.soul-formula-planets-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .soul-formula {
+    padding: 15px;
+  }
+
+  .soul-formula-title {
+    font-size: 24px;
+  }
+
+  .soul-formula-result {
+    padding: 20px;
+  }
+
+  .soul-formula-planets-table {
+    font-size: 12px;
+  }
+
+  .soul-formula-planets-table th,
+  .soul-formula-planets-table td {
+    padding: 8px;
+  }
+}

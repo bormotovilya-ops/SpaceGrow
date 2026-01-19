@@ -46,99 +46,94 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           tg = window.TelegramWebApp
         }
         
-        if (tg) {
-          // Инициализируем WebApp
-          try {
+        if (!tg) {
+          return false
+        }
+        
+        // Инициализируем WebApp
+        try {
+          if (typeof tg.ready === 'function') {
             tg.ready()
+          }
+          if (typeof tg.expand === 'function') {
             tg.expand()
-          } catch (e) {
-            console.log('WebApp ready/expand error:', e)
           }
-          
-          // Способ 1: initDataUnsafe.user
-          if (tg.initDataUnsafe?.user) {
-            const user = tg.initDataUnsafe.user
-            const name = user.first_name || user.username || user.last_name || ''
-            console.log('Получено имя из initDataUnsafe:', name)
-            if (name) {
-              setUserName(name)
-              return true
-            }
+        } catch (e) {
+          // Игнорируем ошибки инициализации
+        }
+        
+        // Способ 1: initDataUnsafe.user (самый надежный способ)
+        if (tg.initDataUnsafe?.user) {
+          const user = tg.initDataUnsafe.user
+          const name = user.first_name || user.username || user.last_name || ''
+          if (name) {
+            setUserName(name)
+            return true
           }
-          
-          // Способ 2: initData (парсинг строки)
-          if (tg.initData) {
-            try {
-              const params = new URLSearchParams(tg.initData)
-              const userStr = params.get('user')
-              if (userStr) {
-                const user = JSON.parse(decodeURIComponent(userStr))
-                const name = user.first_name || user.username || user.last_name || ''
-                console.log('Получено имя из initData:', name)
-                if (name) {
-                  setUserName(name)
-                  return true
-                }
+        }
+        
+        // Способ 2: initData (парсинг строки)
+        if (tg.initData) {
+          try {
+            const params = new URLSearchParams(tg.initData)
+            const userStr = params.get('user')
+            if (userStr) {
+              const user = JSON.parse(decodeURIComponent(userStr))
+              const name = user.first_name || user.username || user.last_name || ''
+              if (name) {
+                setUserName(name)
+                return true
               }
-            } catch (e) {
-              console.log('Ошибка парсинга initData:', e)
             }
+          } catch (e) {
+            // Игнорируем ошибки парсинга
           }
-          
-          // Способ 3: Прямой доступ к данным (если доступен)
-          if (tg.platform && tg.version) {
-            console.log('Telegram WebApp доступен, версия:', tg.version, 'платформа:', tg.platform)
-          }
-        } else {
-          console.log('Telegram WebApp не найден. window.Telegram:', window.Telegram)
         }
         
         return false
       } catch (error) {
-        console.error('Ошибка при получении данных пользователя:', error)
         return false
       }
     }
     
-    // Пробуем получить имя сразу
-    let success = getUserName()
-    
-    // Если не получилось, пробуем через задержки (Telegram WebApp может инициализироваться асинхронно)
-    if (!success) {
-      const timeout1 = setTimeout(() => {
-        success = getUserName()
-      }, 300)
-      
-      const timeout2 = setTimeout(() => {
-        if (!success) {
-          getUserName()
-        }
-      }, 800)
-      
-      const timeout3 = setTimeout(() => {
+    // Функция для попытки получения имени с задержкой
+    const tryGetUserName = (delay = 0) => {
+      if (delay > 0) {
+        setTimeout(() => getUserName(), delay)
+      } else {
         getUserName()
-      }, 1500)
-      
-      // Также слушаем событие готовности WebApp
-      const tg = window.Telegram?.WebApp || window.TelegramWebApp
-      if (tg && tg.onEvent) {
-        tg.onEvent('viewportChanged', () => {
-          getUserName()
-        })
-        
-        // Слушаем другие события
-        if (tg.onEvent) {
-          tg.onEvent('mainButtonClicked', () => {
-            getUserName()
-          })
-        }
       }
+    }
+    
+    // Пробуем получить имя сразу
+    tryGetUserName(0)
+    
+    // Пробуем через разные задержки (Telegram WebApp может инициализироваться асинхронно)
+    const delays = [100, 300, 500, 800, 1200, 2000, 3000]
+    const timeouts = delays.map(delay => setTimeout(() => tryGetUserName(), delay))
+    
+    // Слушаем событие готовности WebApp
+    const tg = window.Telegram?.WebApp || window.TelegramWebApp
+    if (tg && typeof tg.onEvent === 'function') {
+      // Слушаем событие ready - самое важное
+      tg.onEvent('ready', () => {
+        tryGetUserName(50)
+      })
       
-      return () => {
-        clearTimeout(timeout1)
-        clearTimeout(timeout2)
-        clearTimeout(timeout3)
-      }
+      // Слушаем другие события, которые могут означать готовность
+      tg.onEvent('viewportChanged', () => {
+        tryGetUserName(50)
+      })
+    }
+    
+    // Если WebApp уже готов, пробуем еще раз
+    if (tg && tg.isReady) {
+      setTimeout(() => tryGetUserName(), 100)
+    }
+    
+    // Cleanup
+    return () => {
+      timeouts.forEach(timeout => clearTimeout(timeout))
     }
   }, [])
 
@@ -654,9 +649,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       case 'astrolabe':
         return (
           <div className="action-zone-content">
-            <h2 className="action-zone-title">Космический Путеводитель</h2>
+            <h2 className="action-zone-title">Код Мироздания</h2>
             <p className="action-zone-text">
-              Астролябия позволяет вычислить влияние звезд на вашу судьбу. Введите дату, чтобы узнать свое предназначение.
+              Астролябия синхронизирует влияние звезд, чисел и вашей психоматрицы. Введите дату рождения, чтобы расшифровать свое предназначение через систему древних и цифровых знаний.
             </p>
             <div className="matrix-calculator-wrapper">
               <MatrixCalculator />
@@ -919,7 +914,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
       {/* Секция действий */}
       {selectedArtifact && (
-        <section id="action-zone" className="action-zone">
+        <section 
+          id="action-zone" 
+          className={`action-zone ${selectedArtifact === 'astrolabe' ? 'action-zone-astrolabe' : ''}`}
+        >
           <div className="action-zone-inner">
             {renderActionContent()}
           </div>

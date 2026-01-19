@@ -1,0 +1,20 @@
+{
+  "rulers": {
+    "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury", "Cancer": "Moon",
+    "Leo": "Sun", "Virgo": "Mercury", "Libra": "Venus", "Scorpio": "Pluto",
+    "Sagittarius": "Jupiter", "Capricorn": "Saturn", "Aquarius": "Uranus", "Pisces": "Neptune"
+  },
+  "points": {
+    "Sun": { "Leo": 6, "Aries": 5, "Sagittarius": 4, "Scorpio": 4, "Gemini": 3, "Virgo": 3, "Libra": 1, "Aquarius": 0 },
+    "Moon": { "Cancer": 6, "Taurus": 5, "Pisces": 4, "Scorpio": 4, "Virgo": 3, "Capricorn": 0, "Scorpio_fall": 1 },
+    "Mercury": { "Gemini": 6, "Virgo": 6, "Aquarius": 5, "Libra": 4, "Taurus": 4, "Leo": 2, "Sagittarius": 0, "Pisces": 0 },
+    "Venus": { "Taurus": 6, "Libra": 6, "Pisces": 5, "Aquarius": 4, "Cancer": 4, "Aries": 0, "Scorpio": 0, "Virgo": 1 },
+    "Mars": { "Aries": 6, "Scorpio": 6, "Capricorn": 5, "Leo": 4, "Sagittarius": 4, "Libra": 0, "Taurus": 0, "Cancer": 1 },
+    "Jupiter": { "Sagittarius": 6, "Pisces": 6, "Cancer": 5, "Aries": 4, "Scorpio": 4, "Gemini": 0, "Virgo": 0, "Capricorn": 1 },
+    "Saturn": { "Capricorn": 6, "Aquarius": 6, "Libra": 5, "Taurus": 4, "Virgo": 4, "Cancer": 0, "Leo": 0, "Aries": 1 },
+    "Uranus": { "Aquarius": 6, "Scorpio": 5, "Gemini": 4, "Libra": 4, "Leo": 0, "Taurus": 1 },
+    "Neptune": { "Pisces": 6, "Leo": 5, "Cancer": 4, "Scorpio": 4, "Virgo": 0, "Aquarius": 1 },
+    "Pluto": { "Scorpio": 6, "Aries": 5, "Leo": 4, "Cancer": 4, "Taurus": 0 }
+  },
+  "default_points": 2
+}
