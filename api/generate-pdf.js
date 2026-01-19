@@ -1,5 +1,138 @@
 // Vercel Serverless Function для генерации PDF на сервере
-import PDFDocument from 'pdfkit'
+// Используем Puppeteer для рендеринга HTML в PDF (поддержка кириллицы)
+
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
+
+// Функция генерации HTML-контента (аналогично клиентской версии)
+function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails = null) {
+  const textContent = resultData?.result || 'Результат расчета недоступен'
+  
+  return `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', 'Arial', sans-serif;
+      width: 794px;
+      min-height: 1123px;
+      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Премиальная золотая полоса сверху -->
+  <div style="
+    width: 100%;
+    height: 45px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+  "></div>
+  
+  <!-- Премиальная темная область для заголовка -->
+  <div style="
+    width: 100%;
+    background: linear-gradient(135deg, #191923 0%, #1a1a24 50%, #191923 100%);
+    padding: 50px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  ">
+    <h1 style="
+      color: #FFD700;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      letter-spacing: 1px;
+      font-family: 'Inter', 'Arial', sans-serif;
+    ">${methodName}</h1>
+  </div>
+  
+  <!-- Контент -->
+  <div style="
+    width: 100%;
+    background: #ffffff;
+    padding: 40px 30px;
+    box-sizing: border-box;
+  ">
+    <!-- Дата рождения -->
+    <div style="
+      text-align: center;
+      margin: 0 0 30px 0;
+      padding: 12px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    ">
+      <p style="
+        color: #191923;
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">📅 Дата рождения: <span style="color: #C89600; font-weight: 700; font-size: 14px;">${birthDate}</span></p>
+    </div>
+    
+    <!-- Разделительная линия -->
+    <div style="
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+      margin: 0 0 35px 0;
+    "></div>
+    
+    <!-- Основной текст -->
+    <div style="
+      color: #282828;
+      font-size: 12px;
+      line-height: 1.8;
+      margin: 0 0 25px 0;
+      text-align: justify;
+      font-family: 'Inter', 'Arial', sans-serif;
+      white-space: pre-line;
+      background: #ffffff;
+      padding: 25px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    ">
+      ${textContent.replace(/\n/g, '<br>')}
+    </div>
+    
+    ${resultData?.value ? `
+    <!-- Ключевое значение -->
+    <div style="
+      background: linear-gradient(135deg, #FFF6E6 0%, #FFEECC 50%, #FFF6E6 100%);
+      border-left: 5px solid #FFD700;
+      padding: 25px;
+      margin: 30px 0 0 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.15);
+    ">
+      <p style="
+        color: #8B6914;
+        font-size: 13px;
+        font-weight: 700;
+        margin: 0;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">✨ Ключевое значение: <span style="color: #C89600; font-size: 16px; font-weight: 800;">${resultData.value}</span></p>
+    </div>
+    ` : ''}
+  </div>
+</body>
+</html>
+  `.trim()
+}
 
 export default async function handler(req, res) {
   // Разрешаем только POST запросы
@@ -19,70 +152,42 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Отсутствуют обязательные поля' })
     }
 
-    // Используем pdfkit для генерации PDF с поддержкой кириллицы
-    const chunks = []
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 20
+    // Генерируем HTML-контент
+    const htmlContent = generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetails)
+    
+    // Настраиваем Chromium для Vercel
+    chromium.setGraphicsMode(false)
+    
+    // Запускаем Puppeteer
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     })
     
-    // Собираем PDF в буфер через события
-    doc.on('data', chunk => chunks.push(chunk))
+    const page = await browser.newPage()
     
-    // Заголовок
-    doc.fontSize(20)
-      .fillColor('#FFD700')
-      .text(methodName, {
-        align: 'center',
-        width: doc.page.width - 40
-      })
-    
-    // Дата рождения
-    doc.fontSize(12)
-      .fillColor('#000000')
-      .moveDown(0.5)
-      .text(`Дата рождения: ${birthDate}`)
-    
-    // Разделительная линия
-    const lineY = doc.y
-    doc.moveDown(0.5)
-      .strokeColor('#FFD700')
-      .lineWidth(0.5)
-      .moveTo(20, doc.y)
-      .lineTo(doc.page.width - 20, doc.y)
-      .stroke()
-    
-    // Основной текст результата
-    doc.moveDown(1)
-      .fontSize(11)
-      .fillColor('#282828')
-    const textContent = resultData?.result || 'Результат расчета недоступен'
-    doc.text(textContent, {
-      width: doc.page.width - 40,
-      align: 'justify',
-      lineGap: 2
+    // Устанавливаем HTML контент
+    await page.setContent(htmlContent, {
+      waitUntil: 'networkidle0'
     })
     
-    // Ключевое значение, если есть
-    if (resultData?.value) {
-      doc.moveDown(2)
-        .fontSize(12)
-        .fillColor('#C89600')
-        .text(`Ключевое значение: ${resultData.value}`, {
-          width: doc.page.width - 40
-        })
-    }
-    
-    // Завершаем документ
-    doc.end()
-    
-    // Ждем завершения генерации
-    await new Promise((resolve) => {
-      doc.on('end', resolve)
+    // Генерируем PDF
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '0',
+        right: '0',
+        bottom: '0',
+        left: '0'
+      }
     })
     
-    // Конвертируем буфер в base64
-    const pdfBuffer = Buffer.concat(chunks)
+    await browser.close()
+    
+    // Конвертируем в base64
     const base64Data = pdfBuffer.toString('base64')
     const pdfBase64 = `data:application/pdf;base64,${base64Data}`
     
@@ -94,8 +199,7 @@ export default async function handler(req, res) {
     
     if (telegramUserId && process.env.TELEGRAM_BOT_TOKEN) {
       try {
-        // Используем уже готовый буфер
-        // Создаем multipart/form-data вручную (более надежно для Vercel)
+        // Создаем multipart/form-data вручную
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2, 15)
         const crlf = '\r\n'
         const parts = []
@@ -139,7 +243,6 @@ export default async function handler(req, res) {
           telegramSent = true
           console.log('✅ PDF успешно отправлен в Telegram')
         } else {
-          // Если ошибка - пытаемся разобрать JSON ошибки
           let errorMsg = 'Unknown error'
           try {
             const errorObj = JSON.parse(responseText)
@@ -150,7 +253,7 @@ export default async function handler(req, res) {
           
           console.error('❌ Ошибка отправки PDF в Telegram:', errorMsg)
           
-          // Отправляем сообщение с уведомлением и инструкцией
+          // Отправляем сообщение с уведомлением
           try {
             const message = `📄 Ваш PDF "${methodName}" готов!\n\n` +
               `Дата рождения: ${birthDate}\n` +
@@ -170,8 +273,6 @@ export default async function handler(req, res) {
           } catch (msgError) {
             console.error('Ошибка отправки сообщения:', msgError)
           }
-          
-          throw new Error(`Telegram API error: ${errorMsg}`)
         }
       } catch (error) {
         console.error('❌ Ошибка отправки в Telegram бот:', error.message)
