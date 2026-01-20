@@ -816,49 +816,6 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) 
     line-height: 1.6;
   `
   
-  // Конвертируем base64 в Blob для использования в кнопках
-  const blob = base64ToBlob(pdfUrl)
-  
-  const buttonsContainer = document.createElement('div')
-  buttonsContainer.style.cssText = `
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  `
-  
-  // Кнопка для открытия/скачивания PDF
-  const openBtn = createPDFButton('📥 Скачать PDF', () => {
-    try {
-      const blobUrl = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = blobUrl
-      link.download = fileName || 'result.pdf'
-      link.style.display = 'none'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100)
-    } catch (error) {
-      console.error('Ошибка скачивания:', error)
-      alert('Ошибка скачивания файла')
-    }
-  })
-  
-  // Кнопка для просмотра в новой вкладке
-  const viewBtn = createPDFButton('🔍 Просмотреть PDF', () => {
-    try {
-      const blobUrl = URL.createObjectURL(blob)
-      window.open(blobUrl, '_blank')
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-    } catch (error) {
-      console.error('Ошибка открытия:', error)
-      alert('Ошибка открытия файла')
-    }
-  })
-  
-  buttonsContainer.appendChild(openBtn)
-  buttonsContainer.appendChild(viewBtn)
-  
   const closeBtn = document.createElement('button')
   closeBtn.textContent = '✕'
   closeBtn.style.cssText = `
