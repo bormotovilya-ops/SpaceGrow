@@ -72,7 +72,7 @@ class NotificationService:
             
             keyboard = [
                 [InlineKeyboardButton(
-                    "🚀 Запустить SpaceGrow",
+                    "🚀 Запустить SpaceGrowth",
                     url=diagnostics_url
                 )]
             ]

@@ -46,14 +46,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Создаем кнопку с WebApp
     keyboard = [
         [InlineKeyboardButton(
-            "🚀 Открыть SpaceGrow",
+            "🚀 Открыть SpaceGrowth",
             web_app=WebAppInfo(url=MINIAPP_URL)
         )]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     welcome_text = (
-        f"Добро пожаловать в <b>SpaceGrow</b>.\n\n"
+        f"Добро пожаловать в <b>SpaceGrowth</b>.\n\n"
         "Здесь смыслы обретают структуру, а онлайн-школы — новый финансовый двигатель. "
         "Я помогаю найти «протечки» в ваших процессах и внедряю <b>ИИ-архитектуру</b> для роста прибыли до <b>1-2 млн ₽</b> и выше.\n\n"
         "<b>Внутри приложения:</b>\n"
@@ -207,7 +207,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "📋 Доступные команды:\n\n"
         "/start - Начать работу с ботом\n"
         "/help - Показать эту справку\n"
-        "/site - Открыть сайт SpaceGrow\n"
+        "/site - Открыть сайт SpaceGrowth\n"
         "/diagnostics - Пройти диагностику воронки\n"
         "/stats - Показать статистику бота\n\n"
         "💬 Контакты:\n"
@@ -218,7 +218,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     
     keyboard = [
         [InlineKeyboardButton(
-            "🚀 Открыть SpaceGrow",
+            "🚀 Открыть SpaceGrowth",
             web_app=WebAppInfo(url=MINIAPP_URL)
         )]
     ]
@@ -234,14 +234,14 @@ async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """Открыть сайт"""
     keyboard = [
         [InlineKeyboardButton(
-            "🚀 Открыть SpaceGrow",
+            "🚀 Открыть SpaceGrowth",
             web_app=WebAppInfo(url=MINIAPP_URL)
         )]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "Нажми на кнопку, чтобы открыть SpaceGrow IT-Service:",
+        "Нажми на кнопку, чтобы открыть SpaceGrowth IT-Service:",
         reply_markup=reply_markup
     )
 
@@ -254,7 +254,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if any(word in text for word in ['привет', 'здравствуй', 'добрый день', 'добрый вечер']):
         keyboard = [
             [InlineKeyboardButton(
-                "🚀 Открыть SpaceGrow",
+                "🚀 Открыть SpaceGrowth",
                 web_app=WebAppInfo(url=MINIAPP_URL)
             )]
         ]
@@ -267,7 +267,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif any(word in text for word in ['услуги', 'что делаешь', 'чем занимаешься']):
         keyboard = [
             [InlineKeyboardButton(
-                "🚀 Открыть SpaceGrow",
+                "🚀 Открыть SpaceGrowth",
                 web_app=WebAppInfo(url=MINIAPP_URL)
             )]
         ]
@@ -288,7 +288,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     else:
         keyboard = [
             [InlineKeyboardButton(
-                "🚀 Открыть SpaceGrow",
+                "🚀 Открыть SpaceGrowth",
                 web_app=WebAppInfo(url=MINIAPP_URL)
             )]
         ]

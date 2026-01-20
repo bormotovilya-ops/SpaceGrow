@@ -667,7 +667,7 @@ function generateDemoFooter() {
         position: relative;
         z-index: 1;
       ">
-        Разработка: Бормотов Илья | SpaceGrow IT-Service
+        Разработка: Бормотов Илья | SpaceGrowth IT-Service
       </div>
     </div>
   `
