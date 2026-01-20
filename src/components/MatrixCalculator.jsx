@@ -865,7 +865,6 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) 
   content.appendChild(closeBtn)
   content.appendChild(title)
   content.appendChild(text)
-  content.appendChild(buttonsContainer)
   modal.appendChild(content)
   document.body.appendChild(modal)
   
