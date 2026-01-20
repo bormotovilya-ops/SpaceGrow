@@ -2525,8 +2525,9 @@ function MatrixCalculator() {
     
     // Определяем Telegram WebApp (ПРИОРИТЕТ - всегда серверная генерация)
     const tg = window.Telegram?.WebApp || window.TelegramWebApp
-    const isTelegram = !!tg
-    const telegramUserId = tg?.initDataUnsafe?.user?.id || tg?.initData?.user?.id || null
+    // Проверяем, что мы ДЕЙСТВИТЕЛЬНО в Telegram (initData должен быть непустым)
+    const isTelegram = !!(tg && tg.initData && tg.initData.length > 0)
+    const telegramUserId = tg?.initDataUnsafe?.user?.id || null
     
     // Определяем реальное мобильное устройство (игнорируем эмуляцию в DevTools)
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) &&
