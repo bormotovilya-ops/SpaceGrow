@@ -2150,15 +2150,14 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
   // Используем html2canvas с оптимизированными настройками для меньшего размера файла
   console.log('🔵 Начинаем генерацию canvas из элемента...')
   html2canvas(element, {
-    scale: 2, // Увеличиваем scale для лучшего качества
+    scale: 1.5, // Оптимальный scale для баланса качества и размера
     useCORS: true,
     letterRendering: true,
-    logging: true, // Включаем логирование для отладки
+    logging: false, // Выключаем логирование для продакшена
     backgroundColor: '#ffffff',
     allowTaint: true,
     scrollX: 0,
     scrollY: 0
-    // НЕ указываем width и height - пусть html2canvas сам определит
   }).then((canvas) => {
     console.log('✅ Canvas created:', canvas.width, 'x', canvas.height)
     
@@ -2166,8 +2165,8 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
       throw new Error('Canvas пустой или имеет нулевые размеры')
     }
     
-    // Используем PNG для лучшего качества (можем вернуться к JPEG позже)
-    const imgData = canvas.toDataURL('image/png', 1.0)
+    // Используем JPEG с качеством 0.85 для меньшего размера файла
+    const imgData = canvas.toDataURL('image/jpeg', 0.85)
     console.log('✅ Изображение сгенерировано, размер base64:', imgData.length)
     
     if (!imgData || imgData.length < 100) {
@@ -2188,9 +2187,9 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
     const usableWidth = pdfWidth - 2 * margin
     const usableHeight = pdfHeight - 2 * margin
     
-    // Размеры canvas в мм (canvas.width в пикселях с учетом scale=2)
-    const imgWidth = (canvas.width / 2) * 0.264583 // конвертируем пиксели в мм
-    const imgHeight = (canvas.height / 2) * 0.264583
+    // Размеры canvas в мм (canvas.width в пикселях с учетом scale=1.5)
+    const imgWidth = (canvas.width / 1.5) * 0.264583 // конвертируем пиксели в мм
+    const imgHeight = (canvas.height / 1.5) * 0.264583
     
     // Рассчитываем масштаб для вписывания в доступную область
     const ratio = Math.min(usableWidth / imgWidth, usableHeight / imgHeight)
@@ -2211,7 +2210,7 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
     })
     // Добавляем изображение ПЕРВОЙ страницы с результатами в PDF
     try {
-      pdf.addImage(imgData, 'PNG', margin, margin, finalWidth, contentHeight)
+      pdf.addImage(imgData, 'JPEG', margin, margin, finalWidth, contentHeight)
       console.log('✅ Первая страница (результаты) добавлена в PDF')
     } catch (addImageError) {
       console.error('❌ Ошибка при добавлении изображения в PDF:', addImageError)
@@ -2248,10 +2247,10 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
     // Даем время на рендеринг второй страницы
     setTimeout(() => {
       html2canvas(demoElement, {
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
         letterRendering: true,
-        logging: true,
+        logging: false,
         backgroundColor: '#ffffff',
         allowTaint: true,
         scrollX: 0,
@@ -2259,18 +2258,18 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
       }).then((demoCanvas) => {
         console.log('✅ Canvas второй страницы создан:', demoCanvas.width, 'x', demoCanvas.height)
         
-        const demoImgData = demoCanvas.toDataURL('image/png', 1.0)
+        const demoImgData = demoCanvas.toDataURL('image/jpeg', 0.85)
         
         // Размеры второй страницы
-        const demoImgWidth = (demoCanvas.width / 2) * 0.264583
-        const demoImgHeight = (demoCanvas.height / 2) * 0.264583
+        const demoImgWidth = (demoCanvas.width / 1.5) * 0.264583
+        const demoImgHeight = (demoCanvas.height / 1.5) * 0.264583
         const demoRatio = Math.min(usableWidth / demoImgWidth, usableHeight / demoImgHeight)
         const demoFinalWidth = demoImgWidth * demoRatio
         const demoFinalHeight = demoImgHeight * demoRatio
         
         // Добавляем вторую страницу
         pdf.setPage(2)
-        pdf.addImage(demoImgData, 'PNG', margin, margin, demoFinalWidth, demoFinalHeight)
+        pdf.addImage(demoImgData, 'JPEG', margin, margin, demoFinalWidth, demoFinalHeight)
         console.log('✅ Вторая страница (демо) добавлена в PDF')
         
         // Удаляем элемент второй страницы

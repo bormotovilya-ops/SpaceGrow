@@ -212,7 +212,8 @@ export default async function handler(req, res) {
         // Делаем скриншот HTML страницы (решает проблему с кодировкой)
         console.log('📸 Делаем скриншот HTML страницы...')
         const screenshotBuffer = await page.screenshot({
-          type: 'png',
+          type: 'jpeg',
+          quality: 85,
           fullPage: true,
           printBackground: true
         })
@@ -339,7 +340,8 @@ export default async function handler(req, res) {
             
             // Делаем скриншот второй страницы
             const demoScreenshot = await demoPage.screenshot({
-              type: 'png',
+              type: 'jpeg',
+              quality: 85,
               fullPage: true,
               printBackground: true
             })
@@ -381,8 +383,8 @@ export default async function handler(req, res) {
                 </style>
               </head>
               <body>
-                <img src="data:image/png;base64,${firstPageImageBase64}" alt="Page 1 - Results" />
-                <img src="data:image/png;base64,${demoImageBase64}" alt="Page 2 - Demo" />
+                <img src="data:image/jpeg;base64,${firstPageImageBase64}" alt="Page 1 - Results" />
+                <img src="data:image/jpeg;base64,${demoImageBase64}" alt="Page 2 - Demo" />
               </body>
               </html>
             `, { waitUntil: 'load', timeout: 30000 })
