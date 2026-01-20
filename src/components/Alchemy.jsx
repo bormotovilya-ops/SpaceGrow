@@ -5,6 +5,7 @@ import './Alchemy.css'
 
 function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
   const [selectedArtifact, setSelectedArtifact] = useState(null)
+  const [activeCrystalTest, setActiveCrystalTest] = useState(null) // <-- ВСТ
   const [isDarkMode, setIsDarkMode] = useState(false) // Для свечи - черный фон
   const [userQuestion, setUserQuestion] = useState('')
   const [numberInput, setNumberInput] = useState('')
@@ -747,6 +748,34 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     return () => clearTimeout(timer)
   }, [])
 
+ //Илья: делаем тесты
+ const crystalTests = [
+  {
+    id: 'wheel',
+    title: 'Колесо Баланса',
+    desc: 'Анализ 8 сфер жизни эксперта',
+    icon: '☸️', // Можно заменить на <Aperture /> если есть Lucide
+  },
+  {
+    id: 'ikigai',
+    title: 'Матрица Икигай',
+    desc: 'Найди смысл, пользу и доход',
+    icon: '🎯',
+  },
+  {
+    id: 'archetype',
+    title: 'Архетип Бренда',
+    desc: 'Твоя роль в глазах аудитории',
+    icon: '🎭',
+  },
+  {
+    id: 'energy',
+    title: 'Ресурсный Check-up',
+    desc: 'Уровень энергии и выгорания',
+    icon: '🔥',
+  }
+];
+
   // Рендер динамического контента в зависимости от выбранного артефакта
   const renderActionContent = () => {
     if (!selectedArtifact) {
@@ -831,18 +860,58 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           </div>
         )
 
-      case 'crystal':
-        return (
-          <div className="action-zone-content">
-            <h2 className="action-zone-title">Кристалл Мудрости</h2>
-            <p className="action-zone-text">
-              Этот кристалл способен фокусировать ментальную энергию. Нажмите, чтобы получить краткое послание или совет на день.
-            </p>
-            <button className="action-zone-button" onClick={handleGetAdvice}>
-              Получить совет
-            </button>
-          </div>
-        )
+        case 'crystal':
+          if (activeCrystalTest === 'ikigai') {
+            return (
+              <Diagnostics 
+                customStages={IKIGAI_TEST} 
+                onBackToCrystal={() => setActiveCrystalTest(null)} 
+              />
+            );
+          }
+        
+          return (
+            <div className="action-zone-content action-zone-tarot">
+              <h2 className="action-zone-title">Инструменты Диагностики</h2>
+              <p className="action-zone-text">
+                Внедрите умные тесты в свои образовательные продукты. Это кратно повышает конверсию в продажу и вовлеченность учеников. Посмотрите, как это может выглядеть в вашей школе:
+              </p>
+              
+              <div className="tests-grid">
+                {/* КАРТОЧКА 1: ИКИГАЙ */}
+                <div className="test-card" onClick={() => alert('Этот шаблон в разработке')}>
+                  <div className="test-card-icon">🎯</div>
+                  <h3 className="test-card-title">Матрица Икигай</h3>
+                  <p className="test-card-desc">Инструмент для поиска ниши и смыслов внутри курса.</p>
+                  <div className="test-card-badge">Скоро</div>
+                </div>
+                
+                {/* КАРТОЧКА 2: КОЛЕСО БАЛАНСА */}
+                <div className="test-card" onClick={() => alert('Этот шаблон в разработке')}>
+                  <div className="test-card-icon">☸️</div>
+                  <h3 className="test-card-title">Колесо Баланса</h3>
+                  <p className="test-card-desc">Классический инструмент для мягких ниш и life-коучинга.</p>
+                  <div className="test-card-badge">Скоро</div>
+                </div>
+        
+                {/* КАРТОЧКА 3: АРХЕТИПЫ */}
+                <div className="test-card" onClick={() => alert('Этот шаблон в разработке')}>
+                  <div className="test-card-icon">🎭</div>
+                  <h3 className="test-card-title">Тест на Архетипы</h3>
+                  <p className="test-card-desc">Идеально для курсов по личному бренду и психологии.</p>
+                  <div className="test-card-badge">Скоро</div>
+                </div>
+        
+                {/* КАРТОЧКА 4: ВАШ ТЕСТ */}
+                <div className="test-card custom-request" onClick={() => window.open('https://t.me/ilyaborm', '_blank')}>
+                  <div className="test-card-icon">✨</div>
+                  <h3 className="test-card-title">Свой вариант</h3>
+                  <p className="test-card-desc">Разработаем уникальную механику под вашу методологию.</p>
+                  <button className="novella-start-btn" style={{marginTop: '10px'}}>Заказать</button>
+                </div>
+              </div>
+            </div>
+          );
 
       case 'astrolabe':
         return (
@@ -866,16 +935,50 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           </div>
         )
 
-      case 'snitch':
-        return (
-          <div className="action-zone-content">
-            <h2 className="action-zone-title">Поиграем</h2>
-            <p className="action-zone-text">Выберите игру</p>
-            <button className="action-zone-button" onClick={handlePlayNovella}>
-              Новелла
-            </button>
-          </div>
-        )
+        case 'snitch':
+          return (
+            <div className="action-zone-content action-zone-snitch">
+              <h2 className="action-zone-title">Геймификация Обучения</h2>
+              <p className="action-zone-text">
+                Превратите ваши уроки в захватывающее приключение. Посмотрите примеры механик, которые кратно повышают досмотримость курсов.
+              </p>
+              
+              <div className="tests-grid">
+                {/* КАРТОЧКА 1: ДЕМО-ИГРА */}
+                <div className="test-card novella-card active-demo" onClick={handlePlayNovella}>
+                  <div className="novella-badge">Демонстрация</div>
+                  <div className="test-card-icon">🎮</div>
+                  <h3 className="test-card-title">Интерактивный Онбординг</h3>
+                  <p className="test-card-desc">Пример того, как ученик погружается в ваш продукт через выбор персонажа и сюжета.</p>
+                  <button className="novella-start-btn">Запустить демо</button>
+                </div>
+        
+                {/* КАРТОЧКА 2: МЕХАНИКА "КВЕСТ" */}
+                <div className="test-card novella-card">
+                  <div className="novella-badge feature">Механика</div>
+                  <div className="test-card-icon">🗺️</div>
+                  <h3 className="test-card-title">Сюжетные Домашки</h3>
+                  <p className="test-card-desc">Вместо скучных тестов — выполнение заданий ради спасения королевства или запуска ракеты.</p>
+                </div>
+        
+                {/* КАРТОЧКА 3: МЕХАНИКА "КОЛЛЕКЦИИ" */}
+                <div className="test-card novella-card">
+                  <div className="novella-badge feature">Механика</div>
+                  <div className="test-card-icon">🏆</div>
+                  <h3 className="test-card-title">Магические Артефакты</h3>
+                  <p className="test-card-desc">Система достижений, где за каждый пройденный модуль ученик получает редкий предмет.</p>
+                </div>
+        
+                {/* КАРТОЧКА 4: МЕХАНИКА "ВЕТВЛЕНИЕ" */}
+                <div className="test-card novella-card">
+                  <div className="novella-badge feature">Механика</div>
+                  <div className="test-card-icon">⚡</div>
+                  <h3 className="test-card-title">Вариативный Финал</h3>
+                  <p className="test-card-desc">Результат курса зависит от решений ученика. 100% вовлеченность в процесс обучения.</p>
+                </div>
+              </div>
+            </div>
+          )
 
       case 'tarot':
         return (

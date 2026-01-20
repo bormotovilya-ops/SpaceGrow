@@ -2088,3 +2088,133 @@
     transform: translateX(0);
   }
 }
+
+/* Илья: Стили для тестов */
+/* Контейнер для сетки */
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Стили карточки */
+.test-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.test-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #00f2ff; /* Цвет кристалла */
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+}
+
+.test-card-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.test-card-title {
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.test-card-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.test-card-badge {
+  margin-top: 10px;
+  font-size: 0.7rem;
+  background: rgba(0, 242, 255, 0.2);
+  color: #00f2ff;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Адаптивность для мобилок */
+@media (max-width: 600px) {
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Золотистое свечение Снитча */
+.action-zone-snitch {
+  background: radial-gradient(circle at center, rgba(255, 215, 0, 0.15) 0%, transparent 75%);
+}
+
+.novella-card {
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(10, 10, 10, 0.95)) !important;
+}
+
+/* Эффект "активной" демонстрации */
+.novella-card.active-demo {
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+.novella-badge {
+  position: absolute;
+  top: 12px;
+  right: -30px;
+  background: #FFD700;
+  color: #000;
+  padding: 4px 35px;
+  font-size: 10px;
+  font-weight: 800;
+  transform: rotate(45deg);
+}
+
+.novella-badge.feature {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.novella-start-btn {
+  margin-top: auto;
+  background: #FFD700;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Кристалл - технологичный неон */
+.action-zone-tarot .test-card {
+  border: 1px solid rgba(0, 242, 255, 0.2) !important;
+  background: rgba(10, 20, 30, 0.8) !important;
+}
+
+.action-zone-tarot .test-card:hover {
+  border-color: #00f2ff !important;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+}
+
+.action-zone-tarot .test-card-badge {
+  background: rgba(0, 242, 255, 0.2);
+  color: #00f2ff;
+}
+
+.test-card.custom-request {
+  background: linear-gradient(145deg, rgba(0, 242, 255, 0.05), rgba(10, 20, 30, 0.9)) !important;
+  border: 1px dashed rgba(0, 242, 255, 0.4) !important;
+}
