@@ -2524,13 +2524,19 @@ function MatrixCalculator() {
     const soulDetails = methodId === 'soul' && results[methodId].details ? results[methodId].details : null
     
     // Определяем мобильное устройство
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                    (window.innerWidth < 768 || 'ontouchstart' in window)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     const tg = window.Telegram?.WebApp || window.TelegramWebApp
     const isTelegram = !!tg
     const telegramUserId = tg?.initDataUnsafe?.user?.id || tg?.initData?.user?.id || null
     
-    // Для мобильных устройств и Telegram используем серверную генерацию
+    console.log('🔍 Определение типа устройства:', {
+      isMobile,
+      isTelegram,
+      userAgent: navigator.userAgent,
+      useServerGeneration: isMobile || isTelegram
+    })
+    
+    // ТОЛЬКО для мобильных устройств и Telegram используем серверную генерацию
     if (isMobile || isTelegram) {
       try {
         // Отправляем данные на сервер для генерации PDF
