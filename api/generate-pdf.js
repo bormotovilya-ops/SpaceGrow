@@ -129,6 +129,110 @@ function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetail
     </div>
     ` : ''}
   </div>
+  
+  <!-- ВТОРАЯ СТРАНИЦА: Демо-приписка -->
+  <div style="
+    page-break-before: always;
+    width: 100%;
+    min-height: 1123px;
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    padding: 60px 30px;
+    box-sizing: border-box;
+  ">
+    <!-- Премиальный промо-блок -->
+    <div style="
+      margin-top: 70px;
+      padding: 40px 30px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(255, 215, 0, 0.15) 100%);
+      border: 2px solid rgba(255, 215, 0, 0.5);
+      border-radius: 20px;
+      position: relative;
+      box-shadow: 0 12px 50px rgba(255, 215, 0, 0.3);
+    ">
+      <h3 style="
+        color: #191923;
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        margin: 0 0 25px 0;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">🌌 Космический тест-драйв пройден!</h3>
+      
+      <div style="
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+        margin: 0 auto 25px;
+      "></div>
+      
+      <p style="
+        color: #3a3a3a;
+        font-size: 13px;
+        line-height: 1.9;
+        margin: 0 0 20px 0;
+        text-align: justify;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">Перед вами — демонстрация работы нашего аналитического движка. Мы подготовили этот экспресс-анализ, чтобы показать, как алгоритмы могут мгновенно превращать сухие цифры и эфемериды в живой текст.</p>
+      
+      <p style="
+        color: #3a3a3a;
+        font-size: 13px;
+        line-height: 1.9;
+        margin: 0 0 20px 0;
+        text-align: justify;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">Это лишь верхушка айсберга: мы намеренно не стали погружать вас в бесконечные таблицы и сложные аспекты, чтобы оставить интерфейс легким, а интригу — живой.</p>
+      
+      <p style="
+        color: #3a3a3a;
+        font-size: 13px;
+        line-height: 1.9;
+        margin: 0 0 30px 0;
+        text-align: justify;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">Мы создаем подобные инструменты «под ключ». Если вам нужен корректный астрологический, нумерологический или любой другой расчетный модуль для вашего бота, сайта или приложения — вы по адресу. Мы берем на себя всю математику и логику.</p>
+      
+      <div style="
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(255, 215, 0, 0.4) 50%, transparent 100%);
+        margin: 35px 0;
+      "></div>
+      
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="https://t.me/SpaceGrowthBot" style="
+          color: #FFD700;
+          font-size: 16px;
+          font-weight: 700;
+          text-decoration: none;
+          font-family: 'Inter', 'Arial', sans-serif;
+          display: inline-block;
+          padding: 12px 30px;
+          border: 2px solid #FFD700;
+          border-radius: 10px;
+          background: rgba(255, 215, 0, 0.1);
+        ">👉 Написать в Telegram</a>
+      </div>
+    </div>
+    
+    <!-- Премиальный футер -->
+    <div style="
+      margin-top: 40px;
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 215, 0, 0.04) 100%);
+      border-radius: 10px;
+      border-top: 1px solid rgba(255, 215, 0, 0.3);
+    ">
+      <p style="
+        margin: 0;
+        color: #969696;
+        font-size: 11px;
+        font-style: italic;
+        font-family: 'Inter', 'Arial', sans-serif;
+      ">✨ Цифровая Алхимия - Персональная расшифровка ✨</p>
+    </div>
+  </div>
 </body>
 </html>
   `.trim()
@@ -209,219 +313,22 @@ export default async function handler(req, res) {
         // Дополнительная пауза для полной загрузки всех ресурсов
         await new Promise(resolve => setTimeout(resolve, 2000))
         
-        // Делаем скриншот HTML страницы (решает проблему с кодировкой)
-        console.log('📸 Делаем скриншот HTML страницы...')
-        const screenshotBuffer = await page.screenshot({
-          type: 'jpeg',
-          quality: 85,
-          fullPage: true,
-          printBackground: true
+        // Генерируем PDF напрямую из HTML (с обеими страницами через page-break)
+        console.log('📄 Генерируем многостраничный PDF из HTML...')
+        
+        // Генерируем PDF с обеими страницами - Puppeteer автоматически разобьет на страницы по page-break
+        pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
+          preferCSSPageSize: false
         })
         
-        if (!screenshotBuffer || screenshotBuffer.length === 0) {
-          throw new Error('Screenshot buffer пустой после генерации')
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+          throw new Error('PDF buffer пустой после генерации')
         }
         
-        console.log('✅ Скриншот создан, размер:', screenshotBuffer.length, 'bytes')
-        
-        // Конвертируем скриншот в base64
-        const imageBase64 = screenshotBuffer.toString('base64')
-        
-        // Создаем новую страницу с изображением и генерируем PDF
-        console.log('📄 Создаем PDF из скриншота...')
-        let pdfPage = null
-        
-        try {
-          pdfPage = await browser.newPage()
-          
-          // Устанавливаем размер страницы для A4
-          await pdfPage.setViewport({
-            width: 794, // A4 width in pixels at 96 DPI
-            height: 1123, // A4 height in pixels at 96 DPI
-            deviceScaleFactor: 1
-          })
-          
-          // Создаем HTML с изображением, оптимизированным для A4
-          await pdfPage.setContent(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="UTF-8">
-              <style>
-                * {
-                  margin: 0;
-                  padding: 0;
-                  box-sizing: border-box;
-                }
-                body {
-                  margin: 0;
-                  padding: 0;
-                  width: 794px;
-                  height: auto;
-                }
-                img {
-                  width: 100%;
-                  height: auto;
-                  display: block;
-                }
-              </style>
-            </head>
-            <body>
-              <img src="data:image/png;base64,${imageBase64}" alt="PDF Content" />
-            </body>
-            </html>
-          `, { 
-            waitUntil: 'load',
-            timeout: 30000
-          })
-          
-          // Дополнительная пауза для загрузки изображения
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          
-          // Сохраняем скриншот первой страницы для объединения
-          const firstPageImageBase64 = imageBase64
-          
-          // Создаем вторую страницу с демо-припиской
-          console.log('📄 Создаем вторую страницу с демо-припиской...')
-          const demoPage = await browser.newPage()
-          
-          try {
-            await demoPage.setViewport({
-              width: 794,
-              height: 1123,
-              deviceScaleFactor: 1
-            })
-            
-            // Генерируем HTML для второй страницы
-            const demoHTML = `
-              <!DOCTYPE html>
-              <html>
-              <head>
-                <meta charset="UTF-8">
-                <style>
-                  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-                  * { margin: 0; padding: 0; box-sizing: border-box; }
-                  body {
-                    font-family: 'Inter', 'Arial', sans-serif;
-                    width: 794px;
-                    min-height: 1123px;
-                    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
-                    padding: 60px 30px;
-                    box-sizing: border-box;
-                  }
-                </style>
-              </head>
-              <body>
-                <div style="margin-top: 70px; padding: 40px 30px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 50%, rgba(255, 215, 0, 0.15) 100%); border: 2px solid rgba(255, 215, 0, 0.5); border-radius: 20px; position: relative; box-shadow: 0 12px 50px rgba(255, 215, 0, 0.3);">
-                  <h3 style="color: #191923; font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 25px 0; font-family: 'Inter', 'Arial', sans-serif;">🌌 Космический тест-драйв пройден!</h3>
-                  <div style="width: 80px; height: 2px; background: linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%); margin: 0 auto 25px;"></div>
-                  <p style="color: #3a3a3a; font-size: 13px; line-height: 1.9; margin: 0 0 20px 0; text-align: justify; font-family: 'Inter', 'Arial', sans-serif;">Перед вами — демонстрация работы нашего аналитического движка. Мы подготовили этот экспресс-анализ, чтобы показать, как алгоритмы могут мгновенно превращать сухие цифры и эфемериды в живой текст.</p>
-                  <p style="color: #3a3a3a; font-size: 13px; line-height: 1.9; margin: 0 0 20px 0; text-align: justify; font-family: 'Inter', 'Arial', sans-serif;">Это лишь верхушка айсберга: мы намеренно не стали погружать вас в бесконечные таблицы и сложные аспекты, чтобы оставить интерфейс легким, а интригу — живой.</p>
-                  <p style="color: #3a3a3a; font-size: 13px; line-height: 1.9; margin: 0 0 30px 0; text-align: justify; font-family: 'Inter', 'Arial', sans-serif;">Мы создаем подобные инструменты «под ключ». Если вам нужен корректный астрологический, нумерологический или любой другой расчетный модуль для вашего бота, сайта или приложения — вы по адресу. Мы берем на себя всю математику и логику.</p>
-                  <div style="width: 100%; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(255, 215, 0, 0.4) 50%, transparent 100%); margin: 35px 0;"></div>
-                  <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://t.me/SpaceGrowthBot" style="color: #FFD700; font-size: 16px; font-weight: 700; text-decoration: none; font-family: 'Inter', 'Arial', sans-serif; display: inline-block; padding: 12px 30px; border: 2px solid #FFD700; border-radius: 10px; background: rgba(255, 215, 0, 0.1);">👉 Написать в Telegram</a>
-                  </div>
-                </div>
-                <div style="margin-top: 40px; text-align: center; padding: 20px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 215, 0, 0.04) 100%); border-radius: 10px; border-top: 1px solid rgba(255, 215, 0, 0.3);">
-                  <p style="margin: 0; color: #969696; font-size: 11px; font-style: italic; font-family: 'Inter', 'Arial', sans-serif;">✨ Цифровая Алхимия - Персональная расшифровка ✨</p>
-                </div>
-              </body>
-              </html>
-            `
-            
-            await demoPage.setContent(demoHTML, {
-              waitUntil: 'networkidle0',
-              timeout: 30000
-            })
-            
-            await demoPage.evaluateHandle(() => document.fonts.ready)
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            
-            // Делаем скриншот второй страницы
-            const demoScreenshot = await demoPage.screenshot({
-              type: 'jpeg',
-              quality: 85,
-              fullPage: true,
-              printBackground: true
-            })
-            
-            await demoPage.close()
-            
-            const demoImageBase64 = demoScreenshot.toString('base64')
-            
-            // Создаем объединенную страницу с ДВУМЯ изображениями (первая страница + вторая страница)
-            console.log('📎 Создаем объединенный PDF с двумя страницами...')
-            await pdfPage.close() // Закрываем старую страницу
-            
-            const combinedPage = await browser.newPage()
-            
-            await combinedPage.setViewport({
-              width: 794,
-              height: 2246, // Две страницы A4 (1123 * 2)
-              deviceScaleFactor: 1
-            })
-            
-            // Создаем HTML с двумя изображениями - первая страница с результатами, вторая с демо
-            await combinedPage.setContent(`
-              <!DOCTYPE html>
-              <html>
-              <head>
-                <meta charset="UTF-8">
-                <style>
-                  * { margin: 0; padding: 0; box-sizing: border-box; }
-                  body { margin: 0; padding: 0; width: 794px; }
-                  img { 
-                    width: 794px; 
-                    height: 1123px; 
-                    display: block; 
-                    page-break-after: always;
-                  }
-                  img:last-child {
-                    page-break-after: auto;
-                  }
-                </style>
-              </head>
-              <body>
-                <img src="data:image/jpeg;base64,${firstPageImageBase64}" alt="Page 1 - Results" />
-                <img src="data:image/jpeg;base64,${demoImageBase64}" alt="Page 2 - Demo" />
-              </body>
-              </html>
-            `, { waitUntil: 'load', timeout: 30000 })
-            
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            
-            // Генерируем PDF с обеими страницами - Puppeteer автоматически разобьет на страницы
-            pdfBuffer = await combinedPage.pdf({
-              format: 'A4',
-              printBackground: true,
-              margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' }
-            })
-            
-            await combinedPage.close()
-            
-            if (!pdfBuffer || pdfBuffer.length === 0) {
-              throw new Error('PDF buffer пустой после генерации объединенного PDF')
-            }
-            
-            console.log('✅ PDF с двумя страницами создан, размер:', pdfBuffer.length, 'bytes')
-            
-          } catch (demoError) {
-            console.error('⚠️ Ошибка при создании второй страницы, используем только первую:', demoError)
-            // Если ошибка при создании второй страницы, генерируем PDF только с первой
-            pdfBuffer = await pdfPage.pdf({
-              format: 'A4',
-              printBackground: true,
-              margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' }
-            })
-          }
-          
-        } finally {
-          // Закрываем страницу с PDF
-          if (pdfPage) {
-            await pdfPage.close()
-          }
-        }
+        console.log('✅ PDF с двумя страницами создан, размер:', pdfBuffer.length, 'bytes')
         
         // Конвертируем в base64 для клиента
         base64Data = pdfBuffer.toString('base64')
