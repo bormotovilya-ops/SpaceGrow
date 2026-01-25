@@ -13,6 +13,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [isSampleData, setIsSampleData] = useState(false)
+  const [sampleReason, setSampleReason] = useState(null)
   const [expandedSections, setExpandedSections] = useState({
     userInfo: true,
     journey: true,
@@ -71,9 +73,39 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
           throw new Error('Не удалось загрузить данные отчета')
         }
 
-        const data = await response.json()
-        setReportData(data)
-        setError(null)
+        const contentType = response.headers.get('content-type') || ''
+        const sampleHeader = response.headers.get('x-sample-data')
+
+        // If server returned JSON - parse it.
+        if (contentType.includes('application/json')) {
+          const data = await response.json()
+          setReportData(data)
+          setIsSampleData(sampleHeader === 'true')
+          setSampleReason(response.headers.get('x-sample-reason') || null)
+          setError(null)
+        } else {
+          // Non-JSON response (likely HTML). If header indicates sample, try to parse; otherwise show friendly error.
+          console.warn('personal-report returned non-JSON response', { status: response.status, contentType })
+          if (sampleHeader === 'true') {
+            // try to parse anyway (some hosts may omit content-type)
+            let data = null
+            try {
+              data = await response.json()
+            } catch (e) {
+              console.warn('Failed to parse sample JSON despite X-Sample-Data header', e)
+            }
+            if (data) {
+              setReportData(data)
+              setIsSampleData(true)
+              setSampleReason(response.headers.get('x-sample-reason') || null)
+              setError(null)
+            } else {
+              throw new Error('Получен неожиданный ответ от сервера')
+            }
+          } else {
+            throw new Error('Получен неожиданный ответ от сервера')
+          }
+        }
       } catch (err) {
         console.error('Error fetching personal report:', err)
         setError(err.message)
