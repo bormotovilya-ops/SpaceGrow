@@ -158,7 +158,8 @@ module.exports = async (req, res) => {
       generated_at: new Date().toISOString()
     }
 
-    return res.json(report)
+  try { res.setHeader('content-type', 'application/json; charset=utf-8') } catch (e) {}
+  return res.json(report)
   } catch (err) {
     console.error('Local sqlite handling failed or sqlite3 not installed:', err.message || err)
   }
@@ -171,6 +172,8 @@ module.exports = async (req, res) => {
   } catch (e) {
     // ignore if headers already sent
   }
+  try { res.setHeader('X-Sample-Data', 'true') } catch (e) {}
+  try { res.setHeader('content-type', 'application/json; charset=utf-8') } catch (e) {}
   return res.json(sample)
 }
 
