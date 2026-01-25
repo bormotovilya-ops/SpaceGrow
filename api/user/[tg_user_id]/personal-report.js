@@ -163,6 +163,12 @@ module.exports = async (req, res) => {
 
   // Final fallback: return a sample report (prevents frontend parsing HTML)
   const sample = generateSampleReport(tg_user_id)
+  // mark response so frontend can show banner / diagnostics
+  try {
+    res.setHeader('X-Sample-Data', 'true')
+  } catch (e) {
+    // ignore if headers already sent
+  }
   return res.json(sample)
 }
 
