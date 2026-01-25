@@ -58,8 +58,10 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
         // Try to get data by telegram user ID first, then by cookie ID
         let response
         if (tgUserId) {
+          // Use relative path so fetch works in deployed environment (no hardcoded localhost)
           response = await fetch(`/api/user/${tgUserId}/personal-report`)
         } else if (cookieId) {
+          // relative path for cookie-based report as well
           response = await fetch(`/api/user/by-cookie/${cookieId}/personal-report`)
         } else {
           throw new Error('Не удалось определить пользователя')
