@@ -159,12 +159,54 @@ module.exports = async (req, res) => {
 }
 
 function generateSampleReport(tg_user_id) {
+  // Variant 3: richer sample data so frontend can render a realistic report
   const now = new Date().toISOString()
   return {
-    user: { tg_user_id: Number(tg_user_id), cookie_id: null, traffic_source: 'Не определен', utm_params: {}, referrer: null, first_visit_date: null },
-    journey: { miniapp_opens: [], content_views: [], ai_interactions: [], diagnostics: [], game_actions: [], cta_clicks: [] },
-    segmentation: { user_segment: 'newcomer', engagement_level: 'low', basis: ['Данных нет'] },
-    recommendations: { next_steps: ['Пройти диагностику'], automatic_actions: [], content_suggestions: [], cta_suggestions: [] },
-    generated_at: now
+    user: {
+      tg_user_id: Number(tg_user_id),
+      cookie_id: 'sample-cookie-1234',
+      traffic_source: 'Реклама в соцсетях',
+      utm_params: { utm_source: 'facebook', utm_medium: 'cpc', utm_campaign: 'sample' },
+      referrer: 'https://example.com',
+      first_visit_date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString()
+    },
+    journey: {
+      miniapp_opens: [
+        { timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), page: 'Главная', device: 'iPhone' },
+        { timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), page: 'Курс', device: 'Android' }
+      ],
+      content_views: [
+        { section: 'Лендинг', time_spent: 45, scroll_depth: 80, timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString() },
+        { section: 'Блок с отзывами', time_spent: 20, scroll_depth: 50, timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString() }
+      ],
+      ai_interactions: [
+        { messages_count: 6, topics: ['программа', 'цена'], duration: 120, timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString() }
+      ],
+      diagnostics: [
+        { progress: 80, results: 'Промежуточный результат', time_spent: 300 }
+      ],
+      game_actions: [],
+      cta_clicks: [
+        { location: 'Баннер в шапке', previous_step: 'Лендинг', duration: 15 }
+      ]
+    },
+    segmentation: {
+      user_segment: 'engaged',
+      engagement_level: 'medium',
+      basis: [
+        'Общее количество сессий: 5',
+        'Завершена диагностика: Частично',
+        'Уровень вовлеченности: medium',
+        `Последняя активность: ${new Date(Date.now() - 1000 * 60 * 30).toISOString()}`
+      ]
+    },
+    recommendations: {
+      next_steps: ['Закончить диагностику', 'Посмотреть курс по вовлечению'],
+      automatic_actions: ['Отправить письмо с напоминанием'],
+      content_suggestions: ['Статья: Как увеличить вовлеченность'],
+      cta_suggestions: ['Купить курс', 'Записаться на консультацию']
+    },
+    generated_at: now,
+    _sample_variant: 3
   }
 }
