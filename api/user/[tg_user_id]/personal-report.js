@@ -24,11 +24,13 @@ module.exports = async (req, res) => {
           return res.status(upstream.status).json(json)
         } catch (e) {
           console.warn('Upstream returned application/json but body parse failed, falling back to sample', e)
+          console.warn('Upstream body snippet:', text && text.toString ? text.toString().slice(0, 2048) : String(text).slice(0, 2048))
           // fall through to local/sample fallback
         }
       } else {
         // Upstream returned non-JSON (e.g. HTML) or non-OK status — do not forward raw HTML to frontend.
         console.warn('Upstream personal-report returned non-JSON or error status, falling back to local/sample', { status: upstream.status, contentType })
+        console.warn('Upstream body snippet:', text && text.toString ? text.toString().slice(0, 2048) : String(text).slice(0, 2048))
         // fallthrough to local handling / sample
       }
     } catch (err) {
