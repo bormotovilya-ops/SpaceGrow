@@ -1,6 +1,6 @@
-const path = require('path')
+import path from 'path'
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const cookie_id = req.query.cookie_id || req.query.cookieId || req.params?.cookie_id
 
   if (!cookie_id) {
@@ -9,9 +9,12 @@ module.exports = async (req, res) => {
 
   // Try local sqlite, mirror logic from /api/user/[tg_user_id]/personal-report.js
   try {
-    const sqlite3 = require('sqlite3').verbose()
+    // try to dynamically import sqlite3 (may be missing in some deployments)
+    const { default: sqlite3 } = await import('sqlite3').catch(() => ({ default: null }))
+    if (!sqlite3) throw new Error('sqlite3 not available')
+    const sqlite = sqlite3.verbose()
     const dbPath = path.join(process.cwd(), 'telegram-bot', 'bot_users.db')
-    const db = new sqlite3.Database(dbPath)
+    const db = new sqlite.Database(dbPath)
 
     const get = (sql, params = []) => new Promise((resolve, reject) => {
       db.get(sql, params, (err, row) => (err ? reject(err) : resolve(row)))
@@ -109,6 +112,7 @@ module.exports = async (req, res) => {
       generated_at: now
     }
 
+    try { res.setHeader('Content-Type', 'application/json; charset=utf-8') } catch (e) {}
     return res.json(report)
   } catch (err) {
     console.error('by-cookie personal-report sqlite handling failed:', err && err.message ? err.message : err)
@@ -145,5 +149,6 @@ module.exports = async (req, res) => {
   }
 
   try { res.setHeader('X-Sample-Data', 'true') } catch (e) {}
+  try { res.setHeader('Content-Type', 'application/json; charset=utf-8') } catch (e) {}
   return res.json(sample)
 }

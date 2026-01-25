@@ -1,7 +1,7 @@
-const path = require('path')
+import path from 'path'
 
 // Vercel serverless function to serve /api/user/:tg_user_id/personal-report
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const tg_user_id = req.query.tg_user_id || req.query.tgUserId || req.params?.tg_user_id
 
   if (!tg_user_id) {
@@ -41,9 +41,12 @@ module.exports = async (req, res) => {
 
   // Try to read local sqlite DB if sqlite3 available (best-effort)
   try {
-    const sqlite3 = require('sqlite3').verbose()
+    // sqlite3 is optional; try to require it dynamically
+    const { default: sqlite3 } = await import('sqlite3').catch(() => ({ default: null }))
+    if (!sqlite3) throw new Error('sqlite3 not available')
+    const sqlite = sqlite3.verbose()
     const dbPath = path.join(process.cwd(), 'telegram-bot', 'bot_users.db')
-    const db = new sqlite3.Database(dbPath)
+    const db = new sqlite.Database(dbPath)
 
     const get = (sql, params = []) => new Promise((resolve, reject) => {
       db.get(sql, params, (err, row) => (err ? reject(err) : resolve(row)))
@@ -158,8 +161,8 @@ module.exports = async (req, res) => {
       generated_at: new Date().toISOString()
     }
 
-  try { res.setHeader('content-type', 'application/json; charset=utf-8') } catch (e) {}
-  return res.json(report)
+    try { res.setHeader('Content-Type', 'application/json; charset=utf-8') } catch (e) {}
+    return res.json(report)
   } catch (err) {
     console.error('Local sqlite handling failed or sqlite3 not installed:', err.message || err)
   }
@@ -167,13 +170,8 @@ module.exports = async (req, res) => {
   // Final fallback: return a sample report (prevents frontend parsing HTML)
   const sample = generateSampleReport(tg_user_id)
   // mark response so frontend can show banner / diagnostics
-  try {
-    res.setHeader('X-Sample-Data', 'true')
-  } catch (e) {
-    // ignore if headers already sent
-  }
   try { res.setHeader('X-Sample-Data', 'true') } catch (e) {}
-  try { res.setHeader('content-type', 'application/json; charset=utf-8') } catch (e) {}
+  try { res.setHeader('Content-Type', 'application/json; charset=utf-8') } catch (e) {}
   return res.json(sample)
 }
 
