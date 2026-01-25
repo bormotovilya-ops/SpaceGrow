@@ -3,6 +3,8 @@ import SalesFunnel from './components/SalesFunnel'
 import CenterPhoto from './components/CenterPhoto'
 import MenuItem from './components/MenuItem'
 import Sidebar from './components/Sidebar'
+import SessionInitializer from './components/SessionInitializer'
+import LoggingWrapper, { PageLogger } from './components/LoggingWrapper'
 import './App.css'
 
 const menuItems = [
@@ -101,33 +103,37 @@ function App() {
   const [showFunnel, setShowFunnel] = useState(true)
 
   return (
-    <div className="container">
-      {showFunnel ? (
-        <SalesFunnel />
-      ) : (
-        <>
-          <CenterPhoto />
-          
-          {menuItems.map((item, index) => (
-            <MenuItem
-              key={item.id}
-              image={item.image}
-              title={item.title}
-              index={index}
-              total={menuItems.length}
-              onClick={() => handleMenuClick(item.sidebarTitle, item.sidebarItems)}
-            />
-          ))}
+    <SessionInitializer>
+      <PageLogger pageId="main" pageTitle="Main Page">
+        <div className="container">
+          {showFunnel ? (
+            <SalesFunnel />
+          ) : (
+            <>
+              <CenterPhoto />
 
-          <Sidebar
-            isOpen={sidebarOpen}
-            title={sidebarTitle}
-            items={sidebarItems}
-            onClose={handleCloseSidebar}
-          />
-        </>
-      )}
-    </div>
+              {menuItems.map((item, index) => (
+                <MenuItem
+                  key={item.id}
+                  image={item.image}
+                  title={item.title}
+                  index={index}
+                  total={menuItems.length}
+                  onClick={() => handleMenuClick(item.sidebarTitle, item.sidebarItems)}
+                />
+              ))}
+
+              <Sidebar
+                isOpen={sidebarOpen}
+                title={sidebarTitle}
+                items={sidebarItems}
+                onClose={handleCloseSidebar}
+              />
+            </>
+          )}
+        </div>
+      </PageLogger>
+    </SessionInitializer>
   )
 }
 

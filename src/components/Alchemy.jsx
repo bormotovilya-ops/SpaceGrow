@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Header from './Header'
 import MatrixCalculator from './MatrixCalculator'
+import Diagnostics from './Diagnostics'
+import IKIGAI_TEST from '../../scripts/ikigai.json'
 import './Alchemy.css'
 
 function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
@@ -118,9 +120,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const handleBackToTable = () => {
     // Проверяем, возвращаемся ли мы из блока свечи
     const wasCandle = selectedArtifact === 'candle'
-    
+
     // Сначала сбрасываем состояние
     setSelectedArtifact(null)
+    setActiveCrystalTest(null) // Сбрасываем активный тест кристалла
     setIsDarkMode(false)
     
     // Очищаем сообщения зеркала при возврате к столу
@@ -860,12 +863,12 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           </div>
         )
 
-        case 'crystal':
+      case 'crystal':
           if (activeCrystalTest === 'ikigai') {
             return (
-              <Diagnostics 
-                customStages={IKIGAI_TEST} 
-                onBackToCrystal={() => setActiveCrystalTest(null)} 
+              <Diagnostics
+                customStages={IKIGAI_TEST}
+                onBackToCrystal={() => setActiveCrystalTest(null)}
               />
             );
           }
@@ -879,7 +882,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               
               <div className="tests-grid">
                 {/* КАРТОЧКА 1: ИКИГАЙ */}
-                <div className="test-card" onClick={() => alert('Этот шаблон в разработке')}>
+                <div className="test-card" onClick={() => setActiveCrystalTest('ikigai')}>
                   <div className="test-card-icon">🎯</div>
                   <h3 className="test-card-title">Матрица Икигай</h3>
                   <p className="test-card-desc">Инструмент для поиска ниши и смыслов внутри курса.</p>
@@ -887,7 +890,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                 </div>
                 
                 {/* КАРТОЧКА 2: КОЛЕСО БАЛАНСА */}
-                <div className="test-card" onClick={() => alert('Этот шаблон в разработке')}>
+                <div className="test-card" onClick={() => alert('Этот тест в разработке')}>
                   <div className="test-card-icon">☸️</div>
                   <h3 className="test-card-title">Колесо Баланса</h3>
                   <p className="test-card-desc">Классический инструмент для мягких ниш и life-коучинга.</p>
@@ -895,7 +898,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                 </div>
         
                 {/* КАРТОЧКА 3: АРХЕТИПЫ */}
-                <div className="test-card" onClick={() => alert('Этот шаблон в разработке')}>
+                <div className="test-card" onClick={() => alert('Этот тест в разработке')}>
                   <div className="test-card-icon">🎭</div>
                   <h3 className="test-card-title">Тест на Архетипы</h3>
                   <p className="test-card-desc">Идеально для курсов по личному бренду и психологии.</p>

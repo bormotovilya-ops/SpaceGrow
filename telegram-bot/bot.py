@@ -71,19 +71,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 # Обработка данных от MiniApp (web_app_data)
 async def handle_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработчик данных от MiniApp - когда пользователь открывает приложение"""
+    """Обработчик данных от MiniApp - когда пользователь взаимодействует с приложением"""
     user = update.effective_user
-    
+    global notification_service
+
     # Получаем данные от MiniApp
     web_app_data = update.message.web_app_data
-    
+
     if web_app_data:
-        # Если пользователь открыл MiniApp, отмечаем что диагностика началась
-        # Можно также проверить, содержит ли data информацию о диагностике
         data = web_app_data.data
-        
+        logger.info(f"Получены данные от MiniApp пользователя {user.id}: {data}")
+
+        # Если в данных есть информация о завершении диагностики
+        if 'diagnostics' in data.lower() and ('completed' in data.lower() or 'finished' in data.lower() or 'завершена' in data.lower()):
+            # Отмечаем завершение диагностики
+            db.mark_diagnostics_completed(user.id)
+            logger.info(f"Пользователь {user.id} завершил диагностику через MiniApp")
+
+            # Отправляем уведомление с ссылкой на персональный отчет
+            if notification_service:
+                await notification_service.send_diagnostics_completion_notification(
+                    user.id,
+                    user.username,
+                    user.first_name
+                )
         # Если в данных есть информация о начале диагностики
-        if 'diagnostics' in data.lower() or 'started' in data.lower():
+        elif 'diagnostics' in data.lower() or 'started' in data.lower():
             db.mark_diagnostics_started(user.id)
             logger.info(f"Пользователь {user.id} начал диагностику через MiniApp")
         else:

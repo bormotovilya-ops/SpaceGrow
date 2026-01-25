@@ -730,6 +730,13 @@
   min-height: fit-content;
 }
 
+/* Для геймификации обучения убираем ограничение высоты и overflow, чтобы все элементы поместились */
+.action-zone-snitch .action-zone-content {
+  max-height: none;
+  overflow: visible;
+  min-height: fit-content;
+}
+
 /* ============================================
    ВАРИАНТЫ ФОНОВ ДЛЯ КАРТ ТАРО
    ============================================
@@ -1433,6 +1440,10 @@
   .action-zone-tarot .action-zone-content {
     min-height: 800px; /* Минимальная высота для размещения всех карт на планшетах */
   }
+
+  .action-zone-snitch .action-zone-content {
+    min-height: 900px; /* Минимальная высота для размещения всех карточек на планшетах */
+  }
   
   /* Для астролябии (калькулятора) на планшетах - убираем ограничение высоты */
   .action-zone-astrolabe .action-zone-inner {
@@ -1524,6 +1535,15 @@
     min-height: 100vh !important; /* Минимальная высота экрана */
     max-height: none !important; /* Убираем ограничение высоты */
   }
+
+  /* Увеличиваем высоту контейнера для геймификации обучения на мобильных */
+  .action-zone.action-zone-snitch {
+    overflow-y: auto !important; /* Разрешаем прокрутку для карточек */
+    overflow-x: hidden !important;
+    height: auto !important; /* Автоматическая высота */
+    min-height: 100vh !important; /* Минимальная высота экрана */
+    max-height: none !important; /* Убираем ограничение высоты */
+  }
   
   .action-zone-inner {
     max-height: none !important; /* Убираем ограничение высоты для мобильных */
@@ -1569,6 +1589,16 @@
   .action-zone-tarot .action-zone-content,
   .action-zone-content.action-zone-tarot {
     min-height: 650px !important; /* Минимальная высота для размещения всех карт (3 карты по 180px + отступы + текст) */
+    padding: 30px 20px !important;
+    overflow: visible !important; /* Разрешаем показ всего контента */
+    max-height: none !important; /* Убираем ограничение высоты */
+    display: flex !important; /* Принудительно делаем flex */
+    flex-direction: column !important; /* Вертикальное направление */
+  }
+
+  .action-zone-snitch .action-zone-content,
+  .action-zone-content.action-zone-snitch {
+    min-height: 700px !important; /* Минимальная высота для размещения всех карточек (4 карточки + отступы + текст) */
     padding: 30px 20px !important;
     overflow: visible !important; /* Разрешаем показ всего контента */
     max-height: none !important; /* Убираем ограничение высоты */

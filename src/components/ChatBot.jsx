@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './ChatBot.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 function ChatBot({ onClose }) {
+  const { logAIInteraction, logCTAClick } = useLogEvent()
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -13,6 +15,8 @@ function ChatBot({ onClose }) {
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const chatStartTime = useRef(Date.now())
+  const messageCount = useRef(0)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -27,6 +31,21 @@ function ChatBot({ onClose }) {
     inputRef.current?.focus()
   }, [])
 
+  // Логирование завершения чата при размонтировании
+  useEffect(() => {
+    return () => {
+      const duration = Math.floor((Date.now() - chatStartTime.current) / 1000)
+      if (messageCount.current > 0) {
+        logAIInteraction(
+          messageCount.current,
+          ['general_chat'], // Темы определяем на основе сообщений
+          duration,
+          'general'
+        )
+      }
+    }
+  }, [logAIInteraction])
+
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return
 
@@ -34,9 +53,16 @@ function ChatBot({ onClose }) {
     setInputValue('')
 
     yandexMetricaReachGoal(null, 'chatbot_send', { length: userMessage.length })
-    
+
+    // Логируем CTA клик (отправка сообщения)
+    logCTAClick('chat_send', {
+      ctaText: 'Send Message',
+      ctaLocation: 'chatbot'
+    })
+
     // Добавляем сообщение пользователя
     setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    messageCount.current++
     setIsLoading(true)
 
     try {

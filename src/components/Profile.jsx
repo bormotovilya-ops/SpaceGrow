@@ -11,8 +11,10 @@ import img33 from '../assets/images/33.png'
 import img44 from '../assets/images/44.png'
 
 function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick }) {
-  const [typingMessages, setTypingMessages] = useState([false, false, false, false]) // Показывать многоточие
-  const [visibleMessages, setVisibleMessages] = useState([false, false, false, false]) // Показывать текст
+  // Добавляем пятый слот для блока персонального отчета
+  // Добавляем пятый слот для блока персонального отчета
+  const [typingMessages, setTypingMessages] = useState([false, false, false, false, false]) // Показывать многоточие
+  const [visibleMessages, setVisibleMessages] = useState([false, false, false, false, false]) // Показывать текст
   const [expandedCases, setExpandedCases] = useState([false, false, false]) // Раскрытые кейсы
   const [expandedTechStack, setExpandedTechStack] = useState([false, false, false, false]) // Раскрытый технологический стек
   const [chatMessages, setChatMessages] = useState([]) // Сообщения чата (вопросы и ответы)
@@ -241,43 +243,44 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
 
   useEffect(() => {
     // Первое сообщение: показываем многоточие сразу
-    setTypingMessages([true, false, false, false])
-    
-    // Через 2 секунды показываем текст первого сообщения
+    setTypingMessages([true, false, false, false, false])
+
+    // Через 2 секунды показываем текст первого сообщения и стартуем второй
     const timer1 = setTimeout(() => {
-      setVisibleMessages([true, false, false, false])
-      setTypingMessages([false, false, false, false])
-      // Начинаем печатать второе сообщение
-      setTypingMessages([false, true, false, false])
+      setVisibleMessages([true, false, false, false, false])
+      setTypingMessages([false, true, false, false, false])
     }, 2000)
-    
-    // Через 4 секунды (2 + 2) показываем текст второго сообщения
+
+    // Через 4 секунды показываем текст второго сообщения и стартуем третий
     const timer2 = setTimeout(() => {
-      setVisibleMessages([true, true, false, false])
-      setTypingMessages([false, false, false, false])
-      // Начинаем печатать третье сообщение
-      setTypingMessages([false, false, true, false])
+      setVisibleMessages([true, true, false, false, false])
+      setTypingMessages([false, false, true, false, false])
     }, 4000)
-    
-    // Через 6 секунд (4 + 2) показываем текст третьего сообщения
+
+    // Через 6 секунд показываем текст третьего сообщения и стартуем четвертый
     const timer3 = setTimeout(() => {
-      setVisibleMessages([true, true, true, false])
-      setTypingMessages([false, false, false, false])
-      // Начинаем печатать четвертое сообщение
-      setTypingMessages([false, false, false, true])
+      setVisibleMessages([true, true, true, false, false])
+      setTypingMessages([false, false, false, true, false])
     }, 6000)
-    
-    // Через 8 секунд (6 + 2) показываем текст четвертого сообщения
+
+    // Через 8 секунд показываем текст четвертого сообщения и стартуем пятый
     const timer4 = setTimeout(() => {
-      setVisibleMessages([true, true, true, true])
-      setTypingMessages([false, false, false, false])
+      setVisibleMessages([true, true, true, true, false])
+      setTypingMessages([false, false, false, false, true])
     }, 8000)
-    
+
+    // Через 10 секунд показываем текст пятого сообщения (персональный отчет)
+    const timer5 = setTimeout(() => {
+      setVisibleMessages([true, true, true, true, true])
+      setTypingMessages([false, false, false, false, false])
+    }, 10000)
+
     return () => {
       clearTimeout(timer1)
       clearTimeout(timer2)
       clearTimeout(timer3)
       clearTimeout(timer4)
+      clearTimeout(timer5)
     }
   }, [])
 
@@ -368,9 +371,37 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                       </p>
                     </div>
                   )}
+
+                  {/* Кнопка персонального отчета - теперь появляется по таймеру как и предыдущие */}
+                  <div className={`dialog-message ${(typingMessages[4] || visibleMessages[4]) ? 'visible' : ''}`}>
+                    {typingMessages[4] ? (
+                      <p className="typing-indicator">
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                      </p>
+                    ) : visibleMessages[4] ? (
+                      <p>Я знаю о поведении пользователей на своих сайтах всё! 🤫 Не верите? Нажмите и убедитесь! 👇</p>
+                    ) : null}
+                  </div>
+                  <div className={`dialog-message ${visibleMessages[4] ? 'visible' : ''}`}>
+                    {visibleMessages[4] && (
+                      <button
+                        className="dialog-button"
+                        onClick={() => {
+                          if (onHomeClick) {
+                            // Navigate to PersonReport by setting hash
+                            window.location.hash = 'personreport'
+                          }
+                        }}
+                      >
+                        Посмотреть мой персональный отчет
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              
+
               {/* Поле ввода для вопросов */}
               <div className="profile-chat-input-container">
                 <input
@@ -421,7 +452,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                   </p>
                   <div className="case-main-card-links">
                     <div className="case-link-group">
-                      <strong>Лендинги на GetCourse:</strong>
+                      <strong>Лендинги на Wordpress:</strong>
                     <ul>
                       <li><a href="https://vyoga.ru/elementor-%D0%BB%D0%B5%D0%BD%D0%B4%D0%B8%D0%BD%D0%B3-1965" target="_blank" rel="noopener noreferrer">Общий лендинг: Йога и Цигун</a></li>
                       <li><a href="https://vyoga.ru/elementor-%D0%BB%D0%B5%D0%BD%D0%B4%D0%B8%D0%BD%D0%B3-1984/" target="_blank" rel="noopener noreferrer">Курс «Дао женского здоровья»</a></li>

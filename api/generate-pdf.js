@@ -238,6 +238,314 @@ function generatePDFHTML(methodName, methodId, resultData, birthDate, soulDetail
   `.trim()
 }
 
+// Функция генерации HTML-контента для персонального отчета
+function generatePersonalReportHTML(reportData) {
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Не указано'
+    try {
+      return new Date(dateString).toLocaleDateString('ru-RU')
+    } catch {
+      return dateString
+    }
+  }
+
+  const formatDuration = (seconds) => {
+    if (!seconds) return '0 сек'
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+
+    if (hours > 0) return `${hours}ч ${minutes}м ${secs}с`
+    if (minutes > 0) return `${minutes}м ${secs}с`
+    return `${secs}с`
+  }
+
+  const getSegmentColor = (segment) => {
+    const colors = {
+      'newcomer': '#4a90e2',
+      'engaged': '#f0ad4e',
+      'converter': '#5cb85c',
+      'loyal': '#9b59b6'
+    }
+    return colors[segment] || '#95a5a6'
+  }
+
+  const getEngagementColor = (level) => {
+    const colors = {
+      'low': '#e74c3c',
+      'medium': '#f39c12',
+      'high': '#27ae60'
+    }
+    return colors[level] || '#95a5a6'
+  }
+
+  return `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', 'Arial', sans-serif;
+      width: 794px;
+      min-height: 1123px;
+      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      margin: 0;
+      padding: 0;
+      color: #191923;
+    }
+  </style>
+</head>
+<body>
+  <!-- Премиальная золотая полоса сверху -->
+  <div style="
+    width: 100%;
+    height: 45px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+  "></div>
+
+  <!-- Премиальная темная область для заголовка -->
+  <div style="
+    width: 100%;
+    background: linear-gradient(135deg, #191923 0%, #1a1a24 50%, #191923 100%);
+    padding: 50px 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  ">
+    <h1 style="
+      color: #FFD700;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      letter-spacing: 1px;
+      font-family: 'Inter', 'Arial', sans-serif;
+    ">Ваш персональный отчёт</h1>
+    <p style="
+      color: #ffffff;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 10px;
+      opacity: 0.9;
+    ">Анализ вашего пути в MiniApp • ${formatDate(reportData.generated_at)}</p>
+  </div>
+
+  <!-- Контент -->
+  <div style="
+    width: 100%;
+    background: #ffffff;
+    padding: 40px 30px;
+    box-sizing: border-box;
+  ">
+    <!-- Информация о пользователе -->
+    <div style="margin-bottom: 40px;">
+      <h2 style="
+        color: #191923;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #FFD700;
+        padding-bottom: 10px;
+      ">👤 Информация о пользователе</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #4a90e2;">
+          <strong>Telegram ID:</strong> ${reportData.user?.tg_user_id || 'Не указан'}
+        </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #4a90e2;">
+          <strong>Cookie ID:</strong> ${reportData.user?.cookie_id || 'Не указан'}
+        </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #f0ad4e;">
+          <strong>Источник трафика:</strong> ${reportData.user?.traffic_source || 'Не определен'}
+        </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #f0ad4e;">
+          <strong>Первый визит:</strong> ${formatDate(reportData.user?.first_visit_date)}
+        </div>
+      </div>
+    </div>
+
+    <!-- Сегментация -->
+    <div style="margin-bottom: 40px;">
+      <h2 style="
+        color: #191923;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #FFD700;
+        padding-bottom: 10px;
+      ">🎯 Сегментация</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        <div style="
+          background: ${getSegmentColor(reportData.segmentation?.user_segment)};
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+        ">
+          <h3 style="margin: 0 0 10px 0; font-size: 18px;">Сегмент пользователя</h3>
+          <p style="margin: 0; font-size: 24px; font-weight: 700;">${reportData.segmentation?.user_segment || 'Не определен'}</p>
+        </div>
+        <div style="
+          background: ${getEngagementColor(reportData.segmentation?.engagement_level)};
+          color: white;
+          padding: 20px;
+          border-radius: 12px;
+          text-align: center;
+        ">
+          <h3 style="margin: 0 0 10px 0; font-size: 18px;">Уровень вовлеченности</h3>
+          <p style="margin: 0; font-size: 24px; font-weight: 700;">${reportData.segmentation?.engagement_level || 'Не определен'}</p>
+        </div>
+      </div>
+      <div style="margin-top: 20px; background: #f0f8ff; padding: 15px; border-radius: 8px;">
+        <h4 style="margin: 0 0 10px 0; color: #191923;">Основание для сегментации:</h4>
+        <ul style="margin: 0; padding-left: 20px;">
+          ${reportData.segmentation?.basis?.map(item => `<li>${item}</li>`).join('') || '<li>Данные в процессе анализа</li>'}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Рекомендации -->
+    <div style="margin-bottom: 40px;">
+      <h2 style="
+        color: #191923;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #FFD700;
+        padding-bottom: 10px;
+      ">💡 Персональные рекомендации</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+          <h4 style="margin: 0 0 10px 0; color: #191923;">🎯 Следующие шаги:</h4>
+          <ul style="margin: 0; padding-left: 15px;">
+            ${reportData.recommendations?.next_steps?.map(step => `<li>${step}</li>`).join('') || '<li>Рекомендации формируются...</li>'}
+          </ul>
+        </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+          <h4 style="margin: 0 0 10px 0; color: #191923;">🚀 Автоматические действия:</h4>
+          <ul style="margin: 0; padding-left: 15px;">
+            ${reportData.recommendations?.automatic_actions?.map(action => `<li>${action}</li>`).join('') || '<li>Автоматизация настраивается...</li>'}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Персональный путь -->
+    <div style="margin-bottom: 40px;">
+      <h2 style="
+        color: #191923;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border-bottom: 3px solid #FFD700;
+        padding-bottom: 10px;
+      ">🗺️ Персональный путь</h2>
+
+      ${reportData.journey?.miniapp_opens?.length > 0 ? `
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #191923; margin-bottom: 10px;">📱 Открытия MiniApp:</h3>
+        ${reportData.journey.miniapp_opens.slice(0, 5).map(open => `
+          <div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 6px; border-left: 3px solid #4a90e2;">
+            <strong>${open.page}</strong> • ${open.device} • ${formatDate(open.timestamp)}
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      ${reportData.journey?.ai_interactions?.length > 0 ? `
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #191923; margin-bottom: 10px;">🤖 AI взаимодействия:</h3>
+        ${reportData.journey.ai_interactions.slice(0, 3).map(interaction => `
+          <div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 6px; border-left: 3px solid #9b59b6;">
+            ${interaction.messages_count} сообщений • Темы: ${interaction.topics?.join(', ') || 'Общие'} • ${formatDuration(interaction.duration)}
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
+    </div>
+  </div>
+
+  <!-- ВТОРАЯ СТРАНИЦА: Дополнительная информация -->
+  <div style="
+    page-break-before: always;
+    width: 100%;
+    min-height: 1123px;
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+    padding: 60px 30px;
+    box-sizing: border-box;
+  ">
+    <h2 style="
+      color: #191923;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 40px;
+    ">📊 Детальный анализ активности</h2>
+
+    ${reportData.journey?.content_views?.length > 0 ? `
+    <div style="margin-bottom: 30px;">
+      <h3 style="color: #191923; margin-bottom: 15px;">👁️ Просмотры контента:</h3>
+      ${reportData.journey.content_views.slice(0, 10).map(view => `
+        <div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">
+          ${view.section} • ${formatDuration(view.time_spent)} • ${view.scroll_depth}% прокрутки
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${reportData.journey?.game_actions?.length > 0 ? `
+    <div style="margin-bottom: 30px;">
+      <h3 style="color: #191923; margin-bottom: 15px;">🎮 Игровые действия:</h3>
+      ${reportData.journey.game_actions.slice(0, 5).map(action => `
+        <div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">
+          ${action.game_type} • ${action.action_type} • Очки: ${action.scores}
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${reportData.journey?.cta_clicks?.length > 0 ? `
+    <div style="margin-bottom: 30px;">
+      <h3 style="color: #191923; margin-bottom: 15px;">🎯 CTA клики:</h3>
+      ${reportData.journey.cta_clicks.slice(0, 5).map(click => `
+        <div style="background: #f8f9fa; padding: 8px; margin: 3px 0; border-radius: 4px;">
+          ${click.location} • ${click.previous_step} • ${formatDuration(click.duration)}
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    <!-- Премиальный футер -->
+    <div style="
+      margin-top: 60px;
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+      border-radius: 15px;
+      border: 2px solid rgba(255, 215, 0, 0.3);
+    ">
+      <h3 style="color: #191923; margin-bottom: 15px;">🌟 Персонализированный подход</h3>
+      <p style="color: #666; margin-bottom: 20px; line-height: 1.6;">
+        Этот отчет создан специально для вас на основе вашего уникального пути взаимодействия с нашим сервисом.
+        Мы анализируем каждое ваше действие, чтобы сделать наше взаимодействие максимально эффективным.
+      </p>
+      <p style="color: #969696; font-size: 12px; font-style: italic;">
+        ✨ Персональный отчет • ${formatDate(reportData.generated_at)} ✨
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim()
+}
+
 export default async function handler(req, res) {
   // Разрешаем только POST запросы
   if (req.method !== 'POST') {

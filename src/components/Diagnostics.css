@@ -3,6 +3,12 @@
   height: 100vh;
   min-height: 100vh;
   padding: 0;
+  /* spacing variables: header height + gap used to position the welcome title nicely below the Header */
+  --diagnostics-header-height: 120px;
+  --diagnostics-title-gap: 18px;
+  /* mobile overrides (used inside media queries) */
+  --diagnostics-header-height-mobile: 100px;
+  --diagnostics-title-gap-mobile: 14px;
   background-image: 
     url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 100 0 L 0 0 0 100' fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grid)'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='circuit' width='200' height='200' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='25' cy='25' r='2' fill='rgba(92,184,92,0.1)'/%3E%3Ccircle cx='175' cy='175' r='2' fill='rgba(74,144,226,0.1)'/%3E%3Cpath d='M 50 50 L 150 50 L 150 150 L 50 150 Z' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23circuit)'/%3E%3C/svg%3E"),
@@ -43,17 +49,35 @@
 /* Вводный экран */
 .diagnostics-intro {
   width: 100%;
-  min-height: calc(100vh - 120px);
+  min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 120px 20px 40px;
+  /* Position the intro block below the fixed Header with a pleasant gap */
+  padding: calc(var(--diagnostics-header-height) + var(--diagnostics-title-gap)) 20px 40px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.diagnostics-intro::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .diagnostics-intro-content {
   max-width: 800px;
+  margin: 0 auto;
   text-align: center;
   animation: fadeInUp 0.6s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.diagnostics-start-btn {
+  margin-top: 20px !important;
 }
 
 .diagnostics-intro-title {
@@ -61,6 +85,9 @@
   font-size: 42px;
   font-weight: 700;
   margin: 0 0 24px;
+  /* title already pushed down by container padding */
+  padding-top: 0;
+  position: relative;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   line-height: 1.2;
   background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.85));
@@ -69,12 +96,105 @@
   background-clip: text;
 }
 
+/* Decorative accent above the title to make the gap look intentional */
+.diagnostics-intro-title::before {
+  content: '';
+  display: block;
+  width: 68px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(92,184,92,0.95), rgba(74,144,226,0.95));
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  opacity: 0.95;
+}
+
 .diagnostics-intro-subtitle {
   color: rgba(255, 255, 255, 0.85);
   font-size: 18px;
   line-height: 1.6;
   margin: 0 0 40px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для Икигай welcome экрана */
+.ikigai-intro-main {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.ikigai-intro-sub {
+  font-size: 16px;
+  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+.ikigai-instruction {
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.ikigai-instruction strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.ikigai-instruction-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ikigai-instruction-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ikigai-instruction-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.ikigai-instruction-emoji {
+  font-size: 18px;
+  margin-right: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ikigai-instruction-content {
+  flex: 1;
+  text-align: left;
+}
+
+.ikigai-instruction-title {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.ikigai-instruction-text {
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
+  margin: 0;
 }
 
 .diagnostics-start-btn {
@@ -126,7 +246,9 @@
   height: 100%;
   flex: 1;
   min-height: 0;
-  padding-top: 180px;
+  /* Отступ сверху учитывает фиксированный Header (чтобы прогресс-бар не накладывался) */
+  /* Header занимает примерно 110-120px (иконки + padding), поэтому даём запас */
+  padding-top: 120px;
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 0;
@@ -312,7 +434,7 @@
   border-radius: 10px;
   border: 2px solid rgba(0, 255, 136, 0.4);
   flex-shrink: 0;
-  box-shadow: 
+  box-shadow:
     0 0 15px rgba(0, 255, 136, 0.3),
     0 2px 8px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -320,9 +442,29 @@
   transition: all 0.3s ease;
 }
 
-.question-stage:hover .question-stage-image {
+.question-stage-emoji {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  border-radius: 10px;
+  border: 2px solid rgba(0, 255, 136, 0.4);
+  flex-shrink: 0;
+  box-shadow:
+    0 0 15px rgba(0, 255, 136, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+}
+
+.question-stage:hover .question-stage-image,
+.question-stage:hover .question-stage-emoji {
   border-color: rgba(0, 255, 136, 0.6);
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(0, 255, 136, 0.5),
     0 4px 12px rgba(0, 0, 0, 0.4);
   transform: scale(1.02);
@@ -455,17 +597,16 @@
 .answer-options {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
+  gap: 8px;
+  align-items: center;
   flex: 0 0 auto;
   overflow: visible;
-  padding: 0;
+  padding: 8px 0 0 0;
   margin: 0;
   margin-bottom: 0;
-  position: absolute;
-  top: 200px;
-  right: 10px;
-  left: 10px;
+  /* Позиционируем в потоке документа — гарантируем, что варианты не будут обрезаться
+     и всегда попадут под текст вопроса / прогресс-бар. */
+  position: relative;
   width: calc(100% - 20px);
   max-width: 800px;
   box-sizing: border-box;
@@ -577,9 +718,7 @@
 }
 
 /* Убираем галочку у последнего элемента, если он выбран - там стрелка */
-.answer-message.poll-option.selected:last-child .poll-checkmark {
-  display: none;
-}
+
 
 .answer-option-label {
   color: rgba(255, 255, 255, 0.95);
@@ -617,13 +756,13 @@
 /* Экран результатов */
 .diagnostics-results {
   width: 100%;
-  min-height: calc(100vh - 120px);
-  padding: 120px 20px 40px;
+  /* keep results below the fixed header reliably using the header height variable */
+  min-height: calc(100vh - var(--diagnostics-header-height));
+  padding: calc(var(--diagnostics-header-height) + 12px) 20px 60px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   box-sizing: border-box;
-  padding-bottom: 100px;
 }
 
 .diagnostics-results-content {
@@ -632,12 +771,12 @@
   animation: fadeInUp 0.6s ease-out;
   box-sizing: border-box;
 }
-
 .diagnostics-results-title {
   color: #ffffff;
   font-size: 42px;
   font-weight: 700;
-  margin: 0 0 48px;
+  /* reduce and stabilise vertical spacing so scaling won't push title under/over header */
+  margin: 0 0 24px;
   text-align: center;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.85));
@@ -649,8 +788,8 @@
 .funnel-visualization {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  margin-bottom: 48px;
+  gap: 18px;
+  margin-bottom: 24px;
 }
 
 .funnel-stage-result {
@@ -1202,7 +1341,8 @@
 /* Адаптивность */
 @media (max-width: 768px) {
   .diagnostics-intro {
-    padding: 100px 16px 32px;
+    /* Keep some extra top space on smaller screens so title doesn't overlap the header */
+    padding: calc(var(--diagnostics-header-height-mobile) + var(--diagnostics-title-gap-mobile)) 16px 32px;
   }
 
   .diagnostics-intro-title {
@@ -1215,13 +1355,55 @@
     margin-bottom: 32px;
   }
 
+  /* Мобильные стили для Икигай */
+  .ikigai-intro-main {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .ikigai-intro-sub {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .ikigai-instruction {
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .ikigai-instruction strong {
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+
+  .ikigai-instruction-emoji {
+    font-size: 16px;
+    margin-right: 10px;
+  }
+
+  .ikigai-instruction-title {
+    font-size: 13px;
+  }
+
+  .ikigai-instruction-text {
+    font-size: 12px;
+  }
+
+  .ikigai-instruction-item {
+    margin-bottom: 8px;
+    padding: 6px 0;
+  }
+
   .diagnostics-start-btn {
     font-size: 16px;
     padding: 14px 36px;
   }
 
   .diagnostics-question {
-    padding-top: 150px;
+    /* мобильный отступ сверху — тоже уменьшён */
+    padding-top: 20px;
     padding-left: 12px;
     padding-right: 12px;
     padding-bottom: 0;
@@ -1271,11 +1453,16 @@
     border-radius: 10px;
   }
 
-  .question-stage-image {
+  .question-stage-image,
+  .question-stage-emoji {
     width: 48px;
     height: 48px;
     border-width: 2px;
     border-radius: 8px;
+  }
+
+  .question-stage-emoji {
+    font-size: 28px;
   }
 
   .question-stage-name {
@@ -1602,3 +1789,80 @@
     height: 24px;
   }
 }
+
+/* Стили для очень маленьких экранов */
+@media (max-width: 480px) {
+  .diagnostics-intro-title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .ikigai-intro-main {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .ikigai-intro-sub {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .ikigai-instruction {
+    font-size: 12px;
+    line-height: 1.3;
+    padding: 14px;
+    margin-top: 10px;
+  }
+
+  .ikigai-instruction strong {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .ikigai-instruction-emoji {
+    font-size: 15px;
+    margin-right: 8px;
+  }
+
+  .ikigai-instruction-title {
+    font-size: 12px;
+  }
+
+  .ikigai-instruction-text {
+    font-size: 11px;
+  }
+
+  .ikigai-instruction-item {
+    margin-bottom: 6px;
+    padding: 4px 0;
+  }
+
+  .diagnostics-start-btn {
+    font-size: 14px;
+    padding: 12px 24px;
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* IKIGAI Venn specific helpers */
+.ikigai-venn-container{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  max-width:520px;
+  margin: 0 auto;
+}
+.ikigai-venn-container svg{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+/* ensure text pills inside SVG remain readable on small screens */
+.ikigai-venn-container .question-stage-name{
+  font-family: inherit;
+  font-weight: 700;
+}
+

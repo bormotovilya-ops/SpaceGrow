@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Portfolio from './Portfolio'
 import Profile from './Profile'
+import PersonReport from './PersonReport'
 import BlockDetail from './BlockDetail'
 import Header from './Header'
 import Diagnostics from './Diagnostics'
@@ -10,6 +11,7 @@ import Home from './Home'
 import './SalesFunnel.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 const funnelData = [
   {
@@ -78,10 +80,12 @@ const funnelData = [
 ]
 
 function SalesFunnel() {
+  const { logCTAClick, logContentView } = useLogEvent()
   const [selectedBlock, setSelectedBlock] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [showPortfolio, setShowPortfolio] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
+  const [showPersonReport, setShowPersonReport] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   const [showAlchemy, setShowAlchemy] = useState(false)
   const [showChat, setShowChat] = useState(false)
@@ -89,13 +93,40 @@ function SalesFunnel() {
 
   // Обработка hash в URL для прямой ссылки на профиль
   useEffect(() => {
-    const hash = window.location.hash
-    if (hash === '#profile') {
-      setShowProfile(true)
-    } else if (hash === '#diagnostics') {
-      setShowDiagnostics(true)
-    } else if (hash === '#alchemy') {
-      setShowAlchemy(true)
+    const handleHashChange = () => {
+      const hash = window.location.hash
+      if (hash === '#profile') {
+        setShowProfile(true)
+        setShowPersonReport(false)
+        setShowDiagnostics(false)
+        setShowAlchemy(false)
+      } else if (hash === '#personreport') {
+        setShowPersonReport(true)
+        setShowProfile(false)
+        setShowDiagnostics(false)
+        setShowAlchemy(false)
+      } else if (hash === '#diagnostics') {
+        setShowDiagnostics(true)
+        setShowProfile(false)
+        setShowPersonReport(false)
+        setShowAlchemy(false)
+      } else if (hash === '#alchemy') {
+        setShowAlchemy(true)
+        setShowProfile(false)
+        setShowPersonReport(false)
+        setShowDiagnostics(false)
+      }
+    }
+
+    // Обработка при монтировании
+    handleHashChange()
+
+    // Слушатель изменений hash
+    window.addEventListener('hashchange', handleHashChange)
+
+    // Очистка при размонтировании
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
     }
   }, [])
 
@@ -103,6 +134,8 @@ function SalesFunnel() {
   useEffect(() => {
     if (showProfile) {
       window.location.hash = 'profile'
+    } else if (showPersonReport) {
+      window.location.hash = 'personreport'
     } else if (showDiagnostics) {
       window.location.hash = 'diagnostics'
     } else if (showAlchemy) {
@@ -110,17 +143,24 @@ function SalesFunnel() {
     } else if (!selectedBlock) {
       window.location.hash = ''
     }
-  }, [showProfile, showDiagnostics, showAlchemy, selectedBlock])
+  }, [showProfile, showPersonReport, showDiagnostics, showAlchemy, selectedBlock])
 
 
-  const handleBlockClick = (block) => {
+  const handleBlockClick = async (block) => {
     if (isAnimating) return
 
     yandexMetricaReachGoal(null, 'funnel_block_open', { blockId: block?.id })
-    
+
+    // Логируем клик по CTA (элемент воронки)
+    await logCTAClick('funnel_block_click', {
+      ctaText: block?.name,
+      ctaLocation: 'sales_funnel',
+      previousStep: 'viewing_funnel'
+    })
+
     setIsAnimating(true)
     setSelectedBlock(block)
-    
+
     setTimeout(() => {
       setIsAnimating(false)
     }, 300)
@@ -270,14 +310,36 @@ function SalesFunnel() {
     )
   }
 
+  if (showPersonReport) {
+    return (
+      <PersonReport
+        onBack={() => {
+          setShowPersonReport(false)
+          setShowFunnelDiagram(true) // Возврат к диаграмме воронки
+          window.location.hash = ''
+        }}
+        onAvatarClick={() => {
+          setShowPersonReport(false)
+          window.location.hash = ''
+        }}
+        onHomeClick={() => {
+          setShowPersonReport(false)
+          setShowFunnelDiagram(false) // Возврат на пустую главную
+          setSelectedBlock(null) // Сброс выбранного блока
+          window.location.hash = ''
+        }}
+      />
+    )
+  }
+
   if (showProfile) {
     return (
-      <Profile 
+      <Profile
         onBack={() => {
           setShowProfile(false)
           setShowFunnelDiagram(true) // Возврат к диаграмме воронки
           window.location.hash = ''
-        }} 
+        }}
         onAvatarClick={() => {
           setShowProfile(false)
           window.location.hash = ''
