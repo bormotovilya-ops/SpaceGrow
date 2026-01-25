@@ -14,14 +14,22 @@ module.exports = async (req, res) => {
   if (BACKEND_URL) {
     try {
       const upstream = await fetch(`${BACKEND_URL.replace(/\/$/, '')}/api/user/${tg_user_id}/personal-report`)
+      const contentType = (upstream.headers && upstream.headers.get && upstream.headers.get('content-type')) || ''
       const text = await upstream.text()
-      // Try to parse JSON else return raw text with correct content-type
-      try {
-        const json = JSON.parse(text)
-        return res.status(upstream.status).json(json)
-      } catch (e) {
-        res.setHeader('content-type', 'text/plain; charset=utf-8')
-        return res.status(upstream.status).send(text)
+
+      // If upstream returned JSON and a 2xx status - forward it.
+      if (upstream.ok && contentType.includes('application/json')) {
+        try {
+          const json = JSON.parse(text)
+          return res.status(upstream.status).json(json)
+        } catch (e) {
+          console.warn('Upstream returned application/json but body parse failed, falling back to sample', e)
+          // fall through to local/sample fallback
+        }
+      } else {
+        // Upstream returned non-JSON (e.g. HTML) or non-OK status — do not forward raw HTML to frontend.
+        console.warn('Upstream personal-report returned non-JSON or error status, falling back to local/sample', { status: upstream.status, contentType })
+        // fallthrough to local handling / sample
       }
     } catch (err) {
       console.error('Proxy to BACKEND_URL failed:', err)
