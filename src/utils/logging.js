@@ -1,5 +1,6 @@
 // Frontend logging utilities for user analytics
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use relative /api by default in production so the frontend calls the deployed serverless endpoints.
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // Cookie utilities
 export const cookieUtils = {
