@@ -57,16 +57,221 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
         const tgUserId = sessionInfo.tgUserId
         const cookieId = sessionInfo.cookieId
 
-        // Try to get data by telegram user ID first, then by cookie ID
+        if (!tgUserId && !cookieId) {
+          throw new Error('Не удалось определить пользователя')
+        }
+
+        // Try Supabase first (if configured). Use dynamic import so build doesn't fail when
+        // @supabase/supabase-js is not installed. Fallback to existing backend endpoints.
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+        if (SUPABASE_URL && SUPABASE_KEY) {
+          try {
+            // Prevent Vite from pre-bundling / statically resolving this optional
+            // dependency. The @vite-ignore comment tells Vite to leave the import
+            // as a runtime dynamic import so the build won't fail when the package
+            // isn't installed in the environment.
+            const { createClient } = await import(/* @vite-ignore */ '@supabase/supabase-js')
+            const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+            // Helper to parse JSON fields
+            const safeParse = (v) => {
+              try {
+                return v ? JSON.parse(v) : {}
+              } catch { return v }
+            }
+
+            // Build user info
+            let user = {
+              tg_user_id: tgUserId || null,
+              cookie_id: null,
+              traffic_source: 'Не определен',
+              utm_params: {},
+              referrer: null,
+              first_visit_date: null
+            }
+
+            if (tgUserId) {
+              const { data: firstSession, error: fsErr } = await supabase
+                .from('site_sessions')
+                .select('cookie_id,source,utm_params,referrer,session_start')
+                .eq('tg_user_id', tgUserId)
+                .order('session_start', { ascending: true })
+                .limit(1)
+
+              if (!fsErr && firstSession && firstSession.length) {
+                const row = firstSession[0]
+                user.cookie_id = row.cookie_id
+                user.traffic_source = row.source || user.traffic_source
+                user.utm_params = safeParse(row.utm_params)
+                user.referrer = row.referrer
+                user.first_visit_date = row.session_start
+              }
+            } else if (cookieId) {
+              const { data: firstSession, error: fsErr } = await supabase
+                .from('site_sessions')
+                .select('tg_user_id,source,utm_params,referrer,session_start')
+                .eq('cookie_id', cookieId)
+                .order('session_start', { ascending: true })
+                .limit(1)
+
+              if (!fsErr && firstSession && firstSession.length) {
+                const row = firstSession[0]
+                user.tg_user_id = row.tg_user_id
+                user.cookie_id = cookieId
+                user.traffic_source = row.source || user.traffic_source
+                user.utm_params = safeParse(row.utm_params)
+                user.referrer = row.referrer
+                user.first_visit_date = row.session_start
+              }
+            }
+
+            // Journey: sessions and events
+            const journey = {
+              miniapp_opens: [],
+              content_views: [],
+              ai_interactions: [],
+              diagnostics: [],
+              game_actions: [],
+              cta_clicks: []
+            }
+
+            // miniapp opens
+            if (tgUserId || cookieId) {
+              const q = supabase
+                .from('site_sessions')
+                .select('session_start,page_id,device_type')
+                .order('session_start', { ascending: false })
+                .limit(20)
+
+              if (tgUserId) q.eq('tg_user_id', tgUserId)
+              else q.eq('cookie_id', cookieId)
+
+              const { data: sessions, error: sErr } = await q
+              if (!sErr && sessions) {
+                journey.miniapp_opens = sessions.map(s => ({
+                  timestamp: s.session_start,
+                  page: s.page_id,
+                  device: s.device_type
+                }))
+              }
+            }
+
+            // helper to fetch events by type
+            const fetchEvents = async (type, mapper = (r) => r) => {
+              const q = supabase
+                .from('site_events')
+                .select('created_at,event_name,metadata,page')
+                .order('created_at', { ascending: false })
+                .limit(50)
+
+              if (tgUserId) q.eq('tg_user_id', tgUserId)
+              else q.eq('cookie_id', cookieId)
+              if (type) q.eq('event_type', type)
+
+              const { data, error } = await q
+              if (!error && data) return data.map(mapper)
+              return []
+            }
+
+            journey.content_views = await fetchEvents('content_view', (r) => ({
+              section: (r.metadata && (() => { try { return JSON.parse(r.metadata).content_type } catch { return null } })()) || r.event_name,
+              time_spent: (r.metadata && (() => { try { return JSON.parse(r.metadata).time_spent } catch { return 0 } })()) || 0,
+              scroll_depth: (r.metadata && (() => { try { return JSON.parse(r.metadata).scroll_depth } catch { return 0 } })()) || 0,
+              timestamp: r.created_at
+            }))
+
+            journey.ai_interactions = await fetchEvents('ai_interaction', (r) => ({
+              messages_count: (r.metadata && (() => { try { return JSON.parse(r.metadata).messages_count } catch { return 0 } })()) || 0,
+              topics: (r.metadata && (() => { try { return JSON.parse(r.metadata).topics } catch { return [] } })()) || [],
+              duration: (r.metadata && (() => { try { return JSON.parse(r.metadata).duration } catch { return 0 } })()) || 0,
+              timestamp: r.created_at
+            }))
+
+            journey.diagnostics = await fetchEvents('diagnostic', (r) => ({
+              progress: (r.metadata && (() => { try { return JSON.parse(r.metadata).progress } catch { return 0 } })()) || 0,
+              results: (r.metadata && (() => { try { return JSON.parse(r.metadata).results } catch { return null } })()) || null,
+              time_spent: (r.metadata && (() => { try { const m = JSON.parse(r.metadata); return (m.end_time && m.start_time) ? (m.end_time - m.start_time) : 0 } catch { return 0 } })()) || 0,
+              timestamp: r.created_at
+            }))
+
+            journey.game_actions = await fetchEvents('game_action', (r) => ({
+              game_type: (r.metadata && (() => { try { return JSON.parse(r.metadata).game_type } catch { return 'Неизвестно' } })()) || 'Неизвестно',
+              achievement: (r.metadata && (() => { try { return JSON.parse(r.metadata).achievement } catch { return [] } })()) || [],
+              score: (r.metadata && (() => { try { return JSON.parse(r.metadata).score } catch { return 0 } })()) || 0,
+              timestamp: r.created_at
+            }))
+
+            journey.cta_clicks = await fetchEvents('cta_click', (r) => ({
+              cta_location: (r.metadata && (() => { try { return JSON.parse(r.metadata).cta_location } catch { return 'Неизвестно' } })()) || 'Неизвестно',
+              previous_step: (r.metadata && (() => { try { return JSON.parse(r.metadata).previous_step } catch { return 'Неизвестно' } })()) || 'Неизвестно',
+              step_duration: (r.metadata && (() => { try { return JSON.parse(r.metadata).step_duration } catch { return 0 } })()) || 0,
+              timestamp: r.created_at
+            }))
+
+            // basic segmentation heuristics
+            const { data: sessionsCount, error: scErr, count } = await supabase
+              .from('site_sessions')
+              .select('id', { count: 'exact', head: false })
+              .maybeSingle()
+
+            // Instead of complex RPC, compute simple metrics
+            const { data: totalSessionsData, error: tsErr } = await supabase
+              .from('site_sessions')
+              .select('id', { count: 'exact' })
+              .eq(tgUserId ? 'tg_user_id' : 'cookie_id', tgUserId || cookieId)
+
+            const totalSessions = (totalSessionsData && totalSessionsData.length) || 0
+            const { data: diagnosticsData } = await supabase
+              .from('site_events')
+              .select('id')
+              .eq(tgUserId ? 'tg_user_id' : 'cookie_id', tgUserId || cookieId)
+              .eq('event_type', 'diagnostic')
+
+            const diagnosticsCompleted = (diagnosticsData && diagnosticsData.length) > 0
+
+            const engagementLevel = (journey.content_views.length + journey.ai_interactions.length) > 30 ? 'high' : ((journey.content_views.length + journey.ai_interactions.length) > 5 ? 'medium' : 'low')
+
+            const segmentation = {
+              user_segment: diagnosticsCompleted ? 'engaged' : (totalSessions > 5 ? 'engaged' : 'newcomer'),
+              engagement_level: engagementLevel,
+              total_sessions: totalSessions,
+              diagnostics_completed: diagnosticsCompleted,
+              last_activity: journey.miniapp_opens.length ? journey.miniapp_opens[0].timestamp : null
+            }
+
+            const recommendations = {
+              next_steps: segmentation.user_segment === 'newcomer' ? ['Пройти диагностику для персональных рекомендаций', 'Изучить основные разделы сайта'] : ['Связаться для детального обсуждения'],
+              automatic_actions: [],
+              content_suggestions: ['Введение', 'Кейсы'],
+              cta_suggestions: ['Записаться на консультацию']
+            }
+
+            const report = {
+              user,
+              journey,
+              segmentation,
+              recommendations,
+              generated_at: new Date().toISOString()
+            }
+
+            setReportData(report)
+            setIsSampleData(false)
+            setError(null)
+            return
+          } catch (supErr) {
+            console.warn('Supabase fetch failed, falling back to backend API', supErr)
+            // fallthrough to backend fetch
+          }
+        }
+
+        // Fallback: existing backend endpoints
         let response
         if (tgUserId) {
-          // Use relative path so fetch works in deployed environment (no hardcoded localhost)
           response = await fetch(`/api/user/${tgUserId}/personal-report`)
-        } else if (cookieId) {
-          // relative path for cookie-based report as well
-          response = await fetch(`/api/user/by-cookie/${cookieId}/personal-report`)
         } else {
-          throw new Error('Не удалось определить пользователя')
+          response = await fetch(`/api/user/by-cookie/${cookieId}/personal-report`)
         }
 
         if (!response.ok) {
@@ -76,7 +281,6 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
         const contentType = response.headers.get('content-type') || ''
         const sampleHeader = response.headers.get('x-sample-data')
 
-        // If server returned JSON - parse it.
         if (contentType.includes('application/json')) {
           const data = await response.json()
           setReportData(data)
@@ -84,10 +288,9 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
           setSampleReason(response.headers.get('x-sample-reason') || null)
           setError(null)
         } else {
-          // Non-JSON response (likely HTML). If header indicates sample, try to parse; otherwise show friendly error.
+          // Non-JSON response handling
           console.warn('personal-report returned non-JSON response', { status: response.status, contentType })
           if (sampleHeader === 'true') {
-            // try to parse anyway (some hosts may omit content-type)
             let data = null
             try {
               data = await response.json()

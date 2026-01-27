@@ -7,6 +7,9 @@ import base64
 from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
+import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy import text
 
 # Добавляем путь к telegram-bot для импорта Database
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'telegram-bot'))
@@ -28,11 +31,28 @@ if os.getenv('OPENAI_API_KEY'):
 # Инициализация базы данных
 db = None
 if Database:
-    try:
-        db = Database(os.path.join(os.path.dirname(__file__), '..', 'telegram-bot', 'bot_users.db'))
-    except Exception as e:
-        print(f"Ошибка инициализации базы данных: {e}")
-        db = None
+    # Если задан DATABASE_URL — пробуем подключиться к Postgres через SQLAlchemy и протестировать соединение.
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        try:
+            from sqlalchemy import create_engine
+            engine = create_engine(database_url)
+            # тест подключения
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            print("✓ Supabase подключён")
+            db = Database(database_url)
+        except ImportError:
+            print("❌ SQLAlchemy не установлена")
+        except Exception as e:
+            print(f"❌ Ошибка БД: {e}")
+    else:
+        # fallback на локальный sqlite файл
+        try:
+            db = Database(os.path.join(os.path.dirname(__file__), '..', 'telegram-bot', 'bot_users.db'))
+        except Exception as e:
+            print(f"Ошибка инициализации локальной БД: {e}")
+            db = None
 
 @app.route('/api/health', methods=['GET'])
 def health():

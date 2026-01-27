@@ -1,0 +1,2 @@
+user_id,username,first_name,last_name,has_started_diagnostics,first_reminder_sent,second_reminder_sent,started_at,diagnostics_started_at,created_at,updated_at,diagnostics_completed_at
+999999,test_user,Test User,,0,0,0,,,2026-01-23 14:00:48,2026-01-23 14:00:48,

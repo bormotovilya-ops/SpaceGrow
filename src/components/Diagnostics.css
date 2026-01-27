@@ -4,11 +4,12 @@
   min-height: 100vh;
   padding: 0;
   /* spacing variables: header height + gap used to position the welcome title nicely below the Header */
-  --diagnostics-header-height: 120px;
+  /* prefer using header's canonical CSS variable when available */
+  --diagnostics-header-height: var(--app-header-height, 120px);
   --diagnostics-title-gap: 18px;
   /* mobile overrides (used inside media queries) */
-  --diagnostics-header-height-mobile: 100px;
-  --diagnostics-title-gap-mobile: 14px;
+  --diagnostics-header-height-mobile: calc(var(--app-header-height, 100px));
+  --diagnostics-title-gap-mobile: 8px; /* smaller gap on mobile so title sits closer to header */
   background-image: 
     url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 100 0 L 0 0 0 100' fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grid)'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='circuit' width='200' height='200' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='25' cy='25' r='2' fill='rgba(92,184,92,0.1)'/%3E%3Ccircle cx='175' cy='175' r='2' fill='rgba(74,144,226,0.1)'/%3E%3Cpath d='M 50 50 L 150 50 L 150 150 L 50 150 Z' fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23circuit)'/%3E%3C/svg%3E"),
@@ -17,7 +18,8 @@
     linear-gradient(180deg, #0a0a0f, #0c0c14);
   position: relative;
   overflow-x: hidden;
-  overflow-y: hidden;
+  /* allow page-level scrolling so intro can scroll on mobile */
+  overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   display: flex;
@@ -53,11 +55,13 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  /* Position the intro block below the fixed Header with a pleasant gap */
-  padding: calc(var(--diagnostics-header-height) + var(--diagnostics-title-gap)) 20px 40px;
+  /* Position the intro block below the fixed Header with a pleasant gap
+     use header CSS variable to keep spacing stable when header size changes */
+  padding: calc(var(--diagnostics-header-height, 120px) + var(--diagnostics-title-gap)) 20px 40px;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
 }
 
 .diagnostics-intro::-webkit-scrollbar {
@@ -248,7 +252,8 @@
   min-height: 0;
   /* Отступ сверху учитывает фиксированный Header (чтобы прогресс-бар не накладывался) */
   /* Header занимает примерно 110-120px (иконки + padding), поэтому даём запас */
-  padding-top: 120px;
+  /* Anchor the question content below header using header variable to avoid jumps */
+  padding-top: calc(var(--diagnostics-header-height, 120px) + 8px);
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 0;
@@ -1402,8 +1407,8 @@
   }
 
   .diagnostics-question {
-    /* мобильный отступ сверху — тоже уменьшён */
-    padding-top: 20px;
+    /* мобильный отступ сверху — привязан к высоте header (через переменную) */
+    padding-top: calc(var(--diagnostics-header-height-mobile) + 8px);
     padding-left: 12px;
     padding-right: 12px;
     padding-bottom: 0;
@@ -1532,9 +1537,10 @@
 
   .answer-options {
     gap: 1px;
-    top: 180px;
-    right: 12px;
+    /* keep options in flow on mobile as well and anchor spacing via header variable */
+    position: relative;
     left: 12px;
+    right: 12px;
     width: calc(100% - 24px);
   }
   

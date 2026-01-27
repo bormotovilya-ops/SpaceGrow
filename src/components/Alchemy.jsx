@@ -1238,7 +1238,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       {selectedArtifact && (
         <section 
           id="action-zone" 
-          className={`action-zone ${selectedArtifact === 'astrolabe' ? 'action-zone-astrolabe' : ''} ${selectedArtifact === 'tarot' ? 'action-zone-tarot' : ''}`}
+          // Добавляем класс action-zone-tarot для 'tarot' и 'crystal', и action-zone-snitch для 'snitch'
+          className={`action-zone ${selectedArtifact === 'astrolabe' ? 'action-zone-astrolabe' : ''} ${(selectedArtifact === 'tarot' || selectedArtifact === 'crystal') ? 'action-zone-tarot' : ''} ${selectedArtifact === 'snitch' ? 'action-zone-snitch' : ''}`}
         >
           <div className="action-zone-inner">
             {renderActionContent()}

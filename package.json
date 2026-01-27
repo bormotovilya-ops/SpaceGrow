@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@sparticuz/chromium": "^143.0.4",
+    "@supabase/supabase-js": "^2.91.1",
     "form-data": "^4.0.5",
     "framer-motion": "^12.24.12",
     "googleapis": "^137.1.0",

@@ -1,0 +1,13 @@
+[33mtag v1.0.0[m
+Tagger:     User <best_email@mail.ru>
+TaggerDate: Mon Jan 26 23:34:14 2026 +0300
+
+v1.0.0: Supabase + Vite proxy + Flask fixes
+
+[33mcommit ef53448e489ad0f47542badc628a8e747fe9a645[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;33mtag: [m[1;33mv1.0.0[m[33m)[m
+Author:     User <best_email@mail.ru>
+AuthorDate: Mon Jan 26 02:37:46 2026 +0300
+Commit:     User <best_email@mail.ru>
+CommitDate: Mon Jan 26 02:37:46 2026 +0300
+
+    fix: remove conflicting .js file and keep .cjs
