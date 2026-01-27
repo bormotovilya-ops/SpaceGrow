@@ -639,7 +639,21 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
             </div>
           </div>
 
-          <div className="answer-options">
+          <div
+            className="answer-options"
+            style={{
+              position: 'fixed',
+              right: 0,
+              bottom: 24,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+              alignItems: 'flex-end',
+              width: 'min(720px, 92vw)',
+              padding: '0 0 12px 12px',
+              zIndex: 40
+            }}
+          >
               {optionsToRender.map((opt, i) => {
                 const isLast = i === optionsToRender.length - 1
                 return (
@@ -647,6 +661,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
                     key={i}
                     className={`dialog-message answer-message poll-option visible ${answers[currentQuestion?.id] === opt.value ? 'selected' : ''}`}
                     onClick={() => handleAnswer(currentQuestion.id, opt.value)}
+                    style={{ width: '100%', boxSizing: 'border-box' }}
                   >
                     <div className="answer-option-label">{opt.label}</div>
                     {answers[currentQuestion?.id] === opt.value && (

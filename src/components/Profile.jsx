@@ -372,7 +372,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                     </div>
                   )}
 
-                  {/* Кнопка персонального отчета - теперь появляется по таймеру как и предыдущие */}
+                  {/* Кнопка персонального отчета - теперь появляется по таймеру как и предыдущие 
                   <div className={`dialog-message ${(typingMessages[4] || visibleMessages[4]) ? 'visible' : ''}`}>
                     {typingMessages[4] ? (
                       <p className="typing-indicator">
@@ -398,7 +398,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                         Посмотреть мой персональный отчет
                       </button>
                     )}
-                  </div>
+                  </div>*/}
                 </div>
               </div>
 
