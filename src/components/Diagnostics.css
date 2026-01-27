@@ -43,7 +43,9 @@
   /* Small gap between the button top and the last answer option */
   --back-to-table-gap: 12px;
   /* Approximate height reserved for the stack of answer options themselves. */
-  --answers-area-height: 84px;
+  /* Increased to accommodate taller answer buttons (reduces visual gap
+     between options by making each option more prominent). */
+  --answers-area-height: 156px;
 
   /* Total area to reserve at the bottom of the question panel so answers and
      the fixed button won't overlap. Other components may read this variable. */
@@ -55,13 +57,13 @@
    options reliably across devices. These overrides update the same
    CSS variable so calc(...) in JS/CSS keeps working. */
 @media (max-width: 1024px) {
-  :root { --diagnostics-answer-area-height: 130px; }
+  :root { --diagnostics-answer-area-height: 180px; }
 }
 @media (max-width: 768px) {
-  :root { --diagnostics-answer-area-height: 120px; }
+  :root { --diagnostics-answer-area-height: 170px; }
 }
 @media (max-width: 480px) {
-  :root { --diagnostics-answer-area-height: 110px; }
+  :root { --diagnostics-answer-area-height: 160px; }
 }
 
 /* Для страницы результатов разрешаем скроллинг */
@@ -658,7 +660,9 @@
      shared variables so the options will never be covered by the button. */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  /* Slightly reduced gap combined with increased button height makes the
+     options feel denser while keeping touch targets comfortable. */
+  gap: 8px;
   align-items: flex-end;
   flex: 0 0 auto;
   overflow: visible;
@@ -708,10 +712,13 @@
 .fixed-back-to-table .back-to-table-button {
   height: var(--back-to-table-button-height, 56px);
   min-height: var(--back-to-table-button-height, 56px);
-  padding: 0 20px;
+  /* Harmonious width driven by content; allow JS to set max if needed. */
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: auto;
+  max-width: 520px;
+  padding: 0 20px;
   background: linear-gradient(135deg, #5cb85c 0%, #4a9e4a 50%);
   color: #fff;
   border: none;
@@ -720,6 +727,7 @@
   cursor: pointer;
   z-index: 210; /* be above answer options (which have z-index:80) */
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap; /* prevent label wrapping */
 }
 
 /* Small screens: make the fixed button span wider and keep comfortable touch area */
@@ -729,6 +737,8 @@
     transform: translateX(-50%);
   }
 
+  /* On smaller screens make the fixed button comfortably wide for touch
+     targets while still keeping it centered. */
   .fixed-back-to-table .back-to-table-button {
     width: calc(100% - 40px);
     max-width: 520px;
@@ -741,10 +751,11 @@
   min-width: 0;
   max-width: 420px;
   height: auto; /* allow height to fit content */
-  /* Keep minimum small so single-line labels remain compact, but otherwise
-     let the content determine height so multi-line labels expand naturally. */
-  min-height: 34px;
-  padding: 8px 12px; /* reduced padding to keep buttons compact */
+  /* Increase minimum height to create larger touch targets and visually
+     reduce spacing between options (user requested denser layout achieved
+     by taller buttons). Keep content-driven expansion for multi-line labels. */
+  min-height: 56px;
+  padding: 12px 14px; /* slightly larger padding for comfortable feel */
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -760,7 +771,7 @@
   transform: translateX(0);
   overflow: hidden;
   display: flex;
-  align-items: flex-start; /* allow multi-line labels to expand height naturally */
+  align-items: center; /* center content vertically inside taller buttons */
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(51, 144, 236, 0.3);
   user-select: none;
@@ -1555,10 +1566,11 @@
   
   .question-content {
     /* Reserve space for header by shifting the content down via margin so the
-       panel background stays at the top (same behavior as Diagnostics). */
-    margin-top: calc(var(--app-header-height, 100px));
-    padding: 0 0 110px 0; /* on mobile leave space for options that are placed below content */
-    margin: 0;
+       panel background stays at the top (same behavior as Diagnostics).
+       On mobile we also reserve additional vertical space for the
+       progress-bar which is pinned just under the Header (fixed). */
+    margin-top: calc(var(--app-header-height, 100px) + 64px);
+    padding: 8px 0 110px 0; /* top padding so internal elements (title/text) sit below the fixed progress bar */
     gap: 8px;
     max-width: 100%;
     justify-content: flex-start;
@@ -1569,10 +1581,31 @@
     gap: 6px;
   }
 
+  /* Pin the progress bar directly below the bottom edge of the fixed Header
+     on mobile so it visually appears attached to the header. We use the
+     canonical --app-header-height variable from Header.css and add a small
+     offset. The progress bar is fixed so it remains visible while content
+     scrolls; question content above reserves space to avoid overlap. */
   .diagnostics-progress {
-    margin-bottom: 10px;
-    padding: 6px 0;
-    max-width: 100%;
+    position: fixed;
+    top: calc(var(--app-header-height) + 8px); /* small offset from header bottom */
+    left: 0;
+    right: 0;
+    z-index: 90; /* below header (header z-index:100) but above most content */
+    padding: 6px 12px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    pointer-events: none; /* progress is not interactive */
+  }
+
+  /* Keep the visual progress bar centered within the fixed container */
+  .diagnostics-progress .progress-bar {
+    width: 100%;
+    max-width: 520px;
+    box-sizing: border-box;
+    pointer-events: auto; /* allow hover styles if needed on inner elements */
   }
   
   .progress-text {
@@ -1589,6 +1622,7 @@
     justify-content: center;
     text-align: center;
     padding: 8px 12px;
+    margin-top: 4px; /* ensure stage block doesn't sit under the fixed progress bar */
     margin-bottom: 0;
     gap: 10px;
     border-width: 2px;
@@ -1688,9 +1722,9 @@
     min-width: 0;
     max-width: 100%;
     height: auto;
-    /* mobile/touch targets slightly larger but still driven by content */
-    min-height: 40px;
-    padding: 10px 14px;
+    /* mobile/touch targets increased to match desktop density */
+    min-height: 56px;
+    padding: 12px 14px;
     margin-right: 0 !important;
     border-radius: 8px;
     overflow: hidden;

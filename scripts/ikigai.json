@@ -12,25 +12,25 @@
       "id": "passion",
       "name": "Страсть",
       "subtitle": "То, что вы любите",
-      "image": "❤️"
+      "image": "/images/ikigai/1_Страсть.png"
     },
     {
       "id": "skill",
       "name": "Мастерство",
       "subtitle": "В чем вы сильны",
-      "image": "🔧"
+      "image": "/images/ikigai/2_Призвание.png"
     },
     {
       "id": "mission",
       "name": "Миссия",
       "subtitle": "Что нужно миру",
-      "image": "🌍"
+      "image": "/images/ikigai/3_Миссия.png"
     },
     {
       "id": "money",
       "name": "Деньги",
       "subtitle": "За что вам платят",
-      "image": "💰"
+      "image": "/images/ikigai/4_Деньги.png"
     }
   ],
   "questions": [

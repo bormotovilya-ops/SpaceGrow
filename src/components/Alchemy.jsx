@@ -1315,15 +1315,12 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         <div className="action-zone-inner">
             {renderActionContent()}
 
-            {/* Back button should live inside the scrollable inner area so it
-                always appears after the answer options and can be pinned
-                to the bottom of that area via CSS (.action-zone-inner .back-to-table-button).
-                Wrap in a centered container so the button is horizontally centered. */}
-            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            {/* Back button sits after content and is centered by .back-to-table-wrapper */}
+            <div className="back-to-table-wrapper">
               <button
                 className="back-to-table-button"
-                style={{ margin: '0 auto' }}
                 onClick={handleBackToTable}
+                aria-label="Вернуться к столу"
               >
                 Вернуться к столу
               </button>
