@@ -135,7 +135,7 @@ const IkigaiVenn = ({ data = {}, sectors = [], threshold = 3.5, size = 360 }) =>
   )
 }
 
-const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClick, onHomeClick }) => {
+const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsultation, onChatClick, onHomeClick }) => {
   const { logDiagnostics } = useLogEvent()
   const { settings, stages, questions, commonAnswerOptions, answerOptions, welcome, results: resultsMapping, cta } = data
   const totalQuestions = questions.length
@@ -361,7 +361,14 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
 
     return (
       <div className="diagnostics-container">
-        <Header onAvatarClick={onAvatarClick || onBack} onBack={onBack} onHomeClick={onHomeClick} />
+        <Header
+          onAvatarClick={onAvatarClick || onBack}
+          onConsultation={onConsultation}
+          onBack={onBack}
+          onAlchemyClick={onAlchemyClick}
+          onHomeClick={onHomeClick}
+          onChatClick={onChatClick}
+        />
         <div className="diagnostics-intro">
           <div className="diagnostics-intro-content">
             <h1 className="diagnostics-intro-title">{welcome?.title}</h1>
@@ -407,42 +414,53 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
 
       return (
         <div className="diagnostics-container">
-          <Header onBack={onBack} />
+          <Header
+            onBack={onBack}
+            onConsultation={onConsultation}
+            onAlchemyClick={onAlchemyClick}
+            onHomeClick={onHomeClick}
+            onChatClick={onChatClick}
+          />
 
-          {/* Use column layout to avoid overlaps: Title -> Diagram -> Description -> Buttons */}
-          <div className="diagnostics-results" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center' }}>
-            <div style={{ width: '100%', maxWidth: 840, textAlign: 'center', color: 'rgba(255,255,255,0.9)', fontSize: 16, fontWeight: 600, letterSpacing: '1.2px', marginBottom: 2 }}>Ваш результат:</div>
-            <h1 className="diagnostics-results-title">{calc.result?.title}</h1>
+          {/* Use canonical diagnostics layout so the results title is consistently
+              positioned just below the fixed Header. We rely on CSS variables
+              (--app-header-height) defined in Header.css and Diagnostics.css so
+              the title remains visible and doesn't get hidden behind the header. */}
+          <div className="diagnostics-results">
+            <div className="diagnostics-results-content" style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', padding: '20px' }}>
+              <div style={{ width: '100%', maxWidth: 840, textAlign: 'center', color: 'rgba(255,255,255,0.9)', fontSize: 16, fontWeight: 600, letterSpacing: '1.2px', marginBottom: 2 }}>Ваш результат:</div>
+              <h1 className="diagnostics-results-title">{calc.result?.title}</h1>
 
-            {/* Central block: diagram - fixed sized container, centered */}
-            <div style={{ width: '100%', maxWidth: 520, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IkigaiVenn data={calc.sectorScores} sectors={calc.sectors} threshold={settings.threshold} size={420} />
+              {/* Central block: diagram - fixed sized container, centered */}
+              <div style={{ width: '100%', maxWidth: 520, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <IkigaiVenn data={calc.sectorScores} sectors={calc.sectors} threshold={settings.threshold} size={420} />
+              </div>
+
+              {/* Description block (conclusion-wrapper with avatar) */}
+              <motion.div
+                className="conclusion-wrapper"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12, duration: 0.45 }}
+                style={{ width: '100%', maxWidth: 840, display: 'flex', gap: 16, alignItems: 'flex-start' }}
+              >
+                <img src="/images/me.jpg" alt="Эксперт" className="conclusion-avatar" />
+                <div className="conclusion-text" dangerouslySetInnerHTML={{ __html: formattedDesc }} />
+              </motion.div>
+
+              {/* Buttons at the bottom, full-width centered */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.22, duration: 0.45 }}
+                style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 6 }}
+              >
+                <button className="diagnostics-consultation-btn diagnostics-fix-btn" onClick={handleIkigaiDiscuss}>
+                  <span className="btn-glow"></span>
+                  Обсудить результат с экспертом
+                </button>
+              </motion.div>
             </div>
-
-            {/* Description block (conclusion-wrapper with avatar) */}
-            <motion.div
-              className="conclusion-wrapper"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12, duration: 0.45 }}
-              style={{ width: '100%', maxWidth: 840, display: 'flex', gap: 16, alignItems: 'flex-start' }}
-            >
-              <img src="/images/me.jpg" alt="Эксперт" className="conclusion-avatar" />
-              <div className="conclusion-text" dangerouslySetInnerHTML={{ __html: formattedDesc }} />
-            </motion.div>
-
-            {/* Buttons at the bottom, full-width centered */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.22, duration: 0.45 }}
-              style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 6 }}
-            >
-              <button className="diagnostics-consultation-btn diagnostics-fix-btn" onClick={handleIkigaiDiscuss}>
-                <span className="btn-glow"></span>
-                Обсудить результат с экспертом
-              </button>
-            </motion.div>
           </div>
         </div>
       )
@@ -454,7 +472,13 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
 
     return (
       <div className="diagnostics-container diagnostics-container-results">
-        <Header onBack={onBack} onChatClick={onChatClick} />
+        <Header
+          onBack={onBack}
+          onConsultation={onConsultation}
+          onAlchemyClick={onAlchemyClick}
+          onHomeClick={onHomeClick}
+          onChatClick={onChatClick}
+        />
         <div className="diagnostics-results">
           <div className="diagnostics-results-content">
             <h1 className="diagnostics-results-title">Результаты диагностики</h1>
@@ -604,7 +628,14 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
   )) || (commonAnswerOptions || [])
   return (
     <div className="diagnostics-container">
-      <Header onBack={() => setCurrentStep(currentStep - 1)} />
+      <Header
+        onBack={() => setCurrentStep(currentStep - 1)}
+        onConsultation={onConsultation}
+        onAlchemyClick={onAlchemyClick}
+        onHomeClick={onHomeClick}
+        onAvatarClick={onAvatarClick}
+        onChatClick={onChatClick}
+      />
       <div className="diagnostics-question">
         <div className="diagnostics-progress">
           <div className="progress-bar">
@@ -639,21 +670,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onChatClic
             </div>
           </div>
 
-          <div
-            className="answer-options"
-            style={{
-              position: 'fixed',
-              right: 0,
-              bottom: 24,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              alignItems: 'flex-end',
-              width: 'min(720px, 92vw)',
-              padding: '0 0 12px 12px',
-              zIndex: 40
-            }}
-          >
+          <div className="answer-options">
               {optionsToRender.map((opt, i) => {
                 const isLast = i === optionsToRender.length - 1
                 return (

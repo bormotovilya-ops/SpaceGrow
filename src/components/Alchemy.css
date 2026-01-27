@@ -653,6 +653,36 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  /* Make this a positioned container so absolutely positioned
+     controls (back button) can be anchored to the inner area's bottom
+     without overlapping the answer options. Previously the button
+     was sticky which in some flows caused it to float over the answers. */
+  position: relative;
+}
+
+/* Make the back-to-table button sit after all content and pinned near
+   the bottom of the scrollable inner area. Use position:sticky so the
+   button remains anchored to the inner scroll container and will not
+   overlap the absolutely-positioned answer options which are anchored
+   to .question-content. Keep the button's stacking order below the
+   answer-options (which use z-index:80) so the options remain fully
+   visible above the button. */
+.action-zone-inner .back-to-table-button {
+  position: sticky;
+  bottom: 12px; /* small offset from bottom of visible inner area */
+  margin-top: 12px; /* small gap separating it from content when scrolled */
+  width: calc(100% - 40px);
+  max-width: 480px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70; /* below .answer-options (z-index:80) so options stay above */
+}
+
+/* Ensure when inputs are focused we keep the button hidden as before */
+.action-zone.input-focused .back-to-table-button {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(20px);
 }
 
 .action-zone-inner::-webkit-scrollbar {
@@ -1110,8 +1140,14 @@
 
 /* Кнопка "Вернуться к столу" */
 .back-to-table-button {
-  position: fixed;
-  bottom: 80px;
+  /* Use absolute positioning so the button respects the nearest positioned
+     ancestor. In the tests/diagnostics flow the answers area reserves space
+     via --diagnostics-answer-area-height and parent wrappers may be fixed.
+     Using absolute avoids the button ignoring a fixed wrapper (regression
+     where both wrapper and button were fixed, causing overlap with answers). */
+  position: relative; /* default inside .action-zone-inner; fixed instances use .fixed-back-to-table */
+  bottom: auto;
+  height: var(--back-to-table-button-height, 56px);
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 30px;
@@ -1127,6 +1163,21 @@
   box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.4),
     0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+/* Helper used when the back button must be fixed relative to viewport
+   (used in the standalone-IKIGAI overlay case). It respects the CSS
+   variable --diagnostics-answer-area-height so it won't overlap answer
+   options — keep a small gap above the button. */
+.fixed-back-to-table {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  /* push the fixed back button slightly lower than the reserved answers area
+     so it won't visually overlap the answer options on most devices */
+  bottom: calc(var(--diagnostics-answer-area-height, 140px) + 24px);
+  /* keep the button visually below the answer options (which use z-index:80) */
+  z-index: 60;
 }
 
 /* Скрываем кнопку "Вернуться к столу" когда поле ввода в фокусе */
@@ -1620,7 +1671,7 @@
   }
 
   .back-to-table-button {
-    bottom: 80px;
+    bottom: 12px;
     padding: 12px 30px;
     font-size: 14px;
   }

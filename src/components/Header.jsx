@@ -38,7 +38,13 @@ function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeC
             <button
               key={item.id}
               className={`header-menu-item ${item.highlight ? 'header-menu-item-highlight' : ''} ${item.isProfile ? 'header-menu-item-profile' : ''} ${activeMenuId === item.id ? 'active' : ''}`}
-              onClick={item.onClick}
+              onClick={(e) => {
+                // Provide a safe fallback so menu items remain interactive even if
+                // a specific handler wasn't passed from the parent component.
+                // Preference order: item.onClick -> onHomeClick -> noop
+                const handler = item.onClick || onHomeClick || (() => {})
+                try { handler(e) } catch (err) { console.warn('Header menu handler error', err) }
+              }}
               aria-label={item.label}
             >
               <div className="header-menu-icon-wrapper">

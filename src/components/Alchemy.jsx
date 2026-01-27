@@ -529,6 +529,59 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }
   }, [selectedArtifact]) // Пересчитываем при изменении выбранного артефакта
 
+  // Когда Икигай открыт как standalone overlay, подстраиваем фиксированную
+  // кнопку "Вернуться к столу" так, чтобы её bottom был привязан к низу
+  // .question-content. Это предотвращает наложение на блок с вариантами ответов
+  // и даёт точную привязку к реальному размеру вопросной панели.
+  useEffect(() => {
+    if (activeCrystalTest !== 'ikigai') return
+
+    const computeAndApply = () => {
+      const question = document.querySelector('.question-content')
+      const fixed = document.querySelector('.fixed-back-to-table')
+      if (!question || !fixed) return
+
+      const rect = question.getBoundingClientRect()
+
+      // Читаем желаемый gap из CSS переменной, с запасом по умолчанию
+      const rootStyles = getComputedStyle(document.documentElement)
+      const gapVal = rootStyles.getPropertyValue('--back-to-table-gap') || '12px'
+      const gap = parseInt(gapVal, 10) || 12
+
+      // Смещение от низа viewport до низа .question-content
+      const offsetFromViewportBottom = Math.max(0, window.innerHeight - rect.bottom)
+
+      // Итоговый bottom для фиксированной кнопки: расстояние от низа вьюпорта
+      // до низа .question-content плюс небольшой gap, чтобы кнопка была
+      // визуально ниже области ответов.
+      const bottomPx = offsetFromViewportBottom + gap
+
+      fixed.style.bottom = `${bottomPx}px`
+      // Убедимся, что z-index достаточно высок, как просили
+      fixed.style.zIndex = '200'
+    }
+
+    // Вызываем сразу и при изменениях окна/скрола
+    computeAndApply()
+    window.addEventListener('resize', computeAndApply)
+    window.addEventListener('scroll', computeAndApply)
+
+    // Наблюдаем за изменениями разметки внутри вопросной области (например,
+    // появление подсказок/вариантов) и пересчитываем позицию кнопки.
+    const questionNode = document.querySelector('.question-content')
+    let mo = null
+    if (questionNode && window.MutationObserver) {
+      mo = new MutationObserver(computeAndApply)
+      mo.observe(questionNode, { childList: true, subtree: true, attributes: true })
+    }
+
+    return () => {
+      window.removeEventListener('resize', computeAndApply)
+      window.removeEventListener('scroll', computeAndApply)
+      if (mo) mo.disconnect()
+    }
+  }, [activeCrystalTest])
+
   // Логика анимации и позиционирования старого пламени удалена —
   // теперь используется готовое анимированное изображение свечи поверх стола.
 
@@ -1089,6 +1142,24 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         return null
     }
   }
+  // If user opened IKIGAI test from the crystal card, render Diagnostics
+  // as a standalone view (without the surrounding .alchemy-container) so the
+  // UniversalTest/Diagnostics layout matches the standalone Diagnostics flow.
+  if (activeCrystalTest === 'ikigai') {
+    return (
+      <>
+        <Diagnostics
+          customStages={IKIGAI_TEST}
+          onBack={() => setActiveCrystalTest(null)}
+          onAvatarClick={onAvatarClick}
+          onChatClick={onChatClick}
+          onHomeClick={onHomeClick}
+        />
+
+        {/* NOTE: Back-to-table button intentionally removed for test flows. */}
+      </>
+    )
+  }
 
   return (
     <div className={`alchemy-container ${isDarkMode ? 'dark-mode' : ''} ${debugMode ? 'debug-mode' : ''}`}>
@@ -1241,12 +1312,23 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
           // Добавляем класс action-zone-tarot для 'tarot' и 'crystal', и action-zone-snitch для 'snitch'
           className={`action-zone ${selectedArtifact === 'astrolabe' ? 'action-zone-astrolabe' : ''} ${(selectedArtifact === 'tarot' || selectedArtifact === 'crystal') ? 'action-zone-tarot' : ''} ${selectedArtifact === 'snitch' ? 'action-zone-snitch' : ''}`}
         >
-          <div className="action-zone-inner">
+        <div className="action-zone-inner">
             {renderActionContent()}
+
+            {/* Back button should live inside the scrollable inner area so it
+                always appears after the answer options and can be pinned
+                to the bottom of that area via CSS (.action-zone-inner .back-to-table-button).
+                Wrap in a centered container so the button is horizontally centered. */}
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <button
+                className="back-to-table-button"
+                style={{ margin: '0 auto' }}
+                onClick={handleBackToTable}
+              >
+                Вернуться к столу
+              </button>
+            </div>
           </div>
-          <button className="back-to-table-button" onClick={handleBackToTable}>
-            Вернуться к столу
-          </button>
         </section>
       )}
     </div>

@@ -26,6 +26,44 @@
   flex-direction: column;
 }
 
+/* Force container to start at the very top so Header overlays it consistently
+   (keeps behaviour identical between Diagnostics and Ikigai flows). */
+.diagnostics-container {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Space reserved for answer options area. Other components read this to avoid overlap.
+   We compute the total reserved area from smaller building blocks so other
+   styles (and Alchemy) can align the fixed back button and the answer options
+   reliably. */
+:root {
+  /* Height of the fixed "Вернуться к столу" button area (incl. touch target) */
+  --back-to-table-button-height: 56px;
+  /* Small gap between the button top and the last answer option */
+  --back-to-table-gap: 12px;
+  /* Approximate height reserved for the stack of answer options themselves. */
+  --answers-area-height: 84px;
+
+  /* Total area to reserve at the bottom of the question panel so answers and
+     the fixed button won't overlap. Other components may read this variable. */
+  --diagnostics-answer-area-height: calc(var(--back-to-table-button-height) + var(--back-to-table-gap) + var(--answers-area-height)); /* desktop default */
+}
+
+/* Tweak the answer-area height for different breakpoints so the parent
+   (Alchemy) can place the fixed "Вернуться к столу" button below the
+   options reliably across devices. These overrides update the same
+   CSS variable so calc(...) in JS/CSS keeps working. */
+@media (max-width: 1024px) {
+  :root { --diagnostics-answer-area-height: 130px; }
+}
+@media (max-width: 768px) {
+  :root { --diagnostics-answer-area-height: 120px; }
+}
+@media (max-width: 480px) {
+  :root { --diagnostics-answer-area-height: 110px; }
+}
+
 /* Для страницы результатов разрешаем скроллинг */
 .diagnostics-container-results {
   overflow-y: scroll !important;
@@ -55,9 +93,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  /* Position the intro block below the fixed Header with a pleasant gap
-     use header CSS variable to keep spacing stable when header size changes */
-  padding: calc(var(--diagnostics-header-height, 120px) + var(--diagnostics-title-gap)) 20px 40px;
+  /* Do not push the whole intro block down by header height — keep the
+     background/full-panel starting at the top of the viewport so Header
+     visually overlays it. Position the first visible element (title) by
+     applying a margin equal to header height below. */
+  padding: 0 20px 40px;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -80,6 +120,12 @@
   gap: 16px;
 }
 
+/* Place the intro content (title block) under the fixed header using margin
+   so the diagnostics panel background remains at the top of the viewport. */
+.diagnostics-intro-content {
+  margin-top: calc(var(--app-header-height, 120px));
+}
+
 .diagnostics-start-btn {
   margin-top: 20px !important;
 }
@@ -88,8 +134,13 @@
   color: #ffffff;
   font-size: 42px;
   font-weight: 700;
-  margin: 0 0 24px;
-  /* title already pushed down by container padding */
+  /* visual gap between header and title is applied here so we can
+     tune it independently of the container padding used to reserve
+     the header area. This keeps Diagnostics and Ikigai consistent. */
+  /* title gap is relative to header and is additive to the top offset from
+     .diagnostics-intro-content. Keep a small visual separation controlled
+     by --diagnostics-title-gap. */
+  margin: var(--diagnostics-title-gap, 18px) 0 24px;
   padding-top: 0;
   position: relative;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -250,10 +301,12 @@
   height: 100%;
   flex: 1;
   min-height: 0;
-  /* Отступ сверху учитывает фиксированный Header (чтобы прогресс-бар не накладывался) */
-  /* Header занимает примерно 110-120px (иконки + padding), поэтому даём запас */
-  /* Anchor the question content below header using header variable to avoid jumps */
-  padding-top: calc(var(--diagnostics-header-height, 120px) + 8px);
+  /* Отступ сверху учитывает фиксированный Header. Используем каноническую
+     переменную --app-header-height для одинаковой привязки во всех тестах.
+     Уберём дополнительный смещение (+8px), чтобы Икигай не стартовал ниже.
+     Если нужно дополнительное пространство для прогресс-бара, оно задаётся
+     локально через margin у .diagnostics-progress. */
+  padding-top: calc(var(--app-header-height, 120px));
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 0;
@@ -315,7 +368,7 @@
   min-height: 0;
   overflow: hidden;
   box-sizing: border-box;
-  padding: 0 10px;
+  padding: 0 10px var(--diagnostics-answer-area-height, 140px) 10px; /* reserve space for absolute-positioned answer options */
   margin: 0;
   gap: 8px;
   justify-content: flex-start;
@@ -600,48 +653,114 @@
 
 /* Варианты ответов в стиле голосования Telegram (справа, компактно) */
 .answer-options {
+  /* Anchor answer options to the bottom-right corner of the question panel
+     and place them above the fixed back-button. We compute bottom using the
+     shared variables so the options will never be covered by the button. */
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  align-items: center;
+  gap: 12px;
+  align-items: flex-end;
   flex: 0 0 auto;
   overflow: visible;
-  padding: 8px 0 0 0;
+  padding: 0;
   margin: 0;
-  margin-bottom: 0;
-  /* Позиционируем в потоке документа — гарантируем, что варианты не будут обрезаться
-     и всегда попадут под текст вопроса / прогресс-бар. */
-  position: relative;
-  width: calc(100% - 20px);
-  max-width: 800px;
+  position: absolute;
+  right: 12px;
+  /* place options above the back-to-table button by the configured gap */
+  bottom: calc(var(--back-to-table-button-height) + var(--back-to-table-gap));
+  width: min(420px, 46%);
+  max-width: 420px;
   box-sizing: border-box;
+  z-index: 80;
+}
+
+/* Ensure the fixed "Вернуться к столу" button used in some flows
+   does not overlap the answer options. When the button lives inside
+   .action-zone-inner we want it to be pinned below the options — so
+   increase stacking context and ensure it appears below answers visually.
+   Also provide a small bottom offset so it's not flush to the viewport. */
+.action-zone-inner .back-to-table-button {
+  position: sticky;
+  bottom: 12px; /* small offset from bottom of visible area */
+  margin-top: 12px;
+  z-index: 90; /* above most content but below interactive overlays */
+}
+
+/* When Diagnostics is rendered standalone (Ikigai opened from Alchemy)
+   a fixed back button is positioned above the reserved answer area using
+   --diagnostics-answer-area-height. Keep its bottom offset to be at least
+   that variable to avoid overlapping answer options. */
+.fixed-back-to-table {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Allow JS to set an exact bottom offset based on the rendered
+     .question-content element. If JS doesn't set --fixed-back-bottom,
+     fall back to the diagnostics reserved area. */
+  bottom: var(--fixed-back-bottom, var(--diagnostics-answer-area-height, 140px));
+  /* Raised z-index so the button remains on top and interactable */
+  z-index: 200;
+}
+
+/* Styling for the fixed back button when Ikigai is opened as standalone
+   overlay. Ensure it visually sits below the answer options area, has
+   consistent height and touch target and doesn't overlap the options. */
+.fixed-back-to-table .back-to-table-button {
+  height: var(--back-to-table-button-height, 56px);
+  min-height: var(--back-to-table-button-height, 56px);
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #5cb85c 0%, #4a9e4a 50%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.32), 0 2px 8px rgba(76, 175, 80, 0.18);
+  cursor: pointer;
+  z-index: 210; /* be above answer options (which have z-index:80) */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Small screens: make the fixed button span wider and keep comfortable touch area */
+@media (max-width: 768px) {
+  .fixed-back-to-table {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .fixed-back-to-table .back-to-table-button {
+    width: calc(100% - 40px);
+    max-width: 520px;
+    border-radius: 10px;
+  }
 }
 
 .answer-message.poll-option {
-  width: 60%;
-  min-width: 250px;
-  height: 80px;
-  min-height: 80px;
-  max-height: 80px;
-  padding: 10px 14px;
+  width: 100%;
+  min-width: 0;
+  max-width: 420px;
+  height: auto; /* allow height to fit content */
+  /* Keep minimum small so single-line labels remain compact, but otherwise
+     let the content determine height so multi-line labels expand naturally. */
+  min-height: 34px;
+  padding: 8px 12px; /* reduced padding to keep buttons compact */
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
   text-align: left;
   flex-shrink: 0;
   box-sizing: border-box;
   position: relative;
   margin: 0;
-  margin-right: 16px;
-  margin-top: 0;
   opacity: 1;
   transform: translateX(0);
   overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* allow multi-line labels to expand height naturally */
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(51, 144, 236, 0.3);
   user-select: none;
@@ -761,9 +880,9 @@
 /* Экран результатов */
 .diagnostics-results {
   width: 100%;
-  /* keep results below the fixed header reliably using the header height variable */
-  min-height: calc(100vh - var(--diagnostics-header-height));
-  padding: calc(var(--diagnostics-header-height) + 12px) 20px 60px;
+  /* keep results below the fixed header reliably using the canonical header variable */
+  min-height: calc(100vh - var(--app-header-height));
+  padding: calc(var(--app-header-height) + 12px) 20px 60px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -787,6 +906,18 @@
   background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.85));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Make the results title stick just below the fixed header so it's always
+   visible on screen. We use the canonical --app-header-height variable from
+   Header.css and add a small offset so the title doesn't touch the header. */
+.diagnostics-results-title {
+  position: sticky;
+  top: calc(var(--app-header-height, 120px) + 8px);
+  z-index: 150; /* above most content but below header's top-most overlays */
+  margin-top: 0; /* reset any additional spacing so sticky positioning is predictable */
+  padding-top: 4px; /* small breathing room */
   background-clip: text;
 }
 
@@ -1346,8 +1477,9 @@
 /* Адаптивность */
 @media (max-width: 768px) {
   .diagnostics-intro {
-    /* Keep some extra top space on smaller screens so title doesn't overlap the header */
-    padding: calc(var(--diagnostics-header-height-mobile) + var(--diagnostics-title-gap-mobile)) 16px 32px;
+    /* Keep panel background at top; offset content with margin on .diagnostics-intro-content
+       so header overlays the background consistently across tests. */
+    padding: 0 16px 32px;
   }
 
   .diagnostics-intro-title {
@@ -1407,8 +1539,10 @@
   }
 
   .diagnostics-question {
-    /* мобильный отступ сверху — привязан к высоте header (через переменную) */
-    padding-top: calc(var(--diagnostics-header-height-mobile) + 8px);
+    /* Keep background at top — content is offset by margin on .question-content so
+       Header overlays consistently. Remove top padding which was pushing the
+       whole panel down (caused Ikigai background to start lower). */
+    padding-top: 0;
     padding-left: 12px;
     padding-right: 12px;
     padding-bottom: 0;
@@ -1420,7 +1554,10 @@
   }
   
   .question-content {
-    padding: 0;
+    /* Reserve space for header by shifting the content down via margin so the
+       panel background stays at the top (same behavior as Diagnostics). */
+    margin-top: calc(var(--app-header-height, 100px));
+    padding: 0 0 110px 0; /* on mobile leave space for options that are placed below content */
     margin: 0;
     gap: 8px;
     max-width: 100%;
@@ -1536,23 +1673,25 @@
   }
 
   .answer-options {
-    gap: 1px;
+    gap: 8px;
     /* keep options in flow on mobile as well and anchor spacing via header variable */
     position: relative;
     left: 12px;
     right: 12px;
     width: calc(100% - 24px);
+    bottom: auto;
+    padding-top: 12px;
   }
-  
+
   .answer-message.poll-option {
-    width: 65%;
+    width: 100%;
     min-width: 0;
-    max-width: 65%;
-    height: 75px;
-    min-height: 75px;
-    max-height: 75px;
+    max-width: 100%;
+    height: auto;
+    /* mobile/touch targets slightly larger but still driven by content */
+    min-height: 40px;
     padding: 10px 14px;
-    margin-right: 14px !important;
+    margin-right: 0 !important;
     border-radius: 8px;
     overflow: hidden;
     display: flex;

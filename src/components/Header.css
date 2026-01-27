@@ -2,7 +2,6 @@
 .header-block {
   width: 100%;
   /* expose header height so other components can anchor to it */
-  --app-header-height: 120px;
   background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(15, 15, 25, 0.98));
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
@@ -15,6 +14,12 @@
   z-index: 100;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
   overflow: visible;
+}
+
+/* Expose header height as a global CSS variable so other components can read it
+   (defined on :root so it cascades to siblings like diagnostics container) */
+:root {
+  --app-header-height: 120px;
 }
 
 .header-content {
@@ -279,8 +284,14 @@
   .header-block {
     padding: 10px 20px 6px 20px;
     /* slightly smaller header on tablets */
+    /* update the global header height for tablet sizes */
+    /* set on :root so other components pick it up */
+  }
+
+  :root {
     --app-header-height: 110px;
   }
+  
 
   .header-menu-grid {
     gap: 6px;
@@ -342,6 +353,10 @@
   .header-block {
     padding: 10px 16px 6px 16px;
     /* mobile header height - keep in sync with styles */
+    /* update global header height via :root below */
+  }
+
+  :root {
     --app-header-height: 100px;
   }
 
@@ -431,6 +446,10 @@
   .header-block {
     padding: 8px 12px 4px 12px;
     /* very small screens */
+    /* update global header height via :root below */
+  }
+
+  :root {
     --app-header-height: 88px;
   }
 
