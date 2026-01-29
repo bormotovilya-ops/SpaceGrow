@@ -13,6 +13,7 @@ const LoggingWrapper = ({
   contentType = 'page',
   contentId,
   section,
+  contentTitle,
   enabled = true,
   scrollThreshold = 25, // Каждый 25% прокрутки
   timeThreshold = 5000 // Каждые 5 секунд
@@ -30,9 +31,10 @@ const LoggingWrapper = ({
     scrollTrackerRef.current = createScrollTracker(contentId, contentType);
     startTimeRef.current = Date.now();
 
-    // Логируем начальный просмотр
+    // Логируем начальный просмотр (content_title для отчёта)
     logContentView(contentType, contentId, {
       section,
+      contentTitle: contentTitle ?? section,
       timeSpent: 0,
       scrollDepth: 0
     });
@@ -96,7 +98,7 @@ const LoggingWrapper = ({
         scrollTrackerRef.current.trackTime();
       }
     };
-  }, [enabled, contentId, contentType, section, logContentView, createScrollTracker, scrollThreshold, timeThreshold]);
+  }, [enabled, contentId, contentType, section, contentTitle, logContentView, createScrollTracker, scrollThreshold, timeThreshold]);
 
   // Если логирование отключено, просто возвращаем children
   if (!enabled) {
@@ -128,13 +130,15 @@ function throttle(func, limit) {
 }
 
 /**
- * Specialized wrapper for page-level logging
+ * Specialized wrapper for page-level logging.
+ * Use only around specific pages/sections that need scroll/time tracking — do NOT wrap the whole app (e.g. with pageId="main") or you will get duplicate content_view events.
  */
 export const PageLogger = ({ children, pageId, pageTitle }) => (
   <LoggingWrapper
     contentType="page"
     contentId={pageId}
     section={pageTitle}
+    contentTitle={pageTitle}
     enabled={true}
   >
     {children}

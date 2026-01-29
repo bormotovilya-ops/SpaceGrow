@@ -3,13 +3,19 @@ import { motion } from 'framer-motion'
 import Header from './Header'
 import './Home.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClick }) {
+  const { logContentView, logCTAClick } = useLogEvent()
   const [expandedFaq, setExpandedFaq] = useState(null)
 
   useEffect(() => {
     yandexMetricaReachGoal(null, 'home_page_view')
   }, [])
+
+  useEffect(() => {
+    logContentView('page', 'home', { content_title: 'Главная' })
+  }, [logContentView])
 
   const handleCardClick = (cardType, action) => {
     yandexMetricaReachGoal(null, 'home_card_click', { cardType })
@@ -353,7 +359,10 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
         >
           <button 
             className="sticky-cta-button" 
-            onClick={onDiagnostics}
+            onClick={async () => {
+              await logCTAClick('sticky_cta', { ctaText: 'Экспресс-диагностика', ctaLocation: 'home', previousStep: 'viewing_home' })
+              onDiagnostics()
+            }}
           >
             <span>Экспресс-диагностика</span>
             <span className="cta-arrow">→</span>

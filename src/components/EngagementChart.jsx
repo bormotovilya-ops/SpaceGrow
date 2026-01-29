@@ -82,7 +82,7 @@ const EngagementChart = ({ reportData, isExpanded }) => {
           }
         }
         dailyData[day].gameActions += 1
-        dailyData[day].gameScores += action.scores || 0
+        dailyData[day].gameScores += action.score ?? action.scores ?? 0
       })
     }
 
@@ -108,20 +108,74 @@ const EngagementChart = ({ reportData, isExpanded }) => {
     }
 
     // Convert to array and sort by date
-    const result = Object.values(dailyData).sort((a, b) => new Date(a.date) - new Date(b.date))
+    let result = Object.values(dailyData).sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    // Fill missing days in range so chart shows 0 instead of empty (avoid "Loading" state)
+    const allDates = new Set()
+    if (reportData?.journey?.miniapp_opens?.length) {
+      reportData.journey.miniapp_opens.forEach(s => {
+        const d = (s.timestamp && new Date(s.timestamp).toISOString().split('T')[0]) || null
+        if (d) allDates.add(d)
+      })
+    }
+    Object.keys(dailyData).forEach(d => allDates.add(d))
+    const sortedDates = Array.from(allDates).sort()
+    const rangeDays = 7
+    const endDate = sortedDates.length ? new Date(sortedDates[sortedDates.length - 1]) : new Date()
+    const startDate = new Date(endDate)
+    startDate.setDate(startDate.getDate() - rangeDays)
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const day = d.toISOString().split('T')[0]
+      if (!dailyData[day]) {
+        result.push({
+          date: day,
+          timeSpent: 0,
+          scrollDepth: 0,
+          aiInteractions: 0,
+          aiDuration: 0,
+          gameActions: 0,
+          gameScores: 0,
+          ctaClicks: 0,
+          viewCount: 0
+        })
+      }
+    }
+    result = result.sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    // When no data at all, show last 7 days with zeros so chart doesn't hang in "Loading"
+    if (result.length === 0) {
+      const today = new Date()
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today)
+        d.setDate(d.getDate() - i)
+        result.push({
+          date: d.toISOString().split('T')[0],
+          timeSpent: 0,
+          scrollDepth: 0,
+          aiInteractions: 0,
+          aiDuration: 0,
+          gameActions: 0,
+          gameScores: 0,
+          ctaClicks: 0,
+          viewCount: 0,
+          avgTimePerView: 0,
+          engagementScore: 0
+        })
+      }
+    }
 
     // Calculate additional metrics
     result.forEach(day => {
-      // Average time per view
       day.avgTimePerView = day.viewCount > 0 ? Math.round(day.timeSpent / day.viewCount) : 0
-      // Engagement score (normalized 0-100)
-      day.engagementScore = Math.min(100, Math.round(
-        (day.timeSpent / 3600 * 10) + // 1 hour = 10 points
-        (day.scrollDepth * 0.5) +    // Max scroll depth = 50 points
-        (day.aiInteractions * 2) +   // Each AI message = 2 points
-        (day.gameActions * 5) +      // Each game action = 5 points
-        (day.ctaClicks * 3)          // Each CTA click = 3 points
-      ))
+      if (day.engagementScore == null) {
+        day.engagementScore = Math.min(100, Math.round(
+          (day.timeSpent / 3600 * 10) +
+          (day.scrollDepth * 0.5) +
+          (day.aiInteractions * 2) +
+          (day.gameActions * 5) +
+          (day.ctaClicks * 3)
+        ))
+      }
     })
 
     return result

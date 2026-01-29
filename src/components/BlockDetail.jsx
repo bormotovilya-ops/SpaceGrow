@@ -4,6 +4,7 @@ import Header from './Header'
 import './BlockDetail.css'
 import { openTelegramChat } from '../utils/telegram'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 // Данные таблиц из файла "Таблицы аудитория.txt"
 const tableData = {
@@ -136,6 +137,7 @@ const workDiagramStructure = {
 }
 
 function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarClick, onNextBlock, onAlchemyClick, onChatClick, onHomeClick }) {
+  const { logContentView } = useLogEvent()
   const isAudienceBlock = block.id === 'audience'
   const isLandingBlock = block.id === 'landing'
   const isLeadmagnetBlock = block.id === 'leadmagnet'
@@ -148,6 +150,12 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
   const tableRef = useRef(null)
   const diagramBlockRefs = useRef({})
   const productHeroRef = useRef(null)
+
+  useEffect(() => {
+    if (block?.id && block?.name) {
+      logContentView('page', block.id, { content_title: block.name })
+    }
+  }, [block?.id, block?.name, logContentView])
 
   // Скролл к верху страницы при открытии нового блока (та же логика, что и при открытии из главной)
   useEffect(() => {

@@ -71,6 +71,89 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  position: relative;
+}
+
+/* Global time filter bar (segmented control) */
+.person-report-time-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.time-filter-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.time-filter-segmented {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 0;
+}
+
+.time-filter-option {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.time-filter-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.time-filter-option.active {
+  background: rgba(74, 144, 226, 0.9);
+  color: white;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.35);
+}
+
+.time-filter-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Refreshing overlay and dimmed content */
+.person-report-refreshing-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.loading-spinner--small {
+  width: 36px;
+  height: 36px;
+  border-width: 3px;
+}
+
+.person-report-body {
+  transition: opacity 0.25s ease;
+}
+
+.person-report-content-dimmed {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .person-report-header {
@@ -190,57 +273,151 @@
   font-size: 16px;
 }
 
-/* Journey Timeline */
-.journey-timeline {
-  position: relative;
-  padding-left: 40px;
+/* Journey – Grouped Activity Path (vertical timeline + accordion) */
+.activity-path-grouped {
+  margin-bottom: 0;
+  padding: 0;
 }
 
-.journey-timeline::before {
+.activity-path-grouped h4 {
+  margin: 0 0 16px 0;
+  color: #191923;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.activity-path-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  padding-left: 32px;
+}
+
+.activity-path-timeline::before {
   content: '';
   position: absolute;
-  left: 20px;
-  top: 0;
-  bottom: 0;
+  left: 5px;
+  top: 12px;
+  bottom: 12px;
   width: 2px;
   background: linear-gradient(to bottom, #4a90e2, #f0ad4e, #5cb85c);
+  border-radius: 1px;
 }
 
-.timeline-item {
+.activity-path-timeline-item {
   position: relative;
-  margin-bottom: 30px;
-  padding-left: 30px;
+  margin-bottom: 8px;
 }
 
-.timeline-marker {
+.activity-path-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.activity-path-timeline-marker {
   position: absolute;
-  left: -40px;
-  top: 10px;
-  width: 16px;
-  height: 16px;
+  left: -32px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #4a90e2;
-  border: 3px solid white;
-  box-shadow: 0 0 0 3px #4a90e2;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #4a90e2;
+  z-index: 1;
 }
 
-.timeline-content {
+.activity-path-timeline-content {
+  min-height: 24px;
+}
+
+.activity-path-entry-toggle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
   background: #f8f9fa;
-  padding: 20px;
+  border: 1px solid #e9ecef;
   border-radius: 12px;
-  border-left: 4px solid #4a90e2;
-}
-
-.timeline-content h4 {
-  margin: 0 0 10px 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
   color: #191923;
-  font-size: 18px;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-.timeline-content p {
-  margin: 5px 0;
+.activity-path-entry-toggle:hover {
+  background: #eef1f5;
+  border-color: #dee2e6;
+}
+
+.activity-path-entry-toggle.expanded {
+  background: #e8f4fd;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.2);
+}
+
+.activity-path-entry-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.activity-path-entry-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: rgba(74, 144, 226, 0.15);
+  color: #4a90e2;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.activity-path-entry-meta {
+  margin-left: auto;
+  font-size: 0.85rem;
   color: #666;
-  font-size: 14px;
+  font-weight: 400;
+}
+
+.activity-path-entry-chevron {
+  font-size: 0.7rem;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.activity-path-entry-details {
+  margin-top: 8px;
+  padding-left: 4px;
+  overflow: hidden;
+}
+
+.path-detail-block {
+  background: #fff;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border-left: 3px solid #4a90e2;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.path-detail-block:last-child {
+  margin-bottom: 0;
+}
+
+.path-detail-block p {
+  margin: 4px 0;
+  color: #555;
+}
+
+.path-detail-block p:first-child {
+  margin-top: 0;
+}
+
+.path-detail-block p:last-child {
+  margin-bottom: 0;
 }
 
 /* Segmentation */
@@ -427,16 +604,27 @@
     grid-template-columns: 1fr;
   }
 
-  .journey-timeline {
-    padding-left: 20px;
+  .activity-path-timeline {
+    padding-left: 28px;
   }
 
-  .timeline-marker {
-    left: -30px;
+  .activity-path-timeline::before {
+    left: 4px;
   }
 
-  .timeline-content {
-    padding: 15px;
+  .activity-path-timeline-marker {
+    left: -28px;
+    width: 10px;
+    height: 10px;
+    top: 12px;
+  }
+
+  .activity-path-entry-toggle {
+    padding: 8px 12px;
+  }
+
+  .path-detail-block {
+    padding: 10px 12px;
   }
 
   .segmentation-cards {

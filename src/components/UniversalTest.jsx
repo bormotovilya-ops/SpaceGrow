@@ -136,9 +136,13 @@ const IkigaiVenn = ({ data = {}, sectors = [], threshold = 3.5, size = 360 }) =>
 }
 
 const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsultation, onChatClick, onHomeClick }) => {
-  const { logDiagnostics } = useLogEvent()
+  const { logDiagnostics, logContentView, logCTAClick } = useLogEvent()
   const { settings, stages, questions, commonAnswerOptions, answerOptions, welcome, results: resultsMapping, cta } = data
   const totalQuestions = questions.length
+
+  useEffect(() => {
+    logContentView('page', 'diagnostics', { content_title: welcome?.title || 'Диагностика в подарок' })
+  }, [logContentView, welcome?.title])
   
   const allQuestions = questions.map(q => {
     const stage = stages.find(s => s.id === q.stageId)
@@ -150,7 +154,12 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
   const [answers, setAnswers] = useState({})
   const [showResults, setShowResults] = useState(false)
 
-  const handleStart = () => { setCurrentStep(1); setAnswers({}); setShowResults(false); }
+  const handleStart = async () => {
+    await logCTAClick('diagnostics_start', { ctaText: welcome?.buttonText || 'Начать диагностику', ctaLocation: 'diagnostics', previousStep: 'viewing_intro' })
+    setCurrentStep(1)
+    setAnswers({})
+    setShowResults(false)
+  }
   const handleAnswer = (qId, val) => {
     const newAnswers = { ...answers, [qId]: val }
     setAnswers(newAnswers)
@@ -396,7 +405,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
               </div>
             )}
 
-            <button className="diagnostics-start-btn" onClick={handleStart}>{welcome?.buttonText}</button>
+            <button className="diagnostics-start-btn" onClick={handleStart}>{welcome?.buttonText || 'Начать диагностику'}</button>
           </div>
         </div>
       </div>

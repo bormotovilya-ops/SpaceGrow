@@ -4,8 +4,10 @@ import MatrixCalculator from './MatrixCalculator'
 import Diagnostics from './Diagnostics'
 import IKIGAI_TEST from '../../scripts/ikigai.json'
 import './Alchemy.css'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
+  const { logContentView } = useLogEvent()
   const [selectedArtifact, setSelectedArtifact] = useState(null)
   const [activeCrystalTest, setActiveCrystalTest] = useState(null) // <-- ВСТ
   const [isDarkMode, setIsDarkMode] = useState(false) // Для свечи - черный фон
@@ -39,6 +41,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const userInteractedRef = useRef(false)
   const imageContainerRef = useRef(null)
   const imageAspectRef = useRef(9 / 16) // Реальное соотношение сторон фоновой картинки (обновим после загрузки)
+
+  useEffect(() => {
+    logContentView('page', 'alchemy', { content_title: 'Цифровая Алхимия' })
+  }, [logContentView])
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {

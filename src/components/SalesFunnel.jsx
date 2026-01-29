@@ -146,6 +146,13 @@ function SalesFunnel() {
   }, [showProfile, showPersonReport, showDiagnostics, showAlchemy, selectedBlock])
 
 
+  // Логируем просмотр экрана «Диаграмма воронки», когда пользователь на этой странице
+  useEffect(() => {
+    if (showFunnelDiagram && !selectedBlock && !showProfile && !showPersonReport && !showDiagnostics && !showAlchemy) {
+      logContentView('page', 'funnel_diagram', { content_title: 'Диаграмма воронки' })
+    }
+  }, [showFunnelDiagram, selectedBlock, showProfile, showPersonReport, showDiagnostics, showAlchemy, logContentView])
+
   const handleBlockClick = async (block) => {
     if (isAnimating) return
 

@@ -1,5 +1,6 @@
 // Frontend logging utilities for user analytics
 // Use relative /api by default in production so the frontend calls the deployed serverless endpoints.
+// When VITE_API_URL is set (e.g. http://localhost:5001/api), it must include /api so endpoints like /track-session become /api/track-session.
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // Cookie utilities

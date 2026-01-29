@@ -166,8 +166,8 @@ const ActivityTimeline = ({ reportData, isExpanded }) => {
                 </div>
                 <div className="tooltip-details">
                   <div>Тип игры: {event.data.game_type}</div>
-                  <div>Достижения: {event.data.achievements?.join(', ') || 'Нет'}</div>
-                  <div>Очки: {event.data.scores || 0}</div>
+                  <div>Достижения: {(event.data.achievement || event.data.achievements)?.join?.(', ') || 'Нет'}</div>
+                  <div>Очки: {event.data.score ?? event.data.scores ?? 0}</div>
                   <div>Время: {event.displayTime.toLocaleString('ru-RU')}</div>
                 </div>
               </div>
@@ -180,9 +180,9 @@ const ActivityTimeline = ({ reportData, isExpanded }) => {
                   <span className="tooltip-title">CTA клик</span>
                 </div>
                 <div className="tooltip-details">
-                  <div>Расположение: {event.data.location}</div>
+                  <div>Расположение: {event.data.cta_location || event.data.location}</div>
                   <div>Предыдущий шаг: {event.data.previous_step}</div>
-                  <div>Время на шаге: {Math.round(event.duration)} сек</div>
+                  <div>Время на шаге: {Math.round(event.data.step_duration ?? event.duration ?? 0)} сек</div>
                   <div>Время: {event.displayTime.toLocaleString('ru-RU')}</div>
                 </div>
               </div>

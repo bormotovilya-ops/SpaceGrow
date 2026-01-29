@@ -3,6 +3,7 @@ import Header from './Header'
 import './Profile.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 // Импорт изображений технологического стека
 import img11 from '../assets/images/11.png'
@@ -11,7 +12,7 @@ import img33 from '../assets/images/33.png'
 import img44 from '../assets/images/44.png'
 
 function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick }) {
-  // Добавляем пятый слот для блока персонального отчета
+  const { logContentView } = useLogEvent()
   // Добавляем пятый слот для блока персонального отчета
   const [typingMessages, setTypingMessages] = useState([false, false, false, false, false]) // Показывать многоточие
   const [visibleMessages, setVisibleMessages] = useState([false, false, false, false, false]) // Показывать текст
@@ -21,6 +22,10 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
   const [chatInput, setChatInput] = useState('') // Текст в поле ввода
   const [isLoadingChat, setIsLoadingChat] = useState(false) // Загрузка ответа
   
+  useEffect(() => {
+    logContentView('page', 'profile', { content_title: 'Профиль (Илья Бормотов)' })
+  }, [logContentView])
+
   const handleHeaderConsultation = () => {
     // Top CTA in Header must always open Diagnostics.
     yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'profile' })
@@ -372,7 +377,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                     </div>
                   )}
 
-                  {/* Кнопка персонального отчета - теперь появляется по таймеру как и предыдущие 
+                 
                   <div className={`dialog-message ${(typingMessages[4] || visibleMessages[4]) ? 'visible' : ''}`}>
                     {typingMessages[4] ? (
                       <p className="typing-indicator">
@@ -398,7 +403,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                         Посмотреть мой персональный отчет
                       </button>
                     )}
-                  </div>*/}
+                  </div>
                 </div>
               </div>
 

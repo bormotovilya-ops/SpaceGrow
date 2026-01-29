@@ -5,6 +5,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { createClient } from '@supabase/supabase-js'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFile, appendFile, mkdir, existsSync } from 'fs'
@@ -13,6 +14,27 @@ import { google } from 'googleapis'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+
+/**
+ * Parse User-Agent string to get device type and browser (no external deps).
+ * @param {string} ua - User-Agent header
+ * @returns {{ deviceType: string, browser: string }}
+ */
+function parseUserAgent(ua) {
+  if (!ua || typeof ua !== 'string') return { deviceType: 'Unknown', browser: 'Unknown' }
+  const s = ua.toLowerCase()
+  let deviceType = 'Desktop'
+  if (/mobile|android|iphone|ipod|webos|blackberry|iemobile|opera mini/i.test(s)) deviceType = 'Mobile'
+  else if (/tablet|ipad|playbook|silk/i.test(s)) deviceType = 'Tablet'
+  let browser = 'Unknown'
+  if (s.includes('edg/')) browser = 'Edge'
+  else if (s.includes('opr/') || s.includes('opera')) browser = 'Opera'
+  else if (s.includes('chrome/')) browser = 'Chrome'
+  else if (s.includes('firefox/')) browser = 'Firefox'
+  else if (s.includes('safari/') && !s.includes('chrome')) browser = 'Safari'
+  else if (s.includes('msie') || s.includes('trident/')) browser = 'IE'
+  return { deviceType, browser }
+}
 
 let _sheetsClient = null
 let _sheetsHeaderEnsured = false
@@ -215,10 +237,588 @@ async function loadKnowledgeFiles() {
 }
 
 const app = express()
-const PORT = 5000
+const PORT = 5001
 
 app.use(cors())
 app.use(express.json())
+
+// Supabase connectivity test (no auth required)
+app.get('/api/test-db', async (_req, res) => {
+  try {
+    const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+    const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      return res.status(200).json({
+        status: 'error',
+        error: 'SUPABASE_URL or SUPABASE_ANON_KEY not set in .env',
+      })
+    }
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const { data, error } = await supabase.from('users').select('count').limit(1)
+    if (error) {
+      return res.status(200).json({ status: 'error', error: error.message })
+    }
+    return res.status(200).json({
+      status: 'connected',
+      message: 'Supabase is reachable',
+      data,
+    })
+  } catch (err) {
+    return res.status(200).json({ status: 'error', error: err.message })
+  }
+})
+
+// Personal report by cookie (matches Vercel /api/user/by-cookie/:cookie_id/personal-report)
+// Returns: user, journey, segmentation, recommendations, session_duration; timestamps as ISO (TIMESTAMPTZ).
+app.get('/api/user/by-cookie/:cookie_id/personal-report', async (req, res) => {
+  const cookieId = req.params.cookie_id
+  if (!cookieId) {
+    return res.status(400).json({ error: 'cookie_id is required' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  const safeParse = (v) => {
+    try { return v ? JSON.parse(v) : {} } catch { return {} }
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    // Fetch site_sessions (session_start, session_end as TIMESTAMPTZ; user_agent for device/browser)
+    let sessions = []
+    try {
+      const { data, error } = await supabase
+        .from('site_sessions')
+        .select('id, cookie_id, tg_user_id, session_start, session_end, user_agent, referrer, source, utm_params, page_id')
+        .eq('cookie_id', cookieId)
+        .order('session_start', { ascending: false })
+        .limit(50)
+      if (!error && data) sessions = data
+    } catch (e) {
+      console.warn('Personal report: site_sessions fetch failed', e.message)
+    }
+
+    // Fetch all site_events for this cookie_id (created_at as TIMESTAMPTZ)
+    let siteEvents = []
+    try {
+      const { data, error } = await supabase
+        .from('site_events')
+        .select('*')
+        .eq('cookie_id', cookieId)
+        .order('created_at', { ascending: false })
+        .limit(200)
+      if (!error && data) siteEvents = data
+    } catch (e) {
+      console.warn('Personal report: site_events fetch failed', e.message)
+    }
+
+    const sessionIds = new Set(sessions.map(s => s.id))
+    const eventsBySession = {}
+    siteEvents.forEach(ev => {
+      const sid = ev.session_id
+      if (sid != null && sessionIds.has(sid)) {
+        if (!eventsBySession[sid]) eventsBySession[sid] = []
+        eventsBySession[sid].push(ev)
+      }
+    })
+
+    // Session duration: first to last event in session, or session_end - session_start
+    const sessionDurationsSeconds = []
+    sessions.forEach(s => {
+      const start = s.session_start ? new Date(s.session_start).getTime() : null
+      const end = s.session_end ? new Date(s.session_end).getTime() : null
+      const evs = eventsBySession[s.id] || []
+      const times = evs.map(e => new Date(e.created_at).getTime()).filter(Boolean)
+      let durationSec = 0
+      if (end && start && end > start) durationSec = Math.round((end - start) / 1000)
+      else if (times.length >= 2) {
+        const first = Math.min(...times)
+        const last = Math.max(...times)
+        durationSec = Math.round((last - first) / 1000)
+      }
+      if (durationSec > 0) sessionDurationsSeconds.push(durationSec)
+    })
+    const totalSessionDurationSeconds = sessionDurationsSeconds.reduce((a, b) => a + b, 0)
+
+    // User-Agent enrichment for sessions
+    const miniapp_opens = sessions.map(s => {
+      const { deviceType, browser } = parseUserAgent(s.user_agent || '')
+      return {
+        timestamp: s.session_start, // keep ISO string (TIMESTAMPTZ)
+        page: s.page_id || 'Главная',
+        device: s.device_type || deviceType,
+        browser: browser,
+        device_type: s.device_type || deviceType
+      }
+    })
+
+    const byType = (type) => siteEvents.filter(e => e.event_type === type)
+    const mapContent = (r) => {
+      const m = safeParse(r.metadata)
+      return {
+        section: m.content_type || r.event_name || '—',
+        content_id: m.content_id ?? null,
+        content_title: m.content_title ?? null,
+        time_spent: m.time_spent || 0,
+        scroll_depth: m.scroll_depth || 0,
+        timestamp: r.created_at
+      }
+    }
+    const mapAi = (r) => {
+      const m = safeParse(r.metadata)
+      return {
+        messages_count: m.messages_count || 0,
+        topics: m.topics || [],
+        duration: m.duration || 0,
+        timestamp: r.created_at
+      }
+    }
+    const mapDiagnostic = (r) => {
+      const m = safeParse(r.metadata)
+      const start = m.start_time ? new Date(m.start_time).getTime() : 0
+      const end = m.end_time ? new Date(m.end_time).getTime() : 0
+      return {
+        progress: m.progress ?? m.completion_rate ?? 0,
+        results: m.results ?? null,
+        time_spent: (end && start ? Math.round((end - start) / 1000) : 0),
+        timestamp: r.created_at
+      }
+    }
+    const mapGame = (r) => {
+      const m = safeParse(r.metadata)
+      return {
+        game_type: m.game_type || 'Неизвестно',
+        achievement: m.achievement ?? m.achievements ?? [],
+        score: m.score ?? m.final_score ?? 0,
+        timestamp: r.created_at
+      }
+    }
+    const mapCta = (r) => {
+      const m = safeParse(r.metadata)
+      return {
+        cta_text: m.cta_text ?? m.button_text ?? null,
+        cta_location: m.cta_location || m.ctaText || 'Неизвестно',
+        previous_step: m.previous_step || m.previousStep || 'Неизвестно',
+        step_duration: m.step_duration ?? m.duration ?? 0,
+        timestamp: r.created_at
+      }
+    }
+
+    const content_views = byType('content_view').map(mapContent)
+    const ai_interactions = byType('ai_interaction').map(mapAi)
+    const diagnostics = byType('diagnostic').map(mapDiagnostic)
+    const game_actions = byType('game_action').map(mapGame)
+    const cta_clicks = byType('cta_click').map(mapCta)
+
+    const firstSession = sessions.length ? sessions[sessions.length - 1] : null
+    const user = {
+      tg_user_id: firstSession?.tg_user_id ?? null,
+      cookie_id: cookieId,
+      traffic_source: firstSession?.source ?? 'Не определен',
+      utm_params: firstSession?.utm_params ? safeParse(firstSession.utm_params) : {},
+      referrer: firstSession?.referrer ?? null,
+      first_visit_date: firstSession?.session_start ?? null
+    }
+
+    const totalSessions = sessions.length
+    const diagnosticsCompleted = diagnostics.some(d => (d.progress || 0) >= 100) || diagnostics.length > 0
+    const engagementLevel = (content_views.length + ai_interactions.length) > 30 ? 'high' : ((content_views.length + ai_interactions.length) > 5 ? 'medium' : 'low')
+    const segmentation = {
+      user_segment: diagnosticsCompleted ? 'engaged' : (totalSessions > 5 ? 'engaged' : 'newcomer'),
+      engagement_level: engagementLevel,
+      total_sessions: totalSessions,
+      diagnostics_completed: diagnosticsCompleted,
+      last_activity: miniapp_opens.length ? miniapp_opens[0].timestamp : null,
+      session_duration_seconds: totalSessionDurationSeconds,
+      session_duration_display: totalSessionDurationSeconds ? `${Math.floor(totalSessionDurationSeconds / 60)}м ${totalSessionDurationSeconds % 60}с` : null
+    }
+
+    const recommendations = {
+      next_steps: segmentation.user_segment === 'newcomer' ? ['Пройти диагностику для персональных рекомендаций', 'Изучить основные разделы сайта'] : ['Связаться для детального обсуждения'],
+      automatic_actions: [],
+      content_suggestions: ['Введение', 'Кейсы'],
+      cta_suggestions: ['Записаться на консультацию']
+    }
+
+    const journey = {
+      miniapp_opens,
+      content_views,
+      ai_interactions,
+      diagnostics,
+      game_actions,
+      cta_clicks
+    }
+
+    const payload = {
+      user,
+      journey,
+      segmentation,
+      recommendations,
+      session_duration_seconds: totalSessionDurationSeconds,
+      generated_at: new Date().toISOString()
+    }
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    return res.status(200).json(payload)
+  } catch (err) {
+    console.error('Personal report by cookie failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// Track session start/end (matches backend /api/track-session, Python db or Supabase)
+// Expected table: site_sessions with columns: id, cookie_id, tg_user_id, session_start, session_end, user_agent, ip, referrer (+ optional: source, utm_*, device_*, geo_*, etc.)
+// If site_sessions does not exist in Supabase, run the SQL from scripts/create_pg_schema.py or the snippet in LOGGING_README.md (CREATE TABLE site_sessions ...).
+app.post('/api/track-session', async (req, res) => {
+  const data = req.body || {}
+  const cookieId = data.cookie_id
+  const action = data.action
+  const sessionId = data.session_id
+
+  if (!cookieId) {
+    return res.status(400).json({ error: 'cookie_id обязателен' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const ip = req.ip || req.connection?.remoteAddress || req.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || null
+    const userAgent = data.user_agent || req.headers?.['user-agent'] || null
+    const referrer = data.referrer || null
+
+    if (action === 'start') {
+      const tgUserId = data.tg_user_id != null ? Number(data.tg_user_id) : null
+      const insertPayload = {
+        cookie_id: cookieId,
+        tg_user_id: tgUserId ?? null,
+        user_agent: userAgent,
+        ip: ip,
+        referrer: referrer
+      }
+      console.log('[track-session] Insert payload (columns must exist in site_sessions):', Object.keys(insertPayload))
+
+      let row, error
+      try {
+        const result = await supabase
+          .from('site_sessions')
+          .insert(insertPayload)
+          .select('id')
+          .single()
+        row = result.data
+        error = result.error
+      } catch (insertErr) {
+        console.error('Supabase Error Details:', insertErr)
+        console.error('Supabase Error (code/name):', insertErr?.code, insertErr?.name)
+        return res.status(500).json({
+          error: insertErr.message || 'Insert threw',
+          debug: process.env.NODE_ENV !== 'production' ? { message: insertErr.message } : undefined
+        })
+      }
+
+      if (error) {
+        console.error('Supabase Error Details:', error)
+        console.error('Supabase Error (full):', JSON.stringify(error, null, 2))
+        return res.status(500).json({ error: error.message })
+      }
+      const id = row?.id != null ? Number(row.id) : null
+      if (id == null || !Number.isInteger(id)) {
+        return res.status(500).json({ error: 'Failed to create session' })
+      }
+      return res.status(200).json({ session_id: id, status: 'started' })
+    }
+
+    if (action === 'end' && sessionId != null) {
+      const id = Number(sessionId)
+      if (!Number.isInteger(id) || id < 1) {
+        return res.status(400).json({ error: 'Неверный session_id' })
+      }
+      let updated, error
+      try {
+        const result = await supabase
+          .from('site_sessions')
+          .update({ session_end: new Date().toISOString() })
+          .eq('id', id)
+          .is('session_end', null)
+          .select('id')
+        updated = result.data
+        error = result.error
+      } catch (updateErr) {
+        console.error('Supabase Error Details (session end):', updateErr)
+        return res.status(500).json({ error: updateErr.message || 'Update threw' })
+      }
+
+      if (error) {
+        console.error('Supabase Error Details (session end):', error)
+        return res.status(500).json({ error: error.message })
+      }
+      const success = Array.isArray(updated) && updated.length > 0
+      return res.status(200).json({ success, status: 'ended' })
+    }
+
+    return res.status(400).json({ error: 'Неверное действие или отсутствует session_id' })
+  } catch (err) {
+    console.error('track-session failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// Helper: insert a row into site_events and return { ok, error }
+async function insertSiteEvent(supabase, row) {
+  try {
+    const { data, error } = await supabase
+      .from('site_events')
+      .insert(row)
+      .select('id')
+      .single()
+    if (error) return { ok: false, error: error.message }
+    return { ok: true, id: data?.id }
+  } catch (e) {
+    return { ok: false, error: e.message || 'Insert failed' }
+  }
+}
+
+// POST /api/log/source-visit — log traffic source visit (cookie_id, session_id, source, utm_params, referrer, tg_user_id)
+app.post('/api/log/source-visit', async (req, res) => {
+  const data = req.body || {}
+  const cookieId = data.cookie_id
+  const sessionId = data.session_id
+
+  if (!cookieId || sessionId == null) {
+    return res.status(400).json({ error: 'cookie_id and session_id are required' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const metadata = {
+      source: data.source ?? null,
+      utm_params: data.utm_params ?? null,
+      referrer: data.referrer ?? null,
+    }
+    const row = {
+      cookie_id: cookieId,
+      session_id: Number(sessionId),
+      tg_user_id: data.tg_user_id != null ? Number(data.tg_user_id) : null,
+      event_type: 'source_visit',
+      event_name: 'source_visit',
+      page: null,
+      metadata,
+    }
+    const result = await insertSiteEvent(supabase, row)
+    if (!result.ok) {
+      console.error('[log/source-visit] Insert failed:', result.error)
+      return res.status(500).json({ error: result.error })
+    }
+    console.log('[log/source-visit] Inserted site_events id:', result.id, 'session_id:', sessionId, 'source:', data.source)
+    return res.status(200).json({ ok: true, id: result.id })
+  } catch (err) {
+    console.error('log/source-visit failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// POST /api/log/miniapp-open — log miniapp open (cookie_id, session_id, device, page_id, tg_user_id)
+app.post('/api/log/miniapp-open', async (req, res) => {
+  const data = req.body || {}
+  const cookieId = data.cookie_id
+  const sessionId = data.session_id
+
+  if (!cookieId || sessionId == null) {
+    return res.status(400).json({ error: 'cookie_id and session_id are required' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const metadata = {
+      device: data.device ?? null,
+      page_id: data.page_id ?? null,
+    }
+    const row = {
+      cookie_id: cookieId,
+      session_id: Number(sessionId),
+      tg_user_id: data.tg_user_id != null ? Number(data.tg_user_id) : null,
+      event_type: 'miniapp_open',
+      event_name: 'miniapp_open',
+      page: data.page_id ?? null,
+      metadata,
+    }
+    const result = await insertSiteEvent(supabase, row)
+    if (!result.ok) {
+      console.error('[log/miniapp-open] Insert failed:', result.error)
+      return res.status(500).json({ error: result.error })
+    }
+    console.log('[log/miniapp-open] Inserted site_events id:', result.id, 'session_id:', sessionId, 'page_id:', data.page_id)
+    return res.status(200).json({ ok: true, id: result.id })
+  } catch (err) {
+    console.error('log/miniapp-open failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// POST /api/log/content-view — log content view (cookie_id, session_id, content_type, content_id, content_title, section, time_spent, scroll_depth, tg_user_id)
+app.post('/api/log/content-view', async (req, res) => {
+  const data = req.body || {}
+  const cookieId = data.cookie_id
+  const sessionId = data.session_id
+
+  if (!cookieId || sessionId == null) {
+    return res.status(400).json({ error: 'cookie_id and session_id are required' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const metadata = {
+      content_type: data.content_type ?? null,
+      content_id: data.content_id ?? null,
+      content_title: data.content_title ?? data.contentTitle ?? null,
+      section: data.section ?? null,
+      time_spent: data.time_spent != null ? Number(data.time_spent) : (data.timeSpent != null ? Number(data.timeSpent) : null),
+      scroll_depth: data.scroll_depth != null ? Number(data.scroll_depth) : (data.scrollDepth != null ? Number(data.scrollDepth) : null),
+    }
+    const row = {
+      cookie_id: cookieId,
+      session_id: Number(sessionId),
+      tg_user_id: data.tg_user_id != null ? Number(data.tg_user_id) : null,
+      event_type: 'content_view',
+      event_name: 'content_view',
+      page: data.content_id ?? data.section ?? null,
+      metadata,
+    }
+    const result = await insertSiteEvent(supabase, row)
+    if (!result.ok) {
+      console.error('[log/content-view] Insert failed:', result.error)
+      return res.status(500).json({ error: result.error })
+    }
+    console.log('[log/content-view] Inserted site_events id:', result.id, 'session_id:', sessionId, 'content_type:', data.content_type, 'content_id:', data.content_id)
+    return res.status(200).json({ ok: true, id: result.id })
+  } catch (err) {
+    console.error('log/content-view failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// POST /api/log/personal-path-view — log personal path/view (cookie_id, session_id; optional open_time, duration, downloaded, tg_user_id)
+app.post('/api/log/personal-path-view', async (req, res) => {
+  const data = req.body || {}
+  const cookieId = data.cookie_id
+  const sessionId = data.session_id
+
+  if (!cookieId || sessionId == null) {
+    return res.status(400).json({ error: 'cookie_id and session_id are required' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const metadata = {
+      open_time: data.open_time != null ? data.open_time : null,
+      duration: data.duration != null ? Number(data.duration) : null,
+      downloaded: data.downloaded === true || data.downloaded === 'true',
+    }
+    const row = {
+      cookie_id: cookieId,
+      session_id: Number(sessionId),
+      tg_user_id: data.tg_user_id != null ? Number(data.tg_user_id) : null,
+      event_type: 'personal_path_view',
+      event_name: 'personal_path_view',
+      page: null,
+      metadata,
+    }
+    const result = await insertSiteEvent(supabase, row)
+    if (!result.ok) {
+      console.error('[log/personal-path-view] Insert failed:', result.error)
+      return res.status(500).json({ error: result.error })
+    }
+    console.log('[log/personal-path-view] Inserted site_events id:', result.id, 'session_id:', sessionId)
+    return res.status(200).json({ ok: true, id: result.id })
+  } catch (err) {
+    console.error('log/personal-path-view failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
+
+// POST /api/log/cta-click — log CTA click (cookie_id, session_id; cta_id, button_text; optional cta_type, cta_text, cta_location, etc.)
+app.post('/api/log/cta-click', async (req, res) => {
+  const data = req.body || {}
+  const cookieId = data.cookie_id
+  const sessionId = data.session_id
+
+  if (!cookieId || sessionId == null) {
+    return res.status(400).json({ error: 'cookie_id and session_id are required' })
+  }
+
+  const SUPABASE_URL = getEnv('SUPABASE_URL') || getEnv('VITE_SUPABASE_URL')
+  const SUPABASE_KEY = getEnv('SUPABASE_ANON_KEY') || getEnv('SUPABASE_KEY') || getEnv('VITE_SUPABASE_ANON_KEY')
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+    const ctaId = data.cta_id ?? data.cta_type ?? null
+    const buttonText = data.button_text ?? data.cta_text ?? data.ctaText ?? null
+    const metadata = {
+      cta_id: ctaId,
+      button_text: buttonText,
+      cta_type: data.cta_type ?? null,
+      cta_text: data.cta_text ?? data.ctaText ?? buttonText,
+      cta_location: data.cta_location ?? data.ctaLocation ?? null,
+      previous_step: data.previous_step ?? data.previousStep ?? null,
+      step_duration: data.step_duration != null ? Number(data.step_duration) : (data.stepDuration != null ? Number(data.stepDuration) : null),
+    }
+    const row = {
+      cookie_id: cookieId,
+      session_id: Number(sessionId),
+      tg_user_id: data.tg_user_id != null ? Number(data.tg_user_id) : null,
+      event_type: 'cta_click',
+      event_name: 'cta_click',
+      page: ctaId ?? buttonText,
+      metadata,
+    }
+    const result = await insertSiteEvent(supabase, row)
+    if (!result.ok) {
+      console.error('[log/cta-click] Insert failed:', result.error)
+      return res.status(500).json({ error: result.error })
+    }
+    console.log('[log/cta-click] Inserted site_events id:', result.id, 'session_id:', sessionId, 'cta_id:', ctaId, 'button_text:', buttonText)
+    return res.status(200).json({ ok: true, id: result.id })
+  } catch (err) {
+    console.error('log/cta-click failed:', err)
+    return res.status(500).json({ error: err.message || 'Internal server error' })
+  }
+})
 
 // Функция для очистки markdown-символов из ответа
 function cleanResponse(text) {

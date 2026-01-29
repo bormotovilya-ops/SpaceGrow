@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import SalesFunnel from './components/SalesFunnel'
 import CenterPhoto from './components/CenterPhoto'
 import MenuItem from './components/MenuItem'
 import Sidebar from './components/Sidebar'
 import SessionInitializer from './components/SessionInitializer'
-import LoggingWrapper, { PageLogger } from './components/LoggingWrapper'
 import './App.css'
 
 const menuItems = [
@@ -104,35 +103,33 @@ function App() {
 
   return (
     <SessionInitializer>
-      <PageLogger pageId="main" pageTitle="Main Page">
-        <div className="container">
-          {showFunnel ? (
-            <SalesFunnel />
-          ) : (
-            <>
-              <CenterPhoto />
+      <div className="container">
+        {showFunnel ? (
+          <SalesFunnel />
+        ) : (
+          <>
+            <CenterPhoto />
 
-              {menuItems.map((item, index) => (
-                <MenuItem
-                  key={item.id}
-                  image={item.image}
-                  title={item.title}
-                  index={index}
-                  total={menuItems.length}
-                  onClick={() => handleMenuClick(item.sidebarTitle, item.sidebarItems)}
-                />
-              ))}
-
-              <Sidebar
-                isOpen={sidebarOpen}
-                title={sidebarTitle}
-                items={sidebarItems}
-                onClose={handleCloseSidebar}
+            {menuItems.map((item, index) => (
+              <MenuItem
+                key={item.id}
+                image={item.image}
+                title={item.title}
+                index={index}
+                total={menuItems.length}
+                onClick={() => handleMenuClick(item.sidebarTitle, item.sidebarItems)}
               />
-            </>
-          )}
-        </div>
-      </PageLogger>
+            ))}
+
+            <Sidebar
+              isOpen={sidebarOpen}
+              title={sidebarTitle}
+              items={sidebarItems}
+              onClose={handleCloseSidebar}
+            />
+          </>
+        )}
+      </div>
     </SessionInitializer>
   )
 }

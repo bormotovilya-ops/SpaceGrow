@@ -119,6 +119,9 @@ export const useLogEvent = () => {
 
   // 3. Content view logging with debounced scroll/time tracking
   const logContentView = useCallback(async (contentType, contentId, options = {}) => {
+    // Do not send generic "main" content_id — only real pages (Home, PersonReport, etc.) log their own IDs
+    if (contentId === 'main') return null;
+
     const sessionId = await ensureSession();
     if (!sessionId) return null;
 

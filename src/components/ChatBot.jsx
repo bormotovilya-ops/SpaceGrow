@@ -4,7 +4,7 @@ import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
 
 function ChatBot({ onClose }) {
-  const { logAIInteraction, logCTAClick } = useLogEvent()
+  const { logAIInteraction, logCTAClick, logContentView } = useLogEvent()
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -25,6 +25,10 @@ function ChatBot({ onClose }) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    logContentView('page', 'chat', { content_title: 'Чат с ИИ-наставником' })
+  }, [logContentView])
 
   useEffect(() => {
     // Фокус на поле ввода при открытии
@@ -54,9 +58,9 @@ function ChatBot({ onClose }) {
 
     yandexMetricaReachGoal(null, 'chatbot_send', { length: userMessage.length })
 
-    // Логируем CTA клик (отправка сообщения)
+    // Логируем CTA клик (отправка сообщения) — текст кнопки для отчёта
     logCTAClick('chat_send', {
-      ctaText: 'Send Message',
+      ctaText: 'Отправить',
       ctaLocation: 'chatbot'
     })
 

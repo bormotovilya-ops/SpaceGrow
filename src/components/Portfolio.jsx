@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './Portfolio.css'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 const portfolioData = {
   experience: {
@@ -138,6 +139,11 @@ const portfolioData = {
 }
 
 function Portfolio({ onClose, onConsultation }) {
+  const { logContentView } = useLogEvent()
+  useEffect(() => {
+    logContentView('page', 'portfolio', { content_title: 'Портфолио' })
+  }, [logContentView])
+
   return (
     <div className="portfolio-overlay" onClick={onClose}>
       <div className="portfolio-modal" onClick={(e) => e.stopPropagation()}>

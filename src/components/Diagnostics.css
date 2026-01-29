@@ -323,6 +323,9 @@
 }
 
 .diagnostics-progress {
+  display: flex;
+  flex-direction: column !important;
+  align-items: center;
   width: 100%;
   max-width: 800px;
   margin-bottom: 12px;
@@ -331,6 +334,7 @@
   z-index: 100;
   padding: 8px 0;
   box-sizing: border-box;
+  gap: 10px;
 }
 
 .progress-bar {
@@ -339,9 +343,9 @@
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
   overflow: hidden;
-  margin-bottom: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
 }
 
 .progress-bar-fill {
@@ -353,6 +357,8 @@
 }
 
 .progress-text {
+  width: 100%;
+  margin-top: 8px;
   color: rgba(255, 255, 255, 0.9);
   font-size: 12px;
   text-align: center;
@@ -1585,7 +1591,8 @@
      on mobile so it visually appears attached to the header. We use the
      canonical --app-header-height variable from Header.css and add a small
      offset. The progress bar is fixed so it remains visible while content
-     scrolls; question content above reserves space to avoid overlap. */
+     scrolls; question content above reserves space to avoid overlap.
+     Layout: vertical stack (bar top, text bottom) on all screen sizes. */
   .diagnostics-progress {
     position: fixed;
     top: calc(var(--app-header-height) + 8px); /* small offset from header bottom */
@@ -1596,25 +1603,27 @@
     box-sizing: border-box;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
+    flex-direction: column !important;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
     pointer-events: none; /* progress is not interactive */
   }
 
-  /* Keep the visual progress bar centered within the fixed container */
+  /* Full-width bar within padded container; max-width only for very wide viewports */
   .diagnostics-progress .progress-bar {
     width: 100%;
     max-width: 520px;
     box-sizing: border-box;
     pointer-events: auto; /* allow hover styles if needed on inner elements */
-  }
-  
-  .progress-text {
-    font-size: 11px;
-  }
-  
-  .progress-bar {
     height: 4px;
-    margin-bottom: 4px;
+  }
+
+  .progress-text {
+    width: 100%;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 11px;
   }
 
   .question-stage {
