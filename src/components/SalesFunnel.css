@@ -710,3 +710,122 @@
   background: linear-gradient(135deg, #6cc86c, #5aae5a);
 }
 
+/* User list with segments (Niche, Hunt Ladder, Status) */
+.funnel-user-list-section {
+  max-width: 900px;
+  margin: 32px auto 80px;
+  padding: 0 20px;
+}
+
+.funnel-user-list-title {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.funnel-user-list-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.funnel-user-list-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.funnel-user-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.funnel-user-list-table th,
+.funnel-user-list-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.funnel-user-list-table th {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.funnel-user-list-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.funnel-user-list-empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 24px;
+}
+
+/* Hunt Ladder 0–4 progress bar */
+.hunt-ladder-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hunt-ladder-bar {
+  position: relative;
+  width: 80px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hunt-ladder-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #4a90e2, #5cb85c);
+  border-radius: 10px;
+  transition: width 0.25s ease;
+}
+
+.hunt-ladder-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Status badge (segment_temperature) */
+.segment-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.segment-status--hot {
+  background: rgba(92, 184, 92, 0.35);
+  color: #7dce82;
+}
+
+.segment-status--warm {
+  background: rgba(240, 173, 78, 0.35);
+  color: #f0ad4e;
+}
+
+.segment-status--needs-reanimation {
+  background: rgba(150, 150, 150, 0.35);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.segment-status--ice {
+  background: rgba(100, 149, 237, 0.35);
+  color: #7eb8da;
+}
+

@@ -523,8 +523,8 @@ CREATE TABLE site_events (
                 FOREIGN KEY (session_id) REFERENCES site_sessions(id) ON DELETE CASCADE,
                 FOREIGN KEY (tg_user_id) REFERENCES users(user_id) ON DELETE SET NULL
             );
-INSERT INTO "site_events" VALUES(1,1,999999,'click','test_button','/test','{"test": true}','2026-01-23 14:00:48',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
-INSERT INTO "site_events" VALUES(2,2,999999,'click','test_button','/test','{"test": true}','2026-01-23 14:55:25',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "site_events" VALUES(1,1,888888,'click','test_button','/test','{"test": true}','2026-01-23 14:00:48',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO "site_events" VALUES(2,2,888888,'click','test_button','/test','{"test": true}','2026-01-23 14:55:25',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 INSERT INTO "site_events" VALUES(3,5,NULL,'visit','source_visit',NULL,NULL,'2026-01-23 16:38:37','acquisition',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'{"source": "telegram_miniapp", "cookie_id": "a50fab0e-d088-4851-8b0c-67d73f8639ca", "utm_source": null, "utm_medium": null, "utm_campaign": null, "utm_term": null, "utm_content": null, "referrer": "http://localhost:3000/"}');
 INSERT INTO "site_events" VALUES(4,5,NULL,'app','miniapp_open',NULL,NULL,'2026-01-23 16:38:37','engagement',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'{"device": "mobile", "page_id": "main", "cookie_id": "a50fab0e-d088-4851-8b0c-67d73f8639ca"}');
 INSERT INTO "site_events" VALUES(5,5,NULL,'content','content_view',NULL,NULL,'2026-01-23 16:38:38','engagement',NULL,NULL,NULL,'Main Page',0,0,NULL,NULL,NULL,NULL,NULL,'{"content_type": "page", "content_id": "main", "content_title": null, "cookie_id": "a50fab0e-d088-4851-8b0c-67d73f8639ca"}');
@@ -1318,8 +1318,8 @@ CREATE TABLE site_sessions (
                 -- Ограничения
                 FOREIGN KEY (tg_user_id) REFERENCES users(user_id) ON DELETE SET NULL
             );
-INSERT INTO "site_sessions" VALUES(1,'test_cookie_123',999999,'2026-01-23 14:00:48',NULL,'Test Agent','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,NULL);
-INSERT INTO "site_sessions" VALUES(2,'test_cookie_123',999999,'2026-01-23 14:55:25',NULL,'Test Agent','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,NULL);
+INSERT INTO "site_sessions" VALUES(1,'test_cookie_123',888888,'2026-01-23 14:00:48',NULL,'Test Agent','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,NULL);
+INSERT INTO "site_sessions" VALUES(2,'test_cookie_123',888888,'2026-01-23 14:55:25',NULL,'Test Agent','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,NULL);
 INSERT INTO "site_sessions" VALUES(3,'test',NULL,'2026-01-23 16:36:15',NULL,'Mozilla/5.0 (Windows NT; Windows NT 10.0; ru-RU) WindowsPowerShell/5.1.19041.6456','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,NULL);
 INSERT INTO "site_sessions" VALUES(4,'test',NULL,'2026-01-23 16:37:43',NULL,'Mozilla/5.0 (Windows NT; Windows NT 10.0; ru-RU) WindowsPowerShell/5.1.19041.6456','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,NULL);
 INSERT INTO "site_sessions" VALUES(5,'a50fab0e-d088-4851-8b0c-67d73f8639ca',NULL,'2026-01-23 16:38:36',NULL,'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36','127.0.0.1',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,10,NULL);
@@ -1421,7 +1421,7 @@ CREATE TABLE user_identities (
                 FOREIGN KEY (tg_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
                 UNIQUE(tg_user_id, cookie_id)  -- Один пользователь не может иметь дублирующие связи
             );
-INSERT INTO "user_identities" VALUES(2,999999,'test_cookie_123','miniapp','2026-01-23 14:55:25',NULL);
+INSERT INTO "user_identities" VALUES(2,888888,'test_cookie_123','miniapp','2026-01-23 14:55:25',NULL);
 INSERT INTO "user_identities" VALUES(5,317319336,'7664b911-ba0b-4a31-852c-39c9b8641408','miniapp','2026-01-25 21:56:14',NULL);
 CREATE TABLE users (
             user_id INTEGER PRIMARY KEY,
@@ -1436,7 +1436,7 @@ CREATE TABLE users (
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         , diagnostics_completed_at TIMESTAMP);
-INSERT INTO "users" VALUES(999999,'test_user','Test User',NULL,0,0,0,NULL,NULL,'2026-01-23 14:00:48','2026-01-23 14:00:48',NULL);
+INSERT INTO "users" VALUES(888888,'test_user','Test User',NULL,0,0,0,NULL,NULL,'2026-01-23 14:00:48','2026-01-23 14:00:48',NULL);
 CREATE INDEX idx_user_identities_tg_user ON user_identities(tg_user_id);
 CREATE INDEX idx_user_identities_cookie ON user_identities(cookie_id);
 CREATE INDEX idx_site_sessions_cookie ON site_sessions(cookie_id);

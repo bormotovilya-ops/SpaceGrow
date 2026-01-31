@@ -11,8 +11,11 @@ import img22 from '../assets/images/22.png'
 import img33 from '../assets/images/33.png'
 import img44 from '../assets/images/44.png'
 
+const MAX_METADATA_TEXT = 1000
+const truncateForMetadata = (s) => (s == null ? '' : String(s).substring(0, MAX_METADATA_TEXT))
+
 function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick }) {
-  const { logContentView } = useLogEvent()
+  const { logContentView, logEvent } = useLogEvent()
   // Добавляем пятый слот для блока персонального отчета
   const [typingMessages, setTypingMessages] = useState([false, false, false, false, false]) // Показывать многоточие
   const [visibleMessages, setVisibleMessages] = useState([false, false, false, false, false]) // Показывать текст
@@ -192,10 +195,16 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           errorMessage = 'Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server).'
         }
         
-        setChatMessages(prev => [...prev, {
-          role: 'assistant',
-          content: `${errorMessage} Если проблема сохраняется, свяжитесь напрямую: @ilyaborm в Telegram.`
-        }])
+        const errorContent = `${errorMessage} Если проблема сохраняется, свяжитесь напрямую: @ilyaborm в Telegram.`
+        setChatMessages(prev => [...prev, { role: 'assistant', content: errorContent }])
+        logEvent('ai', 'ai_chat_message', {
+          page: '/profile',
+          metadata: {
+            context: 'user_profile',
+            user_message: truncateForMetadata(userQuestion),
+            ai_response: truncateForMetadata(errorContent)
+          }
+        })
         setIsLoadingChat(false)
         return
       }
@@ -216,12 +225,26 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         const cleanedResponse = cleanResponse(data.response)
         console.log('🧹 Очищенный ответ:', cleanedResponse.substring(0, 100) + '...')
         setChatMessages(prev => [...prev, { role: 'assistant', content: cleanedResponse }])
+        logEvent('ai', 'ai_chat_message', {
+          page: '/profile',
+          metadata: {
+            context: 'user_profile',
+            user_message: truncateForMetadata(userQuestion),
+            ai_response: truncateForMetadata(cleanedResponse)
+          }
+        })
       } else {
         console.warn('⚠️ Нет поля response в ответе:', data)
-        setChatMessages(prev => [...prev, {
-          role: 'assistant',
-          content: 'Не удалось получить ответ. Попробуйте еще раз или свяжитесь напрямую: @ilyaborm в Telegram.'
-        }])
+        const fallbackContent = 'Не удалось получить ответ. Попробуйте еще раз или свяжитесь напрямую: @ilyaborm в Telegram.'
+        setChatMessages(prev => [...prev, { role: 'assistant', content: fallbackContent }])
+        logEvent('ai', 'ai_chat_message', {
+          page: '/profile',
+          metadata: {
+            context: 'user_profile',
+            user_message: truncateForMetadata(userQuestion),
+            ai_response: truncateForMetadata(fallbackContent)
+          }
+        })
       }
     } catch (error) {
       console.error('❌ Network Error:', {
@@ -229,10 +252,16 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         stack: error.stack,
         name: error.name
       })
-      setChatMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
-      }])
+      const networkErrorContent = `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
+      setChatMessages(prev => [...prev, { role: 'assistant', content: networkErrorContent }])
+      logEvent('ai', 'ai_chat_message', {
+        page: '/profile',
+        metadata: {
+          context: 'user_profile',
+          user_message: truncateForMetadata(userQuestion),
+          ai_response: truncateForMetadata(networkErrorContent)
+        }
+      })
     } finally {
       setIsLoadingChat(false)
       console.log('✅ Запрос завершен')

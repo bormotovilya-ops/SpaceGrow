@@ -12,6 +12,7 @@ import './SalesFunnel.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { getSupabase } from '../utils/supabaseClient'
 
 const funnelData = [
   {
@@ -80,7 +81,7 @@ const funnelData = [
 ]
 
 function SalesFunnel() {
-  const { logCTAClick, logContentView } = useLogEvent()
+  const { logCTAClick, logContentView, logEvent } = useLogEvent()
   const [selectedBlock, setSelectedBlock] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
   const [showPortfolio, setShowPortfolio] = useState(false)
@@ -90,6 +91,47 @@ function SalesFunnel() {
   const [showAlchemy, setShowAlchemy] = useState(false)
   const [showChat, setShowChat] = useState(false)
   const [showFunnelDiagram, setShowFunnelDiagram] = useState(false) // true = показываем воронку, false = главная (пустая)
+  const [userList, setUserList] = useState([])
+  const [userListLoading, setUserListLoading] = useState(false)
+
+  // Fetch user list with segments (LEFT JOIN users + user_segments)
+  useEffect(() => {
+    if (!showFunnelDiagram) return
+    let cancelled = false
+    const fetchUserList = async () => {
+      const supabase = await getSupabase()
+      if (!supabase) return
+      setUserListLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('user_id, username, first_name, user_segments(*)')
+        if (cancelled) return
+        if (error) {
+          console.warn('User list fetch error:', error.message)
+          setUserList([])
+          return
+        }
+        console.log('Fetched users data:', data)
+        const rows = (data || []).map((row) => {
+          const seg = row.user_segments?.[0]
+          return {
+            user_id: row.user_id,
+            username: row.username ?? null,
+            first_name: row.first_name ?? null,
+            segment_motivation: seg?.segment_motivation ?? null,
+            segment_temperature: seg?.segment_temperature ?? null,
+            segment_hunt_level: seg?.segment_hunt_level != null ? Math.min(4, Math.max(0, Number(seg.segment_hunt_level))) : null
+          }
+        })
+        setUserList(rows)
+      } finally {
+        if (!cancelled) setUserListLoading(false)
+      }
+    }
+    fetchUserList()
+    return () => { cancelled = true }
+  }, [showFunnelDiagram])
 
   // Обработка hash в URL для прямой ссылки на профиль
   useEffect(() => {
@@ -146,10 +188,32 @@ function SalesFunnel() {
   }, [showProfile, showPersonReport, showDiagnostics, showAlchemy, selectedBlock])
 
 
+  // Current "route" path for universal page tracking (no react-router; derived from state)
+  const currentPath = showAlchemy
+    ? '/alchemy'
+    : showDiagnostics
+      ? '/diagnostics'
+      : showPersonReport
+        ? '/report'
+        : showProfile
+          ? '/profile'
+          : selectedBlock
+            ? `/block/${selectedBlock.id}`
+            : !showFunnelDiagram
+              ? '/home'
+              : '/funnel_diagram'
+
+  // Universal page tracking: log every view as visit/page_view so reports show all routes
+  useEffect(() => {
+    if (!currentPath) return
+    console.log('📍 Tracking page view:', currentPath)
+    logEvent('visit', 'page_view', { page: currentPath })
+  }, [currentPath, logEvent])
+
   // Логируем просмотр экрана «Диаграмма воронки», когда пользователь на этой странице
   useEffect(() => {
     if (showFunnelDiagram && !selectedBlock && !showProfile && !showPersonReport && !showDiagnostics && !showAlchemy) {
-      logContentView('page', 'funnel_diagram', { content_title: 'Диаграмма воронки' })
+      logContentView('page', 'funnel_diagram', { content_title: 'Диаграмма воронки', page: '/funnel_diagram' })
     }
   }, [showFunnelDiagram, selectedBlock, showProfile, showPersonReport, showDiagnostics, showAlchemy, logContentView])
 
@@ -162,7 +226,8 @@ function SalesFunnel() {
     await logCTAClick('funnel_block_click', {
       ctaText: block?.name,
       ctaLocation: 'sales_funnel',
-      previousStep: 'viewing_funnel'
+      previousStep: 'viewing_funnel',
+      page: currentPath
     })
 
     setIsAnimating(true)
@@ -537,6 +602,60 @@ function SalesFunnel() {
           </div>
           </div>
         </div>
+
+      {/* User list with segments (Niche, Hunt Ladder, Status) */}
+      {showFunnelDiagram && (
+        <div className="funnel-user-list-section">
+          <h3 className="funnel-user-list-title">Пользователи воронки</h3>
+          {userListLoading ? (
+            <div className="funnel-user-list-loading">
+              <div className="loading-spinner" /> Загрузка...
+            </div>
+          ) : (
+            <div className="funnel-user-list-wrapper">
+              <table className="funnel-user-list-table" aria-label="Список пользователей с сегментами">
+                <thead>
+                  <tr>
+                    <th>user_id</th>
+                    <th>Пользователь</th>
+                    <th>Ниша</th>
+                    <th>Hunt Ladder</th>
+                    <th>Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userList.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="funnel-user-list-empty">Нет данных</td>
+                    </tr>
+                  ) : (
+                    userList.map((u) => (
+                      <tr key={u.user_id ?? 'unknown'}>
+                        <td>{u.user_id ?? '—'}</td>
+                        <td>{u.first_name ?? u.username ?? '—'}</td>
+                        <td>{u.segment_motivation ?? '—'}</td>
+                        <td>
+                          <div className="hunt-ladder-cell">
+                            <div className="hunt-ladder-bar" role="progressbar" aria-valuenow={u.segment_hunt_level ?? 0} aria-valuemin={0} aria-valuemax={4}>
+                              <div className="hunt-ladder-fill" style={{ width: u.segment_hunt_level != null ? `${((u.segment_hunt_level + 1) / 5) * 100}%` : '0%' }} />
+                            </div>
+                            <span className="hunt-ladder-label">{u.segment_hunt_level != null ? `${u.segment_hunt_level}/4` : '—'}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`segment-status-badge segment-status--${(u.segment_temperature || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                            {u.segment_temperature === 'Hot' ? 'Hot' : u.segment_temperature === 'Warm' ? 'Warm' : u.segment_temperature === 'Needs Reanimation' ? '⚠️ Needs Reanimation' : u.segment_temperature === 'Ice' ? 'В процессе анализа' : u.segment_temperature ?? '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Портфолио модальное окно */}
       {showPortfolio && (

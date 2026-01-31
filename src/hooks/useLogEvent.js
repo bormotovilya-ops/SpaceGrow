@@ -1,6 +1,9 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { apiUtils, userUtils, debounce } from '../utils/logging';
 
+// Fallback tg_user_id when testing in browser; must be 888888 to match prepared DB records
+const FALLBACK_TG_USER_ID = 888888;
+
 // Global session state
 let globalSessionId = null;
 let globalCookieId = null;
@@ -78,7 +81,8 @@ export const useLogEvent = () => {
       customData
     } = options;
 
-    return apiUtils.logEvent(sessionId, eventType, eventName, page, metadata, tgUserIdRef.current);
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
+    return apiUtils.logEvent(sessionId, eventType, eventName, page, metadata, finalUserId);
   }, [ensureSession]);
 
   // Specialized logging methods
@@ -91,13 +95,14 @@ export const useLogEvent = () => {
     const utmParams = userUtils.getUTMParams();
     const referrer = userUtils.getReferrer();
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logSourceVisit({
       session_id: sessionId,
       source,
       cookie_id: cookieIdRef.current,
       utm_params: utmParams,
       referrer,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 
@@ -108,12 +113,13 @@ export const useLogEvent = () => {
 
     const deviceInfo = userUtils.getDeviceInfo();
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logMiniAppOpen({
       session_id: sessionId,
       device: deviceInfo.deviceType,
       page_id: pageId,
       cookie_id: cookieIdRef.current,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 
@@ -129,9 +135,11 @@ export const useLogEvent = () => {
       contentTitle,
       section,
       timeSpent,
-      scrollDepth
+      scrollDepth,
+      page
     } = options;
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logContentView({
       session_id: sessionId,
       content_type: contentType,
@@ -140,24 +148,27 @@ export const useLogEvent = () => {
       section,
       time_spent: timeSpent,
       scroll_depth: scrollDepth,
+      page: page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 
   // 4. AI interaction logging
-  const logAIInteraction = useCallback(async (messagesCount, topics, duration, conversationType = 'general') => {
+  const logAIInteraction = useCallback(async (messagesCount, topics, duration, conversationType = 'general', options = {}) => {
     const sessionId = await ensureSession();
     if (!sessionId) return null;
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logAIInteraction({
       session_id: sessionId,
       messages_count: messagesCount,
       topics,
       duration,
       conversation_type: conversationType,
+      page: options.page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 
@@ -167,6 +178,7 @@ export const useLogEvent = () => {
     if (!sessionId) return null;
 
     if (action === 'complete') {
+      const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
       return apiUtils.logDiagnosticCompletion({
         session_id: sessionId,
         results,
@@ -174,7 +186,7 @@ export const useLogEvent = () => {
         end_time: endTime,
         progress,
         cookie_id: cookieIdRef.current,
-        tg_user_id: tgUserIdRef.current
+        tg_user_id: finalUserId
       });
     } else {
       // Log start or progress events
@@ -191,6 +203,7 @@ export const useLogEvent = () => {
 
     const { score, achievement, duration } = options;
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logGameAction({
       session_id: sessionId,
       game_type: gameType,
@@ -199,8 +212,9 @@ export const useLogEvent = () => {
       score,
       achievement,
       duration,
+      page: options.page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 
@@ -216,6 +230,7 @@ export const useLogEvent = () => {
       stepDuration
     } = options;
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logCTAClick({
       session_id: sessionId,
       cta_type: ctaType,
@@ -223,8 +238,9 @@ export const useLogEvent = () => {
       cta_location: ctaLocation,
       previous_step: previousStep,
       step_duration: stepDuration,
+      page: options.page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 
@@ -233,13 +249,14 @@ export const useLogEvent = () => {
     const sessionId = await ensureSession();
     if (!sessionId) return null;
 
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logPersonalPathView({
       session_id: sessionId,
       open_time: openTime,
       duration,
       downloaded,
       cookie_id: cookieIdRef.current,
-      tg_user_id: tgUserIdRef.current
+      tg_user_id: finalUserId
     });
   }, [ensureSession]);
 

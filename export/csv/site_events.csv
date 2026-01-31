@@ -1,6 +1,6 @@
 id,session_id,tg_user_id,event_type,event_name,page,metadata,created_at,event_category,event_subtype,element_id,element_type,section,scroll_depth,time_spent,interaction_count,previous_event_id,step_number,completion_rate,error_message,custom_data
-1,1,999999,click,test_button,/test,"{""test"": true}",2026-01-23 14:00:48,,,,,,,,,,,,,
-2,2,999999,click,test_button,/test,"{""test"": true}",2026-01-23 14:55:25,,,,,,,,,,,,,
+1,1,888888,click,test_button,/test,"{""test"": true}",2026-01-23 14:00:48,,,,,,,,,,,,,
+2,2,888888,click,test_button,/test,"{""test"": true}",2026-01-23 14:55:25,,,,,,,,,,,,,
 3,5,,visit,source_visit,,,2026-01-23 16:38:37,acquisition,,,,,,,,,,,,"{""source"": ""telegram_miniapp"", ""cookie_id"": ""a50fab0e-d088-4851-8b0c-67d73f8639ca"", ""utm_source"": null, ""utm_medium"": null, ""utm_campaign"": null, ""utm_term"": null, ""utm_content"": null, ""referrer"": ""http://localhost:3000/""}"
 4,5,,app,miniapp_open,,,2026-01-23 16:38:37,engagement,,,,,,,,,,,,"{""device"": ""mobile"", ""page_id"": ""main"", ""cookie_id"": ""a50fab0e-d088-4851-8b0c-67d73f8639ca""}"
 5,5,,content,content_view,,,2026-01-23 16:38:38,engagement,,,,Main Page,0,0,,,,,,"{""content_type"": ""page"", ""content_id"": ""main"", ""content_title"": null, ""cookie_id"": ""a50fab0e-d088-4851-8b0c-67d73f8639ca""}"

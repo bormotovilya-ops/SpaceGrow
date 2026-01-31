@@ -1,6 +1,6 @@
 id,cookie_id,tg_user_id,session_start,session_end,user_agent,ip,source,utm_source,utm_medium,utm_campaign,utm_term,utm_content,referrer,device_type,device_model,browser,os,screen_resolution,geo_country,geo_city,geo_region,page_id,entry_page,exit_page,session_duration,page_views,events_count,utm_params
-1,test_cookie_123,999999,2026-01-23 14:00:48,,Test Agent,127.0.0.1,,,,,,,,,,,,,,,,,,,,0,0,
-2,test_cookie_123,999999,2026-01-23 14:55:25,,Test Agent,127.0.0.1,,,,,,,,,,,,,,,,,,,,0,0,
+1,test_cookie_123,888888,2026-01-23 14:00:48,,Test Agent,127.0.0.1,,,,,,,,,,,,,,,,,,,,0,0,
+2,test_cookie_123,888888,2026-01-23 14:55:25,,Test Agent,127.0.0.1,,,,,,,,,,,,,,,,,,,,0,0,
 3,test,,2026-01-23 16:36:15,,Mozilla/5.0 (Windows NT; Windows NT 10.0; ru-RU) WindowsPowerShell/5.1.19041.6456,127.0.0.1,,,,,,,,,,,,,,,,,,,,0,0,
 4,test,,2026-01-23 16:37:43,,Mozilla/5.0 (Windows NT; Windows NT 10.0; ru-RU) WindowsPowerShell/5.1.19041.6456,127.0.0.1,,,,,,,,,,,,,,,,,,,,0,0,
 5,a50fab0e-d088-4851-8b0c-67d73f8639ca,,2026-01-23 16:38:36,,"Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36",127.0.0.1,,,,,,,,,,,,,,,,,,,,0,10,

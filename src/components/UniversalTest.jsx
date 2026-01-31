@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Header from './Header'
 import Funnel3D from './Funnel3D'
@@ -136,26 +136,33 @@ const IkigaiVenn = ({ data = {}, sectors = [], threshold = 3.5, size = 360 }) =>
 }
 
 const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsultation, onChatClick, onHomeClick }) => {
-  const { logDiagnostics, logContentView, logCTAClick } = useLogEvent()
+  const { logContentView, logCTAClick, logEvent } = useLogEvent()
   const { settings, stages, questions, commonAnswerOptions, answerOptions, welcome, results: resultsMapping, cta } = data
   const totalQuestions = questions.length
+  const resultsLoggedRef = useRef(false)
 
   useEffect(() => {
     logContentView('page', 'diagnostics', { content_title: welcome?.title || 'Диагностика в подарок' })
   }, [logContentView, welcome?.title])
-  
-  const allQuestions = questions.map(q => {
-    const stage = stages.find(s => s.id === q.stageId)
-    return { ...q, stageName: stage?.name || q.stageId, stageImage: stage?.image, stageSubtitle: stage?.subtitle }
-  })
 
   const COOKIE_PREFIX = `${settings.logicType.toLowerCase()}_`
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState({})
   const [showResults, setShowResults] = useState(false)
 
+  const allQuestions = questions.map(q => {
+    const stage = stages.find(s => s.id === q.stageId)
+    return { ...q, stageName: stage?.name || q.stageId, stageImage: stage?.image, stageSubtitle: stage?.subtitle }
+  })
+
   const handleStart = async () => {
-    await logCTAClick('diagnostics_start', { ctaText: welcome?.buttonText || 'Начать диагностику', ctaLocation: 'diagnostics', previousStep: 'viewing_intro' })
+    resultsLoggedRef.current = false
+    await logCTAClick('diagnostics_start', {
+      ctaText: welcome?.buttonText || 'Начать диагностику',
+      ctaLocation: 'diagnostics',
+      previousStep: 'viewing_intro',
+      page: '/diagnostics'
+    })
     setCurrentStep(1)
     setAnswers({})
     setShowResults(false)
@@ -204,6 +211,58 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
 
     return { results: stageResults, critical, unstable, strong }
   }
+
+  // Log test_complete once when results are shown (Diagnostics or Ikigai) — full metadata for report
+  useEffect(() => {
+    if (!showResults) return
+    if (resultsLoggedRef.current) return
+    const calc = calculateResults()
+    const testName = settings.logicType === 'IKIGAI' ? 'ikigai' : 'diagnostics'
+    let totalScore = 0
+    let resultCategory = ''
+    let scoresByCategory = {}
+    let criticalZones = []
+    let unstableZones = []
+    let strongSides = []
+
+    let formattedResult = ''
+
+    if (settings.logicType === 'IKIGAI') {
+      const scores = calc.sectorScores || {}
+      const vals = Object.values(scores)
+      totalScore = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+      resultCategory = calc.result?.title || ''
+      scoresByCategory = { ...scores }
+      criticalZones = []
+      unstableZones = []
+      strongSides = []
+      formattedResult = `Мой результат Икигай: ${calc.result?.title || 'Икигай'}. Маска: ${calc.binaryKey || '0000'}. Хочу обсудить, как это реализовать.`
+    } else {
+      const r = calc.results || []
+      totalScore = r.length ? r.reduce((s, x) => s + (x.score || 0), 0) / r.length : 0
+      resultCategory = calc.critical?.length ? 'critical' : calc.unstable?.length ? 'unstable' : 'strong'
+      scoresByCategory = (r || []).reduce((acc, x) => ({ ...acc, [x.name]: x.score }), {})
+      criticalZones = (calc.critical || []).map(c => ({ name: c.name, score: c.score }))
+      unstableZones = (calc.unstable || []).map(u => ({ name: u.name, score: u.score }))
+      strongSides = (calc.strong || []).map(s => ({ name: s.name, score: s.score }))
+      formattedResult = formatResultsForTelegram(calc)
+    }
+
+    resultsLoggedRef.current = true
+    logEvent('diagnostic', 'test_complete', {
+      page: '/diagnostics',
+      metadata: {
+        test_name: testName,
+        total_score: Math.round(totalScore),
+        result_category: resultCategory,
+        scores_by_category: scoresByCategory,
+        critical_zones: criticalZones,
+        unstable_zones: unstableZones,
+        strong_sides: strongSides,
+        formatted_result: formattedResult
+      }
+    })
+  }, [showResults, answers, settings.logicType, logEvent])
 
   // Helpers for diagnostics rendering and messaging
   const getDetailedConclusion = (critical, unstable, strong) => {
@@ -304,6 +363,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
   }
 
   const handleResultsConsultation = () => {
+    logEvent('cta', 'cta_click', { page: '/diagnostics', metadata: { cta_id: 'diagnostics_consult', label: 'Обсудить план действий', location: 'diagnostics' } })
     const calc = calculateResults()
     const rawMessage = formatResultsForTelegram(calc)
     const compactMessage = formatResultsForTelegramCompact(calc)
@@ -316,6 +376,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
   }
 
   const handleIkigaiDiscuss = () => {
+    logEvent('cta', 'cta_click', { page: '/diagnostics', metadata: { cta_id: 'ikigai_discuss', label: 'Обсудить результат с экспертом', location: 'diagnostics' } })
     const calc = calculateResults()
     const title = calc.result?.title || 'Икигай'
     const mask = calc.binaryKey || '0000'

@@ -5,6 +5,7 @@ import jsPDF from 'jspdf'
 import astroData from '../../scripts/astroData.json'
 import interpretations from '../../scripts/interpretations.json'
 import './MatrixCalculator.css'
+import { useLogEvent } from '../hooks/useLogEvent'
 
 // Функция для приведения числа к диапазону 1-22
 const reduceToArcana = (num) => {
@@ -2272,6 +2273,7 @@ function generatePDFFallback(element, methodName, methodId, resultData, birthDat
 
 
 function MatrixCalculator() {
+  const { logEvent } = useLogEvent()
   const [birthDate, setBirthDate] = useState('')
   const [birthTime, setBirthTime] = useState('')
   const [city, setCity] = useState('')
@@ -2383,6 +2385,10 @@ function MatrixCalculator() {
     }
 
     setError('')
+    logEvent('content', 'astrolabe_input', {
+      page: '/alchemy',
+      metadata: { birth_date: birthDate, birth_time: birthTime || null, birth_city: city || null, action: 'calculate' }
+    })
     setIsScanning(true)
     setCompletedMethods([])
     setResults(null)
@@ -2537,6 +2543,8 @@ function MatrixCalculator() {
         if (data.success && data.pdfUrl) {
           // Показываем модальное окно с информацией о PDF
           console.log('✅ Показываем модальное окно серверной генерации')
+          logEvent('content', 'astrolabe_action', { page: '/alchemy', metadata: { action: 'pdf_download' } })
+          logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy', metadata: { type: 'download', status: 'success' } })
           showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
         } else {
           throw new Error(data.error || 'Неизвестная ошибка')
@@ -2549,6 +2557,8 @@ function MatrixCalculator() {
       }
     } else {
       // Для веб-версии используем локальную генерацию (старый рабочий метод)
+      logEvent('content', 'astrolabe_action', { page: '/alchemy', metadata: { action: 'pdf_download' } })
+      logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy', metadata: { type: 'download', status: 'success' } })
       generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
     }
   }
