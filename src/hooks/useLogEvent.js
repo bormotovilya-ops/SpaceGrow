@@ -9,10 +9,14 @@ let globalSessionId = null;
 let globalCookieId = null;
 let globalTgUserId = null;
 
+const SECTION_DEBOUNCE_MS = 1500;
+
 export const useLogEvent = () => {
   const sessionIdRef = useRef(null);
   const cookieIdRef = useRef(null);
   const tgUserIdRef = useRef(null);
+  const lastSectionIdRef = useRef(null);
+  const lastSectionTimeRef = useRef(0);
 
   // Initialize user identifiers
   useEffect(() => {
@@ -58,7 +62,7 @@ export const useLogEvent = () => {
     return sessionIdRef.current;
   }, []);
 
-  // Generic event logger
+  // Generic event logger. options.metadata + options.page/section_id идут в трекер для обогащения custom_data (section_label, section_icon, huntStage).
   const logEvent = useCallback(async (eventType, eventName, options = {}) => {
     const sessionId = await ensureSession();
     if (!sessionId) return null;
@@ -66,6 +70,7 @@ export const useLogEvent = () => {
     const {
       page,
       metadata = {},
+      section_id,
       eventCategory,
       eventSubType,
       elementId,
@@ -81,8 +86,12 @@ export const useLogEvent = () => {
       customData
     } = options;
 
+    const meta = { ...metadata };
+    if (section_id != null) meta.section_id = section_id;
+    if (customData != null) meta.customData = customData;
+
     const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
-    return apiUtils.logEvent(sessionId, eventType, eventName, page, metadata, finalUserId);
+    return apiUtils.logEvent(sessionId, eventType, eventName, page ?? meta.page, meta, finalUserId);
   }, [ensureSession]);
 
   // Specialized logging methods
@@ -218,7 +227,8 @@ export const useLogEvent = () => {
     });
   }, [ensureSession]);
 
-  // 7. CTA click logging
+  // 7. CTA click logging. Приоритет label для Hunt 4: element_text (e.target.innerText) → cta_text → custom_label.
+  // Передайте element_text: e?.target?.innerText?.trim() при вызове из onClick для захвата текста кнопки.
   const logCTAClick = useCallback(async (ctaType, options = {}) => {
     const sessionId = await ensureSession();
     if (!sessionId) return null;
@@ -227,7 +237,12 @@ export const useLogEvent = () => {
       ctaText,
       ctaLocation,
       previousStep,
-      stepDuration
+      stepDuration,
+      section_id,
+      cta_opens_tg,
+      custom_label,
+      element_text,
+      button_text
     } = options;
 
     const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
@@ -239,6 +254,10 @@ export const useLogEvent = () => {
       previous_step: previousStep,
       step_duration: stepDuration,
       page: options.page ?? null,
+      section_id: section_id ?? null,
+      cta_opens_tg: cta_opens_tg ?? false,
+      custom_label: custom_label ?? null,
+      element_text: element_text ?? button_text ?? null,
       cookie_id: cookieIdRef.current,
       tg_user_id: finalUserId
     });
@@ -291,6 +310,28 @@ export const useLogEvent = () => {
     };
   }, []);
 
+  // Track section view for Sitemap (custom_data: section_id, label, section_label, parent_label, emoji)
+  // Debounce + lastId check to avoid duplicate events when scrolling within same section
+  const trackSectionView = useCallback(async (sectionId) => {
+    if (!sectionId) return null;
+    const now = Date.now();
+    const isSameSection = lastSectionIdRef.current === sectionId;
+    const withinDebounce = (now - lastSectionTimeRef.current) < SECTION_DEBOUNCE_MS;
+    if (isSameSection && withinDebounce) return null;
+
+    lastSectionIdRef.current = sectionId;
+    lastSectionTimeRef.current = now;
+
+    const sessionId = await ensureSession();
+    if (!sessionId) return null;
+    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
+    return apiUtils.trackSectionView({
+      session_id: sessionId,
+      section_id: sectionId,
+      tg_user_id: finalUserId
+    });
+  }, [ensureSession]);
+
   // Get current session info
   const getSessionInfo = useCallback(() => ({
     sessionId: sessionIdRef.current,
@@ -313,6 +354,7 @@ export const useLogEvent = () => {
     logGameAction,
     logCTAClick,
     logPersonalPathView,
+    trackSectionView,
 
     // Utilities
     createScrollTracker

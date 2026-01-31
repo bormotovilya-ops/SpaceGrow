@@ -1,6 +1,7 @@
-/* Home Container - Digital Alchemy Style */
+/* Home Container - Digital Alchemy Style — на всю ширину экрана */
 .home-container {
   width: 100%;
+  min-width: 100%;
   min-height: 100vh;
   background-image: 
     url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 100 0 L 0 0 0 100' fill='none' stroke='rgba(255,215,0,0.05)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grid)'/%3E%3C/svg%3E"),
@@ -28,12 +29,32 @@
   position: relative;
   z-index: 1;
 }
+
+/* Скролл к секции по ?section= — блок не уходит под шапку */
+.home-content [data-section-id] {
+  scroll-margin-top: 140px;
+}
 <｜tool▁call▁end｜><｜tool▁call▁begin｜>
 read_file
 
 /* Hero Section */
 .home-hero {
   margin-bottom: 80px;
+  width: 100%;
+}
+
+.home-hero-title-wrap {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.home-hero-badge-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  margin-bottom: 0;
 }
 
 .home-hero-content {
@@ -90,8 +111,10 @@ read_file
   font-size: 52px;
   font-weight: 700;
   line-height: 1.15;
-  margin: 0 0 25px;
-  text-align: left;
+  margin: 0;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
   
   /* Golden gradient effect - enhanced */
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 45%, #ffd700 90%, #ffed4e 100%);
@@ -112,6 +135,10 @@ read_file
 .home-hero-value {
   margin-top: 0;
   text-align: left;
+}
+
+.home-hero-badge-wrap .value-badge {
+  margin-bottom: 0;
 }
 
 .value-badge {
@@ -186,9 +213,9 @@ read_file
   font-weight: 600;
 }
 
-/* About Me Block */
+/* About Me Block — отступ от hero (картинки и контента) в десктопе */
 .home-about {
-  margin-top: 0;
+  margin-top: 56px;
   margin-bottom: 80px;
   display: flex;
   justify-content: center;
@@ -973,7 +1000,7 @@ read_file
   
 
   .home-hero {
-    margin-bottom: 60px;
+    margin-bottom: 32px;
     margin-top: 0;
   }
 
@@ -1044,8 +1071,9 @@ read_file
     margin-top: 6px;
   }
 
+  /* Обо мне сразу после hero-text (subtitle-highlight) */
   .home-about {
-    margin-top: 0;
+    margin-top: 32px;
     margin-bottom: 60px;
   }
 

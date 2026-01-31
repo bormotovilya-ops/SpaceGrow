@@ -2543,8 +2543,8 @@ function MatrixCalculator() {
         if (data.success && data.pdfUrl) {
           // Показываем модальное окно с информацией о PDF
           console.log('✅ Показываем модальное окно серверной генерации')
-          logEvent('content', 'astrolabe_action', { page: '/alchemy', metadata: { action: 'pdf_download' } })
-          logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy', metadata: { type: 'download', status: 'success' } })
+          logEvent('content', 'astrolabe_action', { page: '/alchemy/astrolabe', section_id: 'alchemy-astrolabe', metadata: { action: 'pdf_download' } })
+          logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy/astrolabe', metadata: { type: 'download', status: 'success' } })
           showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
         } else {
           throw new Error(data.error || 'Неизвестная ошибка')
@@ -2557,8 +2557,8 @@ function MatrixCalculator() {
       }
     } else {
       // Для веб-версии используем локальную генерацию (старый рабочий метод)
-      logEvent('content', 'astrolabe_action', { page: '/alchemy', metadata: { action: 'pdf_download' } })
-      logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy', metadata: { type: 'download', status: 'success' } })
+      logEvent('content', 'astrolabe_action', { page: '/alchemy/astrolabe', section_id: 'alchemy-astrolabe', metadata: { action: 'pdf_download' } })
+      logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy/astrolabe', metadata: { type: 'download', status: 'success' } })
       generatePDF(methodName, methodId, results[methodId], birthDate, soulDetails)
     }
   }

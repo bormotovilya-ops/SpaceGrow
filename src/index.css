@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* === E2: Apple Vision Gradient Premium === */
 
 :root {
@@ -22,6 +26,10 @@
 }
 
 html {
+    width: 100%;
+    min-width: 100%;
+    /* Плавный скролл по якорям (#section_id) */
+    scroll-behavior: smooth;
     /* Скрыть полосу прокрутки, но оставить прокрутку */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE и Edge */
@@ -44,12 +52,15 @@ body {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE и Edge */
 
-    /* Мягкий Vision-фон */
-    background:
-        radial-gradient(circle at 30% 20%, var(--orb-1), transparent 55%),
-        radial-gradient(circle at 70% 75%, var(--orb-2), transparent 55%),
-        radial-gradient(circle at 50% 60%, var(--orb-3), transparent 55%),
-        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    /* Фон с линиями везде одинаковый (как на главной) */
+    background-image:
+        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='grid' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 100 0 L 0 0 0 100' fill='none' stroke='rgba(255,215,0,0.05)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grid)'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 20% 30%, rgba(0, 50, 150, 0.15), transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(139, 69, 139, 0.1), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.08), transparent 60%),
+        linear-gradient(180deg, #000000, #0a0a0f);
+    background-attachment: scroll;
+    min-height: 100vh;
 }
 
 /* Скрыть полосу прокрутки для WebKit браузеров (Chrome, Safari) */
@@ -60,7 +71,8 @@ body::-webkit-scrollbar {
 }
 
 #root {
-    width: 100vw;
+    width: 100%;
+    min-width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
     

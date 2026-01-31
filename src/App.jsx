@@ -1,136 +1,42 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import SalesFunnel from './components/SalesFunnel'
-import CenterPhoto from './components/CenterPhoto'
-import MenuItem from './components/MenuItem'
-import Sidebar from './components/Sidebar'
 import SessionInitializer from './components/SessionInitializer'
+import Sitemap from './components/Sitemap'
+import {
+  HomeRoute,
+  ProfileRoute,
+  DiagnosticsRoute,
+  AlchemyRoute,
+  PersonReportRoute,
+  BlockDetailRoute
+} from './components/RouteWrappers'
 import './App.css'
 
-const menuItems = [
-  {
-    id: 1,
-    image: '/images/item1.jpg',
-    title: '',
-    sidebarTitle: 'Что я делаю',
-    sidebarItems: [
-      'Автоматизированные цепочки продаж',
-      'Сайты и лендинги',
-      'Воронки продаж',
-      'Обучающие курсы (боты/GetCourse)',
-      'Интеграция всех элементов'
-    ]
-  },
-  {
-    id: 2,
-    image: '/images/item2.jpg',
-    title: '',
-    sidebarTitle: 'Портфолио',
-    sidebarItems: [
-      'Реализованные цепочки продаж',
-      'Кейсы онлайн-обучения',
-      'Воронки с результатами',
-      'Интегрированные системы'
-    ]
-  },
-  {
-    id: 3,
-    image: '/images/item3.jpg',
-    title: 'Обо мне',
-    sidebarTitle: 'Отзывы',
-    sidebarItems: [
-      'Клиенты о работе',
-      'Видео-отзывы',
-      'Кейсы до/после',
-      'Результаты проектов'
-    ]
-  },
-  {
-    id: 4,
-    image: '/images/item4.jpg',
-    title: '',
-    sidebarTitle: 'Контакты',
-    sidebarItems: [
-      'Telegram: @ilyaborm',
-      'Канал',
-      'Мой сайт',
-      'VK'
-    ]
-  },
-  {
-    id: 5,
-    image: '/images/item5.jpg',
-    title: 'Бонус',
-    sidebarTitle: 'Обо мне',
-    sidebarItems: [
-      'Архитектор цепочек продаж',
-      'Мой подход',
-      'Философия работы',
-      'Почему это работает'
-    ]
-  },
-  {
-    id: 6,
-    image: '/images/item6.jpg',
-    title: 'Как это работает',
-    sidebarTitle: 'Технологии',
-    sidebarItems: [
-      'Автоматизация процессов',
-      'AI-интеграции',
-      'Telegram-боты',
-      'Платформы обучения',
-      'Аналитика и оптимизация'
-    ]
-  }
-]
+const AppContainer = ({ children }) => (
+  <SessionInitializer>
+    <div className="container">{children}</div>
+  </SessionInitializer>
+)
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [sidebarTitle, setSidebarTitle] = useState('')
-  const [sidebarItems, setSidebarItems] = useState([])
-
-  const handleMenuClick = (title, items) => {
-    setSidebarTitle(title)
-    setSidebarItems(items)
-    setSidebarOpen(true)
-  }
-
-  const handleCloseSidebar = () => {
-    setSidebarOpen(false)
-  }
-
-  // Переключатель между старой версией и воронкой
-  const [showFunnel, setShowFunnel] = useState(true)
-
   return (
-    <SessionInitializer>
-      <div className="container">
-        {showFunnel ? (
-          <SalesFunnel />
-        ) : (
-          <>
-            <CenterPhoto />
-
-            {menuItems.map((item, index) => (
-              <MenuItem
-                key={item.id}
-                image={item.image}
-                title={item.title}
-                index={index}
-                total={menuItems.length}
-                onClick={() => handleMenuClick(item.sidebarTitle, item.sidebarItems)}
-              />
-            ))}
-
-            <Sidebar
-              isOpen={sidebarOpen}
-              title={sidebarTitle}
-              items={sidebarItems}
-              onClose={handleCloseSidebar}
-            />
-          </>
-        )}
-      </div>
-    </SessionInitializer>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/sitemap" element={<Sitemap />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<AppContainer><HomeRoute /></AppContainer>} />
+        <Route path="/profile" element={<AppContainer><ProfileRoute /></AppContainer>} />
+        <Route path="/profile/*" element={<AppContainer><ProfileRoute /></AppContainer>} />
+        <Route path="/diagnostics" element={<AppContainer><DiagnosticsRoute /></AppContainer>} />
+        <Route path="/alchemy" element={<AppContainer><AlchemyRoute /></AppContainer>} />
+        <Route path="/alchemy/:toolId" element={<AppContainer><AlchemyRoute /></AppContainer>} />
+        <Route path="/funnel" element={<AppContainer><SalesFunnel /></AppContainer>} />
+        <Route path="/block/:id" element={<AppContainer><BlockDetailRoute /></AppContainer>} />
+        <Route path="/personreport" element={<AppContainer><PersonReportRoute /></AppContainer>} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

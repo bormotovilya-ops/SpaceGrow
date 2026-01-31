@@ -249,8 +249,10 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
     }
 
     resultsLoggedRef.current = true
-    logEvent('diagnostic', 'test_complete', {
+    const eventName = testName === 'diagnostics' ? 'diagnostics_results_view' : 'ikigai_results_view'
+    logEvent('diagnostic', eventName, {
       page: '/diagnostics',
+      section_id: testName === 'diagnostics' ? 'diagnostics' : 'alchemy-ikigai',
       metadata: {
         test_name: testName,
         total_score: Math.round(totalScore),
@@ -362,8 +364,16 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
     return message
   }
 
-  const handleResultsConsultation = () => {
-    logEvent('cta', 'cta_click', { page: '/diagnostics', metadata: { cta_id: 'diagnostics_consult', label: 'Обсудить план действий', location: 'diagnostics' } })
+  const handleResultsConsultation = async (e) => {
+    const buttonText = e?.target?.innerText?.trim()
+    await logCTAClick('diagnostics_consult', {
+      page: '/diagnostics',
+      section_id: 'diagnostics',
+      cta_opens_tg: true,
+      ctaText: buttonText || 'Обсудить план действий',
+      element_text: buttonText,
+      ctaLocation: 'diagnostics'
+    })
     const calc = calculateResults()
     const rawMessage = formatResultsForTelegram(calc)
     const compactMessage = formatResultsForTelegramCompact(calc)
@@ -375,8 +385,16 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
     yandexMetricaReachGoal(null, 'diagnostics_send_telegram', { to: 'telegram', opened })
   }
 
-  const handleIkigaiDiscuss = () => {
-    logEvent('cta', 'cta_click', { page: '/diagnostics', metadata: { cta_id: 'ikigai_discuss', label: 'Обсудить результат с экспертом', location: 'diagnostics' } })
+  const handleIkigaiDiscuss = async (e) => {
+    const buttonText = e?.target?.innerText?.trim()
+    await logCTAClick('ikigai_discuss', {
+      page: '/diagnostics',
+      section_id: 'alchemy-ikigai',
+      cta_opens_tg: true,
+      ctaText: buttonText || 'Обсудить результат с экспертом',
+      element_text: buttonText,
+      ctaLocation: 'diagnostics'
+    })
     const calc = calculateResults()
     const title = calc.result?.title || 'Икигай'
     const mask = calc.binaryKey || '0000'
@@ -438,6 +456,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
           onAlchemyClick={onAlchemyClick}
           onHomeClick={onHomeClick}
           onChatClick={onChatClick}
+          activeMenuId="diagnostics"
         />
         <div className="diagnostics-intro">
           <div className="diagnostics-intro-content">
@@ -490,6 +509,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
             onAlchemyClick={onAlchemyClick}
             onHomeClick={onHomeClick}
             onChatClick={onChatClick}
+            activeMenuId="diagnostics"
           />
 
           {/* Use canonical diagnostics layout so the results title is consistently
@@ -548,6 +568,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
           onAlchemyClick={onAlchemyClick}
           onHomeClick={onHomeClick}
           onChatClick={onChatClick}
+          activeMenuId="diagnostics"
         />
         <div className="diagnostics-results">
           <div className="diagnostics-results-content">
@@ -705,6 +726,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
         onHomeClick={onHomeClick}
         onAvatarClick={onAvatarClick}
         onChatClick={onChatClick}
+        activeMenuId="diagnostics"
       />
       <div className="diagnostics-question">
         <div className="diagnostics-progress">

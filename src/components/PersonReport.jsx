@@ -7,6 +7,7 @@ import './Visualization.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { getSupabase } from '../utils/supabaseClient'
+import { findSectionByPath } from '../config/sitemapData'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // Helper: get start date for time filter (ISO string or null for "all")
@@ -35,7 +36,7 @@ function stripLeadingEmoji(str) {
 // Technical event names to hide from timeline entirely (we show only custom labels)
 const HIDDEN_EVENT_NAMES = ['personal_path_view', 'astrolabe_pdf_action', 'card_draw']
 
-function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
+function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlchemyClick }) {
   const { logPersonalPathView, getSessionInfo, logContentView } = useLogEvent()
   const [selectedPeriod, setSelectedPeriod] = useState('24h')
   const [reportData, setReportData] = useState(null)
@@ -62,6 +63,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
 
   const handleHeaderConsultation = () => {
     yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'person_report' })
+    if (onDiagnostics) onDiagnostics()
   }
 
   const handleHeaderAvatarClick = () => {
@@ -234,7 +236,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
             const fetchEvents = async (type, mapper = (r) => r, eventName = null) => {
               const q = supabase
                 .from('site_events')
-                .select('created_at,event_name,metadata,page')
+                .select('created_at,event_name,metadata,page,custom_data')
                 .order('created_at', { ascending: false })
                 .limit(200)
 
@@ -294,18 +296,21 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
               timestamp: r.created_at
             }))
 
-            journey.cta_clicks = await fetchEvents('cta_click', (r) => {
+            // event_type в БД — 'cta', event_name — 'cta_click'
+            journey.cta_clicks = await fetchEvents('cta', (r) => {
               const meta = safeParse(r.metadata)
+              const cd = r.custom_data ? (typeof r.custom_data === 'string' ? (r.custom_data ? JSON.parse(r.custom_data) : {}) : r.custom_data) : {}
               return {
                 event_name: r.event_name,
                 metadata: r.metadata,
+                custom_data: cd,
                 cta_text: meta.cta_text ?? meta.button_text ?? null,
                 cta_location: meta.cta_location ?? null,
                 previous_step: meta.previous_step ?? null,
                 step_duration: meta.step_duration ?? 0,
                 timestamp: r.created_at
               }
-            })
+            }, 'cta_click')
 
             // page_view events (event_type 'visit', event_name 'page_view') — universal route tracking
             journey.page_views = await fetchEvents('visit', (r) => ({
@@ -315,11 +320,12 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
               timestamp: r.created_at
             }), 'page_view')
 
-            // content actions: astrolabe_input, astrolabe_action (event_type 'content')
+            // content actions: astrolabe_input, astrolabe_action, section_view (event_type 'content')
             journey.content_actions = await fetchEvents('content', (r) => ({
               event_name: r.event_name,
               metadata: r.metadata,
               page: r.page ?? null,
+              custom_data: r.custom_data ?? null,
               timestamp: r.created_at
             }))
 
@@ -550,11 +556,26 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
     '/chat': '💬 Чат с ИИ-наставником'
   }), [])
 
+  // section_view: section_id → Rich Label (зеркало, астролябия, диагностика, икигай, диалог — выделение + эмодзи)
+  const SECTION_RICH_LABELS = useMemo(() => ({
+    'alchemy-mirror': '🔮 Зеркало вечности',
+    'alchemy-astrolabe': '🧭 Астролябия: Расчёт матрицы',
+    'alchemy-ikigai': '🌸 Тест Икигай',
+    'alchemy-tarot': '🃏 Таро',
+    'alchemy-tests': '📝 Тесты',
+    diagnostics: '🧬 Диагностика'
+  }), [])
+
+  const SECTION_ACTION_IDS = useMemo(() => Object.keys(SECTION_RICH_LABELS), [SECTION_RICH_LABELS])
+
   // Human-readable: event_name (and event_type) → Emoji + Title
   const EVENT_NAME_LABELS = useMemo(() => ({
     // event_name from DB
+    mirror_usage: '🔮 Зеркало вечности (Использование)',
     ai_chat_message: '🤖 Диалог с ИИ',
     test_complete: '🏆 Результат теста',
+    diagnostics_results_view: '🧬 Прошел диагностику',
+    ikigai_results_view: '🌸 Прошел тест Икигай',
     astrolabe_input: '📅 Астролябия: Расчет матрицы',
     astrolabe_action: '📄 Астролябия: Действие',
     alchemy_item_select: '🃏 Алхимия: Выбор предмета',
@@ -647,24 +668,38 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
     if (contentTitle != null && String(contentTitle).trim()) return contentTitle
     return 'Просмотр страницы'
   }
-  const getCtaLabel = (c) => {
-    if (c?.cta_text && String(c.cta_text).trim()) return c.cta_text
+  // Иерархия: custom_data.label (из sitemap/custom_label/кнопки) → cta_text → button_text → cta_location → никогда не прочерк
+  const getCtaLabel = useCallback((c) => {
+    let data = {}
+    try {
+      const cd = c?.custom_data
+      data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : (cd || {})
+    } catch (_) {}
+    const fromData = (data?.label ?? data?.section_label)?.trim()
+    if (fromData) return fromData
+    const fromMeta = (c?.cta_text ?? c?.button_text)?.trim()
+    if (fromMeta) return fromMeta
     if (c?.cta_location != null && LOCATION_NAMES[c.cta_location]) return LOCATION_NAMES[c.cta_location]
-    if (c?.cta_location) return c.cta_location
-    return '—'
-  }
+    if (c?.cta_location) return String(c.cta_location)
+    return 'Связаться в Telegram'
+  }, [LOCATION_NAMES])
   const getCtaLocationLabel = (v) => (v != null && LOCATION_NAMES[v]) ? LOCATION_NAMES[v] : (v || 'Не указано')
   const getPreviousStepLabel = (v) => (v != null && PREVIOUS_STEP_NAMES[v]) ? PREVIOUS_STEP_NAMES[v] : (v || '—')
-  // For page_view events: use path → label mapping; /block/:id uses PAGE_NAMES
-  const getPageViewLabel = (page) => {
+  // For page_view events: path → label; при отсутствии в PAGE_VIEW_LABELS — ищем в sitemapData (напр. /funnel → 📉 Воронка)
+  const getPageViewLabel = useCallback((page) => {
     if (page == null) return '—'
     if (PAGE_VIEW_LABELS[page]) return PAGE_VIEW_LABELS[page]
     if (typeof page === 'string' && page.startsWith('/block/')) {
       const blockId = page.replace('/block/', '')
       return PAGE_NAMES[blockId] ?? blockId
     }
+    const node = findSectionByPath(page)
+    if (node) {
+      const icon = node.icon ?? ''
+      return icon ? `${icon} ${node.label}` : node.label
+    }
     return page
-  }
+  }, [PAGE_VIEW_LABELS, PAGE_NAMES])
 
   // Normalize page/key for same-place comparison (e.g. /report vs personreport)
   const normalizePageKey = (p) => (p == null ? '' : String(p).replace(/^\//, '').toLowerCase())
@@ -700,10 +735,20 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
     items.sort((a, b) => b.ts - a.ts)
 
     // Priority events: ALWAYS standalone, never collapsed (excluded from grouping)
-    const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    const SECTION_ACTION_IDS_SET = ['alchemy-mirror', 'alchemy-astrolabe', 'alchemy-ikigai', 'alchemy-tarot', 'alchemy-tests', 'diagnostics']
     const isPriorityEvent = (item) => {
       const name = item.raw?.event_name
-      return name && PRIORITY_EVENT_NAMES.includes(name)
+      if (name && PRIORITY_EVENT_NAMES.includes(name)) return true
+      if (name === 'section_view') {
+        try {
+          const cd = item.raw?.custom_data
+          const data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : (cd || {})
+          const sid = data?.section_id ?? data?.section
+          return sid && SECTION_ACTION_IDS_SET.includes(sid)
+        } catch (_) {}
+      }
+      return false
     }
     // Get page key for grouping. Only page_view events are grouped by time interval; all others stay individual.
     const getPageKey = (item) => {
@@ -773,8 +818,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
     if (entry.type === 'session_divider') return null
     const raw = entry.raw || {}
     const eventName = raw.event_name
-    // Action events: use EVENT_NAME_LABELS (all new + existing)
-    const actionEventNames = ['test_complete', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    // Action events (реальное использование): ярко, с иконкой и huntStage
+    const actionEventNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'mirror_usage']
     if (eventName && actionEventNames.includes(eventName)) {
       if (eventName === 'astrolabe_action') {
         const meta = safeParseMeta(raw.metadata)
@@ -784,6 +829,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
       return EVENT_NAME_LABELS[eventName] || eventName
     }
     if (entry.type === 'diagnostic' && eventName === 'test_complete') return EVENT_NAME_LABELS.test_complete
+    if (eventName === 'diagnostics_results_view' || eventName === 'ikigai_results_view') return EVENT_NAME_LABELS[eventName]
     // ai_chat_message: conditional label by metadata.context (+ mirror_state if present)
     if (eventName === 'ai_chat_message' || entry.type === 'ai_interaction') {
       const meta = safeParseMeta(raw.metadata)
@@ -800,6 +846,23 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
       const textOnly = stripLeadingEmoji(label).trim()
       if (textOnly === 'Главный экран' || textOnly === 'Главная') return '🏠 Главная'
       return label
+    }
+    // section_view: только пассивный просмотр (скролл) — приоритет "(Просмотр)" для зеркала и т.п.
+    if (entry.type === 'section_view') {
+      const cd = raw.custom_data
+      let data = {}
+      try {
+        data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : (cd || {})
+      } catch (_) {}
+      const sectionId = data?.section_id ?? data?.section
+      if (sectionId === 'alchemy-mirror') return '② 🔮 Разговор с Зеркалом (Просмотр)'
+      if (sectionId && SECTION_RICH_LABELS[sectionId]) return `${SECTION_RICH_LABELS[sectionId]} (Просмотр)`
+      const icon = data.section_icon ?? data.emoji ?? '⚙️'
+      const sectionLabel = data.section_label ?? data.label ?? 'Раздел'
+      const parentLabel = data.parent_label
+      const labelsMatch = parentLabel && String(parentLabel).trim() === String(sectionLabel).trim()
+      if (parentLabel && !labelsMatch) return `${icon} ${parentLabel} > ${sectionLabel} (Просмотр)`
+      return `${icon} ${sectionLabel} (Просмотр)`
     }
     // page_view: always human-readable page name; unify "Главный экран" / "Главная" -> "🏠 Главная"
     if (entry.type === 'page_view') {
@@ -818,13 +881,40 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
       return normalizeHomeLabel(getSectionLabel(raw))
     }
     if (entry.type === 'miniapp_open') return (raw.page && PAGE_NAMES[raw.page]) ? `📱 ${PAGE_NAMES[raw.page]}` : '📱 Открытие MiniApp'
-    if (entry.type === 'cta_click') return getCtaLabel(raw) ? `🎯 ${getCtaLabel(raw)}` : '🎯 Клик'
+    if (entry.type === 'cta_click') {
+      const ctaLabel = getCtaLabel(raw)
+      const meta = safeParseMeta(raw.metadata)
+      const isTgLink = meta?.cta_opens_tg === true || meta?.opens_tg === true
+      const icon = isTgLink ? '📲' : '🎯'
+      return ctaLabel ? `${icon} ${ctaLabel}` : '🎯 Клик'
+    }
     return EVENT_NAME_LABELS[entry.type] || entry.type
-  }, [EVENT_NAME_LABELS, PAGE_NAMES, PAGE_LABELS, CONTENT_ID_TO_PATH, getSectionLabel, getCtaLabel, getPageViewLabel])
+  }, [EVENT_NAME_LABELS, PAGE_NAMES, PAGE_LABELS, CONTENT_ID_TO_PATH, SECTION_RICH_LABELS, getSectionLabel, getCtaLabel, getPageViewLabel])
 
-  // Production-ready: strict dedupe (same event_name + same displayTitle), hide technical events, same-minute flag
+  // Ключ "места" для умной дедупликации: section_id или нормализованный path (единый ключ, чтобы page_view /funnel и section_view funnel считались одним местом)
+  const getSemanticPlaceKey = useCallback((entry) => {
+    if (entry.type === 'section_view' && entry.raw?.custom_data) {
+      try {
+        const data = typeof entry.raw.custom_data === 'string' ? JSON.parse(entry.raw.custom_data) : entry.raw.custom_data
+        const sid = data?.section_id ?? data?.section
+        if (sid) return normalizePageKey(sid.replace(/^section:/, ''))
+      } catch (_) {}
+    }
+    const page = entry.raw?.page ?? entry.raw?.content_id
+    if (page != null) return normalizePageKey(String(page))
+    return null
+  }, [])
+
+  const DEDUPE_WINDOW_MS = 8000
+
+  // Production-ready: strict dedupe; section_view + использование в одном месте/времени → показываем только использование (приоритет)
   const visibleTimeline = useMemo(() => {
+    const INTERACTION_EVENT_NAMES = ['mirror_usage', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view']
+    const isInteractionEvent = (e) => e?.type !== 'session_divider' && (INTERACTION_EVENT_NAMES.includes(e?.raw?.event_name) || e?.type === 'ai_interaction' || (e?.type === 'diagnostic' && ['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(e?.raw?.event_name)))
+
     const out = []
+    const DEDUPE_CTA_MS = 5000
+    const DEDUPE_SECTION_VS_USAGE_MS = 15000
     for (let i = 0; i < activityPathTimeline.length; i++) {
       const entry = activityPathTimeline[i]
       if (entry.type === 'session_divider') {
@@ -834,28 +924,125 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
       if (HIDDEN_EVENT_NAMES.includes(entry.raw?.event_name)) continue
       const displayTitle = getEventDisplayTitle(entry)
       const prev = out[out.length - 1]
+      const placeKey = getSemanticPlaceKey(entry)
+
+      // Если текущее — cta_click, а предыдущее — page_view, то же место и близко по времени: убираем page_view, оставляем только cta_click
+      if (entry.type === 'cta_click' && prev && prev.type !== 'session_divider' && prev.type === 'page_view' && placeKey) {
+        const prevKey = getSemanticPlaceKey(prev)
+        const timeGap = prev.ts != null && entry.ts != null ? Math.abs(prev.ts - entry.ts) : Infinity
+        if (prevKey === placeKey && timeGap <= DEDUPE_CTA_MS) {
+          out.pop()
+        }
+      }
+
+      // Схлопывание в пользу использования: если текущее — section_view, а предыдущее (новее по времени) — взаимодействие (mirror_usage, ai_chat_message и т.д.), то же место и близко по времени — не показываем section_view (оставляем факт использования)
+      if (entry.type === 'section_view' && prev && isInteractionEvent(prev) && placeKey) {
+        const prevKey = getSemanticPlaceKey(prev)
+        const timeGap = prev.ts != null && entry.ts != null ? Math.abs(prev.ts - entry.ts) : Infinity
+        if (prevKey === placeKey && timeGap <= DEDUPE_SECTION_VS_USAGE_MS) continue
+      }
+
+      // Клик «Начать диагностику» поглощает следующий просмотр диагностики: если текущее — section_view (диагностика), а предыдущее — cta_click «Начать диагностику», то же место и близко по времени — скрываем section_view
+      if (entry.type === 'section_view' && prev?.type === 'cta_click' && placeKey) {
+        const prevKey = getSemanticPlaceKey(prev)
+        const timeGap = prev.ts != null && entry.ts != null ? Math.abs(prev.ts - entry.ts) : Infinity
+        const prevLabel = getCtaLabel(prev.raw)
+        const isDiagnosticsStart = prev.raw?.cta_type === 'diagnostics_start' || (prevLabel && (String(prevLabel).includes('Начать диагностику') || String(prevLabel).includes('Экспресс-диагностика')))
+        if (prevKey === placeKey && timeGap <= DEDUPE_CTA_MS && isDiagnosticsStart) continue
+      }
+
+      // Умная дедупликация: тот же section_id или путь, между событиями < 5–10 сек — не рисуем дубль
+      if (prev && prev.type !== 'session_divider' && placeKey) {
+        const prevKey = getSemanticPlaceKey(prev)
+        const timeGap = prev.ts != null && entry.ts != null ? Math.abs(prev.ts - entry.ts) : Infinity
+        if (prevKey === placeKey && timeGap <= DEDUPE_WINDOW_MS) continue
+      }
+
       const sameAsPrev = prev && prev.type !== 'session_divider' &&
         entry.raw?.event_name === prev.raw?.event_name &&
         getEventDisplayTitle(prev) === displayTitle
       if (sameAsPrev) continue
+
+      // Скрытие технических логов: если текущая запись — сырой path (👁 /funnel), а следующая в ленте уже обогащённая (📉 Воронка), не рисуем техническую
+      const isTechnicalPageView = (e) =>
+        e?.type === 'page_view' && e?.raw?.page && getEventDisplayTitle(e) === e.raw.page
+      if (isTechnicalPageView(entry) && prev && getEventDisplayTitle(prev) === getPageViewLabel(entry.raw.page))
+        continue
+
       const prevTs = prev?.ts != null ? prev.ts : null
       const sameMinute = prev && prev.type !== 'session_divider' && entry.type !== 'session_divider' &&
         prevTs != null && Math.floor(prevTs / 60000) === Math.floor(entry.ts / 60000)
       out.push({ ...entry, sameMinuteAsPrevious: !!sameMinute })
     }
-    return out
-  }, [activityPathTimeline, getEventDisplayTitle])
+    // 4. Удаление дубликатов: при cta_click ④📲 не показывать событие 🧬 Диагностика в ту же секунду
+    const isCtaHunt4 = (e) => e?.type === 'cta_click' && (() => { try { const d = typeof e?.raw?.custom_data === 'string' ? JSON.parse(e?.raw?.custom_data || '{}') : (e?.raw?.custom_data || {}); return d?.huntStage === 4 } catch { return false } })()
+    const isDiagnosticsEvent = (e) => {
+      if (e?.type === 'session_divider') return false
+      if (e?.type === 'diagnostic') return true
+      if (e?.type === 'section_view' && e?.raw?.custom_data) {
+        try { const d = typeof e.raw.custom_data === 'string' ? JSON.parse(e.raw.custom_data || '{}') : e.raw.custom_data; return (d?.section_id ?? d?.section) === 'diagnostics' } catch { return false }
+      }
+      return false
+    }
+    const getSec = (ts) => (ts != null ? Math.floor(ts / 1000) : null)
+    const filtered = out.filter((entry) => {
+      if (entry.type === 'session_divider') return true
+      if (!isDiagnosticsEvent(entry)) return true
+      const entrySec = getSec(entry.ts)
+      const hasCtaHunt4SameSec = out.some((o) => o.type !== 'session_divider' && isCtaHunt4(o) && getSec(o.ts) === entrySec)
+      return !hasCtaHunt4SameSec
+    })
+    return filtered
+  }, [activityPathTimeline, getEventDisplayTitle, getSemanticPlaceKey, getPageViewLabel, getCtaLabel])
+
+  // 2. Collapsible: section_view и page_view — компактные строки без деталей; детали только у Interaction
+  const INTERACTION_EVENT_NAMES = useMemo(() => ['mirror_usage', 'ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'], [])
+  const enrichedTimeline = useMemo(() => {
+    return visibleTimeline.map((e) => {
+      const isView = e.type === 'section_view' || e.type === 'page_view' || e.type === 'content_view'
+      const isInteraction = INTERACTION_EVENT_NAMES.includes(e?.raw?.event_name) || e?.type === 'ai_interaction' || (e?.type === 'diagnostic' && ['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(e?.raw?.event_name))
+      const hasExpandableContent = isInteraction || (e?.grouped?.length > 0)
+      const showExpandableDetails = !isView && hasExpandableContent
+      return { ...e, showExpandableDetails }
+    })
+  }, [visibleTimeline, INTERACTION_EVENT_NAMES])
+
+  // huntStage из custom_data для индикатора уровня Ханта (② ③ ④)
+  const getHuntStageFromEntry = useCallback((entry) => {
+    if (entry.type === 'session_divider') return null
+    const cd = entry.raw?.custom_data
+    if (cd == null) return null
+    try {
+      const data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : cd
+      const stage = data?.huntStage
+      return stage >= 1 && stage <= 4 ? stage : null
+    } catch (_) { return null }
+  }, [])
 
   const getEventIcon = useCallback((entry) => {
     if (entry.type === 'session_divider') return '—'
     const raw = entry.raw || {}
+    // section_view: приоритет SECTION_RICH_LABELS (эмодзи из rich label), затем section_icon
+    if (entry.type === 'section_view' && raw.custom_data) {
+      try {
+        const data = typeof raw.custom_data === 'string' ? JSON.parse(raw.custom_data) : raw.custom_data
+        const sectionId = data?.section_id ?? data?.section
+        if (sectionId && SECTION_RICH_LABELS[sectionId]) {
+          const label = SECTION_RICH_LABELS[sectionId]
+          const emoji = label?.match(/^\p{Emoji}/u)?.[0]
+          if (emoji) return emoji
+        }
+        const icon = data?.section_icon ?? data?.emoji
+        if (icon) return icon
+      } catch (_) {}
+    }
     const eventName = raw.event_name
     const label = eventName && EVENT_NAME_LABELS[eventName]
     if (label && /^\p{Emoji}/u.test(label)) return label.match(/^\p{Emoji}\s*/u)?.[0]?.trim() || label.slice(0, 1) || '•'
     const typeLabel = EVENT_NAME_LABELS[entry.type] || ''
     const emoji = typeLabel && typeLabel.length >= 2 ? typeLabel.slice(0, 2) : '•'
     return emoji || '•'
-  }, [EVENT_NAME_LABELS])
+  }, [EVENT_NAME_LABELS, SECTION_RICH_LABELS])
 
   // Content details block under title: test_complete, ai_chat_message, astrolabe_input, snitch/crystal (short preview)
   const getEventContentDetails = useCallback((entry) => {
@@ -863,7 +1050,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
     const raw = entry.raw || {}
     const meta = safeParseMeta(raw.metadata)
     const eventName = raw.event_name
-    if (eventName === 'test_complete' || (entry.type === 'diagnostic' && (raw.event_name === 'test_complete' || meta.total_score != null))) {
+    if (['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(eventName) || (entry.type === 'diagnostic' && (['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(raw.event_name) || meta.total_score != null))) {
       const score = meta.total_score ?? '—'
       const cat = meta.result_category
       const catStr = cat != null && String(cat).trim() !== '' ? cat : null
@@ -886,14 +1073,35 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
     if (eventName === 'alchemy_item_select') return meta.name ? `${meta.type || 'Предмет'}: ${meta.name}` : null
     if (eventName === 'alchemy_interaction') return meta.element ? `Элемент: ${meta.element}` : null
     if (eventName === 'astrolabe_action') return meta.action ? `Действие: ${meta.action}` : null
+    // section_view для приоритетных инструментов (зеркало, астролябия, икигай, диагностика, таро, тесты)
+    if (entry.type === 'section_view') {
+      try {
+        const cd = entry.raw?.custom_data
+        const data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : (cd || {})
+        const sectionId = data?.section_id ?? data?.section
+        const sectionLabel = data?.section_label ?? data?.label
+        if (sectionId && SECTION_ACTION_IDS.includes(sectionId) && sectionLabel)
+          return `Просмотр: ${sectionLabel}`
+      } catch (_) {}
+    }
     return null
-  }, [])
+  }, [SECTION_ACTION_IDS])
 
   const isActionEvent = useCallback((entry) => {
     const name = entry.raw?.event_name
-    const actionNames = ['test_complete', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
-    return (name && actionNames.includes(name)) || entry.type === 'diagnostic' || entry.type === 'ai_interaction'
-  }, [])
+    const actionNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    if (name && actionNames.includes(name)) return true
+    if (entry.type === 'diagnostic' || entry.type === 'ai_interaction') return true
+    if (entry.type === 'section_view') {
+      try {
+        const cd = entry.raw?.custom_data
+        const data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : (cd || {})
+        const sectionId = data?.section_id ?? data?.section
+        return sectionId && SECTION_ACTION_IDS.includes(sectionId)
+      } catch (_) {}
+    }
+    return false
+  }, [SECTION_ACTION_IDS])
 
   // Extract user_message, ai_response, context for ai_chat_message (chat bubble preview). Always return data for ai_chat_message so the container renders.
   const getAiChatPreview = useCallback((entry) => {
@@ -976,6 +1184,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
         onConsultation={handleHeaderConsultation}
         onBack={onBack}
         onHomeClick={handleHeaderHomeClick}
+        onAlchemyClick={onAlchemyClick}
         activeMenuId="person_report"
       />
 
@@ -1105,11 +1314,11 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {visibleTimeline.length > 0 && (
+                {enrichedTimeline.length > 0 && (
                   <div className="journey-timeline">
                     <h4 className="journey-timeline-title">Маршрут активности</h4>
                     <ul className="journey-timeline-list" aria-label="Хронология событий">
-                      {visibleTimeline.map((entry, index) => {
+                      {enrichedTimeline.map((entry, index) => {
                         if (entry.type === 'session_divider') {
                           return (
                             <li key={`divider-${index}`} className="journey-session-divider" role="separator">
@@ -1144,19 +1353,38 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
                         const isExpanded = expandedRow === index
                         const toggleExpanded = () => setExpandedRow((prev) => (prev === index ? null : index))
                         const alchemyEventNames = ['alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
-                        const isAlchemyEvent = alchemyEventNames.includes(entry.raw?.event_name)
+                        let isAlchemyEvent = alchemyEventNames.includes(entry.raw?.event_name)
+                        if (!isAlchemyEvent && entry.type === 'section_view' && entry.raw?.custom_data) {
+                          try {
+                            const cd = entry.raw.custom_data
+                            const data = typeof cd === 'string' ? (cd ? JSON.parse(cd) : {}) : (cd || {})
+                            const sid = data?.section_id ?? data?.section
+                            isAlchemyEvent = sid && sid.startsWith('alchemy-')
+                          } catch (_) {}
+                        }
+                        const huntStage = getHuntStageFromEntry(entry)
+                        const isStage4Conversion = huntStage === 4 && entry.type === 'cta_click'
+                        const huntBadge = huntStage != null ? (
+                          <span className="journey-event-hunt-badge" title={`Уровень Ханта: ${huntStage}`} aria-hidden>
+                            {[null, '①', '②', '③', '④'][huntStage] ?? `[H${huntStage}]`}
+                          </span>
+                        ) : null
+                        const isCtaClick = entry.type === 'cta_click'
+                        const isSectionView = entry.type === 'section_view'
+                        const showExpandableDetails = entry.showExpandableDetails !== false
+                        const RowWrapper = showExpandableDetails ? 'button' : 'div'
+                        const rowProps = showExpandableDetails
+                          ? { type: 'button', onClick: toggleExpanded, 'aria-expanded': isExpanded, 'aria-controls': `event-details-${index}` }
+                          : {}
                         return (
                           <li
                             key={`${entry.type}-${entry.ts}-${index}`}
-                            className={`journey-event-card ${actionEvent ? 'journey-event-card--action' : 'journey-event-card--nav'} ${isAlchemyEvent ? 'journey-event-card--alchemy' : ''}`}
+                            className={`journey-event-card ${actionEvent ? 'journey-event-card--action' : 'journey-event-card--nav'} ${isAlchemyEvent ? 'journey-event-card--alchemy' : ''} ${isCtaClick ? 'journey-event-card--cta' : ''} ${isSectionView ? 'journey-event-card--section-view' : ''} ${isStage4Conversion ? 'journey-event-card--stage4' : ''}`}
                           >
-                            <button
-                              type="button"
-                              className={`event-row ${entry.type === 'page_view' ? 'event-row--nav' : ''}`}
-                              onClick={toggleExpanded}
-                              aria-expanded={isExpanded}
-                              aria-controls={`event-details-${index}`}
-                              id={`event-row-${index}`}
+                            <RowWrapper
+                              {...rowProps}
+                              id={showExpandableDetails ? `event-row-${index}` : undefined}
+                              className={`event-row ${entry.type === 'page_view' ? 'event-row--nav' : ''} ${isCtaClick ? 'event-row--cta' : ''} ${isSectionView ? 'event-row--section-view' : ''} ${isStage4Conversion ? 'event-row--stage4' : ''} ${!showExpandableDetails ? 'event-row--compact' : ''}`}
                             >
                               <div className="journey-event-left">
                                 {sameMinuteAsPrevious ? (
@@ -1164,6 +1392,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
                                 ) : (
                                   <span className="journey-event-time">{timeDisplay}</span>
                                 )}
+                                {huntBadge}
                                 <span className="journey-event-icon" aria-hidden>{icon}</span>
                               </div>
                               <div className="journey-event-center">
@@ -1174,9 +1403,10 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
                               </div>
                               <div className="journey-event-right">
                                 {secondary && !tinySummary && <span className="journey-event-secondary">{secondary}</span>}
-                                <span className={`event-row-chevron ${isExpanded ? 'expanded' : ''}`} aria-hidden>▼</span>
+                                {showExpandableDetails && <span className={`event-row-chevron ${isExpanded ? 'expanded' : ''}`} aria-hidden>▼</span>}
                               </div>
-                            </button>
+                            </RowWrapper>
+                            {showExpandableDetails && (
                             <div
                               id={`event-details-${index}`}
                               className={`event-details-expanded ${isExpanded ? 'event-details-expanded--open' : ''}`}
@@ -1206,7 +1436,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
                                       )}
                                     </div>
                                   )}
-                                  {(entry.raw?.event_name === 'test_complete' || entry.type === 'diagnostic') && (() => {
+                                  {['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(entry.raw?.event_name) && entry.type === 'diagnostic' && (() => {
                                     const meta = safeParseMeta(entry.raw?.metadata)
                                     const critical = meta.critical_zones ?? []
                                     const unstable = meta.unstable_zones ?? []
@@ -1326,12 +1556,13 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick }) {
                                       </ul>
                                     </div>
                                   )}
-                                  {!chatPreview && !['test_complete', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'].includes(entry.raw?.event_name) && !entry.grouped?.length && contentDetails && (
+                                  {!chatPreview && !['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'].includes(entry.raw?.event_name) && !entry.grouped?.length && contentDetails && (
                                     <div className="event-details-content"><p className="journey-event-details">{contentDetails}</p></div>
                                   )}
                                 </>
                               )}
                             </div>
+                            )}
                           </li>
                         )
                       })}

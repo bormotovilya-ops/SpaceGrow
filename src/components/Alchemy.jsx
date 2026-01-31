@@ -1,18 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import Header from './Header'
 import MatrixCalculator from './MatrixCalculator'
 import Diagnostics from './Diagnostics'
 import IKIGAI_TEST from '../../scripts/ikigai.json'
 import './Alchemy.css'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
 
 const MAX_METADATA_TEXT = 1000
 const truncateForMetadata = (s) => (s == null ? '' : String(s).substring(0, MAX_METADATA_TEXT))
 
+const ROUTED_TOOLS = ['tarot', 'astrolabe', 'tests', 'ikigai', 'mirror']
+
 function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
-  const { logContentView, logEvent } = useLogEvent()
-  const [selectedArtifact, setSelectedArtifact] = useState(null)
-  const [activeCrystalTest, setActiveCrystalTest] = useState(null) // <-- ВСТ
+  const { toolId } = useParams()
+  const navigate = useNavigate()
+  const { logContentView, logEvent, logCTAClick, trackSectionView } = useLogEvent()
+  const [localArtifact, setLocalArtifact] = useState(null)
+  const selectedArtifact = toolId
+    ? (toolId === 'tests' || toolId === 'ikigai' ? 'crystal' : toolId)
+    : localArtifact
+  const activeCrystalTest = toolId === 'ikigai' ? 'ikigai' : null
   const [isDarkMode, setIsDarkMode] = useState(false) // Для свечи - черный фон
   const [userQuestion, setUserQuestion] = useState('')
   const [numberInput, setNumberInput] = useState('')
@@ -48,6 +57,18 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   useEffect(() => {
     logContentView('page', 'alchemy', { content_title: 'Цифровая Алхимия' })
   }, [logContentView])
+
+  useEffect(() => {
+    trackSectionView(toolId ? `alchemy-${toolId}` : 'alchemy')
+  }, [toolId, trackSectionView])
+
+  useEffect(() => {
+    if (toolId && !ROUTED_TOOLS.includes(toolId)) {
+      navigate('/alchemy', { replace: true })
+    }
+  }, [toolId, navigate])
+
+  useHashSectionScroll({ clearAfterScroll: true })
 
   // Получаем имя пользователя из Telegram
   useEffect(() => {
@@ -101,25 +122,30 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   }
 
   const handleArtifactClick = (artifact) => {
-    setSelectedArtifact(artifact)
+    if (artifact === 'tarot') {
+      navigate('/alchemy/tarot')
+    } else if (artifact === 'astrolabe') {
+      navigate('/alchemy/astrolabe')
+    } else if (artifact === 'crystal') {
+      navigate('/alchemy/tests')
+    } else if (artifact === 'mirror') {
+      navigate('/alchemy/mirror')
+    } else {
+      setLocalArtifact(artifact)
+    }
     if (artifact === 'candle' || artifact === 'chalice' || artifact === 'hourglass') {
       logEvent('alchemy', 'alchemy_interaction', { page: '/alchemy', metadata: { element: artifact } })
     }
-    // Для свечи - переключаем темный режим
     if (artifact === 'candle') {
       setIsDarkMode(true)
     } else {
       setIsDarkMode(false)
     }
-    
-    // При открытии блока "Расклад судьбы" сбрасываем состояние карт
     if (artifact === 'tarot') {
       setSelectedCardIndex(null)
       setFlippedCards([false, false, false])
       setTarotCard(null)
     }
-
-    // Плавная прокрутка к action-zone
     setTimeout(() => {
       const actionZone = document.getElementById('action-zone')
       if (actionZone) {
@@ -129,12 +155,12 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   }
 
   const handleBackToTable = () => {
-    // Проверяем, возвращаемся ли мы из блока свечи
     const wasCandle = selectedArtifact === 'candle'
-
-    // Сначала сбрасываем состояние
-    setSelectedArtifact(null)
-    setActiveCrystalTest(null) // Сбрасываем активный тест кристалла
+    if (toolId) {
+      navigate('/alchemy')
+      return
+    }
+    setLocalArtifact(null)
     setIsDarkMode(false)
     
     // Очищаем сообщения зеркала при возврате к столу
@@ -301,13 +327,16 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         console.log('🧹 Очищенный ответ:', cleanedResponse.substring(0, 100) + '...')
         setMirrorMessages(prev => [...prev, { role: 'assistant', content: cleanedResponse }])
         logEvent('content', 'mirror_usage', {
-          page: '/alchemy',
-          metadata: { result_text: truncateForMetadata(cleanedResponse) }
+          page: '/alchemy/mirror',
+          section_id: 'alchemy-mirror',
+          metadata: { is_interaction: true, result_text: truncateForMetadata(cleanedResponse) }
         })
         logEvent('ai', 'ai_chat_message', {
-          page: '/alchemy',
+          page: '/alchemy/mirror',
+          section_id: 'alchemy-mirror',
           metadata: {
             context: 'mirror_of_eternity',
+            is_interaction: true,
             user_message: truncateForMetadata(userQuestion),
             ai_response: truncateForMetadata(cleanedResponse),
             mirror_state: userMessageCount
@@ -318,9 +347,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         const fallbackContent = 'Не удалось получить ответ. Попробуйте еще раз или свяжитесь напрямую: @ilyaborm в Telegram.'
         setMirrorMessages(prev => [...prev, { role: 'assistant', content: fallbackContent }])
         logEvent('ai', 'ai_chat_message', {
-          page: '/alchemy',
+          page: '/alchemy/mirror',
+          section_id: 'alchemy-mirror',
           metadata: {
             context: 'mirror_of_eternity',
+            is_interaction: true,
             user_message: truncateForMetadata(userQuestion),
             ai_response: truncateForMetadata(fallbackContent),
             mirror_state: userMessageCount
@@ -336,9 +367,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       const networkErrorContent = `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
       setMirrorMessages(prev => [...prev, { role: 'assistant', content: networkErrorContent }])
       logEvent('ai', 'ai_chat_message', {
-        page: '/alchemy',
+        page: '/alchemy/mirror',
+        section_id: 'alchemy-mirror',
         metadata: {
           context: 'mirror_of_eternity',
+          is_interaction: true,
           user_message: truncateForMetadata(userQuestion),
           ai_response: truncateForMetadata(networkErrorContent),
           mirror_state: userMessageCount
@@ -398,7 +431,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
   const handleCrystalTestClick = (testId, testTitle) => {
     logEvent('alchemy', 'crystal_action', { page: '/alchemy', metadata: { test_name: testTitle } })
-    if (testId === 'ikigai') setActiveCrystalTest('ikigai')
+    if (testId === 'ikigai') navigate('/alchemy/ikigai')
     else alert('Этот тест в разработке')
   }
 
@@ -982,7 +1015,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
             return (
               <Diagnostics
                 customStages={IKIGAI_TEST}
-                onBackToCrystal={() => setActiveCrystalTest(null)}
+                onBackToCrystal={() => navigate('/alchemy/tests')}
               />
             );
           }
@@ -1020,7 +1053,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                 </div>
         
                 {/* КАРТОЧКА 4: ВАШ ТЕСТ */}
-                <div className="test-card custom-request" onClick={() => { logEvent('alchemy', 'crystal_action', { page: '/alchemy', metadata: { test_name: 'Свой вариант' } }); window.open('https://t.me/ilyaborm', '_blank') }}>
+                <div className="test-card custom-request" onClick={async () => {
+                  await logCTAClick('alchemy_custom_test', { page: '/alchemy', section_id: 'alchemy-tests', cta_opens_tg: true, ctaText: 'Свой вариант', ctaLocation: 'alchemy' })
+                  window.open('https://t.me/ilyaborm', '_blank')
+                }}>
                   <div className="test-card-icon">✨</div>
                   <h3 className="test-card-title">Свой вариант</h3>
                   <p className="test-card-desc">Разработаем уникальную механику под вашу методологию.</p>
@@ -1211,7 +1247,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       <>
         <Diagnostics
           customStages={IKIGAI_TEST}
-          onBack={() => setActiveCrystalTest(null)}
+          onBack={() => navigate('/alchemy/tests')}
           onAvatarClick={onAvatarClick}
           onChatClick={onChatClick}
           onHomeClick={onHomeClick}

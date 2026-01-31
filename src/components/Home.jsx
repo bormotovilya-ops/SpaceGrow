@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Header from './Header'
 import './Home.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
 
 function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClick }) {
-  const { logContentView, logCTAClick } = useLogEvent()
+  const { logContentView, logCTAClick, trackSectionView } = useLogEvent()
   const [expandedFaq, setExpandedFaq] = useState(null)
+  const trackedSectionsRef = useRef(new Set())
+
+  useHashSectionScroll({ clearAfterScroll: true })
 
   useEffect(() => {
     yandexMetricaReachGoal(null, 'home_page_view')
@@ -16,6 +20,28 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
   useEffect(() => {
     logContentView('page', 'home', { content_title: 'Главная' })
   }, [logContentView])
+
+  useEffect(() => {
+    trackSectionView('main')
+  }, [trackSectionView])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          const sectionId = entry.target.getAttribute('data-section-id')
+          if (!sectionId || trackedSectionsRef.current.has(sectionId)) return
+          trackedSectionsRef.current.add(sectionId)
+          trackSectionView(sectionId)
+        })
+      },
+      { rootMargin: '0px 0px -20% 0px', threshold: 0.8 }
+    )
+    const nodes = document.querySelectorAll('[data-section-id]')
+    nodes.forEach((el) => observer.observe(el))
+    return () => nodes.forEach((el) => observer.unobserve(el))
+  }, [trackSectionView])
 
   const handleCardClick = (cardType, action) => {
     yandexMetricaReachGoal(null, 'home_card_click', { cardType })
@@ -80,13 +106,23 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
       />
 
       <div className="home-content">
-        {/* Main Offer Section */}
+        {/* Main Offer Section — 1.1 Заголовок */}
         <motion.div 
+          id="main-header"
           className="home-hero"
+          data-section-id="main-header"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
+          <div className="home-hero-title-wrap">
+            <h1 className="home-hero-title">
+              Прокачаем IT-движок вашего бизнеса!<br/>                
+            </h1>
+            <div className="home-hero-badge-wrap">
+              <span className="value-badge">🎓 Для экспертов и создателей онлайн-школ</span>
+            </div>
+          </div>
           <div className="home-hero-content">
             <div className="home-hero-image">
               <img 
@@ -96,12 +132,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
               />
             </div>
             <div className="home-hero-text">
-              <h1 className="home-hero-title">
-                Прокачаем IT-движок вашего бизнеса!<br/>                
-              </h1>
-              
               <div className="home-hero-value">
-                <span className="value-badge">🎓 Для экспертов и создателей онлайн-школ</span>
                 <div className="home-hero-subtitle">
                   <p className="subtitle-paragraph">
                     Если ваш бизнес — это эскалатор идущий вниз, значит пора задуматься об эффективности используемых технологий              
@@ -120,9 +151,11 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           </div>
         </motion.div>
 
-        {/* About Me Block */}
+        {/* About Me Block — 1.2 Приветствие */}
         <motion.div 
+          id="main-greeting"
           className="home-about"
+          data-section-id="main-greeting"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -138,9 +171,11 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           </div>
         </motion.div>
 
-        {/* Stats Section */}
+        {/* Stats Section — 1.3 Достижения */}
         <motion.div 
+          id="main-achievements"
           className="home-stats"
+          data-section-id="main-achievements"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -162,9 +197,11 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           </div>
         </motion.div>
 
-        {/* User Journey */}
+        {/* User Journey — 1.4 Ваш путь к автоматизации */}
         <motion.div 
+          id="main-automation"
           className="home-journey"
+          data-section-id="main-automation"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
@@ -191,9 +228,11 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           </div>
         </motion.div>
 
-        {/* Navigation Grid */}
+        {/* Navigation Grid — 1.5 Навигация (Ключевые разделы) */}
         <motion.div 
+          id="main-nav"
           className="home-cards"
+          data-section-id="main-nav"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.7 }}
@@ -311,9 +350,11 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           </div>
         </motion.div>
 
-        {/* FAQ Section */}
+        {/* FAQ Section — 1.6 Частые вопросы */}
         <motion.div 
+          id="main-faq"
           className="home-faq"
+          data-section-id="main-faq"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1 }}
@@ -369,9 +410,11 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           </button>
         </motion.div>
 
-        {/* Footer with Contacts */}
+        {/* Footer — 1.7 Контакты, 1.8 Документы/согласия */}
         <motion.div 
+          id="main-contacts"
           className="home-footer"
+          data-section-id="main-contacts"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.1 }}
@@ -389,20 +432,40 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
                 <span>bormotovilya@gmail.com</span>
               </a>
               
-              <a href="https://t.me/ilyaborm" target="_blank" rel="noopener noreferrer" className="home-footer-contact">
+              <a
+                href="https://t.me/ilyaborm"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="home-footer-contact"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  await logCTAClick('footer_telegram', { section_id: 'main-contacts', page: '/home', cta_opens_tg: true, ctaText: '@ilyaborm', ctaLocation: 'home_footer' })
+                  window.open('https://t.me/ilyaborm', '_blank')
+                }}
+              >
                 <span className="home-footer-icon">
                   <img src="/images/telegram-icon.png" alt="Telegram" className="home-footer-telegram-icon" />
                 </span>
                 <span>@ilyaborm</span>
               </a>
               
-              <a href="https://t.me/SoulGuideIT" target="_blank" rel="noopener noreferrer" className="home-footer-contact">
+              <a
+                href="https://t.me/SoulGuideIT"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="home-footer-contact"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  await logCTAClick('footer_telegram', { section_id: 'main-contacts', page: '/home', cta_opens_tg: true, ctaText: '@SoulGuideIT', ctaLocation: 'home_footer' })
+                  window.open('https://t.me/SoulGuideIT', '_blank')
+                }}
+              >
                 <span className="home-footer-icon">📢</span>
                 <span>@SoulGuideIT</span>
               </a>
             </div>
             
-            <div className="home-footer-links">
+            <div id="main-docs" className="home-footer-links" data-section-id="main-docs">
               <a 
                 href="https://docs.google.com/document/d/1rdhH5IrwNAW9O_Vj_aFamzBzqMLMlQ-B/edit?usp=sharing&ouid=117665820562834516912&rtpof=true&sd=true" 
                 target="_blank" 

@@ -1,8 +1,15 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useLogEvent } from '../hooks/useLogEvent'
 import './Funnel3D.css'
 
 const Funnel3D = ({ results }) => {
+  const { trackSectionView } = useLogEvent()
+
+  useEffect(() => {
+    trackSectionView('funnel')
+  }, [trackSectionView])
+
   // Состояние для отслеживания ошибок загрузки изображений
   const [imageErrors, setImageErrors] = useState({})
 

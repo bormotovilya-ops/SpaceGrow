@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Header from './Header'
 import './Profile.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
 
 // Импорт изображений технологического стека
 import img11 from '../assets/images/11.png'
@@ -14,8 +15,9 @@ import img44 from '../assets/images/44.png'
 const MAX_METADATA_TEXT = 1000
 const truncateForMetadata = (s) => (s == null ? '' : String(s).substring(0, MAX_METADATA_TEXT))
 
-function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick }) {
-  const { logContentView, logEvent } = useLogEvent()
+function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick, onPersonReport }) {
+  const { logContentView, logEvent, logCTAClick, trackSectionView } = useLogEvent()
+  const trackedSectionsRef = useRef(new Set())
   // Добавляем пятый слот для блока персонального отчета
   const [typingMessages, setTypingMessages] = useState([false, false, false, false, false]) // Показывать многоточие
   const [visibleMessages, setVisibleMessages] = useState([false, false, false, false, false]) // Показывать текст
@@ -29,17 +31,49 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     logContentView('page', 'profile', { content_title: 'Профиль (Илья Бормотов)' })
   }, [logContentView])
 
+  useEffect(() => {
+    trackSectionView('profile')
+  }, [trackSectionView])
+
+  // Трекинг секций при скролле: data-section-id должен совпадать с id или matchId в sitemapData
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          const sectionId = entry.target.getAttribute('data-section-id')
+          if (!sectionId || trackedSectionsRef.current.has(sectionId)) return
+          trackedSectionsRef.current.add(sectionId)
+          trackSectionView(sectionId)
+        })
+      },
+      { rootMargin: '0px 0px -20% 0px', threshold: 0.8 }
+    )
+    const nodes = document.querySelectorAll('[data-section-id]')
+    nodes.forEach((el) => observer.observe(el))
+    return () => nodes.forEach((el) => observer.unobserve(el))
+  }, [trackSectionView])
+
+  useHashSectionScroll({ clearAfterScroll: true })
+
   const handleHeaderConsultation = () => {
     // Top CTA in Header must always open Diagnostics.
     yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'profile' })
     if (onDiagnostics) onDiagnostics()
   }
 
-  const handleConsultation = () => {
+  const handleConsultation = async (e) => {
     const url = 'https://t.me/ilyaborm'
-    // IMPORTANT: open synchronously on click (user gesture).
+    const buttonText = e?.target?.innerText?.trim()
+    await logCTAClick('profile_consultation', {
+      section_id: 'profile-cta',
+      page: '/profile',
+      cta_opens_tg: true,
+      ctaText: buttonText || 'Получить бесплатную консультацию',
+      element_text: buttonText,
+      ctaLocation: 'profile'
+    })
     const opened = openTelegramLink(url)
-    // Then send analytics without blocking navigation.
     yandexMetricaReachGoal(null, 'profile_consultation_click', { to: 'telegram', url, opened })
   }
 
@@ -336,8 +370,8 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
       
       <div className="profile-content">
         <div className="profile-sections">
-          {/* Описание про АИЦП */}
-          <section className="profile-section profile-intro-section">
+          {/* Описание про АИЦП — Приветствие + диалог с ИИ */}
+          <section id="profile-greeting" className="profile-section profile-intro-section" data-section-id="profile-greeting">
             <div className="profile-intro-content">
               <div className="profile-dialog-container">
                 <div className="profile-avatar-wrapper">
@@ -418,15 +452,13 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                       <p>Я знаю о поведении пользователей на своих сайтах всё! 🤫 Не верите? Нажмите и убедитесь! 👇</p>
                     ) : null}
                   </div>
-                  <div className={`dialog-message ${visibleMessages[4] ? 'visible' : ''}`}>
+                  <div id="profile-report" className={`dialog-message ${visibleMessages[4] ? 'visible' : ''}`} data-section-id="profile-report">
                     {visibleMessages[4] && (
                       <button
                         className="dialog-button"
                         onClick={() => {
-                          if (onHomeClick) {
-                            // Navigate to PersonReport by setting hash
-                            window.location.hash = 'personreport'
-                          }
+                          if (onPersonReport) onPersonReport()
+                          else if (onHomeClick) onHomeClick()
                         }}
                       >
                         Посмотреть мой персональный отчет
@@ -436,8 +468,8 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                 </div>
               </div>
 
-              {/* Поле ввода для вопросов */}
-              <div className="profile-chat-input-container">
+              {/* Поле ввода для вопросов — Диалог с ИИ */}
+              <div id="profile-ai" className="profile-chat-input-container" data-section-id="profile-ai">
                 <input
                   type="text"
                   className="profile-chat-input"
@@ -468,7 +500,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Кейсы */}
-          <section className="profile-section">
+          <section id="profile-cases" className="profile-section" data-section-id="profile-cases">
             <h2>Кейсы</h2>
             <div className="cases-cards-grid">
               {/* Карточка 1: Инфобизнес и EdTech */}
@@ -605,7 +637,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Компетенции */}
-          <section className="profile-section">
+          <section id="profile-tech" className="profile-section" data-section-id="profile-tech">
             <h2>Технологический стек</h2>
             <div className="tech-stack-grid">
               <div className={`tech-stack-card ${expandedTechStack[0] ? 'expanded' : ''}`}>
@@ -716,7 +748,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Достижения */}
-          <section className="profile-section">
+          <section id="profile-achievements" className="profile-section" data-section-id="profile-achievements">
             <h2>Достижения</h2>
             <div className="achievements-grid">
               <div className="achievement-card">
@@ -743,7 +775,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Подход */}
-          <section className="profile-section">
+          <section id="profile-approach" className="profile-section" data-section-id="profile-approach">
             <h2>Мой подход</h2>
             <div className="approach-list">
               <div className="approach-item">
@@ -786,7 +818,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Контакты */}
-          <section className="profile-section">
+          <section id="profile-contacts" className="profile-section" data-section-id="profile-contacts">
             <h2>Контакты</h2>
             <div className="contacts-list">
               <a href="tel:+79991237788" className="contact-line">
@@ -824,7 +856,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Реквизиты */}
-          <section className="profile-section">
+          <section id="profile-requisites" className="profile-section" data-section-id="profile-requisites">
             <h2>Реквизиты организации</h2>
             <div className="requisites-info">
               <div className="requisite-item">
@@ -846,7 +878,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
           </section>
 
           {/* Кнопка консультации */}
-          <div className="consultation-section">
+          <div id="profile-cta" className="consultation-section" data-section-id="profile-cta">
             <button className="profile-consultation-btn" onClick={handleConsultation}>
               Получить бесплатную консультацию
             </button>

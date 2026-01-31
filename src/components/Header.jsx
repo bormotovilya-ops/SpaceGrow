@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import './Header.css'
 
 function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeClick, activeMenuId }) {
+  const location = useLocation()
+  const pathname = location?.pathname ?? ''
+
+  // Подсветка по пути, если activeMenuId не передан (напр. Цифровая Алхимия, Диагностика)
+  const derivedActiveId = pathname.startsWith('/alchemy') ? 'alchemy'
+    : pathname.startsWith('/diagnostics') ? 'diagnostics'
+    : pathname === '/home' ? 'home'
+    : pathname.startsWith('/profile') ? 'profile'
+    : pathname.startsWith('/funnel') || pathname.startsWith('/block') ? 'portal'
+    : null
+  const resolvedActiveId = activeMenuId ?? derivedActiveId
+
   const greetingMessages = [
     'Добрый день, я Илья!',
     'Улучшаю онлайн-обучение',
@@ -37,7 +50,7 @@ function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeC
           {menuItems.map((item) => (
             <button
               key={item.id}
-              className={`header-menu-item ${item.highlight ? 'header-menu-item-highlight' : ''} ${item.isProfile ? 'header-menu-item-profile' : ''} ${activeMenuId === item.id ? 'active' : ''}`}
+              className={`header-menu-item ${item.highlight ? 'header-menu-item-highlight' : ''} ${item.isProfile ? 'header-menu-item-profile' : ''} ${resolvedActiveId === item.id ? 'active' : ''}`}
               onClick={(e) => {
                 // Provide a safe fallback so menu items remain interactive even if
                 // a specific handler wasn't passed from the parent component.
