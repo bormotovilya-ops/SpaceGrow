@@ -2,12 +2,24 @@ import os
 import logging
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ApplicationHandlerStop
 from db import Database
 from notifications import NotificationService
+from settings_manager import SettingsManager, BotSettingKeys
 
 # Загружаем переменные окружения
 load_dotenv()
+
+# Админ для обхода режима техработ
+ADMIN_USERNAME = "ilyaborm"
+
+# Контакт поддержки по умолчанию (если в БД пусто)
+DEFAULT_SUPPORT_CONTACT = (
+    "Telegram: @ilyaborm\n"
+    "Канал: @SoulGuideIT\n"
+    "Email: bormotovilya@gmail.com"
+)
+DEFAULT_SUPPORT_CONTACT_WITH_PHONE = DEFAULT_SUPPORT_CONTACT + "\nТелефон: +7 (999) 123-77-88"
 
 # Настройка логирования (вывод в консоль и файл)
 log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -28,12 +40,39 @@ MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrow.vercel.app/')
 # Инициализация БД и сервиса уведомлений
 db = Database()
 notification_service = None  # Инициализируется после создания бота
+settings_manager = None  # Инициализируется в main() после создания приложения
+
+async def maintenance_check_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Обработчик группы -1: проверка режима техработ до любых других команд.
+    Если APP_MAINTENANCE включён и пользователь не админ — отправляет сообщение
+    и останавливает цепочку обработчиков (ApplicationHandlerStop).
+    """
+    user = update.effective_user
+    name = (user.first_name or user.username or user.id) if user else "неизвестный"
+    logger.info("Проверяю техработы для юзера: %s", name)
+
+    sm = context.application.bot_data.get("settings_manager") if context and context.application else None
+    if not sm:
+        return
+    raw = await sm.get_setting(BotSettingKeys.APP_MAINTENANCE)
+    logger.info("Статус техработ в базе сейчас: %s", raw)
+
+    is_on = raw in (True, "true", "1", "yes", "on") or (isinstance(raw, str) and raw.strip().lower() in ("true", "1", "yes", "on"))
+    if not is_on:
+        return
+    if user and getattr(user, "username", None) == ADMIN_USERNAME:
+        return
+    msg = update.effective_message
+    if msg:
+        await msg.reply_text("🛠 Ведутся технические работы. Бот временно недоступен.")
+    raise ApplicationHandlerStop
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /start"""
     user = update.effective_user
-    
+
     # Создаем/обновляем пользователя в БД
     db.create_or_update_user(
         user_id=user.id,
@@ -108,7 +147,7 @@ async def handle_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def diagnostics_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Открыть диагностику"""
     user = update.effective_user
-    
+
     # Отмечаем, что пользователь начал диагностику
     db.mark_diagnostics_started(user.id)
     
@@ -133,9 +172,9 @@ async def diagnostics_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Показать статистику из базы данных (только для владельца)"""
     user = update.effective_user
-    
-    # Проверяем, что команда доступна только для @ilyaborm
-    if user.username != 'ilyaborm':
+
+    # Проверяем, что команда доступна только для админа
+    if user.username != ADMIN_USERNAME:
         await update.message.reply_text(
             "❌ Эта команда доступна только администратору."
         )
@@ -143,46 +182,16 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
     
     try:
-        # Получаем статистику из БД
-        conn = db.get_connection()
-        cursor = conn.cursor()
-        
-        # Общая статистика
-        cursor.execute('SELECT COUNT(*) as total FROM users')
-        total = cursor.fetchone()['total']
-        
-        cursor.execute('SELECT COUNT(*) as started FROM users WHERE has_started_diagnostics = 1')
-        started = cursor.fetchone()['started']
-        
-        cursor.execute('SELECT COUNT(*) as first_sent FROM users WHERE first_reminder_sent = 1')
-        first_sent = cursor.fetchone()['first_sent']
-        
-        cursor.execute('SELECT COUNT(*) as second_sent FROM users WHERE second_reminder_sent = 1')
-        second_sent = cursor.fetchone()['second_sent']
-        
-        # Пользователи ожидающие первого напоминания
-        cursor.execute('''
-            SELECT COUNT(*) as pending 
-            FROM users 
-            WHERE has_started_diagnostics = 0 
-            AND first_reminder_sent = 0
-            AND started_at IS NOT NULL
-            AND datetime(started_at, '+10 minutes') <= datetime('now')
-        ''')
-        pending_first = cursor.fetchone()['pending']
-        
-        # Последние 5 пользователей
-        cursor.execute('''
-            SELECT user_id, first_name, username, has_started_diagnostics, 
-                   first_reminder_sent, started_at
-            FROM users
-            ORDER BY created_at DESC
-            LIMIT 5
-        ''')
-        recent_users = cursor.fetchall()
-        
-        conn.close()
-        
+        stats = db.get_bot_stats()
+        if not stats:
+            raise ValueError("Не удалось получить статистику из Supabase")
+        total = stats['total']
+        started = stats['started']
+        first_sent = stats['first_sent']
+        second_sent = stats['second_sent']
+        pending_first = stats['pending_first']
+        recent_users = stats['recent_users']
+
         # Формируем сообщение
         stats_text = (
             f"📊 <b>Статистика бота</b>\n\n"
@@ -216,6 +225,9 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 # Команда /help
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /help"""
+    sm = context.application.bot_data.get("settings_manager")
+    support = (await sm.get_setting(BotSettingKeys.SUPPORT_CONTACT)) if sm else None
+    support_contact = (support.strip() if support else None) or DEFAULT_SUPPORT_CONTACT
     help_text = (
         "📋 Доступные команды:\n\n"
         "/start - Начать работу с ботом\n"
@@ -224,11 +236,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/diagnostics - Пройти диагностику воронки\n"
         "/stats - Показать статистику бота\n\n"
         "💬 Контакты:\n"
-        "Telegram: @ilyaborm\n"
-        "Канал: @SoulGuideIT\n"
-        "Email: bormotovilya@gmail.com"
+        f"{support_contact}"
     )
-    
+
     keyboard = [
         [InlineKeyboardButton(
             "🚀 Открыть SpaceGrowth",
@@ -262,7 +272,11 @@ async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик текстовых сообщений"""
     text = update.message.text.lower()
-    
+
+    sm = context.application.bot_data.get("settings_manager")
+    support_contact = (await sm.get_setting(BotSettingKeys.SUPPORT_CONTACT)) if sm else None
+    support_contact = (support_contact.strip() if support_contact else None) or DEFAULT_SUPPORT_CONTACT_WITH_PHONE
+
     # Простые ответы на частые вопросы
     if any(word in text for word in ['привет', 'здравствуй', 'добрый день', 'добрый вечер']):
         keyboard = [
@@ -291,13 +305,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             reply_markup=reply_markup
         )
     elif any(word in text for word in ['контакт', 'связаться', 'написать']):
-        await update.message.reply_text(
-            "📞 Контакты:\n\n"
-            "Telegram: @ilyaborm\n"
-            "Канал: @SoulGuideIT\n"
-            "Email: bormotovilya@gmail.com\n"
-            "Телефон: +7 (999) 123-77-88"
-        )
+        await update.message.reply_text(f"📞 Контакты:\n\n{support_contact}")
     else:
         keyboard = [
             [InlineKeyboardButton(
@@ -328,26 +336,34 @@ def main() -> None:
     
     # Создаем приложение
     application = Application.builder().token(token).build()
-    
-    # Инициализируем сервис уведомлений
-    notification_service = NotificationService(application.bot, db, MINIAPP_URL)
+
+    # Менеджер настроек из bot_settings (RPC get_bot_setting), кэш 5 мин
+    settings_manager = SettingsManager(db)
+    application.bot_data["settings_manager"] = settings_manager
+
+    # Инициализируем сервис уведомлений (с доступом к настройкам для MARKETING_ACTIVE)
+    notification_service = NotificationService(application.bot, db, MINIAPP_URL, settings_manager)
     
     # Настраиваем планировщик задач через JobQueue
     job_queue = application.job_queue
     
-    # Проверяем напоминания каждую минуту
+    # Единственная периодическая рассылка: все tg_user_id через get_user_marketing_content (раз в минуту)
     if job_queue:
         job_queue.run_repeating(
-            notification_service.check_and_send_reminders,
-            interval=60,  # 60 секунд = 1 минута
-            first=60,  # Первый запуск через 60 секунд
-            name='check_reminders'
+            notification_service.check_and_send_marketing,
+            interval=60,
+            first=60,
+            name="check_marketing",
         )
-        logger.info("Планировщик задач запущен. Проверка напоминаний каждую минуту")
+        logger.info("Планировщик: проверка маркетинговых сообщений (get_user_marketing_content) каждую минуту")
     else:
         logger.error("JobQueue не доступен!")
     
-    # Регистрируем обработчики
+    # Регистрируем обработчики: сначала проверка техработ (group=-1), затем остальные (group=0)
+    application.add_handler(
+        MessageHandler(filters.ALL, maintenance_check_handler),
+        group=-1,
+    )
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("site", site_command))

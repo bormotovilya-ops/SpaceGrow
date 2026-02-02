@@ -32,6 +32,9 @@ class DatabaseMigrations:
         # Миграция 4: Создание таблицы результатов диагностики
         self.create_diagnostics_results_table()
 
+        # Миграция 4b: Таблица маркетинговых сегментов (user_segments)
+        self.create_user_segments_table()
+
         # Миграция 5: Обновление схемы для расширенного логирования
         self.update_schema_for_advanced_logging()
 
@@ -77,6 +80,29 @@ class DatabaseMigrations:
         conn.commit()
         conn.close()
         logger.info("Таблица user_identities создана")
+
+    def create_user_segments_table(self):
+        """Таблица маркетинговых сегментов (связь по user_id с users)"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_segments (
+                user_id INTEGER PRIMARY KEY,
+                segment_hunt_level TEXT,
+                segment_temperature TEXT,
+                segment_motivation TEXT,
+                last_segmentation_update TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            )
+        ''')
+
+        conn.commit()
+        conn.close()
+        logger.info("Таблица user_segments создана")
 
     def create_site_sessions_table(self):
         """Таблица сессий сайта"""

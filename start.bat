@@ -1,15 +1,28 @@
 @echo off
-echo Установка зависимостей...
-call npm install
-if %errorlevel% neq 0 (
-    echo ОШИБКА: npm не найден. Установите Node.js с https://nodejs.org/
-    pause
-    exit /b 1
+chcp 65001 > nul
+echo === ЗАПУСК ВСЕХ СИСТЕМ ПРОЕКТА ===
+
+:: 1. ФРОНТЕНД (Vite)
+echo [1/3] Запуск Mini App (Vite)...
+start "Frontend (Vite)" cmd /k "npm run dev"
+
+:: 2. БЭКЕНД СЕРВЕР (Node.js API)
+echo [2/3] Запуск API Server...
+:: Здесь мы вызываем ту самую команду dev:server из твоего package.json
+start "Backend API" cmd /k "npm run dev:server"
+
+:: 3. ТЕЛЕГРАМ БОТ (Python)
+echo [3/3] Запуск Telegram Бота...
+if exist ".venv" (
+    :: Переходим в папку бота, активируем окружение и запускаем bot.py
+    start "Telegram Bot" cmd /k "cd telegram-bot && ..\.venv\Scripts\activate && python bot.py"
+) else (
+    echo [!] ОШИБКА: Виртуальное окружение .venv не найдено. Бот не запущен.
 )
 
 echo.
-echo Запуск приложения...
-echo Приложение будет доступно на http://localhost:3000
-echo.
-call npm run dev
-
+echo ==================================================
+echo Все окна открыты. Если какое-то окно сразу закрылось — 
+echo проверь в нём текст ошибки перед перезапуском.
+echo ==================================================
+pause
