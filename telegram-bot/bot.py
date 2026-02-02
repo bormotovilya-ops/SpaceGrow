@@ -347,15 +347,15 @@ def main() -> None:
     # Настраиваем планировщик задач через JobQueue
     job_queue = application.job_queue
     
-    # Единственная периодическая рассылка: все tg_user_id через get_user_marketing_content (раз в минуту)
+    # Периодическая проверка маркетинга: запуск каждые 5 мин; интервал рассылки по пользователю — из БД (marketing_interval_minutes)
     if job_queue:
         job_queue.run_repeating(
             notification_service.check_and_send_marketing,
-            interval=60,
-            first=60,
+            interval=300,  # 5 минут — как часто проверять очередь
+            first=300,
             name="check_marketing",
         )
-        logger.info("Планировщик: проверка маркетинговых сообщений (get_user_marketing_content) каждую минуту")
+        logger.info("Планировщик: проверка маркетинговых сообщений каждые 5 мин (интервал рассылки из bot_settings)")
     else:
         logger.error("JobQueue не доступен!")
     

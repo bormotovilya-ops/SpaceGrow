@@ -273,6 +273,101 @@
   font-size: 16px;
 }
 
+/* User Info Cards – единый стиль для всех четырёх карточек */
+.user-info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.user-info-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 22px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-info-card-identity {
+  border-left: 4px solid #6366f1;
+}
+
+.user-info-card-personal {
+  border-left: 4px solid #059669;
+}
+
+.user-info-card-traffic {
+  border-left: 4px solid #f59e0b;
+}
+
+.user-info-card-tech {
+  border-left: 4px solid #4a90e2;
+}
+
+.user-info-card-title {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.user-info-presumably {
+  font-weight: 500;
+  font-size: 0.9em;
+  color: #64748b;
+}
+
+.user-info-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+.user-info-card-list li {
+  display: grid;
+  grid-template-columns: auto 130px 1fr;
+  align-items: start;
+  gap: 0 14px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.user-info-card-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.user-info-card-list li:first-child {
+  padding-top: 0;
+}
+
+.user-info-emoji {
+  font-size: 1.15em;
+  line-height: 1.4;
+}
+
+.user-info-label {
+  font-weight: 600;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.user-info-value {
+  min-width: 0;
+  color: #475569;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
 /* Journey – Flat timeline (newest first, session dividers, no x25) */
 .journey-timeline {
   margin-bottom: 0;
@@ -411,6 +506,26 @@
 .journey-event-card--section-view .journey-event-hunt-badge {
   color: #9ca3af;
   background: rgba(156, 163, 175, 0.2);
+}
+
+/* AI chat (ai_chat_message): chat bubble style — distinct background for dialogue events */
+.journey-event-card--ai-chat {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.06), rgba(16, 185, 129, 0.08));
+  border-left: 4px solid #059669;
+}
+
+.journey-event-card--ai-chat .journey-event-title {
+  font-weight: 600;
+  color: #047857;
+}
+
+.event-row--ai-chat .journey-event-title {
+  font-weight: 600;
+  color: #059669;
+}
+
+.event-row--ai-chat .journey-event-icon {
+  color: #059669;
 }
 
 /* Clickable header row (always visible): icon, title, time, tiny summary, chevron */

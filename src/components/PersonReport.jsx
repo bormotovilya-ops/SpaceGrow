@@ -47,9 +47,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
   const [sampleReason, setSampleReason] = useState(null)
   const [expandedSections, setExpandedSections] = useState({
     userInfo: true,
-    journey: true,
+    journey: false,
     segmentation: true,
-    recommendations: true,
     visualization: true
   })
   const [generatingPDF, setGeneratingPDF] = useState(false)
@@ -250,33 +249,50 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               return []
             }
 
-            journey.content_views = await fetchEvents('content_view', (r) => {
+            // site_events: event_type 'content'; metadata.duration (seconds), fallback 30 if 0/null/missing
+            const contentMapper = (r) => {
               const meta = safeParse(r.metadata)
+              const durationRaw = Number(meta.duration ?? meta.time_spent ?? meta.timeSpent ?? 30)
+              const durationSec = durationRaw > 0 ? durationRaw : 30
               return {
                 event_name: r.event_name,
                 metadata: r.metadata,
                 page: r.page ?? null,
+                custom_data: r.custom_data ?? null,
                 section: meta.content_type ?? r.event_name,
                 content_id: meta.content_id ?? null,
                 content_title: meta.content_title ?? null,
-                time_spent: meta.time_spent ?? 0,
+                time_spent: durationSec,
+                duration: durationSec,
                 scroll_depth: meta.scroll_depth ?? 0,
                 timestamp: r.created_at
               }
-            })
+            }
+            const contentRows = await fetchEvents('content', contentMapper)
+            journey.content_views = contentRows
+            journey.content_actions = contentRows
 
-            const aiInteractionMapper = (r) => ({
-              event_name: r.event_name,
-              metadata: r.metadata,
-              messages_count: (r.metadata && (() => { try { return JSON.parse(r.metadata).messages_count } catch { return 0 } })()) || 0,
-              topics: (r.metadata && (() => { try { return JSON.parse(r.metadata).topics } catch { return [] } })()) || [],
-              duration: (r.metadata && (() => { try { return JSON.parse(r.metadata).duration } catch { return 0 } })()) || 0,
-              timestamp: r.created_at
-            })
-            journey.ai_interactions = await fetchEvents('ai_interaction', aiInteractionMapper)
-            // Also fetch ai_chat_message events (logged with event_type 'ai', event_name 'ai_chat_message')
-            const aiChatMessages = await fetchEvents('ai', aiInteractionMapper, 'ai_chat_message')
-            journey.ai_interactions = [...(journey.ai_interactions || []), ...(aiChatMessages || [])]
+            // site_events: event_type 'ai'; ai_chat_message: metadata.user_message, metadata.ai_response
+            const aiInteractionMapper = (r) => {
+              const meta = safeParse(r.metadata)
+              const messagesCount = Number(meta.messages_count ?? meta.messagesCount ?? 0) || 0
+              const duration = Number(meta.duration ?? 0) || 0
+              const userMessage = meta.user_message ?? meta.last_message ?? meta.message
+              const aiResponse = meta.ai_response ?? meta.ai_message ?? meta.response
+              const userStr = typeof userMessage === 'string' ? userMessage : (userMessage?.text ?? userMessage?.content ?? '')
+              const aiStr = typeof aiResponse === 'string' ? aiResponse : (aiResponse?.text ?? aiResponse?.content ?? '')
+              return {
+                event_name: r.event_name,
+                metadata: r.metadata,
+                messages_count: messagesCount,
+                topics: meta.topics ?? [],
+                duration,
+                user_message: userStr || null,
+                ai_response: aiStr || null,
+                timestamp: r.created_at
+              }
+            }
+            journey.ai_interactions = await fetchEvents('ai', aiInteractionMapper)
 
             journey.diagnostics = await fetchEvents('diagnostic', (r) => ({
               event_name: r.event_name,
@@ -287,14 +303,23 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               timestamp: r.created_at
             }))
 
-            journey.game_actions = await fetchEvents('game_action', (r) => ({
-              event_name: r.event_name,
-              metadata: r.metadata,
-              game_type: (r.metadata && (() => { try { return JSON.parse(r.metadata).game_type } catch { return 'Неизвестно' } })()) || 'Неизвестно',
-              achievement: (r.metadata && (() => { try { return JSON.parse(r.metadata).achievement } catch { return [] } })()) || [],
-              score: (r.metadata && (() => { try { return JSON.parse(r.metadata).score } catch { return 0 } })()) || 0,
-              timestamp: r.created_at
-            }))
+            // site_events: event_type 'alchemy' — used for chart (game_actions) and timeline (alchemy_events)
+            const alchemyMapper = (r) => {
+              const meta = safeParse(r.metadata)
+              const score = Number(meta.score ?? meta.scores ?? 0) || 0
+              return {
+                event_name: r.event_name,
+                metadata: r.metadata,
+                page: r.page ?? null,
+                game_type: meta.game_type ?? 'Неизвестно',
+                achievement: meta.achievement ?? [],
+                score,
+                timestamp: r.created_at
+              }
+            }
+            const alchemyRows = await fetchEvents('alchemy', alchemyMapper)
+            journey.game_actions = alchemyRows
+            journey.alchemy_events = alchemyRows
 
             // event_type в БД — 'cta', event_name — 'cta_click'
             journey.cta_clicks = await fetchEvents('cta', (r) => {
@@ -320,22 +345,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               timestamp: r.created_at
             }), 'page_view')
 
-            // content actions: astrolabe_input, astrolabe_action, section_view (event_type 'content')
-            journey.content_actions = await fetchEvents('content', (r) => ({
-              event_name: r.event_name,
-              metadata: r.metadata,
-              page: r.page ?? null,
-              custom_data: r.custom_data ?? null,
-              timestamp: r.created_at
-            }))
-
-            // alchemy events: alchemy_item_select, alchemy_interaction, snitch_action, crystal_action (event_type 'alchemy')
-            journey.alchemy_events = await fetchEvents('alchemy', (r) => ({
-              event_name: r.event_name,
-              metadata: r.metadata,
-              page: r.page ?? null,
-              timestamp: r.created_at
-            }))
+            // content_actions already set above from same 'content' fetch as content_views
 
             // Compute simple metrics (respect time filter)
             const totalSessionsQuery = supabase
@@ -385,6 +395,18 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               content_suggestions: ['Введение', 'Кейсы'],
               cta_suggestions: ['Записаться на консультацию']
             }
+
+            // Профиль из таблицы users (имя, фамилия, ник)
+            let userProfile = null
+            try {
+              const { data: profileRow } = await supabase
+                .from('users')
+                .select('user_id, username, first_name, last_name')
+                .eq('user_id', userId)
+                .maybeSingle()
+              userProfile = profileRow || null
+            } catch (_) {}
+            if (userProfile) user.user_profile = userProfile
 
             const report = {
               user,
@@ -543,6 +565,67 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
       return dateString
     }
   }
+
+  // Личные данные (предположительно) — первое введённое событие astrolabe_input (свои данные, не партнёра)
+  const getZodiacSign = (day, month) => {
+    const d = parseInt(day, 10)
+    const m = parseInt(month, 10)
+    if (m === 1 && d >= 20) return { emoji: '♒', name: 'Водолей' }
+    if (m === 1 && d <= 19) return { emoji: '♑', name: 'Козерог' }
+    if (m === 2 && d >= 19) return { emoji: '♓', name: 'Рыбы' }
+    if (m === 2 && d <= 18) return { emoji: '♒', name: 'Водолей' }
+    if (m === 3 && d >= 21) return { emoji: '♈', name: 'Овен' }
+    if (m === 3 && d <= 20) return { emoji: '♓', name: 'Рыбы' }
+    if (m === 4 && d >= 20) return { emoji: '♉', name: 'Телец' }
+    if (m === 4 && d <= 19) return { emoji: '♈', name: 'Овен' }
+    if (m === 5 && d >= 21) return { emoji: '♊', name: 'Близнецы' }
+    if (m === 5 && d <= 20) return { emoji: '♉', name: 'Телец' }
+    if (m === 6 && d >= 21) return { emoji: '♋', name: 'Рак' }
+    if (m === 6 && d <= 20) return { emoji: '♊', name: 'Близнецы' }
+    if (m === 7 && d >= 23) return { emoji: '♌', name: 'Лев' }
+    if (m === 7 && d <= 22) return { emoji: '♋', name: 'Рак' }
+    if (m === 8 && d >= 23) return { emoji: '♍', name: 'Дева' }
+    if (m === 8 && d <= 22) return { emoji: '♌', name: 'Лев' }
+    if (m === 9 && d >= 23) return { emoji: '♎', name: 'Весы' }
+    if (m === 9 && d <= 22) return { emoji: '♍', name: 'Дева' }
+    if (m === 10 && d >= 23) return { emoji: '♏', name: 'Скорпион' }
+    if (m === 10 && d <= 22) return { emoji: '♎', name: 'Весы' }
+    if (m === 11 && d >= 22) return { emoji: '♐', name: 'Стрелец' }
+    if (m === 11 && d <= 21) return { emoji: '♏', name: 'Скорпион' }
+    if (m === 12 && d >= 22) return { emoji: '♑', name: 'Козерог' }
+    if (m === 12 && d <= 21) return { emoji: '♐', name: 'Стрелец' }
+    return null
+  }
+
+  const formatBirthDateDisplay = (birthDateStr) => {
+    if (!birthDateStr) return null
+    const s = String(birthDateStr).trim()
+    const match = s.match(/^(\d{4})-(\d{2})-(\d{2})/) || s.match(/^(\d{2})\.(\d{2})\.(\d{4})/) || s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/)
+    if (match) {
+      const [, a, b, c] = match
+      const day = a.length === 4 ? c : a
+      const month = a.length === 4 ? b : b
+      const year = a.length === 4 ? a : c
+      return { day: day.padStart(2, '0'), month: month.padStart(2, '0'), year, ddmm: `${day.padStart(2, '0')}.${month.padStart(2, '0')}.${year}` }
+    }
+    return { ddmm: s }
+  }
+
+  const personalDataFromFirstInput = useMemo(() => {
+    const list = reportData?.journey?.content_views ?? reportData?.journey?.content_actions ?? []
+    const firstAstrolabe = list
+      .filter((e) => e?.event_name === 'astrolabe_input')
+      .sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime())[0]
+    if (!firstAstrolabe?.metadata) return null
+    const meta = typeof firstAstrolabe.metadata === 'string' ? (() => { try { return JSON.parse(firstAstrolabe.metadata) } catch { return {} } })() : (firstAstrolabe.metadata || {})
+    const birthDate = meta.birth_date ?? meta.date ?? null
+    const birthTime = meta.birth_time ?? meta.time ?? null
+    const birthCity = meta.birth_city ?? meta.city ?? null
+    if (!birthDate && !birthTime && !birthCity) return null
+    const dateFormatted = birthDate ? formatBirthDateDisplay(birthDate) : null
+    const zodiac = dateFormatted?.day && dateFormatted?.month ? getZodiacSign(dateFormatted.day, dateFormatted.month) : null
+    return { birthDate, birthTime, birthCity, dateFormatted, zodiac }
+  }, [reportData])
 
   // Human-readable: page paths → Emoji + Title (User Journey)
   const PAGE_LABELS = useMemo(() => ({
@@ -734,6 +817,43 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     // Sort newest first (chronological timeline: newest at top, oldest at bottom)
     items.sort((a, b) => b.ts - a.ts)
 
+    // Group frequent identical content_view events (same content_id within 2 min) to reduce clutter
+    const CONTENT_GROUP_WINDOW_MS = 2 * 60 * 1000
+    const getContentKey = (item) => (item.raw?.content_id ?? item.raw?.section ?? '').toString().trim() || '_'
+    const itemsAfterContentViewGroup = []
+    let idx = 0
+    while (idx < items.length) {
+      const item = items[idx]
+      if (item.type !== 'content_view') {
+        itemsAfterContentViewGroup.push({ ...item, tsFirst: item.ts, tsLast: item.ts })
+        idx++
+        continue
+      }
+      const contentKey = getContentKey(item)
+      const group = [item]
+      let tsFirst = item.ts
+      let tsLast = item.ts
+      while (idx + 1 < items.length) {
+        const next = items[idx + 1]
+        if (next.type !== 'content_view' || getContentKey(next) !== contentKey) break
+        const gap = tsFirst - next.ts
+        if (gap > CONTENT_GROUP_WINDOW_MS) break
+        group.push(next)
+        tsFirst = Math.max(tsFirst, next.ts)
+        tsLast = Math.min(tsLast, next.ts)
+        idx++
+      }
+      itemsAfterContentViewGroup.push({
+        type: 'content_view',
+        raw: group[0].raw,
+        ts: group[0].ts,
+        tsFirst,
+        tsLast,
+        grouped: group.length > 1 ? group : undefined
+      })
+      idx++
+    }
+
     // Priority events: ALWAYS standalone, never collapsed (excluded from grouping)
     const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
     const SECTION_ACTION_IDS_SET = ['alchemy-mirror', 'alchemy-astrolabe', 'alchemy-ikigai', 'alchemy-tarot', 'alchemy-tests', 'diagnostics']
@@ -762,16 +882,16 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     const GROUP_WINDOW_MS = 60 * 1000
     const grouped = []
     let i = 0
-    while (i < items.length) {
-      const item = items[i]
+    while (i < itemsAfterContentViewGroup.length) {
+      const item = itemsAfterContentViewGroup[i]
       const pageKey = getPageKey(item)
       const isNav = item.type === 'page_view' && !isPriorityEvent(item)
       if (pageKey && isNav) {
         let group = [item]
         let tsFirst = item.ts
         let tsLast = item.ts
-        while (i + 1 < items.length) {
-          const next = items[i + 1]
+        while (i + 1 < itemsAfterContentViewGroup.length) {
+          const next = itemsAfterContentViewGroup[i + 1]
           if (getPageKey(next) !== pageKey) break
           const gap = tsFirst - next.ts
           if (gap > GROUP_WINDOW_MS) break
@@ -789,7 +909,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
           grouped: group.length > 1 ? group : undefined
         })
       } else {
-        grouped.push({ ...item, tsFirst: item.ts, tsLast: item.ts })
+        grouped.push({ ...item, tsFirst: item.ts ?? item.tsFirst, tsLast: item.ts ?? item.tsLast })
       }
       i++
     }
@@ -1103,18 +1223,24 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     return false
   }, [SECTION_ACTION_IDS])
 
-  // Extract user_message, ai_response, context for ai_chat_message (chat bubble preview). Always return data for ai_chat_message so the container renders.
+  // Extract user_message, ai_response (metadata.user_message, metadata.ai_response) for ai_chat_message dialogue display
   const getAiChatPreview = useCallback((entry) => {
     if (entry.type === 'session_divider') return null
     const raw = entry.raw || {}
     const eventName = raw.event_name
     if (eventName !== 'ai_chat_message' && entry.type !== 'ai_interaction') return null
+    const userMsg = raw.user_message ?? (() => {
+      const meta = safeParseMeta(raw.metadata)
+      const m = meta?.user_message ?? meta?.last_message ?? meta?.message
+      return typeof m === 'string' ? m : (m?.text ?? m?.content ?? '')
+    })()
+    const aiMsg = raw.ai_response ?? (() => {
+      const meta = safeParseMeta(raw.metadata)
+      const m = meta?.ai_response ?? meta?.ai_message ?? meta?.response
+      return typeof m === 'string' ? m : (m?.text ?? m?.content ?? '')
+    })()
     const meta = safeParseMeta(raw.metadata)
-    const userMessage = meta?.user_message ?? meta?.last_message ?? meta?.message
-    const aiResponse = meta?.ai_response ?? meta?.ai_message ?? meta?.response
-    const userStr = typeof userMessage === 'string' ? userMessage : (userMessage?.text ?? userMessage?.content ?? '')
-    const aiStr = typeof aiResponse === 'string' ? aiResponse : (aiResponse?.text ?? aiResponse?.content ?? '')
-    return { user_message: userStr || null, ai_response: aiStr || null, context: meta?.context }
+    return { user_message: userMsg || null, ai_response: aiMsg || null, context: meta?.context }
   }, [])
 
   const CHAT_PREVIEW_MAX_LEN = 180
@@ -1243,51 +1369,71 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="user-info-grid">
-                  <div className="info-item">
-                    <label>Telegram ID:</label>
-                    <span>{reportData?.user?.tg_user_id || 'Не указан'}</span>
+                <div className="user-info-cards">
+                  <div className="user-info-card user-info-card-identity">
+                    <h4 className="user-info-card-title">👤 Ваш аккаунт</h4>
+                    <ul className="user-info-card-list">
+                      <li><span className="user-info-emoji">📱</span><span className="user-info-label">Telegram ID:</span><span className="user-info-value">{reportData?.user?.tg_user_id ?? '—'}</span></li>
+                      {(reportData?.user?.user_profile?.first_name || reportData?.user?.user_profile?.last_name) && (
+                        <li><span className="user-info-emoji">👤</span><span className="user-info-label">Имя:</span><span className="user-info-value">{[reportData.user.user_profile.first_name, reportData.user.user_profile.last_name].filter(Boolean).join(' ') || '—'}</span></li>
+                      )}
+                      {reportData?.user?.user_profile?.username && (
+                        <li><span className="user-info-emoji">📛</span><span className="user-info-label">Ник:</span><span className="user-info-value">@{reportData.user.user_profile.username}</span></li>
+                      )}
+                    </ul>
                   </div>
-                  <div className="info-item">
-                    <label>Cookie ID:</label>
-                    <span>{reportData?.user?.cookie_id || 'Не указан'}</span>
-                  </div>
-                  <div className="info-item">
-                    <label>Источник трафика:</label>
-                    <span>{reportData?.user?.traffic_source || 'Не определен'}</span>
-                  </div>
-                  <div className="info-item">
-                    <label>UTM параметры:</label>
-                    <span>{reportData?.user?.utm_params && Object.keys(reportData.user.utm_params).length > 0
-                      ? Object.entries(reportData.user.utm_params).map(([k, v]) => `${k}=${v}`).join(', ')
-                      : 'Отсутствуют'}</span>
-                  </div>
-                  <div className="info-item">
-                    <label>Referrer:</label>
-                    <span>{reportData?.user?.referrer || 'Прямой заход'}</span>
-                  </div>
-                  <div className="info-item">
-                    <label>Первое посещение:</label>
-                    <span>{formatDate(reportData?.user?.first_visit_date)}</span>
-                  </div>
-                  {(reportData?.journey?.miniapp_opens?.[0]?.device_type || reportData?.journey?.miniapp_opens?.[0]?.device) && (
-                    <div className="info-item">
-                      <label>Тип устройства:</label>
-                      <span>{reportData.journey.miniapp_opens[0].device_type || reportData.journey.miniapp_opens[0].device || 'Не определено'}</span>
+
+                  {personalDataFromFirstInput && (personalDataFromFirstInput.birthDate || personalDataFromFirstInput.birthTime || personalDataFromFirstInput.birthCity) && (
+                    <div className="user-info-card user-info-card-personal">
+                      <h4 className="user-info-card-title">🧭 Личные данные <span className="user-info-presumably">(предположительно):</span></h4>
+                      <ul className="user-info-card-list">
+                        {(personalDataFromFirstInput.zodiac || personalDataFromFirstInput.dateFormatted?.ddmm) && (
+                          <li>
+                            <span className="user-info-emoji">📅</span>
+                            <span className="user-info-label">Дата рождения:</span>
+                            <span className="user-info-value">
+                              {personalDataFromFirstInput.zodiac && `${personalDataFromFirstInput.zodiac.emoji} ${personalDataFromFirstInput.zodiac.name}`}
+                              {personalDataFromFirstInput.zodiac && personalDataFromFirstInput.dateFormatted?.ddmm && ', родился '}
+                              {personalDataFromFirstInput.dateFormatted?.ddmm ?? ''}
+                            </span>
+                          </li>
+                        )}
+                        {personalDataFromFirstInput.birthCity && (
+                          <li>
+                            <span className="user-info-emoji">📍</span>
+                            <span className="user-info-label">Город:</span>
+                            <span className="user-info-value">г. {personalDataFromFirstInput.birthCity}</span>
+                          </li>
+                        )}
+                      </ul>
                     </div>
                   )}
-                  {(reportData?.journey?.miniapp_opens?.[0]?.browser) && (
-                    <div className="info-item">
-                      <label>Браузер:</label>
-                      <span>{reportData.journey.miniapp_opens[0].browser}</span>
-                    </div>
-                  )}
-                  {(reportData?.segmentation?.session_duration_display ?? reportData?.session_duration_seconds != null) && (
-                    <div className="info-item">
-                      <label>Длительность сессий:</label>
-                      <span>{reportData?.segmentation?.session_duration_display ?? formatDuration(reportData?.session_duration_seconds ?? 0)}</span>
-                    </div>
-                  )}
+
+                  <div className="user-info-card user-info-card-traffic">
+                    <h4 className="user-info-card-title">📊 Откуда пришли</h4>
+                    <ul className="user-info-card-list">
+                      <li><span className="user-info-emoji">🔗</span><span className="user-info-label">Источник:</span><span className="user-info-value">{reportData?.user?.traffic_source ?? 'Не определен'}</span></li>
+                      <li><span className="user-info-emoji">📎</span><span className="user-info-label">UTM:</span><span className="user-info-value">{reportData?.user?.utm_params && Object.keys(reportData.user.utm_params).length > 0 ? Object.entries(reportData.user.utm_params).map(([k, v]) => `${k}=${v}`).join(', ') : '—'}</span></li>
+                      <li><span className="user-info-emoji">↩️</span><span className="user-info-label">Referrer:</span><span className="user-info-value">{reportData?.user?.referrer ?? 'Прямой заход'}</span></li>
+                      <li><span className="user-info-emoji">📅</span><span className="user-info-label">Первое посещение:</span><span className="user-info-value">{formatDate(reportData?.user?.first_visit_date)}</span></li>
+                    </ul>
+                  </div>
+
+                  <div className="user-info-card user-info-card-tech">
+                    <h4 className="user-info-card-title">💻 Устройство и сессии</h4>
+                    <ul className="user-info-card-list">
+                      {(reportData?.journey?.miniapp_opens?.[0]?.device_type || reportData?.journey?.miniapp_opens?.[0]?.device) && (
+                        <li><span className="user-info-emoji">📱</span><span className="user-info-label">Устройство:</span><span className="user-info-value">{reportData.journey.miniapp_opens[0].device_type || reportData.journey.miniapp_opens[0].device}</span></li>
+                      )}
+                      {reportData?.journey?.miniapp_opens?.[0]?.browser && (
+                        <li><span className="user-info-emoji">🌐</span><span className="user-info-label">Браузер:</span><span className="user-info-value">{reportData.journey.miniapp_opens[0].browser}</span></li>
+                      )}
+                      {(reportData?.segmentation?.session_duration_display ?? reportData?.session_duration_seconds != null) && (
+                        <li><span className="user-info-emoji">⏱️</span><span className="user-info-label">Длительность сессий:</span><span className="user-info-value">{reportData?.segmentation?.session_duration_display ?? formatDuration(reportData?.session_duration_seconds ?? 0)}</span></li>
+                      )}
+                      <li><span className="user-info-emoji">🍪</span><span className="user-info-label">Cookie ID:</span><span className="user-info-value">{reportData?.user?.cookie_id ?? '—'}</span></li>
+                    </ul>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -1371,20 +1517,22 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                         ) : null
                         const isCtaClick = entry.type === 'cta_click'
                         const isSectionView = entry.type === 'section_view'
+                        const isAiChat = (entry.raw?.event_name === 'ai_chat_message' || entry.type === 'ai_interaction')
                         const showExpandableDetails = entry.showExpandableDetails !== false
                         const RowWrapper = showExpandableDetails ? 'button' : 'div'
                         const rowProps = showExpandableDetails
                           ? { type: 'button', onClick: toggleExpanded, 'aria-expanded': isExpanded, 'aria-controls': `event-details-${index}` }
                           : {}
+                        const contentViewGroupCount = entry.grouped?.length > 1 ? entry.grouped.length : 0
                         return (
                           <li
                             key={`${entry.type}-${entry.ts}-${index}`}
-                            className={`journey-event-card ${actionEvent ? 'journey-event-card--action' : 'journey-event-card--nav'} ${isAlchemyEvent ? 'journey-event-card--alchemy' : ''} ${isCtaClick ? 'journey-event-card--cta' : ''} ${isSectionView ? 'journey-event-card--section-view' : ''} ${isStage4Conversion ? 'journey-event-card--stage4' : ''}`}
+                            className={`journey-event-card ${actionEvent ? 'journey-event-card--action' : 'journey-event-card--nav'} ${isAlchemyEvent ? 'journey-event-card--alchemy' : ''} ${isCtaClick ? 'journey-event-card--cta' : ''} ${isSectionView ? 'journey-event-card--section-view' : ''} ${isAiChat ? 'journey-event-card--ai-chat' : ''} ${isStage4Conversion ? 'journey-event-card--stage4' : ''}`}
                           >
                             <RowWrapper
                               {...rowProps}
                               id={showExpandableDetails ? `event-row-${index}` : undefined}
-                              className={`event-row ${entry.type === 'page_view' ? 'event-row--nav' : ''} ${isCtaClick ? 'event-row--cta' : ''} ${isSectionView ? 'event-row--section-view' : ''} ${isStage4Conversion ? 'event-row--stage4' : ''} ${!showExpandableDetails ? 'event-row--compact' : ''}`}
+                              className={`event-row ${entry.type === 'page_view' ? 'event-row--nav' : ''} ${isCtaClick ? 'event-row--cta' : ''} ${isSectionView ? 'event-row--section-view' : ''} ${isAiChat ? 'event-row--ai-chat' : ''} ${isStage4Conversion ? 'event-row--stage4' : ''} ${!showExpandableDetails ? 'event-row--compact' : ''}`}
                             >
                               <div className="journey-event-left">
                                 {sameMinuteAsPrevious ? (
@@ -1396,7 +1544,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                                 <span className="journey-event-icon" aria-hidden>{icon}</span>
                               </div>
                               <div className="journey-event-center">
-                                <span className="journey-event-title">{title}</span>
+                                <span className="journey-event-title">{title}{contentViewGroupCount > 0 ? ` (${contentViewGroupCount} раз)` : ''}</span>
                                 {tinySummary && (
                                   <span className="event-row-summary">{tinySummary}</span>
                                 )}
@@ -1668,68 +1816,6 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                     </div>
                   )
                 })()}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-
-        {/* Recommendations Section */}
-        <motion.section
-          className={`report-section ${expandedSections.recommendations ? 'expanded' : ''}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <div className="section-header" onClick={() => toggleSection('recommendations')}>
-            <h2>💡 Персональные рекомендации</h2>
-            <span className={`toggle-icon ${expandedSections.recommendations ? 'expanded' : ''}`}>▼</span>
-          </div>
-          <AnimatePresence>
-            {expandedSections.recommendations && (
-              <motion.div
-                className="section-content"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="recommendations-grid">
-                  <div className="recommendation-card">
-                    <h4>🎯 Следующие шаги</h4>
-                    <ul>
-                      {reportData?.recommendations?.next_steps?.map((step, index) => (
-                        <li key={index}>{step}</li>
-                      )) || <li>Рекомендации формируются...</li>}
-                    </ul>
-                  </div>
-
-                  <div className="recommendation-card">
-                    <h4>🚀 Автоматические действия</h4>
-                    <ul>
-                      {reportData?.recommendations?.automatic_actions?.map((action, index) => (
-                        <li key={index}>{action}</li>
-                      )) || <li>Автоматизация настраивается...</li>}
-                    </ul>
-                  </div>
-
-                  <div className="recommendation-card">
-                    <h4>📱 Контент для взаимодействия</h4>
-                    <ul>
-                      {reportData?.recommendations?.content_suggestions?.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      )) || <li>Подбираем персональный контент...</li>}
-                    </ul>
-                  </div>
-
-                  <div className="recommendation-card">
-                    <h4>🎪 CTA для кликов</h4>
-                    <ul>
-                      {reportData?.recommendations?.cta_suggestions?.map((cta, index) => (
-                        <li key={index}>{cta}</li>
-                      )) || <li>Оптимизируем призывы к действию...</li>}
-                    </ul>
-                  </div>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

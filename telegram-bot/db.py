@@ -273,6 +273,25 @@ class Database:
                 out.append({"tg_user_id": uid})
         return out
 
+    def get_user_last_notified_at(self, user_id: int) -> Optional[str]:
+        """Время последней маркетинговой рассылки пользователю (users.last_notified_at), ISO строка или None."""
+        r = self._get(
+            "users",
+            params={"user_id": f"eq.{user_id}", "select": "last_notified_at", "limit": "1"},
+        )
+        self._check_response(r, "get_user_last_notified_at")
+        rows = r.json() if r.status_code in (200, 201) else []
+        if not rows:
+            return None
+        return rows[0].get("last_notified_at")
+
+    def set_user_last_notified_at(self, user_id: int) -> None:
+        """Обновить users.last_notified_at = now() для пользователя после отправки маркетингового сообщения."""
+        from datetime import datetime as dt
+        payload = {"last_notified_at": dt.utcnow().isoformat()}
+        r = self._patch("users", params={"user_id": f"eq.{user_id}"}, payload=payload)
+        self._check_response(r, "set_user_last_notified_at")
+
     def get_pending_deliveries(self, now_iso: str) -> List[dict]:
         """Получить pending записи user_message_delivery с scheduled_at <= now_iso."""
         r = self._get("user_message_delivery", params={

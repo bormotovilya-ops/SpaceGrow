@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import Forbidden, BadRequest
 from db import Database
@@ -85,24 +85,44 @@ class NotificationService:
 
     async def check_and_send_marketing(self, context=None):
         """
-        Единственная периодическая задача рассылки: список всех tg_user_id из user_segments,
-        для каждого вызов get_user_marketing_content(p_user_id). База сама решает по таблице
-        истории, кому и когда пора слать сообщение; при наличии данных — отправка message_text
-        и кнопок (path как url). Лог отправки ведёт БД.
+        Периодическая задача рассылки: список tg_user_id из user_segments; для каждого
+        проверяем, прошло ли marketing_interval_minutes с last_notified_at. Если да —
+        вызов get_user_marketing_content и отправка; после отправки обновляем last_notified_at.
+        Интервал берётся из SettingsManager (BotSettingKeys.MARKETING_INTERVAL), по умолчанию 1440 мин.
         """
         if self.settings_manager:
             if not await self.settings_manager.get_setting_bool_async(BotSettingKeys.MARKETING_ACTIVE):
                 logger.info("Маркетинговая рассылка отключена через БД")
                 return
+            raw_interval = await self.settings_manager.get_setting(BotSettingKeys.MARKETING_INTERVAL)
+            try:
+                marketing_interval_minutes = int(raw_interval) if raw_interval is not None else 1440
+            except (TypeError, ValueError):
+                marketing_interval_minutes = 1440
+        else:
+            marketing_interval_minutes = 1440
         db = self.db
+        now_utc = datetime.now(timezone.utc)
         try:
             users = db.get_active_marketing_users()
-            logger.info("Маркетинг: проверка для %s пользователей", len(users))
+            logger.info("Маркетинг: проверка для %s пользователей, интервал %s мин", len(users), marketing_interval_minutes)
             sent = 0
             for user_row in users:
                 tg_user_id = user_row.get("tg_user_id")
                 if tg_user_id is None:
                     continue
+                last_at = db.get_user_last_notified_at(tg_user_id)
+                if last_at is not None:
+                    try:
+                        # ISO строка из БД (может быть с Z или +00:00)
+                        last_dt = datetime.fromisoformat(last_at.replace("Z", "+00:00"))
+                        if last_dt.tzinfo is None:
+                            last_dt = last_dt.replace(tzinfo=timezone.utc)
+                        minutes_ago = (now_utc - last_dt).total_seconds() / 60
+                        if minutes_ago < marketing_interval_minutes:
+                            continue
+                    except (ValueError, TypeError):
+                        pass
                 raw = db.rpc("get_user_marketing_content", {"p_user_id": tg_user_id})
                 # RPC может вернуть одну строку как список из одного элемента или как объект
                 content = None
@@ -123,6 +143,7 @@ class NotificationService:
                         reply_markup=reply_markup,
                         parse_mode="HTML",
                     )
+                    db.set_user_last_notified_at(tg_user_id)
                     sent += 1
                     logger.info("Маркетинг: отправлено пользователю %s", tg_user_id)
                 except Forbidden as e:
