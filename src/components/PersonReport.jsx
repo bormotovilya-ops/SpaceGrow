@@ -151,7 +151,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               } catch { return {} }
             }
 
-            // Build user info (query by userId so we get 888888's data when in browser)
+            // Build user info; UTM from user_identities; sessions = tg_user_id OR cookie_id belonging to user (stitching)
             let user = {
               tg_user_id: userId,
               cookie_id: null,
@@ -161,20 +161,52 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               first_visit_date: null
             }
 
-            const { data: firstSession, error: fsErr } = await supabase
-              .from('site_sessions')
-              .select('cookie_id,tg_user_id,source,utm_params,referrer,session_start')
+            // user_identities: cookie_ids linked to this user + UTM for "Откуда пришли"
+            const { data: identityRows } = await supabase
+              .from('user_identities')
+              .select('cookie_id,utm_source,utm_medium,utm_campaign')
               .eq('tg_user_id', userId)
-              .order('session_start', { ascending: true })
-              .limit(1)
+            const linkedCookieIds = identityRows ? [...new Set(identityRows.map(r => r.cookie_id).filter(Boolean))] : []
+            const firstIdentityWithUtm = identityRows?.find(r => r.utm_source || r.utm_medium || r.utm_campaign)
+            if (firstIdentityWithUtm) {
+              user.utm_params = {
+                utm_source: firstIdentityWithUtm.utm_source ?? null,
+                utm_medium: firstIdentityWithUtm.utm_medium ?? null,
+                utm_campaign: firstIdentityWithUtm.utm_campaign ?? null
+              }
+            }
 
-            if (!fsErr && firstSession && firstSession.length) {
-              const row = firstSession[0]
-              user.cookie_id = row.cookie_id ?? null
-              user.traffic_source = row.source || user.traffic_source
-              user.utm_params = safeParse(row.utm_params)
-              user.referrer = row.referrer
-              user.first_visit_date = row.session_start
+            // All session_ids: sessions where tg_user_id = userId OR cookie_id in linkedCookieIds (include anonymous past)
+            const sessionIdsSet = new Set()
+            const sessionsByTg = await supabase
+              .from('site_sessions')
+              .select('id,cookie_id,source,referrer,session_start,session_end,page_id,device_type,user_agent')
+              .eq('tg_user_id', userId)
+            if (sessionsByTg.data) sessionsByTg.data.forEach(s => { sessionIdsSet.add(s.id) })
+            if (linkedCookieIds.length) {
+              const sessionsByCookie = await supabase
+                .from('site_sessions')
+                .select('id,cookie_id,source,referrer,session_start,session_end,page_id,device_type,user_agent')
+                .in('cookie_id', linkedCookieIds)
+              if (sessionsByCookie.data) sessionsByCookie.data.forEach(s => { sessionIdsSet.add(s.id) })
+            }
+            const allSessionsRows = [...(sessionsByTg.data || [])]
+            if (linkedCookieIds.length) {
+              const { data: byCookie } = await supabase.from('site_sessions').select('id,cookie_id,source,referrer,session_start,session_end,page_id,device_type,user_agent').in('cookie_id', linkedCookieIds)
+              ;(byCookie || []).forEach(s => {
+                sessionIdsSet.add(s.id)
+                if (!allSessionsRows.some(r => r.id === s.id)) allSessionsRows.push(s)
+              })
+            }
+            const sessionIds = [...sessionIdsSet]
+            const allSessions = [...allSessionsRows].sort((a, b) => new Date(b.session_start) - new Date(a.session_start))
+            const firstSessionRow = allSessions.length ? [...allSessions].sort((a, b) => new Date(a.session_start) - new Date(b.session_start))[0] : null
+            if (firstSessionRow) {
+              user.cookie_id = firstSessionRow.cookie_id ?? null
+              user.traffic_source = firstSessionRow.source || user.traffic_source
+              user.referrer = firstSessionRow.referrer
+              user.first_visit_date = firstSessionRow.session_start
+              if (!firstIdentityWithUtm && firstSessionRow.utm_params) user.utm_params = safeParse(firstSessionRow.utm_params)
             }
 
             // Journey: sessions and events
@@ -186,12 +218,10 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               diagnostics: [],
               game_actions: [],
               cta_clicks: [],
-              content_actions: [],  // astrolabe_input, astrolabe_action (event_type 'content')
-              alchemy_events: []    // alchemy_item_select, alchemy_interaction, snitch_action, crystal_action (event_type 'alchemy')
+              content_actions: [],
+              alchemy_events: []
             }
 
-            // miniapp opens
-            // Simple UA parse for frontend when backend doesn't provide device/browser
             const parseUA = (ua) => {
               if (!ua || typeof ua !== 'string') return { deviceType: 'Unknown', browser: 'Unknown' }
               const s = ua.toLowerCase()
@@ -206,44 +236,30 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               else if (s.includes('safari/') && !s.includes('chrome')) browser = 'Safari'
               return { deviceType, browser }
             }
-            {
-              const q = supabase
-                .from('site_sessions')
-                .select('session_start,session_end,page_id,device_type,user_agent')
-                .order('session_start', { ascending: false })
-                .limit(200)
-
-              q.eq('tg_user_id', userId)
-              if (selectedPeriod !== 'all') q.gte('session_start', startDate)
-
-              const { data: sessions, error: sErr } = await q
-              if (!sErr && sessions) {
-                journey.miniapp_opens = sessions.map(s => {
-                  const ua = parseUA(s.user_agent)
-                  return {
-                    timestamp: s.session_start,
-                    page: s.page_id,
-                    device: s.device_type || ua.deviceType,
-                    device_type: s.device_type || ua.deviceType,
-                    browser: ua.browser
-                  }
-                })
+            const sessionsInPeriod = selectedPeriod === 'all' ? allSessions : allSessions.filter(s => new Date(s.session_start) >= new Date(startDate))
+            journey.miniapp_opens = sessionsInPeriod.map(s => {
+              const ua = parseUA(s.user_agent)
+              return {
+                timestamp: s.session_start,
+                page: s.page_id,
+                device: s.device_type || ua.deviceType,
+                device_type: s.device_type || ua.deviceType,
+                browser: ua.browser
               }
-            }
+            })
 
-            // helper to fetch events by type (and optionally event_name); respects selectedPeriod for time filter
+            // Fetch events by session_id in (sessionIds) so we include anonymous past
             const fetchEvents = async (type, mapper = (r) => r, eventName = null) => {
+              if (!sessionIds.length) return []
               const q = supabase
                 .from('site_events')
                 .select('created_at,event_name,metadata,page,custom_data')
                 .order('created_at', { ascending: false })
-                .limit(200)
-
-              q.eq('tg_user_id', userId)
+                .limit(500)
+                .in('session_id', sessionIds)
               if (type) q.eq('event_type', type)
               if (eventName) q.eq('event_name', eventName)
               if (selectedPeriod !== 'all') q.gte('created_at', getStartDate(selectedPeriod))
-
               const { data, error } = await q
               if (!error && data) return data.map(mapper)
               return []
@@ -347,31 +363,16 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
             // content_actions already set above from same 'content' fetch as content_views
 
-            // Compute simple metrics (respect time filter)
-            const totalSessionsQuery = supabase
-              .from('site_sessions')
-              .select('id', { count: 'exact' })
-              .eq('tg_user_id', userId)
-            if (selectedPeriod !== 'all') totalSessionsQuery.gte('session_start', startDate)
-            const { data: totalSessionsData, error: tsErr } = await totalSessionsQuery
-
-            const totalSessions = (totalSessionsData && totalSessionsData.length) || 0
-            const diagnosticsQuery = supabase
-              .from('site_events')
-              .select('id')
-              .eq('tg_user_id', userId)
-              .eq('event_type', 'diagnostic')
-            if (selectedPeriod !== 'all') diagnosticsQuery.gte('created_at', startDate)
-            const { data: diagnosticsData } = await diagnosticsQuery
-
-            const diagnosticsCompleted = (diagnosticsData && diagnosticsData.length) > 0
+            // Compute simple metrics (respect time filter; use stitched sessions)
+            const totalSessions = sessionsInPeriod.length
+            const diagnosticsCompleted = journey.diagnostics?.length > 0
 
             const engagementLevel = (journey.content_views.length + journey.ai_interactions.length) > 30 ? 'high' : ((journey.content_views.length + journey.ai_interactions.length) > 5 ? 'medium' : 'low')
 
             let totalSessionDurationSeconds = 0
             try {
               journey.miniapp_opens?.forEach((open, idx) => {
-                const sessionsWithEnd = sessions
+                const sessionsWithEnd = sessionsInPeriod
                 if (sessionsWithEnd && sessionsWithEnd[idx]?.session_start && sessionsWithEnd[idx]?.session_end) {
                   const start = new Date(sessionsWithEnd[idx].session_start).getTime()
                   const end = new Date(sessionsWithEnd[idx].session_end).getTime()

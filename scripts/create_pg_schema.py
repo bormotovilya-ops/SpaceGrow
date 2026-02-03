@@ -29,12 +29,15 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP DEFAULT now()
 );
 
--- User identities
+-- User identities (attribution: cookie_id + UTM; stitching: tg_user_id)
 CREATE TABLE IF NOT EXISTS user_identities (
   id BIGSERIAL PRIMARY KEY,
   tg_user_id BIGINT,
   cookie_id TEXT,
-  source TEXT NOT NULL CHECK (source IN ('telegram', 'site', 'miniapp')),
+  utm_source TEXT,
+  utm_medium TEXT,
+  utm_campaign TEXT,
+  source TEXT DEFAULT 'site' CHECK (source IN ('telegram', 'site', 'miniapp')),
   linked_at TIMESTAMP DEFAULT now(),
   miniapp_id TEXT,
   UNIQUE (tg_user_id, cookie_id),

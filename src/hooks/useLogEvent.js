@@ -50,9 +50,9 @@ export const useLogEvent = () => {
           sessionIdRef.current = result.session_id;
           globalSessionId = result.session_id;
 
-          // Link identities if we have both IDs
+          // Stitching: link cookie_id to tg_user_id and set tg_user_id on this session
           if (tgUserIdRef.current && cookieIdRef.current) {
-            await apiUtils.linkIdentities(tgUserIdRef.current, cookieIdRef.current);
+            await apiUtils.linkIdentities(tgUserIdRef.current, cookieIdRef.current, sessionIdRef.current);
           }
         }
       } catch (error) {
@@ -105,7 +105,7 @@ export const useLogEvent = () => {
     const referrer = userUtils.getReferrer();
 
     const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
-    return apiUtils.logSourceVisit({
+    const result = await apiUtils.logSourceVisit({
       session_id: sessionId,
       source,
       cookie_id: cookieIdRef.current,
@@ -113,6 +113,11 @@ export const useLogEvent = () => {
       referrer,
       tg_user_id: finalUserId
     });
+    // Attribution: write UTM to user_identities by cookie_id (anonymous or stitched)
+    if (cookieIdRef.current && (utmParams.utm_source || utmParams.utm_medium || utmParams.utm_campaign)) {
+      await apiUtils.upsertUserIdentity(cookieIdRef.current, utmParams);
+    }
+    return result;
   }, [ensureSession]);
 
   // 2. MiniApp open logging

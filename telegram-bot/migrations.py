@@ -259,6 +259,14 @@ class DatabaseMigrations:
                 except sqlite3.OperationalError as e:
                     logger.warning(f"Не удалось добавить колонку miniapp_id: {e}")
 
+            for col in ('utm_source', 'utm_medium', 'utm_campaign'):
+                if col not in identity_columns:
+                    try:
+                        cursor.execute(f'ALTER TABLE user_identities ADD COLUMN {col} TEXT')
+                        logger.info("Добавлена колонка %s в user_identities", col)
+                    except sqlite3.OperationalError as e:
+                        logger.warning("Не удалось добавить колонку %s: %s", col, e)
+
             # Создаем таблицу для AI взаимодействий
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS ai_interactions (

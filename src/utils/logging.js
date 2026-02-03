@@ -201,7 +201,7 @@ export const apiUtils = {
     try {
       const { data, error } = await supabase.from('site_sessions').insert({
         cookie_id: cookieId,
-        tg_user_id: Number(tgUserId) || null,
+        tg_user_id: tgUserId != null && tgUserId !== '' ? Number(tgUserId) : null,
         user_agent: userAgent,
         referrer: referrer
       }).select('id').single();
@@ -211,7 +211,89 @@ export const apiUtils = {
       return IS_DEV ? { session_id: 0 } : null;
     }
   },
-  
+
+  /** Upsert user_identities by cookie_id: set UTM for anonymous; optionally set tg_user_id when stitching. */
+  async upsertUserIdentity(cookieId, utmParams = {}, tgUserId = null) {
+    const supabase = await getSupabase();
+    if (!supabase) return { ok: false };
+    const hasUtm = utmParams && (utmParams.utm_source || utmParams.utm_medium || utmParams.utm_campaign);
+    if (!cookieId) return { ok: true };
+    try {
+      const { data: existing } = await supabase
+        .from('user_identities')
+        .select('id')
+        .eq('cookie_id', cookieId)
+        .is('tg_user_id', null)
+        .limit(1)
+        .maybeSingle();
+      if (existing?.id) {
+        const payload = {};
+        if (hasUtm) {
+          payload.utm_source = utmParams.utm_source ?? null;
+          payload.utm_medium = utmParams.utm_medium ?? null;
+          payload.utm_campaign = utmParams.utm_campaign ?? null;
+        }
+        if (Object.keys(payload).length) {
+          const { error } = await supabase.from('user_identities').update(payload).eq('id', existing.id);
+          if (error) throw error;
+        }
+      } else if (hasUtm) {
+        const { error } = await supabase.from('user_identities').insert({
+          cookie_id: cookieId,
+          tg_user_id: null,
+          source: 'site',
+          utm_source: utmParams.utm_source ?? null,
+          utm_medium: utmParams.utm_medium ?? null,
+          utm_campaign: utmParams.utm_campaign ?? null
+        });
+        if (error) throw error;
+      }
+      return { ok: true };
+    } catch (e) {
+      console.warn('[upsertUserIdentity]', e?.message || e);
+      return { ok: false };
+    }
+  },
+
+  /** Stitching: set tg_user_id on current session and link cookie_id in user_identities. */
+  async linkIdentities(tgUserId, cookieId, sessionId) {
+    const supabase = await getSupabase();
+    if (!supabase || !cookieId) return { ok: false };
+    try {
+      if (sessionId != null && sessionId !== 0) {
+        const { error: sessErr } = await supabase
+          .from('site_sessions')
+          .update({ tg_user_id: Number(tgUserId) })
+          .eq('id', sessionId);
+        if (sessErr) throw sessErr;
+      }
+      const { data: row } = await supabase
+        .from('user_identities')
+        .select('id')
+        .eq('cookie_id', cookieId)
+        .is('tg_user_id', null)
+        .limit(1)
+        .maybeSingle();
+      if (row?.id) {
+        const { error } = await supabase
+          .from('user_identities')
+          .update({ tg_user_id: Number(tgUserId) })
+          .eq('id', row.id);
+        if (error) throw error;
+      } else {
+        await supabase.from('user_identities').insert({
+          tg_user_id: Number(tgUserId),
+          cookie_id: cookieId,
+          source: 'miniapp'
+        });
+      }
+      return { ok: true };
+    } catch (e) {
+      console.warn('[linkIdentities]', e?.message || e);
+      return { ok: false };
+    }
+  },
+
   async logEvent(sId, type, name, page, meta, tgId) {
     return trackEvent(sId, type, name, page, meta, tgId);
   },
