@@ -131,6 +131,271 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
         if (supabase) {
           try {
+            // Detect Guest Mode: no real tg_user_id or user not found in DB → attribute by cookie only
+            let guestMode = false
+            if (!tgUserId && cookieId) {
+              guestMode = true
+            } else if (tgUserId) {
+              const { data: existingUser } = await supabase
+                .from('users')
+                .select('user_id')
+                .eq('user_id', tgUserId)
+                .maybeSingle()
+              if (!existingUser) guestMode = true
+            }
+
+            if (guestMode && cookieId) {
+              const startDate = getStartDate(selectedPeriod)
+
+              const safeParse = (v) => {
+                if (v == null) return {}
+                if (typeof v === 'object') return v
+                try {
+                  return typeof v === 'string' ? JSON.parse(v) : {}
+                } catch { return {} }
+              }
+
+              // Guest user info: no Telegram, attribution by cookie + UTM from user_identities
+              let user = {
+                tg_user_id: null,
+                cookie_id: cookieId,
+                traffic_source: 'Не определен',
+                utm_params: {},
+                referrer: null,
+                first_visit_date: null,
+                guest_mode: true
+              }
+
+              const { data: cookieSessions } = await supabase
+                .from('site_sessions')
+                .select('id,cookie_id,source,referrer,session_start,session_end,page_id,device_type,user_agent')
+                .eq('cookie_id', cookieId)
+                .order('session_start', { ascending: true })
+
+              const allSessions = cookieSessions || []
+              const sessionIds = allSessions.map(s => s.id)
+              const firstSessionRow = allSessions[0] ?? null
+              if (firstSessionRow) {
+                user.traffic_source = firstSessionRow.source || user.traffic_source
+                user.referrer = firstSessionRow.referrer
+                user.first_visit_date = firstSessionRow.session_start
+              }
+
+              // UTM by cookie from user_identities
+              const { data: identitiesByCookie } = await supabase
+                .from('user_identities')
+                .select('utm_source,utm_medium,utm_campaign')
+                .eq('cookie_id', cookieId)
+              const firstCookieIdentityWithUtm = identitiesByCookie?.find(r => r.utm_source || r.utm_medium || r.utm_campaign)
+              if (firstCookieIdentityWithUtm) {
+                user.utm_params = {
+                  utm_source: firstCookieIdentityWithUtm.utm_source ?? null,
+                  utm_medium: firstCookieIdentityWithUtm.utm_medium ?? null,
+                  utm_campaign: firstCookieIdentityWithUtm.utm_campaign ?? null
+                }
+              }
+
+              // Journey: sessions and events (by cookie)
+              const journey = {
+                miniapp_opens: [],
+                content_views: [],
+                page_views: [],
+                ai_interactions: [],
+                diagnostics: [],
+                game_actions: [],
+                cta_clicks: [],
+                content_actions: [],
+                alchemy_events: []
+              }
+
+              const parseUA = (ua) => {
+                if (!ua || typeof ua !== 'string') return { deviceType: 'Unknown', browser: 'Unknown' }
+                const s = ua.toLowerCase()
+                let deviceType = 'Desktop'
+                if (/mobile|android|iphone|ipod|webos|blackberry|iemobile|opera mini/i.test(s)) deviceType = 'Mobile'
+                else if (/tablet|ipad|playbook|silk/i.test(s)) deviceType = 'Tablet'
+                let browser = 'Unknown'
+                if (s.includes('edg/')) browser = 'Edge'
+                else if (s.includes('opr/') || s.includes('opera')) browser = 'Opera'
+                else if (s.includes('chrome/')) browser = 'Chrome'
+                else if (s.includes('firefox/')) browser = 'Firefox'
+                else if (s.includes('safari/') && !s.includes('chrome')) browser = 'Safari'
+                return { deviceType, browser }
+              }
+
+              const sessionsInPeriod = selectedPeriod === 'all'
+                ? [...allSessions].sort((a, b) => new Date(b.session_start) - new Date(a.session_start))
+                : allSessions
+                  .filter(s => new Date(s.session_start) >= new Date(startDate))
+                  .sort((a, b) => new Date(b.session_start) - new Date(a.session_start))
+
+              journey.miniapp_opens = sessionsInPeriod.map(s => {
+                const ua = parseUA(s.user_agent)
+                return {
+                  timestamp: s.session_start,
+                  page: s.page_id,
+                  device: s.device_type || ua.deviceType,
+                  device_type: s.device_type || ua.deviceType,
+                  browser: ua.browser
+                }
+              })
+
+              const fetchEvents = async (type, mapper = (r) => r, eventName = null) => {
+                if (!sessionIds.length) return []
+                const q = supabase
+                  .from('site_events')
+                  .select('created_at,event_name,metadata,page,custom_data')
+                  .order('created_at', { ascending: false })
+                  .limit(500)
+                  .in('session_id', sessionIds)
+                if (type) q.eq('event_type', type)
+                if (eventName) q.eq('event_name', eventName)
+                if (selectedPeriod !== 'all') q.gte('created_at', startDate)
+                const { data, error } = await q
+                if (!error && data) return data.map(mapper)
+                return []
+              }
+
+              // Reuse existing mappers below for content, ai, diagnostics, alchemy, cta, page_views
+              const contentMapper = (r) => {
+                const meta = safeParse(r.metadata)
+                const durationRaw = Number(meta.duration ?? meta.time_spent ?? meta.timeSpent ?? 30)
+                const durationSec = durationRaw > 0 ? durationRaw : 30
+                return {
+                  event_name: r.event_name,
+                  metadata: r.metadata,
+                  page: r.page ?? null,
+                  custom_data: r.custom_data ?? null,
+                  section: meta.content_type ?? r.event_name,
+                  content_id: meta.content_id ?? null,
+                  content_title: meta.content_title ?? null,
+                  time_spent: durationSec,
+                  duration: durationSec,
+                  scroll_depth: meta.scroll_depth ?? 0,
+                  timestamp: r.created_at
+                }
+              }
+              const contentRows = await fetchEvents('content', contentMapper)
+              journey.content_views = contentRows
+              journey.content_actions = contentRows
+
+              const aiInteractionMapper = (r) => {
+                const meta = safeParse(r.metadata)
+                const messagesCount = Number(meta.messages_count ?? meta.messagesCount ?? 0) || 0
+                const duration = Number(meta.duration ?? 0) || 0
+                const userMessage = meta.user_message ?? meta.last_message ?? meta.message
+                const aiResponse = meta.ai_response ?? meta.ai_message ?? meta.response
+                const userStr = typeof userMessage === 'string' ? userMessage : (userMessage?.text ?? userMessage?.content ?? '')
+                const aiStr = typeof aiResponse === 'string' ? aiResponse : (aiResponse?.text ?? aiResponse?.content ?? '')
+                return {
+                  event_name: r.event_name,
+                  metadata: r.metadata,
+                  messages_count: messagesCount,
+                  topics: meta.topics ?? [],
+                  duration,
+                  user_message: userStr || null,
+                  ai_response: aiStr || null,
+                  timestamp: r.created_at
+                }
+              }
+              journey.ai_interactions = await fetchEvents('ai', aiInteractionMapper)
+
+              journey.diagnostics = await fetchEvents('diagnostic', (r) => ({
+                event_name: r.event_name,
+                metadata: r.metadata,
+                progress: (r.metadata && (() => { try { return JSON.parse(r.metadata).progress } catch { return 0 } })()) || 0,
+                results: (r.metadata && (() => { try { return JSON.parse(r.metadata).results } catch { return null } })()) || null,
+                time_spent: (r.metadata && (() => { try { const m = JSON.parse(r.metadata); return (m.end_time && m.start_time) ? (m.end_time - m.start_time) : 0 } catch { return 0 } })()) || 0,
+                timestamp: r.created_at
+              }))
+
+              const alchemyMapper = (r) => {
+                const meta = safeParse(r.metadata)
+                const score = Number(meta.score ?? meta.scores ?? 0) || 0
+                return {
+                  event_name: r.event_name,
+                  metadata: r.metadata,
+                  page: r.page ?? null,
+                  game_type: meta.game_type ?? 'Неизвестно',
+                  achievement: meta.achievement ?? [],
+                  score,
+                  timestamp: r.created_at
+                }
+              }
+              const alchemyRows = await fetchEvents('alchemy', alchemyMapper)
+              journey.game_actions = alchemyRows
+              journey.alchemy_events = alchemyRows
+
+              journey.cta_clicks = await fetchEvents('cta', (r) => {
+                const meta = safeParse(r.metadata)
+                const cd = r.custom_data ? (typeof r.custom_data === 'string' ? (r.custom_data ? JSON.parse(r.custom_data) : {}) : r.custom_data) : {}
+                return {
+                  event_name: r.event_name,
+                  metadata: r.metadata,
+                  custom_data: cd,
+                  cta_text: meta.cta_text ?? meta.button_text ?? null,
+                  cta_location: meta.cta_location ?? null,
+                  previous_step: meta.previous_step ?? null,
+                  step_duration: meta.step_duration ?? 0,
+                  timestamp: r.created_at
+                }
+              }, 'cta_click')
+
+              journey.page_views = await fetchEvents('visit', (r) => ({
+                event_name: r.event_name,
+                metadata: r.metadata,
+                page: r.page ?? null,
+                timestamp: r.created_at
+              }), 'page_view')
+
+              const totalSessions = sessionsInPeriod.length
+              const diagnosticsCompleted = journey.diagnostics?.length > 0
+              const engagementLevel = (journey.content_views.length + journey.ai_interactions.length) > 30 ? 'high' : ((journey.content_views.length + journey.ai_interactions.length) > 5 ? 'medium' : 'low')
+
+              let totalSessionDurationSeconds = 0
+              try {
+                sessionsInPeriod.forEach(s => {
+                  if (s.session_start && s.session_end) {
+                    const start = new Date(s.session_start).getTime()
+                    const end = new Date(s.session_end).getTime()
+                    if (end > start) totalSessionDurationSeconds += Math.round((end - start) / 1000)
+                  }
+                })
+              } catch (_) {}
+
+              const segmentation = {
+                user_segment: 'guest',
+                engagement_level: engagementLevel,
+                total_sessions: totalSessions,
+                diagnostics_completed: diagnosticsCompleted,
+                last_activity: journey.miniapp_opens.length ? journey.miniapp_opens[0].timestamp : null,
+                session_duration_seconds: totalSessionDurationSeconds,
+                session_duration_display: totalSessionDurationSeconds ? `${Math.floor(totalSessionDurationSeconds / 60)}м ${totalSessionDurationSeconds % 60}с` : null
+              }
+
+              const recommendations = {
+                next_steps: ['Авторизоваться через Telegram, чтобы сохранить прогресс и получить персональные рекомендации'],
+                automatic_actions: [],
+                content_suggestions: ['Введение', 'Кейсы'],
+                cta_suggestions: ['Открыть MiniApp в Telegram']
+              }
+
+              const report = {
+                user,
+                journey,
+                segmentation,
+                recommendations,
+                user_segments: null,
+                generated_at: new Date().toISOString()
+              }
+
+              setReportData(report)
+              setIsSampleData(false)
+              setError(null)
+              return
+            }
+
+            // Authenticated / known user: full Supabase-based report with stitching by tg_user_id + cookie
             await supabase.rpc('fn_refresh_segments', {
               target_user_id: String(userId)
             })
@@ -1165,6 +1430,18 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     return emoji || '•'
   }, [EVENT_NAME_LABELS, SECTION_RICH_LABELS])
 
+  // Reset local session for testing (clear localStorage and reload)
+  const handleResetSession = useCallback(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.clear()
+        window.location.reload()
+      }
+    } catch (e) {
+      console.error('Failed to reset session', e)
+    }
+  }, [])
+
   // Content details block under title: test_complete, ai_chat_message, astrolabe_input, snitch/crystal (short preview)
   const getEventContentDetails = useCallback((entry) => {
     if (entry.type === 'session_divider') return null
@@ -1374,12 +1651,47 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                   <div className="user-info-card user-info-card-identity">
                     <h4 className="user-info-card-title">👤 Ваш аккаунт</h4>
                     <ul className="user-info-card-list">
-                      <li><span className="user-info-emoji">📱</span><span className="user-info-label">Telegram ID:</span><span className="user-info-value">{reportData?.user?.tg_user_id ?? '—'}</span></li>
-                      {(reportData?.user?.user_profile?.first_name || reportData?.user?.user_profile?.last_name) && (
-                        <li><span className="user-info-emoji">👤</span><span className="user-info-label">Имя:</span><span className="user-info-value">{[reportData.user.user_profile.first_name, reportData.user.user_profile.last_name].filter(Boolean).join(' ') || '—'}</span></li>
-                      )}
-                      {reportData?.user?.user_profile?.username && (
-                        <li><span className="user-info-emoji">📛</span><span className="user-info-label">Ник:</span><span className="user-info-value">@{reportData.user.user_profile.username}</span></li>
+                      {reportData?.user?.guest_mode ? (
+                        <>
+                          <li>
+                            <span className="user-info-emoji">🙈</span>
+                            <span className="user-info-label">Статус:</span>
+                            <span className="user-info-value">
+                              Анонимный гость (Cookie:{' '}
+                              {reportData?.user?.cookie_id ? String(reportData.user.cookie_id).slice(0, 6) : '—'}
+                              )
+                            </span>
+                          </li>
+                          <li>
+                            <span className="user-info-emoji">🔒</span>
+                            <span className="user-info-label">Аккаунт Telegram:</span>
+                            <span className="user-info-value">не привязан</span>
+                          </li>
+                        </>
+                      ) : (
+                        <>
+                          <li>
+                            <span className="user-info-emoji">📱</span>
+                            <span className="user-info-label">Telegram ID:</span>
+                            <span className="user-info-value">{reportData?.user?.tg_user_id ?? '—'}</span>
+                          </li>
+                          {(reportData?.user?.user_profile?.first_name || reportData?.user?.user_profile?.last_name) && (
+                            <li>
+                              <span className="user-info-emoji">👤</span>
+                              <span className="user-info-label">Имя:</span>
+                              <span className="user-info-value">
+                                {[reportData.user.user_profile.first_name, reportData.user.user_profile.last_name].filter(Boolean).join(' ') || '—'}
+                              </span>
+                            </li>
+                          )}
+                          {reportData?.user?.user_profile?.username && (
+                            <li>
+                              <span className="user-info-emoji">📛</span>
+                              <span className="user-info-label">Ник:</span>
+                              <span className="user-info-value">@{reportData.user.user_profile.username}</span>
+                            </li>
+                          )}
+                        </>
                       )}
                     </ul>
                   </div>
@@ -1434,6 +1746,13 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                       )}
                       <li><span className="user-info-emoji">🍪</span><span className="user-info-label">Cookie ID:</span><span className="user-info-value">{reportData?.user?.cookie_id ?? '—'}</span></li>
                     </ul>
+                    <button
+                      type="button"
+                      className="user-info-reset-session-button"
+                      onClick={handleResetSession}
+                    >
+                      Сбросить сессию (очистить localStorage)
+                    </button>
                   </div>
                 </div>
               </motion.div>

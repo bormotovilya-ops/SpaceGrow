@@ -2,7 +2,6 @@ import { getSupabase } from './supabaseClient';
 import { findSectionWithParent, findSectionById, findSectionByPath, SEGMENTS, inferHuntStage } from '../config/sitemapData';
 
 const IS_DEV = import.meta.env.MODE === 'development';
-const FALLBACK_TG_USER_ID = 888888;
 
 /**
  * Очистка метаданных
@@ -46,10 +45,22 @@ function buildEnrichedCustomData(sectionId, page, eventType, eventName, metadata
 }
 
 /**
+ * Нормализация tg_user_id для FK: только число или null (не "", undefined, 0).
+ * Guest Mode: передаём null.
+ */
+function normalizeTgUserId(tgUserId) {
+  if (tgUserId == null || tgUserId === '') return null;
+  const n = Number(tgUserId);
+  if (Number.isNaN(n) || n === 0) return null;
+  return n;
+}
+
+/**
  * Основная функция трекинга. В custom_data уходит JSON с section_id, label, section_label, section_icon, huntStage (для fn_sync_user_strategy).
+ * Guest Mode: session_id берётся из последнего startSession; tg_user_id отправляется как null.
  */
 export async function trackEvent(sessionId, eventType, eventName, page = null, metadata = {}, tgUserId = null) {
-  const finalTgUserId = Number(tgUserId) || FALLBACK_TG_USER_ID;
+  const finalTgUserId = normalizeTgUserId(tgUserId);
   const safeSessionId = Number(sessionId) || 0;
   const sectionId = metadata && (metadata.section_id ?? metadata.sectionId);
   const customData = buildEnrichedCustomData(sectionId, page, eventType, eventName, metadata);
@@ -67,6 +78,7 @@ export async function trackEvent(sessionId, eventType, eventName, page = null, m
   }
 
   try {
+    console.log('Logging event:', { session_id: safeSessionId, event_type: eventType, event_name: eventName, tg_user_id: finalTgUserId, page: cleanPayload.page });
     const supabase = await getSupabase();
     if (!supabase) return { ok: false };
 
@@ -75,11 +87,12 @@ export async function trackEvent(sessionId, eventType, eventName, page = null, m
       .insert(cleanPayload);
 
     if (error) {
-      console.error('[trackEvent] insert failed:', error.message);
+      console.error('[trackEvent] insert failed:', error.message, error);
       return { ok: false, error };
     }
     return { ok: true };
   } catch (err) {
+    console.error('[trackEvent]', err);
     return { ok: false, error: err };
   }
 }
@@ -99,7 +112,7 @@ export async function trackSectionView(sessionId, sectionId, tgUserId = null) {
     return { ok: false };
   }
   const { node, parent } = found;
-  const finalTgUserId = Number(tgUserId) || FALLBACK_TG_USER_ID;
+  const finalTgUserId = normalizeTgUserId(tgUserId);
   const safeSessionId = Number(sessionId) || 0;
   const segKey = (node.segment || 'common').toLowerCase();
   const segmentInfo = SEGMENTS[segKey] || SEGMENTS.common;
@@ -128,11 +141,12 @@ export async function trackSectionView(sessionId, sectionId, tgUserId = null) {
       custom_data: typeof customData === 'string' ? customData : JSON.stringify(customData)
     });
     if (error) {
-      console.error('[trackSectionView] insert failed:', error.message);
+      console.error('[trackSectionView] insert failed:', error.message, error);
       return { ok: false, error };
     }
     return { ok: true };
   } catch (err) {
+    console.error('[trackSectionView]', err);
     return { ok: false, error: err };
   }
 }
@@ -250,7 +264,7 @@ export const apiUtils = {
       }
       return { ok: true };
     } catch (e) {
-      console.warn('[upsertUserIdentity]', e?.message || e);
+      console.error('[upsertUserIdentity]', e?.message ?? e);
       return { ok: false };
     }
   },
@@ -289,7 +303,7 @@ export const apiUtils = {
       }
       return { ok: true };
     } catch (e) {
-      console.warn('[linkIdentities]', e?.message || e);
+      console.error('[linkIdentities]', e?.message ?? e);
       return { ok: false };
     }
   },

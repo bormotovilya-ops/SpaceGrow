@@ -1,10 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { apiUtils, userUtils, debounce } from '../utils/logging';
 
-// Fallback tg_user_id when testing in browser; must be 888888 to match prepared DB records
-const FALLBACK_TG_USER_ID = 888888;
-
-// Global session state
+// Global session state (session_id from last startSession; Guest Mode = tg_user_id null)
 let globalSessionId = null;
 let globalCookieId = null;
 let globalTgUserId = null;
@@ -90,8 +87,8 @@ export const useLogEvent = () => {
     if (section_id != null) meta.section_id = section_id;
     if (customData != null) meta.customData = customData;
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
-    return apiUtils.logEvent(sessionId, eventType, eventName, page ?? meta.page, meta, finalUserId);
+    // Guest Mode: pass null so DB gets tg_user_id = null (no fallback ID)
+    return apiUtils.logEvent(sessionId, eventType, eventName, page ?? meta.page, meta, tgUserIdRef.current);
   }, [ensureSession]);
 
   // Specialized logging methods
@@ -104,14 +101,14 @@ export const useLogEvent = () => {
     const utmParams = userUtils.getUTMParams();
     const referrer = userUtils.getReferrer();
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
+    // Guest Mode: tg_user_id = null (no fallback)
     const result = await apiUtils.logSourceVisit({
       session_id: sessionId,
       source,
       cookie_id: cookieIdRef.current,
       utm_params: utmParams,
       referrer,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
     // Attribution: write UTM to user_identities by cookie_id (anonymous or stitched)
     if (cookieIdRef.current && (utmParams.utm_source || utmParams.utm_medium || utmParams.utm_campaign)) {
@@ -127,13 +124,12 @@ export const useLogEvent = () => {
 
     const deviceInfo = userUtils.getDeviceInfo();
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logMiniAppOpen({
       session_id: sessionId,
       device: deviceInfo.deviceType,
       page_id: pageId,
       cookie_id: cookieIdRef.current,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 
@@ -153,7 +149,6 @@ export const useLogEvent = () => {
       page
     } = options;
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logContentView({
       session_id: sessionId,
       content_type: contentType,
@@ -164,7 +159,7 @@ export const useLogEvent = () => {
       scroll_depth: scrollDepth,
       page: page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 
@@ -173,7 +168,6 @@ export const useLogEvent = () => {
     const sessionId = await ensureSession();
     if (!sessionId) return null;
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logAIInteraction({
       session_id: sessionId,
       messages_count: messagesCount,
@@ -182,7 +176,7 @@ export const useLogEvent = () => {
       conversation_type: conversationType,
       page: options.page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 
@@ -192,7 +186,6 @@ export const useLogEvent = () => {
     if (!sessionId) return null;
 
     if (action === 'complete') {
-      const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
       return apiUtils.logDiagnosticCompletion({
         session_id: sessionId,
         results,
@@ -200,7 +193,7 @@ export const useLogEvent = () => {
         end_time: endTime,
         progress,
         cookie_id: cookieIdRef.current,
-        tg_user_id: finalUserId
+        tg_user_id: tgUserIdRef.current
       });
     } else {
       // Log start or progress events
@@ -217,7 +210,6 @@ export const useLogEvent = () => {
 
     const { score, achievement, duration } = options;
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logGameAction({
       session_id: sessionId,
       game_type: gameType,
@@ -228,7 +220,7 @@ export const useLogEvent = () => {
       duration,
       page: options.page ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 
@@ -250,7 +242,6 @@ export const useLogEvent = () => {
       button_text
     } = options;
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logCTAClick({
       session_id: sessionId,
       cta_type: ctaType,
@@ -264,7 +255,7 @@ export const useLogEvent = () => {
       custom_label: custom_label ?? null,
       element_text: element_text ?? button_text ?? null,
       cookie_id: cookieIdRef.current,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 
@@ -273,14 +264,13 @@ export const useLogEvent = () => {
     const sessionId = await ensureSession();
     if (!sessionId) return null;
 
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.logPersonalPathView({
       session_id: sessionId,
       open_time: openTime,
       duration,
       downloaded,
       cookie_id: cookieIdRef.current,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 
@@ -329,11 +319,10 @@ export const useLogEvent = () => {
 
     const sessionId = await ensureSession();
     if (!sessionId) return null;
-    const finalUserId = tgUserIdRef.current ?? FALLBACK_TG_USER_ID;
     return apiUtils.trackSectionView({
       session_id: sessionId,
       section_id: sectionId,
-      tg_user_id: finalUserId
+      tg_user_id: tgUserIdRef.current
     });
   }, [ensureSession]);
 

@@ -7,7 +7,7 @@ import { userUtils } from '../utils/logging';
  * Должен быть размещен в корне приложения для автоматической инициализации
  */
 const SessionInitializer = ({ children }) => {
-  const { logArrival, logMiniAppOpen, ensureSession } = useLogEvent();
+  const { logArrival, logMiniAppOpen, logEvent, ensureSession } = useLogEvent();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -57,6 +57,12 @@ const SessionInitializer = ({ children }) => {
             await logMiniAppOpen(pageId);
           }
 
+          // 5. Автоматический page_view при инициализации приложения
+          if (typeof window !== 'undefined' && logEvent) {
+            const path = window.location.pathname || (window.location.hash ? window.location.hash.replace(/^#/, '') : '') || '/';
+            await logEvent('visit', 'page_view', { page: path || '/' });
+          }
+
           console.log('✅ Session initialized and arrival logged', {
             sessionId,
             source,
@@ -76,7 +82,7 @@ const SessionInitializer = ({ children }) => {
     const timer = setTimeout(initializeSession, 100);
 
     return () => clearTimeout(timer);
-  }, [logArrival, logMiniAppOpen, ensureSession]);
+  }, [logArrival, logMiniAppOpen, logEvent, ensureSession]);
 
   // Показываем loading пока инициализируется сессия
   if (!isInitialized) {
