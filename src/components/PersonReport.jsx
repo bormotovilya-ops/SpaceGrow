@@ -144,8 +144,35 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               if (!existingUser) guestMode = true
             }
 
+            // Always refresh segments for this visitor (user or anonymous cookie)
+            const startDate = getStartDate(selectedPeriod)
+            await supabase.rpc('fn_refresh_segments', {
+              p_tg_user_id: tgUserId != null ? String(tgUserId) : null,
+              p_cookie_id: cookieId ?? null
+            })
+
+            // Load segmentation row from user_segments:
+            // - Auth user: by tg_user_id
+            // - Guest: by cookie_id and tg_user_id IS NULL
+            let userSegmentsRow = null
+            if (tgUserId) {
+              const { data: segmentRows } = await supabase
+                .from('user_segments')
+                .select('*')
+                .eq('tg_user_id', tgUserId)
+                .limit(1)
+              userSegmentsRow = segmentRows?.[0] ?? null
+            } else if (cookieId) {
+              const { data: segmentRows } = await supabase
+                .from('user_segments')
+                .select('*')
+                .eq('cookie_id', cookieId)
+                .is('tg_user_id', null)
+                .limit(1)
+              userSegmentsRow = segmentRows?.[0] ?? null
+            }
+
             if (guestMode && cookieId) {
-              const startDate = getStartDate(selectedPeriod)
 
               const safeParse = (v) => {
                 if (v == null) return {}
@@ -385,7 +412,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                 journey,
                 segmentation,
                 recommendations,
-                user_segments: null,
+                user_segments: userSegmentsRow,
                 generated_at: new Date().toISOString()
               }
 
@@ -396,16 +423,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
             }
 
             // Authenticated / known user: full Supabase-based report with stitching by tg_user_id + cookie
-            await supabase.rpc('fn_refresh_segments', {
-              target_user_id: String(userId)
-            })
-            const { data: segmentRows } = await supabase
-              .from('user_segments')
-              .select('*')
-              .eq('tg_user_id', userId)
-              .limit(1)
-            const userSegmentsRow = segmentRows?.[0] ?? null
-            const startDate = getStartDate(selectedPeriod)
+            // Segmentation row for this user already loaded into userSegmentsRow above
 
             // Helper to parse JSON fields (Supabase may return object or string)
             const safeParse = (v) => {
