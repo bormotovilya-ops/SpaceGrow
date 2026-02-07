@@ -1,0 +1,86 @@
+{
+  "settings": {
+    "logicType": "ONBOARDING",
+    "view": "paged",
+    "showChart": false,
+    "analyticsPrefix": "onboarding",
+    "saveToCookies": true
+  },
+  "title": "Знакомство и стратегия",
+  "welcome": {
+    "title": "Давайте познакомимся",
+    "description": "<div class='diagnostics-intro-main'>🤝 Этот короткий диалог поможет мне лучше понять ваш проект, а вам — увидеть точки роста для вашего бизнеса.</div><div class='diagnostics-intro-sub'>✨ Я подготовил 5 вопросов, которые помогут нам сонастроиться и подобрать идеальное IT-решение.</div><div class='diagnostics-instruction'><strong>📋 Как это работает:</strong><ul class='diagnostics-instruction-list'><li class='diagnostics-instruction-item'><span class='diagnostics-instruction-emoji'>🎭</span><div class='diagnostics-instruction-content'><div class='diagnostics-instruction-title'>Рассказываю я:</div><p class='diagnostics-instruction-text'>В каждом вопросе я делюсь своим подходом и опытом.</p></div></li><li class='diagnostics-instruction-item'><span class='diagnostics-instruction-emoji'>💬</span><div class='diagnostics-instruction-content'><div class='diagnostics-instruction-title'>Отвечаете вы:</div><p class='diagnostics-instruction-text'>Вы выбираете вариант, который больше всего подходит вашему делу.</p></div></li><li class='diagnostics-instruction-item'><span class='diagnostics-instruction-emoji'>🗺️</span><div class='diagnostics-instruction-content'><div class='diagnostics-instruction-title'>Получаете отчет:</div><p class='diagnostics-instruction-text'>В конце вы попадете в раздел Strategy Report с первыми рекомендациями.</p></div></li></ul></div>",
+    "buttonText": "Начать знакомство"
+  },
+  "stages": [
+    { "id": "niche", "name": "Ниша", "subtitle": "Ваша сфера", "image": "/images/onboarding/niche.png" },
+    { "id": "hunt", "name": "Осознанность", "subtitle": "Лестница Ханта", "image": "/images/onboarding/hunt.png" },
+    { "id": "scale", "name": "Масштаб", "subtitle": "Ваше дело", "image": "/images/onboarding/scale.png" },
+    { "id": "temp", "name": "Срочность", "subtitle": "Темп работы", "image": "/images/onboarding/temp.png" },
+    { "id": "result", "name": "Результат", "subtitle": "Ваша цель", "image": "/images/onboarding/result.png" }
+  ],
+  "questions": [
+    {
+      "id": "ob_1",
+      "stageId": "niche",
+      "text": "Я помогаю экспертам превращать знания в систему. Кто-то обучает психологии, а кто-то — заработку. Я работаю и с глубокими смыслами, и с цифрами.\n\nВ какой сфере вы несете пользу людям?",
+      "options": [
+        { "text": "Мягкие ниши (Психология, отношения, самопознание)", "value": "soft" },
+        { "text": "Твердые ниши (Бизнес, профессии, финансы)", "value": "hard" },
+        { "text": "Творчество и хобби (Дизайн, вокал, искусство)", "value": "creative" },
+        { "text": "Другое", "value": "other" }
+      ]
+    },
+    {
+      "id": "ob_2",
+      "stageId": "hunt",
+      "text": "Часто ко мне приходят, когда устают от технических дебрей и хотят, чтобы всё работало просто. \n\nКак вы сейчас чувствуете себя в вопросах настройки сайта или онлайн-школы?",
+      "options": [
+        { "text": "«Пока не думаю об этом, зашел/зашла из любопытства»", "value": "hunt_1" },
+        { "text": "«Техника меня пугает, хочу полностью это делегировать»", "value": "hunt_2" },
+        { "text": "«Понимаю задачи, ищу надежные способы реализации»", "value": "hunt_3" },
+        { "text": "«Уже есть опыт разного, ищу более глубокого мастера»", "value": "hunt_4" },
+        { "text": "«Мне нравится ваш подход, готов(а) обсуждать детали»", "value": "hunt_5" }
+      ]
+    },
+    {
+      "id": "ob_3",
+      "stageId": "scale",
+      "text": "Я создаю решения, которые освобождают время эксперта для творчества. \n\nКак сейчас устроено ваше дело?",
+      "options": [
+        { "text": "Работаю индивидуально — доход до 500к", "value": "solo" },
+        { "text": "Есть небольшая команда — доход до 1.5 млн", "value": "team" },
+        { "text": "Большой системный проект — доход от 2 млн+", "value": "system" },
+        { "text": "Только планируется первый запуск", "value": "start" }
+      ]
+    },
+    {
+      "id": "ob_4",
+      "stageId": "temp",
+      "text": "Внедрение изменений происходит бережно, чтобы не нарушить ваш ритм, но первые результаты видны быстро. \n\nКогда бы вы хотели начать?",
+      "options": [
+        { "text": "Нужно «вчера» — скоро важный запуск", "value": "hot" },
+        { "text": "В рабочем режиме в течение месяца", "value": "warm" },
+        { "text": "В спокойном темпе это планы на пару месяцев вперед", "value": "warm" },
+        { "text": "Пока идет знакомство и планы на будущее", "value": "cold" }
+      ]
+    },
+    {
+      "id": "ob_5",
+      "stageId": "result",
+      "text": "Я создаю системы, которые влюбляют в бренд, чтобы ученики восхищались продуктом и возвращались снова. \n\nКакой результат нашего сотрудничества станет самым ценным?",
+      "options": [
+        { "text": "«Хочу, чтобы мой продукт выглядел дорого и уникально»", "value": "premium" },
+        { "text": "«Нужна автоматизация, чтобы проект работал сам 24/7»", "value": "autopilot" },
+        { "text": "«Хочу внедрить магию игры, чтобы ученики были в восторге»", "value": "wow" },
+        { "text": "«Нужен надежный мастер рядом для долгого партнерства»", "value": "partnership" }
+      ]
+    }
+  ],
+"results": {
+  "default": {
+    "title": "Стратегия взаимодействия",
+    "description": "<div class='results-main-text'><strong>В большом деле не бывает случайных встреч.</strong> Чтобы наше знакомство сразу переросло в результат, я использую сегментацию аудитории. Это лучший способ понять ваши приоритеты и ценности еще до того, как мы созвонимся.</div><div class='results-action-call'>🔮 <strong>Ваш персональный отчет готов.</strong> Загляните внутрь, чтобы увидеть своими глазами, что система уже знает о вас и к какому сегменту отнесла. На основании этих данных будет строиться наше дальнейшее взаимодействие</div><a href='https://www.spacegrowth.ru/personreport' class='results-report-button' style='display: block; text-align: center; margin-top: 25px; padding: 18px; background: #FFD700; color: #000; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);'>Открыть персональный отчет</a>"
+  }
+}
+}

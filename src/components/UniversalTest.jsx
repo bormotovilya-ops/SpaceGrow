@@ -6,6 +6,7 @@ import './Diagnostics.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramChat } from '../utils/telegram'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { getSupabase } from '../utils/supabaseClient'
 
 // IKIGAI Venn Diagram (4 overlapping circles)
 const IkigaiVenn = ({ data = {}, sectors = [], threshold = 3.5, size = 360 }) => {
@@ -136,10 +137,11 @@ const IkigaiVenn = ({ data = {}, sectors = [], threshold = 3.5, size = 360 }) =>
 }
 
 const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsultation, onChatClick, onHomeClick }) => {
-  const { logContentView, logCTAClick, logEvent } = useLogEvent()
+  const { logContentView, logCTAClick, logEvent, getSessionInfo } = useLogEvent()
   const { settings, stages, questions, commonAnswerOptions, answerOptions, welcome, results: resultsMapping, cta } = data
   const totalQuestions = questions.length
   const resultsLoggedRef = useRef(false)
+  const onboardingSavedRef = useRef(false)
 
   useEffect(() => {
     logContentView('page', 'diagnostics', { content_title: welcome?.title || 'Диагностика в подарок' })
@@ -192,6 +194,11 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
       return { sectorScores, result: resultsMapping[binaryKey] || resultsMapping['0000'], sectors, binaryKey }
     }
 
+    // ONBOARDING: no numeric scoring, just show default result
+    if (settings.logicType === 'ONBOARDING') {
+      return { result: resultsMapping?.default || {} }
+    }
+
     // Default: DIAGNOSTICS-like logic — compute per-stage averages and classify
     const stageResults = (stages || []).map(stage => {
       // collect answers for questions that belong to this stage
@@ -212,12 +219,12 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
     return { results: stageResults, critical, unstable, strong }
   }
 
-  // Log test_complete once when results are shown (Diagnostics or Ikigai) — full metadata for report
+  // Log test_complete once when results are shown (Diagnostics or Ikigai or Onboarding) — full metadata for report
   useEffect(() => {
     if (!showResults) return
     if (resultsLoggedRef.current) return
     const calc = calculateResults()
-    const testName = settings.logicType === 'IKIGAI' ? 'ikigai' : 'diagnostics'
+    const testName = settings.logicType === 'IKIGAI' ? 'ikigai' : settings.logicType === 'ONBOARDING' ? 'onboarding' : 'diagnostics'
     let totalScore = 0
     let resultCategory = ''
     let scoresByCategory = {}
@@ -237,6 +244,9 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
       unstableZones = []
       strongSides = []
       formattedResult = `Мой результат Икигай: ${calc.result?.title || 'Икигай'}. Маска: ${calc.binaryKey || '0000'}. Хочу обсудить, как это реализовать.`
+    } else if (settings.logicType === 'ONBOARDING') {
+      resultCategory = calc.result?.title || 'onboarding'
+      formattedResult = calc.result?.title ? `Знакомство: ${calc.result.title}` : 'Прошёл тест Знакомство.'
     } else {
       const r = calc.results || []
       totalScore = r.length ? r.reduce((s, x) => s + (x.score || 0), 0) / r.length : 0
@@ -249,22 +259,101 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
     }
 
     resultsLoggedRef.current = true
-    const eventName = testName === 'diagnostics' ? 'diagnostics_results_view' : 'ikigai_results_view'
+    const eventName = testName === 'diagnostics' ? 'diagnostics_results_view' : testName === 'ikigai' ? 'ikigai_results_view' : 'onboarding_results_view'
+    const baseMetadata = {
+      test_name: testName,
+      total_score: Math.round(totalScore),
+      result_category: resultCategory,
+      scores_by_category: scoresByCategory,
+      critical_zones: criticalZones,
+      unstable_zones: unstableZones,
+      strong_sides: strongSides,
+      formatted_result: formattedResult
+    }
+    if (testName === 'onboarding' && answers) {
+      const huntMatch = answers.ob_2 != null ? String(answers.ob_2).match(/^hunt_(\d)$/) : null
+      const segmentHuntLevel = huntMatch ? parseInt(huntMatch[1], 10) : null
+      baseMetadata.segment_motivation = answers.ob_1 || null
+      baseMetadata.segment_temperature = answers.ob_4 || null
+      baseMetadata.segment_scale = answers.ob_3 || null
+      baseMetadata.segment_hunt_level = segmentHuntLevel
+    }
     logEvent('diagnostic', eventName, {
       page: '/diagnostics',
-      section_id: testName === 'diagnostics' ? 'diagnostics' : 'alchemy-ikigai',
-      metadata: {
-        test_name: testName,
-        total_score: Math.round(totalScore),
-        result_category: resultCategory,
-        scores_by_category: scoresByCategory,
-        critical_zones: criticalZones,
-        unstable_zones: unstableZones,
-        strong_sides: strongSides,
-        formatted_result: formattedResult
-      }
+      section_id: testName === 'diagnostics' ? 'diagnostics' : testName === 'ikigai' ? 'alchemy-ikigai' : 'alchemy-onboarding',
+      metadata: baseMetadata
     })
   }, [showResults, answers, settings.logicType, logEvent])
+
+  // ONBOARDING: при показе результатов — сохранить/обновить user_segments (hunt 1–5, temperature, scale).
+  // Идентификация: по tg_user_id (Telegram) или по cookie_id (гость). Хотя бы один должен быть задан.
+  useEffect(() => {
+    if (settings.logicType !== 'ONBOARDING' || !showResults) return
+    if (onboardingSavedRef.current) {
+      console.log('[Onboarding] Сохранение уже выполнено, пропуск')
+      return
+    }
+
+    const sessionInfo = getSessionInfo()
+    const tgUserId = sessionInfo.tgUserId ?? window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null
+    const cookieId = sessionInfo.cookieId ?? null
+
+    if (tgUserId == null && (cookieId == null || String(cookieId).trim() === '')) {
+      console.warn('[Onboarding] Нет ни tg_user_id, ни cookie_id. Данные не сохранены.')
+      return
+    }
+
+    const huntVal = answers.ob_2
+    const huntMatch = huntVal != null ? String(huntVal).match(/^hunt_(\d)$/) : null
+    const huntLevel = huntMatch ? parseInt(huntMatch[1], 10) : null
+    const scale = answers.ob_3 || null
+    const temperature = answers.ob_4 || null
+    const motivation = answers.ob_1 || null
+
+    if (huntLevel == null || huntLevel < 1 || huntLevel > 5) {
+      console.warn('[Onboarding] Некорректный уровень Ханта:', huntVal, '->', huntLevel, '. Ответы:', answers)
+      return
+    }
+
+    console.log('[Onboarding] Сохраняем в user_segments:', { tg_user_id: tgUserId, cookie_id: cookieId ? `${String(cookieId).slice(0, 8)}…` : null, hunt_level: huntLevel, motivation, scale, temperature })
+    onboardingSavedRef.current = true
+    const now = new Date().toISOString()
+    const payload = {
+      p_tg_user_id: tgUserId ?? null,
+      p_cookie_id: cookieId ?? null,
+      p_segment_hunt_level: huntLevel,
+      p_segment_motivation: motivation || null,
+      p_segment_temperature: temperature || null,
+      p_segment_scale: scale || null,
+      p_updated_at: now,
+      p_last_update: now
+    }
+
+    getSupabase()
+      .then((supabase) => {
+        if (!supabase) {
+          console.warn('[Onboarding] Supabase клиент недоступен (VITE_SUPABASE_URL/KEY?). Данные не сохранены.')
+          onboardingSavedRef.current = false
+          return
+        }
+        console.log('[Onboarding] Вызов RPC upsert_user_segment_from_onboarding', { ...payload, p_cookie_id: payload.p_cookie_id ? `${String(payload.p_cookie_id).slice(0, 8)}…` : null })
+        return supabase.rpc('upsert_user_segment_from_onboarding', payload)
+      })
+      .then((result) => {
+        if (result == null) return
+        const { data, error } = result
+        if (error) {
+          console.error('[Onboarding] Ошибка RPC upsert_user_segment_from_onboarding:', error.message, error.code, error.details)
+          onboardingSavedRef.current = false
+          return
+        }
+        console.log('[Onboarding] RPC выполнен успешно', data != null ? { data } : '')
+      })
+      .catch((err) => {
+        console.error('[Onboarding] Исключение при сохранении:', err)
+        onboardingSavedRef.current = false
+      })
+  }, [showResults, answers, settings.logicType, getSessionInfo])
 
   // Helpers for diagnostics rendering and messaging
   const getDetailedConclusion = (critical, unstable, strong) => {
@@ -556,6 +645,43 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
       )
     }
 
+    // ONBOARDING result view (same layout as ikigai: title + description, no chart)
+    if (settings.logicType === 'ONBOARDING') {
+      const result = calc.result || {}
+      const formattedDesc = (result.description || '')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br />')
+
+      return (
+        <div className="diagnostics-container">
+          <Header
+            onBack={onBack}
+            onConsultation={onConsultation}
+            onAlchemyClick={onAlchemyClick}
+            onHomeClick={onHomeClick}
+            onChatClick={onChatClick}
+            activeMenuId="diagnostics"
+          />
+          <div className="diagnostics-results">
+            <div className="diagnostics-results-content" style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', padding: '20px' }}>
+              <div style={{ width: '100%', maxWidth: 840, textAlign: 'center', color: 'rgba(255,255,255,0.9)', fontSize: 16, fontWeight: 600, letterSpacing: '1.2px', marginBottom: 2 }}>Ваш результат:</div>
+              <h1 className="diagnostics-results-title">{result.title}</h1>
+              <motion.div
+                className="conclusion-wrapper"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12, duration: 0.45 }}
+                style={{ width: '100%', maxWidth: 840, display: 'flex', gap: 16, alignItems: 'flex-start' }}
+              >
+                <img src="/images/me.jpg" alt="Эксперт" className="conclusion-avatar" />
+                <div className="conclusion-text" dangerouslySetInnerHTML={{ __html: formattedDesc }} />
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     // Diagnostics-style result view
     const { results, critical, unstable, strong } = calc
     const detailedConclusion = getDetailedConclusion(critical, unstable, strong)
@@ -709,14 +835,17 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
   }
 
   const currentQuestion = allQuestions[currentStep - 1]
-  // Normalize answer options into a single array so we can safely reference its length
-  // Support per-question embedded options (currentQuestion.answerOptions),
+  // Normalize answer options into a single array so we can safely reference its length.
+  // Support per-question embedded options (currentQuestion.options or currentQuestion.answerOptions),
   // a global map `answerOptions` keyed by question id, or a shared `commonAnswerOptions`.
-  const optionsToRender = (currentQuestion && (
+  // Options may use either .label or .text for display.
+  const rawOptions = (currentQuestion && (
+    currentQuestion.options ||
     currentQuestion.answerOptions ||
     (answerOptions && answerOptions[currentQuestion.id]) ||
     commonAnswerOptions
   )) || (commonAnswerOptions || [])
+  const optionsToRender = rawOptions.map(opt => ({ ...opt, label: opt.label ?? opt.text }))
   return (
     <div className="diagnostics-container">
       <Header

@@ -715,9 +715,7 @@
   max-width: 900px;
   margin: 32px auto 80px;
   padding: 0 20px;
-}
-
-.funnel-user-list-title {
+}.funnel-user-list-title {
   color: rgba(255, 255, 255, 0.95);
   font-size: 18px;
   font-weight: 600;
@@ -753,9 +751,7 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
   background: rgba(0, 0, 0, 0.2);
-}
-
-.funnel-user-list-table tbody tr:last-child td {
+}.funnel-user-list-table tbody tr:last-child td {
   border-bottom: none;
 }
 

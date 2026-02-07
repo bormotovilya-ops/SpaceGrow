@@ -422,25 +422,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                       <p>Ниже подробнее описаны мои компетенции, кейсы, достижения, подход и контакты</p>
                     ) : null}
                   </div>
-                  
-                  {/* Чат с пользователем */}
-                  {chatMessages.map((msg, index) => (
-                    <div key={index} className={`dialog-message chat-message ${msg.role === 'user' ? 'user-chat-message' : 'assistant-chat-message'} visible`}>
-                    <p>{renderMessage(msg.content)}</p>
-                    </div>
-                  ))}
-                  
-                  {isLoadingChat && (
-                    <div className="dialog-message chat-message assistant-chat-message visible">
-                      <p className="typing-indicator">
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                        <span className="typing-dot">.</span>
-                      </p>
-                    </div>
-                  )}
 
-                 
                   <div className={`dialog-message ${(typingMessages[4] || visibleMessages[4]) ? 'visible' : ''}`}>
                     {typingMessages[4] ? (
                       <p className="typing-indicator">
@@ -465,6 +447,22 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                       </button>
                     )}
                   </div>
+
+                  {/* Чат с пользователем — вопросы и ответы ИИ ниже приветствия и кнопки отчета */}
+                  {chatMessages.map((msg, index) => (
+                    <div key={index} className={`dialog-message chat-message ${msg.role === 'user' ? 'user-chat-message' : 'assistant-chat-message'} visible`}>
+                    <p>{renderMessage(msg.content)}</p>
+                    </div>
+                  ))}
+                  {isLoadingChat && (
+                    <div className="dialog-message chat-message assistant-chat-message visible">
+                      <p className="typing-indicator">
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                        <span className="typing-dot">.</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -4,6 +4,7 @@ import Header from './Header'
 import MatrixCalculator from './MatrixCalculator'
 import Diagnostics from './Diagnostics'
 import IKIGAI_TEST from '../../scripts/ikigai.json'
+import ONBOARDING_TEST from '../../scripts/Onboarding.json'
 import './Alchemy.css'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
@@ -11,7 +12,7 @@ import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
 const MAX_METADATA_TEXT = 1000
 const truncateForMetadata = (s) => (s == null ? '' : String(s).substring(0, MAX_METADATA_TEXT))
 
-const ROUTED_TOOLS = ['tarot', 'astrolabe', 'tests', 'ikigai', 'mirror']
+const ROUTED_TOOLS = ['tarot', 'astrolabe', 'tests', 'ikigai', 'onboarding', 'mirror']
 
 function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
   const { toolId } = useParams()
@@ -19,9 +20,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const { logContentView, logEvent, logCTAClick, trackSectionView } = useLogEvent()
   const [localArtifact, setLocalArtifact] = useState(null)
   const selectedArtifact = toolId
-    ? (toolId === 'tests' || toolId === 'ikigai' ? 'crystal' : toolId)
+    ? (toolId === 'tests' || toolId === 'ikigai' || toolId === 'onboarding' ? 'crystal' : toolId)
     : localArtifact
-  const activeCrystalTest = toolId === 'ikigai' ? 'ikigai' : null
+  const activeCrystalTest = toolId === 'ikigai' ? 'ikigai' : toolId === 'onboarding' ? 'onboarding' : null
   const [isDarkMode, setIsDarkMode] = useState(false) // Для свечи - черный фон
   const [userQuestion, setUserQuestion] = useState('')
   const [numberInput, setNumberInput] = useState('')
@@ -432,6 +433,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const handleCrystalTestClick = (testId, testTitle) => {
     logEvent('alchemy', 'crystal_action', { page: '/alchemy', metadata: { test_name: testTitle } })
     if (testId === 'ikigai') navigate('/alchemy/ikigai')
+    else if (testId === 'onboarding') navigate('/alchemy/onboarding')
     else alert('Этот тест в разработке')
   }
 
@@ -628,7 +630,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   // .question-content. Это предотвращает наложение на блок с вариантами ответов
   // и даёт точную привязку к реальному размеру вопросной панели.
   useEffect(() => {
-    if (activeCrystalTest !== 'ikigai') return
+    if (activeCrystalTest !== 'ikigai' && activeCrystalTest !== 'onboarding') return
 
     const computeAndApply = () => {
       const question = document.querySelector('.question-content')
@@ -1019,6 +1021,14 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               />
             );
           }
+          if (activeCrystalTest === 'onboarding') {
+            return (
+              <Diagnostics
+                customStages={ONBOARDING_TEST}
+                onBackToCrystal={() => navigate('/alchemy/tests')}
+              />
+            );
+          }
         
           return (
             <div className="action-zone-content action-zone-tarot">
@@ -1028,12 +1038,18 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
               </p>
               
               <div className="tests-grid">
-                {/* КАРТОЧКА 1: ИКИГАЙ */}
+                {/* КАРТОЧКА: ЗНАКОМСТВО */}
+                <div className="test-card" onClick={() => handleCrystalTestClick('onboarding', 'Знакомство')}>
+                  <div className="test-card-icon">🤝</div>
+                  <h3 className="test-card-title">Знакомство</h3>
+                  <p className="test-card-desc">Короткий диалог для сонастройки и стратегии вашего проекта.</p>
+                </div>
+                
+                {/* КАРТОЧКА: ИКИГАЙ */}
                 <div className="test-card" onClick={() => handleCrystalTestClick('ikigai', 'Матрица Икигай')}>
                   <div className="test-card-icon">🎯</div>
                   <h3 className="test-card-title">Матрица Икигай</h3>
                   <p className="test-card-desc">Инструмент для поиска ниши и смыслов внутри курса.</p>
-                  <div className="test-card-badge">Скоро</div>
                 </div>
                 
                 {/* КАРТОЧКА 2: КОЛЕСО БАЛАНСА */}
@@ -1239,14 +1255,29 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         return null
     }
   }
-  // If user opened IKIGAI test from the crystal card, render Diagnostics
-  // as a standalone view (without the surrounding .alchemy-container) so the
-  // UniversalTest/Diagnostics layout matches the standalone Diagnostics flow.
+  // If user opened a crystal test (ikigai or onboarding) from the crystal card,
+  // render Diagnostics as a standalone view (without the surrounding .alchemy-container)
+  // so the UniversalTest/Diagnostics layout matches the standalone Diagnostics flow.
   if (activeCrystalTest === 'ikigai') {
     return (
       <>
         <Diagnostics
           customStages={IKIGAI_TEST}
+          onBack={() => navigate('/alchemy/tests')}
+          onAvatarClick={onAvatarClick}
+          onChatClick={onChatClick}
+          onHomeClick={onHomeClick}
+        />
+
+        {/* NOTE: Back-to-table button intentionally removed for test flows. */}
+      </>
+    )
+  }
+  if (activeCrystalTest === 'onboarding') {
+    return (
+      <>
+        <Diagnostics
+          customStages={ONBOARDING_TEST}
           onBack={() => navigate('/alchemy/tests')}
           onAvatarClick={onAvatarClick}
           onChatClick={onChatClick}

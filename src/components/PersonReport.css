@@ -1084,6 +1084,11 @@
   border-color: #fde047;
 }
 
+.seg-card-scale-bg {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #c4b5fd;
+}
+
 .seg-card-engagement-bg {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   border-color: #bbf7d0;

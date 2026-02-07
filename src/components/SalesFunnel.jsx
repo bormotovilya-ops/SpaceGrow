@@ -60,7 +60,8 @@ function SalesFunnel() {
             first_name: row.first_name ?? null,
             segment_motivation: seg?.segment_motivation ?? null,
             segment_temperature: seg?.segment_temperature ?? null,
-            segment_hunt_level: seg?.segment_hunt_level != null ? Math.min(4, Math.max(0, Number(seg.segment_hunt_level))) : null
+            segment_hunt_level: seg?.segment_hunt_level != null ? Math.min(5, Math.max(1, Math.round(Number(seg.segment_hunt_level)))) : null,
+            segment_scale: seg?.segment_scale ?? null
           }
         })
         setUserList(rows)
@@ -214,13 +215,14 @@ function SalesFunnel() {
                   <th>Пользователь</th>
                   <th>Ниша</th>
                   <th>Hunt Ladder</th>
+                  <th>Масштаб</th>
                   <th>Статус</th>
                 </tr>
               </thead>
               <tbody>
                 {userList.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="funnel-user-list-empty">Нет данных</td>
+                    <td colSpan={6} className="funnel-user-list-empty">Нет данных</td>
                   </tr>
                 ) : (
                   userList.map((u) => (
@@ -230,12 +232,13 @@ function SalesFunnel() {
                       <td>{u.segment_motivation ?? '—'}</td>
                       <td>
                         <div className="hunt-ladder-cell">
-                          <div className="hunt-ladder-bar" role="progressbar" aria-valuenow={u.segment_hunt_level ?? 0} aria-valuemin={0} aria-valuemax={4}>
-                            <div className="hunt-ladder-fill" style={{ width: u.segment_hunt_level != null ? `${((u.segment_hunt_level + 1) / 5) * 100}%` : '0%' }} />
+                          <div className="hunt-ladder-bar" role="progressbar" aria-valuenow={u.segment_hunt_level ?? 0} aria-valuemin={1} aria-valuemax={5}>
+                            <div className="hunt-ladder-fill" style={{ width: u.segment_hunt_level != null && u.segment_hunt_level >= 1 && u.segment_hunt_level <= 5 ? `${(u.segment_hunt_level / 5) * 100}%` : '0%' }} />
                           </div>
-                          <span className="hunt-ladder-label">{u.segment_hunt_level != null ? `${u.segment_hunt_level}/4` : '—'}</span>
+                          <span className="hunt-ladder-label" title={u.segment_hunt_level != null && u.segment_hunt_level >= 1 && u.segment_hunt_level <= 5 ? ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка'][u.segment_hunt_level] : ''}>{u.segment_hunt_level != null ? `${u.segment_hunt_level}/5` : '—'}</span>
                         </div>
                       </td>
+                      <td>{u.segment_scale != null ? ({ solo: 'Индивидуально', team: 'Команда', system: 'Системный', start: 'Первый запуск' }[u.segment_scale] ?? u.segment_scale) : '—'}</td>
                       <td>
                         <span className={`segment-status-badge segment-status--${(u.segment_temperature || '').toLowerCase().replace(/\s+/g, '-')}`}>
                           {u.segment_temperature === 'Hot' ? 'Hot' : u.segment_temperature === 'Warm' ? 'Warm' : u.segment_temperature === 'Needs Reanimation' ? '⚠️ Needs Reanimation' : u.segment_temperature === 'Ice' ? 'В процессе анализа' : u.segment_temperature ?? '—'}

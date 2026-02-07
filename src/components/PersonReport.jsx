@@ -144,7 +144,9 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               if (!existingUser) guestMode = true
             }
 
-            // Always refresh segments for this visitor (user or anonymous cookie)
+            // Always refresh segments for this visitor (user or anonymous cookie).
+            // Важно: fn_refresh_segments не должна перезаписывать segment_hunt_level и segment_scale,
+            // если они уже заданы тестом «Знакомство» (иначе в отчёте будут старые данные).
             const startDate = getStartDate(selectedPeriod)
             await supabase.rpc('fn_refresh_segments', {
               p_tg_user_id: tgUserId != null ? String(tgUserId) : null,
@@ -943,6 +945,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     test_complete: '🏆 Результат теста',
     diagnostics_results_view: '🧬 Прошел диагностику',
     ikigai_results_view: '🌸 Прошел тест Икигай',
+    onboarding_results_view: '🤝 Прошел тест «Знакомство»',
     astrolabe_input: '📅 Астролябия: Расчет матрицы',
     astrolabe_action: '📄 Астролябия: Действие',
     alchemy_item_select: '🃏 Алхимия: Выбор предмета',
@@ -1139,7 +1142,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     }
 
     // Priority events: ALWAYS standalone, never collapsed (excluded from grouping)
-    const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
     const SECTION_ACTION_IDS_SET = ['alchemy-mirror', 'alchemy-astrolabe', 'alchemy-ikigai', 'alchemy-tarot', 'alchemy-tests', 'diagnostics']
     const isPriorityEvent = (item) => {
       const name = item.raw?.event_name
@@ -1223,7 +1226,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     const raw = entry.raw || {}
     const eventName = raw.event_name
     // Action events (реальное использование): ярко, с иконкой и huntStage
-    const actionEventNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'mirror_usage']
+    const actionEventNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'mirror_usage']
     if (eventName && actionEventNames.includes(eventName)) {
       if (eventName === 'astrolabe_action') {
         const meta = safeParseMeta(raw.metadata)
@@ -1233,7 +1236,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
       return EVENT_NAME_LABELS[eventName] || eventName
     }
     if (entry.type === 'diagnostic' && eventName === 'test_complete') return EVENT_NAME_LABELS.test_complete
-    if (eventName === 'diagnostics_results_view' || eventName === 'ikigai_results_view') return EVENT_NAME_LABELS[eventName]
+    if (eventName === 'diagnostics_results_view' || eventName === 'ikigai_results_view' || eventName === 'onboarding_results_view') return EVENT_NAME_LABELS[eventName]
     // ai_chat_message: conditional label by metadata.context (+ mirror_state if present)
     if (eventName === 'ai_chat_message' || entry.type === 'ai_interaction') {
       const meta = safeParseMeta(raw.metadata)
@@ -1313,8 +1316,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
   // Production-ready: strict dedupe; section_view + использование в одном месте/времени → показываем только использование (приоритет)
   const visibleTimeline = useMemo(() => {
-    const INTERACTION_EVENT_NAMES = ['mirror_usage', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view']
-    const isInteractionEvent = (e) => e?.type !== 'session_divider' && (INTERACTION_EVENT_NAMES.includes(e?.raw?.event_name) || e?.type === 'ai_interaction' || (e?.type === 'diagnostic' && ['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(e?.raw?.event_name)))
+    const INTERACTION_EVENT_NAMES = ['mirror_usage', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view']
+    const isInteractionEvent = (e) => e?.type !== 'session_divider' && (INTERACTION_EVENT_NAMES.includes(e?.raw?.event_name) || e?.type === 'ai_interaction' || (e?.type === 'diagnostic' && ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view'].includes(e?.raw?.event_name)))
 
     const out = []
     const DEDUPE_CTA_MS = 5000
@@ -1400,11 +1403,11 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
   }, [activityPathTimeline, getEventDisplayTitle, getSemanticPlaceKey, getPageViewLabel, getCtaLabel])
 
   // 2. Collapsible: section_view и page_view — компактные строки без деталей; детали только у Interaction
-  const INTERACTION_EVENT_NAMES = useMemo(() => ['mirror_usage', 'ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'], [])
+  const INTERACTION_EVENT_NAMES = useMemo(() => ['mirror_usage', 'ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'], [])
   const enrichedTimeline = useMemo(() => {
     return visibleTimeline.map((e) => {
       const isView = e.type === 'section_view' || e.type === 'page_view' || e.type === 'content_view'
-      const isInteraction = INTERACTION_EVENT_NAMES.includes(e?.raw?.event_name) || e?.type === 'ai_interaction' || (e?.type === 'diagnostic' && ['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(e?.raw?.event_name))
+      const isInteraction = INTERACTION_EVENT_NAMES.includes(e?.raw?.event_name) || e?.type === 'ai_interaction' || (e?.type === 'diagnostic' && ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view'].includes(e?.raw?.event_name))
       const hasExpandableContent = isInteraction || (e?.grouped?.length > 0)
       const showExpandableDetails = !isView && hasExpandableContent
       return { ...e, showExpandableDetails }
@@ -1466,7 +1469,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     const raw = entry.raw || {}
     const meta = safeParseMeta(raw.metadata)
     const eventName = raw.event_name
-    if (['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(eventName) || (entry.type === 'diagnostic' && (['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(raw.event_name) || meta.total_score != null))) {
+    if (['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view'].includes(eventName) || (entry.type === 'diagnostic' && (['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view'].includes(raw.event_name) || meta.total_score != null))) {
       const score = meta.total_score ?? '—'
       const cat = meta.result_category
       const catStr = cat != null && String(cat).trim() !== '' ? cat : null
@@ -1505,7 +1508,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
   const isActionEvent = useCallback((entry) => {
     const name = entry.raw?.event_name
-    const actionNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    const actionNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
     if (name && actionNames.includes(name)) return true
     if (entry.type === 'diagnostic' || entry.type === 'ai_interaction') return true
     if (entry.type === 'section_view') {
@@ -1922,6 +1925,32 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                                       )}
                                     </div>
                                   )}
+                                  {entry.raw?.event_name === 'onboarding_results_view' && entry.type === 'diagnostic' && (() => {
+                                    const meta = safeParseMeta(entry.raw?.metadata)
+                                    const motivationLabels = { soft: 'Мягкие ниши', hard: 'Твердые ниши', creative: 'Творчество и хобби', other: 'Другое' }
+                                    const tempLabels = { hot: 'Горячий (нужно «вчера»)', warm: 'Тёплый (в течение месяца)', cold: 'Холодный (знакомство и планы)' }
+                                    const huntNames = ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка']
+                                    const scaleLabels = { solo: 'Индивидуально (до 500к)', team: 'Команда (до 1.5 млн)', system: 'Системный проект (2 млн+)', start: 'Первый запуск' }
+                                    const m = String(meta.segment_motivation ?? '').toLowerCase()
+                                    const t = String(meta.segment_temperature ?? '').toLowerCase()
+                                    const huntLevel = meta.segment_hunt_level != null ? Math.min(5, Math.max(1, parseInt(meta.segment_hunt_level, 10))) : null
+                                    const nicheLabel = (motivationLabels[m] || meta.segment_motivation) ?? '—'
+                                    const tempLabel = (tempLabels[t] || meta.segment_temperature) ?? '—'
+                                    const huntLabel = huntLevel >= 1 && huntLevel <= 5 ? `Уровень ${huntLevel}: ${huntNames[huntLevel]}` : (meta.segment_hunt_level != null ? String(meta.segment_hunt_level) : '—')
+                                    const scaleVal = String(meta.segment_scale ?? '').toLowerCase()
+                                    const scaleLabel = scaleLabels[scaleVal] || (meta.segment_scale ? String(meta.segment_scale) : '—')
+                                    return (
+                                      <div className="event-details-content event-details-test event-details-onboarding">
+                                        <h5 className="event-details-heading">Сегмент по результатам теста «Знакомство»</h5>
+                                        <dl className="event-details-dl">
+                                          <dt>Ниша</dt><dd>{nicheLabel}</dd>
+                                          <dt>Температура</dt><dd>{tempLabel}</dd>
+                                          <dt>Ступень Ханта</dt><dd>{huntLabel}</dd>
+                                          <dt>Масштаб</dt><dd>{scaleLabel}</dd>
+                                        </dl>
+                                      </div>
+                                    )
+                                  })()}
                                   {['test_complete', 'diagnostics_results_view', 'ikigai_results_view'].includes(entry.raw?.event_name) && entry.type === 'diagnostic' && (() => {
                                     const meta = safeParseMeta(entry.raw?.metadata)
                                     const critical = meta.critical_zones ?? []
@@ -2042,7 +2071,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                                       </ul>
                                     </div>
                                   )}
-                                  {!chatPreview && !['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'].includes(entry.raw?.event_name) && !entry.grouped?.length && contentDetails && (
+                                  {!chatPreview && !['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'].includes(entry.raw?.event_name) && !entry.grouped?.length && contentDetails && (
                                     <div className="event-details-content"><p className="journey-event-details">{contentDetails}</p></div>
                                   )}
                                 </>
@@ -2082,21 +2111,26 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               >
                 {(() => {
                   const seg = reportData?.user_segments ?? null
-                  const huntLevel = seg?.segment_hunt_level != null ? Math.min(4, Math.max(0, Number(seg.segment_hunt_level))) : 0
-                  const HUNT_NAMES = ['Безразличие', 'Интерес', 'Поиск', 'Выбор решения', 'Покупка']
-                  const huntName = seg ? (HUNT_NAMES[huntLevel] ?? 'Безразличие') : 'Нулевой этап'
+                  // Лестница Ханта: 1=Безразличие, 2=Осведомлённость, 3=Выбор решения, 4=Выбор подрядчика, 5=Покупка
+                  const HUNT_NAMES = ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка']
+                  const huntLevelRaw = seg?.segment_hunt_level != null ? Number(seg.segment_hunt_level) : null
+                  const huntLevel = huntLevelRaw != null && huntLevelRaw >= 1 && huntLevelRaw <= 5 ? Math.round(huntLevelRaw) : 0
+                  const huntName = seg ? (huntLevel >= 1 && huntLevel <= 5 ? HUNT_NAMES[huntLevel] : 'Не определен') : 'Нулевой этап'
                   const motivation = seg?.segment_motivation ?? null
                   const m = String(motivation || '').toLowerCase()
+                  const motivationLabelsFromOnboarding = { soft: 'Мягкие ниши', hard: 'Твердые ниши', creative: 'Творчество и хобби', other: 'Другое' }
                   const motivationIcons = !motivation || !m.trim()
                     ? ['🔍']
                     : m.includes('смешан')
                       ? ['🧱', '✨']
-                      : m.includes('тверд')
+                      : m.includes('тверд') || m === 'hard'
                         ? ['🧱']
-                        : m.includes('мягк')
+                        : m.includes('мягк') || m === 'soft'
                           ? ['✨']
-                          : ['🔍']
-                  const motivationLabel = motivation ?? 'Интерес не выражен'
+                          : m === 'creative'
+                            ? ['🎨']
+                            : ['🔍']
+                  const motivationLabel = ((motivation && motivationLabelsFromOnboarding[m]) || motivation) ?? 'Интерес не выражен'
                   const temp = seg?.segment_temperature ?? 'Cold'
                   const tempNorm = String(temp).toLowerCase().replace(/\s+/g, '-')
                   const tempLower = String(temp ?? '').toLowerCase()
@@ -2113,11 +2147,11 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                     <div className="seg-cards-grid">
                       <div className="seg-card seg-card-hunt-bg">
                         <h4 className="seg-card-title">Лестница Ханта (Hunt Level)</h4>
-                        <div className="seg-card-visual seg-card-hunt" role="progressbar" aria-valuenow={huntLevel} aria-valuemin={0} aria-valuemax={4} aria-label={`Уровень ${huntLevel}: ${huntName}`}>
+                        <div className="seg-card-visual seg-card-hunt" role="progressbar" aria-valuenow={huntLevel} aria-valuemin={0} aria-valuemax={5} aria-label={`Уровень ${huntLevel}: ${huntName}`}>
                           <div className="seg-card-hunt-track">
-                            <div className="seg-card-hunt-fill" style={{ width: `${(huntLevel / 5) * 100}%` }} />
+                            <div className="seg-card-hunt-fill" style={{ width: huntLevel >= 1 && huntLevel <= 5 ? `${(huntLevel / 5) * 100}%` : '0%' }} />
                           </div>
-                          <p className="seg-card-value seg-card-hunt-label">Уровень {huntLevel}: {huntName}</p>
+                          <p className="seg-card-value seg-card-hunt-label">{huntLevel >= 1 ? `Уровень ${huntLevel}: ${huntName}` : huntName}</p>
                         </div>
                         <p className="seg-card-desc">Текущая ступень осведомлённости в воронке.</p>
                       </div>
@@ -2131,7 +2165,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                         <div className="seg-card-visual seg-card-motivation">
                           <p className="seg-card-value">{motivationLabel}</p>
                         </div>
-                        <p className="seg-card-desc">Определено на основе интереса к Alchemy или системным блокам воронки.</p>
+                        <p className="seg-card-desc">Определено на основе действий пользователя на сайте.</p>
                       </div>
                       <div className={`seg-card seg-card-temp-bg seg-card-temp-bg-${tempSlug}`}>
                         <h4 className="seg-card-title">Температура (Temperature)</h4>
@@ -2140,6 +2174,17 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                           <p className={`seg-card-value seg-card-temp-value seg-card-temp-value-${tempSlug}`}>{tempLabel}</p>
                         </div>
                         <p className="seg-card-desc">Отражает свежесть действий и готовность к целевому действию.</p>
+                      </div>
+                      <div className="seg-card seg-card-scale-bg">
+                        <h4 className="seg-card-title">Масштаб проекта (Scale)</h4>
+                        <div className="seg-card-visual seg-card-scale">
+                          <p className="seg-card-value">{(() => {
+                            const scaleVal = seg?.segment_scale ?? ''
+                            const scaleLabels = { solo: 'Индивидуально (до 500к)', team: 'Команда (до 1.5 млн)', system: 'Системный проект (2 млн+)', start: 'Первый запуск' }
+                            return scaleLabels[scaleVal] || (scaleVal ? String(scaleVal) : '—')
+                          })()}</p>
+                        </div>
+                        <p className="seg-card-desc">Масштаб дела по результатам теста «Знакомство».</p>
                       </div>
                       <div className={`seg-card seg-card-engagement-bg ${isHighEnergy ? 'seg-card-high-energy' : ''}`}>
                         <h4 className="seg-card-title">Активность (Engagement)</h4>

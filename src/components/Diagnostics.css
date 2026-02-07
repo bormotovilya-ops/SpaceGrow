@@ -366,6 +366,7 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+/* Контейнер вопроса: при переполнении прокрутка именно здесь, без скролла страницы */
 .question-content {
   width: 100%;
   max-width: 800px;
@@ -374,21 +375,32 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   box-sizing: border-box;
-  padding: 0 10px var(--diagnostics-answer-area-height, 140px) 10px; /* reserve space for absolute-positioned answer options */
+  padding: 0 10px 16px 10px;
   margin: 0;
-  gap: 8px;
+  gap: 12px;
   justify-content: flex-start;
   position: relative;
 }
 
+.question-content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Блок вопроса (этап + текст) — естественная высота, скролл у .question-content */
 .question-content-wrapper {
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   padding-left: 0;
   padding-right: 0;
   gap: 6px;
@@ -659,27 +671,21 @@
 }
 
 
-/* Варианты ответов в стиле голосования Telegram (справа, компактно) */
+/* Варианты ответов: прижаты к правому краю, ширина не более 70–80% */
 .answer-options {
-  /* Anchor answer options to the bottom-right corner of the question panel
-     and place them above the fixed back-button. We compute bottom using the
-     shared variables so the options will never be covered by the button. */
   display: flex;
   flex-direction: column;
-  /* Slightly reduced gap combined with increased button height makes the
-     options feel denser while keeping touch targets comfortable. */
   gap: 8px;
   align-items: flex-end;
+  align-self: flex-end;
   flex: 0 0 auto;
   overflow: visible;
   padding: 0;
   margin: 0;
-  position: absolute;
-  right: 12px;
-  /* place options above the back-to-table button by the configured gap */
-  bottom: calc(var(--back-to-table-button-height) + var(--back-to-table-gap));
-  width: min(420px, 46%);
-  max-width: 420px;
+  margin-top: auto;
+  position: relative;
+  width: min(420px, 80%);
+  max-width: 80%;
   box-sizing: border-box;
   z-index: 80;
 }
@@ -1571,13 +1577,10 @@
   }
   
   .question-content {
-    /* Reserve space for header by shifting the content down via margin so the
-       panel background stays at the top (same behavior as Diagnostics).
-       On mobile we also reserve additional vertical space for the
-       progress-bar which is pinned just under the Header (fixed). */
+    /* Reserve space for header + fixed progress bar; wrapper scrolls, options in flow below. */
     margin-top: calc(var(--app-header-height, 100px) + 64px);
-    padding: 8px 0 110px 0; /* top padding so internal elements (title/text) sit below the fixed progress bar */
-    gap: 8px;
+    padding: 8px 0 16px 0;
+    gap: 12px;
     max-width: 100%;
     justify-content: flex-start;
     position: relative;
@@ -1585,6 +1588,8 @@
   
   .question-content-wrapper {
     gap: 6px;
+    flex: 0 0 auto;
+    overflow: visible;
   }
 
   /* Pin the progress bar directly below the bottom edge of the fixed Header
@@ -1717,13 +1722,15 @@
 
   .answer-options {
     gap: 8px;
-    /* keep options in flow on mobile as well and anchor spacing via header variable */
     position: relative;
-    left: 12px;
-    right: 12px;
-    width: calc(100% - 24px);
-    bottom: auto;
+    left: 0;
+    right: 0;
+    width: min(420px, 80%);
+    max-width: 80%;
+    margin-top: auto;
     padding-top: 12px;
+    align-self: flex-end;
+    align-items: stretch;
   }
 
   .answer-message.poll-option {
