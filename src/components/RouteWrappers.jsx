@@ -6,6 +6,8 @@ import Diagnostics from './Diagnostics'
 import Home from './Home'
 import PersonReport from './PersonReport'
 import BlockDetail from './BlockDetail'
+import AdminSettings from './AdminSettings'
+import AdminChats from './AdminChats'
 import { openTelegramLink } from '../utils/telegram'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
@@ -74,6 +76,26 @@ export function PersonReportRoute() {
       onHomeClick={() => navigate('/home')}
       onDiagnostics={() => navigate('/diagnostics')}
       onAlchemyClick={() => navigate('/alchemy')}
+    />
+  )
+}
+
+export function AdminSettingsRoute() {
+  const navigate = useNavigate()
+  return (
+    <AdminSettings
+      onBack={() => navigate(-1)}
+      onHomeClick={() => navigate('/home')}
+    />
+  )
+}
+
+export function AdminChatsRoute() {
+  const navigate = useNavigate()
+  return (
+    <AdminChats
+      onBack={() => navigate(-1)}
+      onHomeClick={() => navigate('/home')}
     />
   )
 }

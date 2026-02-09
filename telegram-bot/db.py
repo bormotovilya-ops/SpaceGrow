@@ -292,14 +292,37 @@ class Database:
         r = self._patch("users", params={"user_id": f"eq.{user_id}"}, payload=payload)
         self._check_response(r, "set_user_last_notified_at")
 
+    def save_incoming_message(self, user_id: int, text: str) -> None:
+        """
+        Сохранить входящее сообщение в user_chat_messages.
+        Вызывать из обработчика входящих сообщений бота при каждом сообщении от пользователя.
+        """
+        payload = {
+            "tg_user_id": user_id,
+            "direction": "inbound",
+            "message_text": text or "",
+            "source": "user",
+        }
+        r = self._post("user_chat_messages", payload=payload)
+        self._check_response(r, "save_incoming_message")
+        logger.info("Входящее сообщение сохранено в user_chat_messages: user_id=%s", user_id)
+
+    def insert_inbound_chat_message(self, tg_user_id: int, message_text: str) -> None:
+        """Алиас для save_incoming_message (тот же функционал)."""
+        self.save_incoming_message(tg_user_id, message_text)
+
     def get_pending_deliveries(self, now_iso: str) -> List[dict]:
-        """Получить pending записи user_message_delivery с scheduled_at <= now_iso."""
+        """Получить pending записи user_message_delivery с scheduled_at <= now_iso (включая is_manual, manual_text)."""
         r = self._get("user_message_delivery", params={
             "status": "eq.pending",
             "scheduled_at": f"lte.{now_iso}",
         })
         self._check_response(r, "get_pending_deliveries")
-        return r.json() if r.status_code in (200, 201) else []
+        rows = r.json() if r.status_code in (200, 201) else []
+        for row in rows:
+            if row.get("user_id") is None and row.get("tg_user_id") is not None:
+                row["user_id"] = row["tg_user_id"]
+        return rows
 
     def get_marketing_message(self, message_id: int) -> Optional[dict]:
         """Получить сообщение из bot_marketing_messages по id."""

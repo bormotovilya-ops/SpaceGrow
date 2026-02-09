@@ -174,35 +174,47 @@ class NotificationService:
             for row in pending:
                 delivery_id = row.get("id")
                 user_id = row.get("user_id") or row.get("tg_user_id")
-                message_id = row.get("message_id")
-                if not user_id or not message_id:
-                    logger.warning("Маркетинговые дожимы: пропуск записи %s — нет user_id или message_id", delivery_id)
+                is_manual = row.get("is_manual") is True
+
+                if not user_id:
+                    logger.warning("Маркетинговые дожимы: пропуск записи %s — нет user_id/tg_user_id", delivery_id)
                     db.update_delivery_status(delivery_id, "failed")
                     continue
 
                 try:
-                    msg = db.get_marketing_message(message_id)
-                    if not msg:
-                        logger.warning("Маркетинговые дожимы: сообщение %s не найдено", message_id)
-                        db.update_delivery_status(delivery_id, "failed")
-                        continue
-
-                    text = msg.get("message_text") or msg.get("text") or msg.get("body") or ""
-                    parse_mode = msg.get("parse_mode") or "HTML"
-
-                    btn_rows = db.get_message_buttons(message_id)
-                    keyboard = []
-                    for b in btn_rows:
-                        label = b.get("button_text") or b.get("label") or "Открыть"
-                        url = b.get("button_url") or b.get("url") or b.get("link")
-                        if url:
-                            keyboard.append([InlineKeyboardButton(label, url=url)])
-                    reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
-
-                    send_kw = {"chat_id": user_id, "text": text, "parse_mode": parse_mode}
-                    if reply_markup:
-                        send_kw["reply_markup"] = reply_markup
-                    await self.bot.send_message(**send_kw)
+                    if is_manual:
+                        text = (row.get("manual_text") or "").strip()
+                        if not text:
+                            logger.warning("Маркетинговые дожимы: запись %s is_manual=true, но manual_text пуст", delivery_id)
+                            db.update_delivery_status(delivery_id, "failed")
+                            continue
+                        send_kw = {"chat_id": user_id, "text": text, "parse_mode": "HTML"}
+                        await self.bot.send_message(**send_kw)
+                    else:
+                        message_id = row.get("message_id")
+                        if not message_id:
+                            logger.warning("Маркетинговые дожимы: пропуск записи %s — нет message_id", delivery_id)
+                            db.update_delivery_status(delivery_id, "failed")
+                            continue
+                        msg = db.get_marketing_message(message_id)
+                        if not msg:
+                            logger.warning("Маркетинговые дожимы: сообщение %s не найдено", message_id)
+                            db.update_delivery_status(delivery_id, "failed")
+                            continue
+                        text = msg.get("message_text") or msg.get("text") or msg.get("body") or ""
+                        parse_mode = msg.get("parse_mode") or "HTML"
+                        btn_rows = db.get_message_buttons(message_id)
+                        keyboard = []
+                        for b in btn_rows:
+                            label = b.get("button_text") or b.get("label") or "Открыть"
+                            url = b.get("button_url") or b.get("url") or b.get("link")
+                            if url:
+                                keyboard.append([InlineKeyboardButton(label, url=url)])
+                        reply_markup = InlineKeyboardMarkup(keyboard) if keyboard else None
+                        send_kw = {"chat_id": user_id, "text": text, "parse_mode": parse_mode}
+                        if reply_markup:
+                            send_kw["reply_markup"] = reply_markup
+                        await self.bot.send_message(**send_kw)
 
                     db.update_delivery_status(delivery_id, "sent")
                     logger.info("Маркетинговые дожимы: отправлено пользователю %s, delivery_id=%s", user_id, delivery_id)

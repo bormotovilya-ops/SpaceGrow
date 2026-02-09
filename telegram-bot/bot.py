@@ -268,17 +268,23 @@ async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         reply_markup=reply_markup
     )
 
-# Обработка текстовых сообщений
+# Обработка текстовых сообщений (каждое входящее сохраняем в БД)
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработчик текстовых сообщений"""
-    text = update.message.text.lower()
+    """Обработчик текстовых сообщений — сохраняет переписку в user_chat_messages."""
+    user = update.effective_user
+    text = (update.message.text or "").strip()
+    try:
+        db.save_incoming_message(user_id=user.id, text=text)
+    except Exception as e:
+        logger.exception("Не удалось сохранить входящее сообщение в user_chat_messages: %s", e)
+    text_lower = text.lower()
 
     sm = context.application.bot_data.get("settings_manager")
     support_contact = (await sm.get_setting(BotSettingKeys.SUPPORT_CONTACT)) if sm else None
     support_contact = (support_contact.strip() if support_contact else None) or DEFAULT_SUPPORT_CONTACT_WITH_PHONE
 
     # Простые ответы на частые вопросы
-    if any(word in text for word in ['привет', 'здравствуй', 'добрый день', 'добрый вечер']):
+    if any(word in text_lower for word in ['привет', 'здравствуй', 'добрый день', 'добрый вечер']):
         keyboard = [
             [InlineKeyboardButton(
                 "🚀 Открыть SpaceGrowth",
@@ -291,7 +297,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             "Используй команду /start, чтобы открыть мой сайт и узнать больше о моих услугах.",
             reply_markup=reply_markup
         )
-    elif any(word in text for word in ['услуги', 'что делаешь', 'чем занимаешься']):
+    elif any(word in text_lower for word in ['услуги', 'что делаешь', 'чем занимаешься']):
         keyboard = [
             [InlineKeyboardButton(
                 "🚀 Открыть SpaceGrowth",
@@ -304,7 +310,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             "Открой сайт, чтобы узнать подробнее:",
             reply_markup=reply_markup
         )
-    elif any(word in text for word in ['контакт', 'связаться', 'написать']):
+    elif any(word in text_lower for word in ['контакт', 'связаться', 'написать']):
         await update.message.reply_text(f"📞 Контакты:\n\n{support_contact}")
     else:
         keyboard = [

@@ -11,7 +11,9 @@ import {
   DiagnosticsRoute,
   AlchemyRoute,
   PersonReportRoute,
-  BlockDetailRoute
+  BlockDetailRoute,
+  AdminSettingsRoute,
+  AdminChatsRoute
 } from './components/RouteWrappers'
 import './App.css'
 
@@ -38,6 +40,8 @@ function App() {
         <Route path="/funnel" element={<AppContainer><SalesFunnel /></AppContainer>} />
         <Route path="/block/:id" element={<AppContainer><BlockDetailRoute /></AppContainer>} />
         <Route path="/personreport" element={<AppContainer><PersonReportRoute /></AppContainer>} />
+        <Route path="/admin/settings" element={<AppContainer><AdminSettingsRoute /></AppContainer>} />
+        <Route path="/admin/chats" element={<AppContainer><AdminChatsRoute /></AppContainer>} />
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </BrowserRouter>

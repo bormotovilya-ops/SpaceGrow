@@ -1301,6 +1301,45 @@
   line-height: 1.5;
 }
 
+.recommendation-card-marketing .recommendation-marketing-text {
+  margin: 0 0 16px 0;
+  color: #191923;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.recommendation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.recommendation-button {
+  display: inline-block;
+  padding: 10px 18px;
+  background: #f0ad4e;
+  color: #191923;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.recommendation-button:hover {
+  background: #ec971f;
+  transform: translateY(-1px);
+}
+
+.recommendation-card-title {
+  margin: 16px 0 8px 0;
+  font-size: 16px;
+  color: #191923;
+}
+
+.recommendation-card-title:first-child {
+  margin-top: 0;
+}
+
 /* Visualization */
 .visualization-container {
   display: grid;

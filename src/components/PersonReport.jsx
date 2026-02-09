@@ -49,6 +49,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     userInfo: true,
     journey: false,
     segmentation: true,
+    recommendations: true,
     visualization: true
   })
   const [generatingPDF, setGeneratingPDF] = useState(false)
@@ -402,11 +403,25 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                 session_duration_display: totalSessionDurationSeconds ? `${Math.floor(totalSessionDurationSeconds / 60)}м ${totalSessionDurationSeconds % 60}с` : null
               }
 
+              // Маркетинговый контент: гибридный RPC (гость — по cookie_id)
+              let marketingContent = null
+              try {
+                const { data: rpcData } = await supabase.rpc('get_user_marketing_content', {
+                  p_user_id: null,
+                  p_cookie_id: cookieId ?? null
+                })
+                const raw = Array.isArray(rpcData) && rpcData.length > 0 ? rpcData[0] : rpcData
+                if (raw && (raw.message_text != null || (raw.buttons && raw.buttons.length))) {
+                  marketingContent = { message_text: raw.message_text ?? '', buttons: raw.buttons ?? [] }
+                }
+              } catch (_) {}
               const recommendations = {
                 next_steps: ['Авторизоваться через Telegram, чтобы сохранить прогресс и получить персональные рекомендации'],
                 automatic_actions: [],
                 content_suggestions: ['Введение', 'Кейсы'],
-                cta_suggestions: ['Открыть MiniApp в Telegram']
+                cta_suggestions: ['Открыть MiniApp в Telegram'],
+                marketing_message_text: marketingContent?.message_text ?? null,
+                marketing_buttons: marketingContent?.buttons ?? []
               }
 
               const report = {
@@ -675,11 +690,25 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               session_duration_display: totalSessionDurationSeconds ? `${Math.floor(totalSessionDurationSeconds / 60)}м ${totalSessionDurationSeconds % 60}с` : null
             }
 
+            // Маркетинговый контент: гибридный RPC (авторизованный — по tg_user_id, второй параметр null)
+            let marketingContent = null
+            try {
+              const { data: rpcData } = await supabase.rpc('get_user_marketing_content', {
+                p_user_id: tgUserId != null ? Number(tgUserId) : null,
+                p_cookie_id: null
+              })
+              const raw = Array.isArray(rpcData) && rpcData.length > 0 ? rpcData[0] : rpcData
+              if (raw && (raw.message_text != null || (raw.buttons && raw.buttons.length))) {
+                marketingContent = { message_text: raw.message_text ?? '', buttons: raw.buttons ?? [] }
+              }
+            } catch (_) {}
             const recommendations = {
               next_steps: segmentation.user_segment === 'newcomer' ? ['Пройти диагностику для персональных рекомендаций', 'Изучить основные разделы сайта'] : ['Связаться для детального обсуждения'],
               automatic_actions: [],
               content_suggestions: ['Введение', 'Кейсы'],
-              cta_suggestions: ['Записаться на консультацию']
+              cta_suggestions: ['Записаться на консультацию'],
+              marketing_message_text: marketingContent?.message_text ?? null,
+              marketing_buttons: marketingContent?.buttons ?? []
             }
 
             // Профиль из таблицы users (имя, фамилия, ник)
@@ -2199,6 +2228,77 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                     </div>
                   )
                 })()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+
+        {/* Recommendations (marketing content from get_user_marketing_content) */}
+        <motion.section
+          className={`report-section ${expandedSections.recommendations ? 'expanded' : ''}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+        >
+          <div className="section-header" onClick={() => toggleSection('recommendations')}>
+            <h2>💡 Рекомендации</h2>
+            <span className={`toggle-icon ${expandedSections.recommendations ? 'expanded' : ''}`}>▼</span>
+          </div>
+          <AnimatePresence>
+            {expandedSections.recommendations && (
+              <motion.div
+                className="section-content"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="recommendations-grid">
+                  {(reportData?.recommendations?.marketing_message_text || (reportData?.recommendations?.marketing_buttons?.length > 0)) ? (
+                    <div className="recommendation-card recommendation-card-marketing">
+                      {reportData.recommendations.marketing_message_text && (
+                        <p className="recommendation-marketing-text">{reportData.recommendations.marketing_message_text}</p>
+                      )}
+                      {reportData.recommendations.marketing_buttons?.length > 0 && (
+                        <div className="recommendation-buttons">
+                          {reportData.recommendations.marketing_buttons.map((btn, idx) => {
+                            const path = btn.path ?? btn.url ?? '#'
+                            const isExternal = typeof path === 'string' && /^https?:\/\//i.test(path)
+                            return (
+                              <a
+                                key={idx}
+                                href={path}
+                                className="recommendation-button"
+                                {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                              >
+                                {btn.text ?? 'Перейти'}
+                              </a>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="recommendation-card">
+                      <h4 className="recommendation-card-title">Следующие шаги</h4>
+                      <ul>
+                        {(reportData?.recommendations?.next_steps ?? []).map((step, i) => (
+                          <li key={i}>{step}</li>
+                        ))}
+                      </ul>
+                      {reportData?.recommendations?.cta_suggestions?.length > 0 && (
+                        <>
+                          <h4 className="recommendation-card-title">Действия</h4>
+                          <ul>
+                            {reportData.recommendations.cta_suggestions.map((cta, i) => (
+                              <li key={i}>{cta}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

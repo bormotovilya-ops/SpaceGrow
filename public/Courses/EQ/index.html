@@ -120,6 +120,7 @@
       font-size: 1.0625rem;
       font-family: inherit;
       color: #f1f5f9;
+      text-align: center;
       background: rgba(30, 41, 59, 0.7);
       border: 2px solid rgba(56, 189, 248, 0.35);
       border-radius: 0.75rem;
@@ -818,7 +819,6 @@
         </li>
       </ul>
       <p class="reveal text-slate-400 italic text-sm" data-reveal>Заметить физику — значит дать сигнал логическому мозгу: «Проснись, нас захватили!»</p>
-      <a href="#module2" class="btn-go mt-8 inline-block px-6 py-3 rounded-xl font-display font-semibold text-dark bg-accent text-center reveal" data-reveal>Перейти к Модулю 2 →</a>
     </section>
 
     <!-- ========== МОДУЛЬ 2: Радар осознанности ========== -->
@@ -914,7 +914,6 @@
           </ul>
         </div>
         <p class="reveal text-slate-400 text-sm mt-6 italic" data-reveal><strong>Совет:</strong> Если вы поймали напряжение в челюсти — это «привет» от вашей Амигдалы. Просто расслабьте её, и мозг получит сигнал: «Всё в порядке, мы в безопасности».</p>
-        <a href="#module3" class="btn-go mt-8 inline-block px-6 py-3 rounded-xl font-display font-semibold text-dark bg-mint text-center reveal" data-reveal>Перейти к Модулю 3 →</a>
       </section>
     </div>
 
@@ -994,7 +993,6 @@
           <li class="reveal text-slate-200" data-reveal><strong class="text-white">Переключите фокус:</strong> Найдите в ситуации 3 объективных факта, очищенных от оценок.</li>
           <li class="reveal text-slate-200" data-reveal><strong class="text-white">Визуализация:</strong> Представьте итог переговоров как свершившийся успех.</li>
         </ol>
-        <a href="#module4" class="btn-go mt-8 inline-block px-6 py-3 rounded-xl font-display font-semibold text-dark bg-accent text-center reveal" data-reveal>Перейти к Модулю 4 →</a>
       </section>
     </section>
 
@@ -1133,7 +1131,8 @@
           </div>
         </div>
         <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-4" id="final-screen-title">Поздравляем!</h2>
-        <p class="text-slate-200 text-lg mb-2" id="final-screen-subtitle">Ваш EQ теперь — ваше преимущество.</p>
+        <p class="text-slate-200 text-lg mb-6" id="final-screen-subtitle">Ваш EQ теперь — ваше преимущество.</p>
+        <button type="button" id="final-screen-exit-btn" class="btn-go px-6 py-3 rounded-xl font-display font-semibold text-dark bg-accent">Выйти</button>
       </div>
     </div>
   </main>
@@ -1220,14 +1219,10 @@
       updateExamView();
       window.addEventListener('hashchange', updateExamView);
 
-      document.body.addEventListener('click', function(e) {
-        var exitLink = e.target && e.target.closest ? e.target.closest('#eq-exit-link') : null;
-        if (!exitLink) return;
-        e.preventDefault();
-        e.stopPropagation();
+      function goToAlchemy() {
         try {
           var topWin = window.top || window.parent;
-          var alchemyUrl = exitLink.href || (topWin.location.origin + '/alchemy');
+          var alchemyUrl = (topWin.location.origin || window.location.origin) + '/alchemy';
           if (topWin !== window) {
             topWin.postMessage({ type: 'EQ_EXIT' }, '*');
             topWin.location.href = alchemyUrl;
@@ -1236,6 +1231,21 @@
           }
         } catch (err) {
           console.warn('EQ_EXIT:', err);
+        }
+      }
+      document.body.addEventListener('click', function(e) {
+        var exitLink = e.target && e.target.closest ? e.target.closest('#eq-exit-link') : null;
+        if (exitLink) {
+          e.preventDefault();
+          e.stopPropagation();
+          goToAlchemy();
+          return;
+        }
+        var exitBtn = e.target && e.target.closest ? e.target.closest('#final-screen-exit-btn') : null;
+        if (exitBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          goToAlchemy();
         }
       }, true);
 
