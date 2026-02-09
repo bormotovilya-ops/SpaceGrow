@@ -430,6 +430,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     logEvent('alchemy', 'snitch_action', { page: '/alchemy', metadata: { game_name: gameName } })
   }
 
+  const handleSnitchEqCourse = () => {
+    logEvent('alchemy', 'snitch_action', { page: '/alchemy', metadata: { game_name: 'Эмоциональный интеллект' } })
+    navigate('/eq-module')
+  }
+
   const handleCrystalTestClick = (testId, testTitle) => {
     logEvent('alchemy', 'crystal_action', { page: '/alchemy', metadata: { test_name: testTitle } })
     if (testId === 'ikigai') navigate('/alchemy/ikigai')
@@ -1120,6 +1125,15 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                   <h3 className="test-card-title">Интерактивный Онбординг</h3>
                   <p className="test-card-desc">Пример того, как ученик погружается в ваш продукт через выбор персонажа и сюжета.</p>
                   <button className="novella-start-btn">Запустить демо</button>
+                </div>
+
+                {/* КАРТОЧКА: ЭМОЦИОНАЛЬНЫЙ ИНТЕЛЛЕКТ */}
+                <div className="test-card novella-card active-demo" onClick={handleSnitchEqCourse}>
+                  <div className="novella-badge">Курс</div>
+                  <div className="test-card-icon">🧠</div>
+                  <h3 className="test-card-title">Эмоциональный интеллект</h3>
+                  <p className="test-card-desc">Твой супернавык для работы и жизни — интерактивный модуль с сертификатом.</p>
+                  <button className="novella-start-btn">Запустить курс</button>
                 </div>
         
                 {/* КАРТОЧКА 2: МЕХАНИКА "КВЕСТ" */}

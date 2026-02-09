@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest identifier="EQ_Module_Manifest" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd http://www.adlnet.org/xsd/adlcp_v1p3 adlcp_v1p3.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="EQ_Organization">
+    <organization identifier="EQ_Organization">
+      <title>Эмоциональный интеллект: Как не сойти с УМА</title>
+      <item identifier="EQ_Item_1" identifierref="EQ_Resource">
+        <title>Модуль 1 — Нейроанатомия успеха</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="EQ_Resource" type="webcontent" adlcp:scormType="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="scorm_api.js"/>
+      <file href="hero.png"/>
+      <file href="m1.png"/>
+      <file href="m2.png"/>
+      <file href="m3.png"/>
+      <file href="m4.png"/>
+    </resource>
+  </resources>
+</manifest>

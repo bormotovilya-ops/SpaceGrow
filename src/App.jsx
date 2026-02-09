@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import SalesFunnel from './components/SalesFunnel'
 import SessionInitializer from './components/SessionInitializer'
 import Sitemap from './components/Sitemap'
+import Scorm from './components/Scorm'
+import EqModule from './components/EqModule'
 import {
   HomeRoute,
   ProfileRoute,
@@ -24,6 +26,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/sitemap" element={<Sitemap />} />
+        <Route path="/scorm" element={<Scorm />} />
+        <Route path="/eq-module" element={<EqModule />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<AppContainer><HomeRoute /></AppContainer>} />
         <Route path="/profile" element={<AppContainer><ProfileRoute /></AppContainer>} />

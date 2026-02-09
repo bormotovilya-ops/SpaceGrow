@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Эмоциональный интеллект: Как не сойти с УМА — SCORM 1.2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="scorm_api.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: '#0f172a',
+            accent: '#38bdf8',
+            amygdala: '#ef4444',
+            cortex: '#22d3ee',
+            mint: '#99f6e4',
+            'mint-dark': '#5eead4',
+            'mint-bg': 'rgba(94, 234, 212, 0.08)',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Montserrat', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --dark: #0f172a;
+      --accent: #38bdf8;
+      --red: #ef4444;
+    }
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-text-size-adjust: 100%;
+    }
+    html::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--dark);
+      color: #f1f5f9;
+      line-height: 1.75;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      min-width: 280px;
+    }
+    body::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    *::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    .progress-bar-top {
+      position: fixed;
+      top: 44px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), #0ea5e9);
+      transform-origin: left;
+      z-index: 9998;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    @media (max-width: 480px) {
+      .progress-bar-top { top: 52px; }
+    }
+    .font-display { font-family: 'Montserrat', system-ui, sans-serif; }
+
+    .reveal { opacity: 0; transform: translateY(28px); }
+
+    #suma-word { display: inline-block; }
+
+    .situation-card {
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+    .situation-card:hover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .situation-card.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .situation-card .check-icon { opacity: 0; transform: scale(0.5); transition: opacity 0.25s ease, transform 0.25s ease; }
+    .situation-card.selected .check-icon { opacity: 1; transform: scale(1); }
+
+    .btn-go {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .btn-go:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 32px rgba(56, 189, 248, 0.4);
+    }
+    .btn-go:active { transform: scale(0.98); }
+
+    /* Блок знакомства: поле имени */
+    .name-input-wrap {
+      max-width: 320px;
+      margin: 1.5rem auto 1.25rem;
+    }
+    .name-input-wrap input {
+      width: 100%;
+      padding: 0.875rem 1.25rem;
+      font-size: 1.0625rem;
+      font-family: inherit;
+      color: #f1f5f9;
+      background: rgba(30, 41, 59, 0.7);
+      border: 2px solid rgba(56, 189, 248, 0.35);
+      border-radius: 0.75rem;
+      outline: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .name-input-wrap input::placeholder { color: rgba(148, 163, 184, 0.8); }
+    .name-input-wrap input:hover { border-color: rgba(56, 189, 248, 0.55); background: rgba(30, 41, 59, 0.85); }
+    .name-input-wrap input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    /* Финальный экран: сертификат с наложением имени и даты */
+    .certificate-wrap {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto 1.5rem;
+    }
+    .certificate-wrap img { display: block; width: 100%; height: auto; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .cert-overlay-name-date {
+      position: absolute;
+      left: 12%;
+      top: 35%;
+      right: 12%;
+      font-family: 'Montserrat', system-ui, sans-serif;
+      line-height: 1.3;
+    }
+    .cert-overlay-name {
+      font-weight: 700;
+      font-size: clamp(0.5rem, 2vw, 0.75rem);
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+    .cert-overlay-date {
+      display: block;
+      margin-top: 0.35em;
+      font-weight: 600;
+      font-size: clamp(0.375rem, 1.25vw, 0.5rem);
+      color: rgba(241, 245, 249, 0.95);
+      letter-spacing: 0.03em;
+    }
+
+    /* Модуль 1: карта мозга — зоны наведения */
+    .brain-viz { position: relative; display: inline-block; max-width: 100%; }
+    .brain-viz img { display: block; width: 100%; height: auto; border-radius: 1rem; }
+    .brain-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .brain-zone-amygdala { left: 0; }
+    .brain-zone-cortex { right: 0; }
+    .brain-zone-amygdala:hover::after,
+    .brain-zone-amygdala.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(239, 68, 68, 0.25);
+      border-radius: 1rem 0 0 1rem;
+      pointer-events: none;
+      animation: pulse-red 1.2s ease-in-out infinite;
+    }
+    .brain-zone-cortex:hover::after,
+    .brain-zone-cortex.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(34, 211, 238, 0.2);
+      border-radius: 0 1rem 1rem 0;
+      pointer-events: none;
+      animation: glow-blue 2s ease-in-out infinite;
+    }
+    @keyframes pulse-red {
+      0%, 100% { opacity: 0.6; box-shadow: inset 0 0 40px rgba(239, 68, 68, 0.3); }
+      50% { opacity: 1; box-shadow: inset 0 0 60px rgba(239, 68, 68, 0.5); }
+    }
+    @keyframes glow-blue {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    .practice-option {
+      transition: border-color 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+    }
+    .practice-option:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.06); }
+    .practice-option.selected { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); }
+    .practice-option .check-icon { opacity: 0; transition: opacity 0.2s; }
+    .practice-option.selected .check-icon { opacity: 1; }
+
+    /* Модуль 2: успокаивающие тона */
+    .module-2 { --m2-accent: #99f6e4; --m2-bg: rgba(15, 23, 42, 0.97); }
+    .module-2 .section-card { background: rgba(30, 41, 59, 0.5); border-color: rgba(94, 234, 212, 0.2); }
+    .module-2 .text-accent-m2 { color: var(--m2-accent); }
+    .module-2 blockquote { border-left-color: var(--m2-accent); background: rgba(94, 234, 212, 0.06); }
+
+    /* Лаборатория эмоций: карточки-квиз с flip */
+    .lab-card { perspective: 1000px; min-height: 180px; }
+    .lab-card-inner { position: relative; width: 100%; min-height: 180px; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+    .lab-card.flipped .lab-card-inner { transform: rotateY(180deg); }
+    .lab-card-front, .lab-card-back { backface-visibility: hidden; -webkit-backface-visibility: hidden; position: absolute; inset: 0; border-radius: 1rem; padding: 1.25rem; display: flex; flex-direction: column; justify-content: center; }
+    .lab-card-back { transform: rotateY(180deg); background: rgba(94, 234, 212, 0.08); border: 1px solid rgba(94, 234, 212, 0.25); }
+    .lab-option { cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+    .lab-option:hover { background: rgba(94, 234, 212, 0.12); border-color: rgba(94, 234, 212, 0.4); }
+
+    /* Сканер тела: анимированная линия */
+    .scanner-wrap { position: relative; min-height: auto; overflow: hidden; }
+    .scanner-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.9), transparent);
+      box-shadow: 0 0 20px rgba(94, 234, 212, 0.6);
+      transform: translateY(-10px);
+      animation: scanner-sweep 8s ease-in-out infinite;
+    }
+    @keyframes scanner-sweep {
+      0% { top: 0; opacity: 0.6; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 100%; opacity: 0.6; }
+    }
+
+    /* Модуль 3: Квадрант состояний */
+    .quadrant-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; max-width: 480px; aspect-ratio: 1; margin: 0 auto; border-radius: 1rem; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.4); }
+    .quadrant-cell {
+      position: relative;
+      transition: filter 0.4s ease, box-shadow 0.4s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1rem;
+      min-height: 140px;
+      filter: brightness(0.45);
+    }
+    .quadrant-grid .quadrant-cell:hover { filter: brightness(1.15); box-shadow: inset 0 0 30px rgba(255,255,255,0.12); z-index: 1; }
+    .quadrant-grid:hover .quadrant-cell:not(:hover) { filter: brightness(0.3); }
+    .quadrant-red { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 50%, #dc2626 100%); }
+    .quadrant-yellow { background: linear-gradient(135deg, #ca8a04 0%, #eab308 50%, #facc15 100%); box-shadow: 0 0 40px rgba(234, 179, 8, 0.25); }
+    .quadrant-yellow:hover { box-shadow: inset 0 0 50px rgba(255,255,200,0.3), 0 0 50px rgba(234, 179, 8, 0.4); }
+    .quadrant-blue { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #2563eb 100%); }
+    .quadrant-blue::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; mix-blend-mode: overlay; }
+    .quadrant-blue:hover { backdrop-filter: blur(1px); }
+    .quadrant-green { background: linear-gradient(135deg, #15803d 0%, #22c55e 50%, #16a34a 100%); }
+    .zone-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+      background: transparent;
+      transition: background 0.01s;
+    }
+    #mood-tracker {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      width: 200px;
+      padding: 0;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 0.75rem;
+      font-size: 0.75rem;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: width 0.25s ease, height 0.25s ease, padding 0.25s ease, background 0.3s ease;
+      overflow: hidden;
+    }
+    #mood-tracker .mood-tracker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    #mood-tracker .mood-tracker-body { padding: 0 0.75rem 0.75rem; transition: opacity 0.2s ease; }
+    #mood-tracker.mood-tracker--collapsed { width: 44px; height: 44px; border-radius: 50%; padding: 0; }
+    #mood-tracker.mood-tracker--collapsed .mood-tracker-body { display: none; }
+    #mood-tracker.mood-tracker--collapsed .mood-tracker-title { display: none; }
+    #mood-tracker.mood-tracker--collapsed .mood-tracker-header { justify-content: center; padding: 0; }
+    #mood-tracker.mood-tracker--collapsed .mood-tracker-toggle { width: 100%; height: 100%; border-radius: 50%; font-size: 1.25rem; }
+    #mood-tracker .mood-tracker-toggle {
+      width: 24px; height: 24px;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+      color: #f1f5f9;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    #mood-tracker .mood-tracker-toggle:hover { background: rgba(255,255,255,0.25); }
+    #mood-tracker label { display: block; margin-bottom: 0.25rem; color: rgba(255,255,255,0.8); }
+    #mood-tracker input[type="range"] { width: 100%; margin-bottom: 0.5rem; accent-color: #38bdf8; }
+    .navigator-option { cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+    .navigator-option:hover { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.5); }
+    .navigator-option.selected { border-color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
+
+    /* Модуль 4: Дыхательный тренажёр «Квадрат» */
+    .breathing-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px; }
+    .breathing-square-box {
+      width: 80px; height: 80px;
+      border: 3px solid rgba(148, 163, 184, 0.6);
+      border-radius: 0.5rem;
+      background: rgba(56, 189, 248, 0.15);
+      transform-origin: center;
+      transition: transform 0.1s linear;
+    }
+    .breathing-phase { font-size: 0.875rem; color: #94a3b8; margin-top: 1rem; min-height: 1.5rem; }
+
+    /* Аптечка: карточки техник */
+    .first-aid-kit {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 1rem;
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 1rem;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .first-aid-tool {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(51, 65, 85, 0.4);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .first-aid-tool:hover { border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.08); box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); }
+    .first-aid-tool.first-aid-tool--open { border-color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
+    .first-aid-item { display: flex; flex-direction: column; }
+    .first-aid-tool .tool-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .first-aid-tool .tool-title { font-size: 0.75rem; font-weight: 600; color: #e2e8f0; text-align: center; }
+    .first-aid-instruction {
+      grid-column: 1 / -1;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+      text-align: left;
+    }
+    .first-aid-item .first-aid-tool.first-aid-tool--open + .first-aid-instruction { max-height: 220px; }
+    .first-aid-instruction-inner { padding: 1rem; background: rgba(15, 23, 42, 0.6); border-radius: 0.5rem; border-left: 3px solid #38bdf8; font-size: 0.8125rem; color: #cbd5e1; line-height: 1.5; }
+
+    .final-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.97);
+      padding: 2rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .final-screen.final-screen--show { display: flex; }
+    .final-screen-content { text-align: center; max-width: 520px; }
+
+    /* Единая навигация по модулям */
+    .course-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0.5rem 0.5rem 0.5rem max(0.5rem, env(safe-area-inset-left));
+      padding-right: max(0.5rem, env(safe-area-inset-right));
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+      min-height: 44px;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    }
+    .course-nav a {
+      padding: 0.5rem 0.6rem;
+      min-height: 44px;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 0.375rem;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .course-nav a:hover { color: #f1f5f9; background: rgba(56, 189, 248, 0.15); }
+    .course-nav a:active { background: rgba(56, 189, 248, 0.2); }
+    @media (max-width: 480px) {
+      .course-nav { gap: 0.2rem; padding: 0.4rem max(0.4rem, env(safe-area-inset-left)); }
+      .course-nav a { padding: 0.4rem 0.5rem; font-size: 0.65rem; min-height: 40px; }
+    }
+
+    /* Финальный квиз: правильный / неправильный ответ */
+    .quiz-final-option {
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      cursor: pointer;
+    }
+    .quiz-final-option:hover { border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.06); }
+    .quiz-final-option.quiz-correct { border-color: #22c55e !important; background: rgba(34, 197, 94, 0.15) !important; }
+    .quiz-final-option.quiz-wrong { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.12) !important; animation: quiz-shake 0.5s ease; }
+    @keyframes quiz-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    /* Экзамен на отдельной «странице»: скрыть теорию, выделенный фон и заголовок */
+    #exam-page { display: none; }
+    body.exam-view #course-theory { display: none !important; }
+    body.exam-view #exam-page {
+      display: block !important;
+      min-height: calc(100vh - 52px);
+      padding: 1rem max(1rem, env(safe-area-inset-right)) 2rem max(1rem, env(safe-area-inset-left));
+      padding-top: 1rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: linear-gradient(165deg, #0a0f1a 0%, #0f172a 35%, #0c1222 70%, #070b12 100%);
+      border-top: 1px solid rgba(56, 189, 248, 0.15);
+      box-shadow: inset 0 2px 40px rgba(0, 0, 0, 0.4);
+    }
+    body.exam-view #exam-page .exam-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    body.exam-view #exam-page .exam-title {
+      font-family: 'Montserrat', system-ui, sans-serif;
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      margin: 0 0 0.5rem 0;
+    }
+    body.exam-view #exam-page .exam-subtitle {
+      font-size: 0.9375rem;
+      color: rgba(148, 163, 184, 0.9);
+      margin: 0;
+    }
+    @media (max-width: 640px) {
+      body.exam-view #exam-page { min-height: calc(100vh - 56px); padding-top: 0.75rem; padding-left: 0.75rem; padding-right: 0.75rem; }
+      body.exam-view #exam-page .exam-header { margin-bottom: 1.75rem; padding-bottom: 1.25rem; }
+    }
+
+    /* Финальный экран (модал): отступы под вырезы экрана */
+    .final-screen {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+    @media (max-width: 480px) {
+      .final-screen { padding: 0.75rem; }
+      .final-screen-content { max-width: 100%; }
+      .certificate-wrap { max-width: 100%; }
+      .cert-overlay-name { word-break: break-word; }
+    }
+
+    /* Квиз: удобные зоны нажатия на мобильных */
+    .quiz-final-option {
+      min-height: 44px;
+      padding: 0.75rem 1rem;
+    }
+    @media (max-width: 640px) {
+      .quiz-final-option { min-height: 48px; padding: 0.875rem 1rem; }
+    }
+
+    /* Отступ под фиксированный хедер */
+    .main-offset {
+      height: 52px;
+      min-height: 52px;
+    }
+    @media (max-width: 480px) {
+      .main-offset { height: 56px; min-height: 56px; }
+    }
+  </style>
+</head>
+<body class="antialiased min-h-screen">
+  <nav class="course-nav" aria-label="Навигация по курсу">
+    <a href="#hero">Введение</a>
+    <a href="#module1">Модуль 1</a>
+    <a href="#module2">Модуль 2</a>
+    <a href="#module3">Модуль 3</a>
+    <a href="#module4">Модуль 4</a>
+    <a href="#m4-final-exam">Экзамен</a>
+  </nav>
+  <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0)"></div>
+  <div class="main-offset" style="height: 52px;"></div>
+  <div class="zone-overlay" id="zone-overlay" aria-hidden="true"></div>
+  <div id="mood-tracker" class="mood-tracker mood-tracker--collapsed" role="region" aria-label="Мой трекер состояния">
+    <div class="mood-tracker-header" id="mood-tracker-toggle" title="Свернуть / Развернуть">
+      <span class="mood-tracker-title text-white font-semibold text-xs uppercase tracking-wider">Мое состояние</span>
+      <button type="button" class="mood-tracker-toggle" id="mood-tracker-btn" aria-label="Развернуть">☺</button>
+    </div>
+    <div class="mood-tracker-body">
+      <label for="energy-slider">Энергия</label>
+      <input type="range" id="energy-slider" min="0" max="100" value="50" title="Низкая ← → Высокая" />
+      <label for="mood-slider">Настроение</label>
+      <input type="range" id="mood-slider" min="0" max="100" value="50" title="Минус (−) ← → Плюс (+)" />
+      <p class="mood-tracker-value text-white/90 text-xs mt-1" id="mood-tracker-value" aria-live="polite">Средняя / 0</p>
+    </div>
+  </div>
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+    <div id="course-theory">
+    <!-- Титульный экран -->
+    <section class="min-h-[80vh] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-16 mb-24 sm:mb-32" id="hero">
+      <div class="flex-1">
+        <h1 class="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 reveal" data-reveal>
+          Эмоциональный интеллект:<br />
+          Как не сойти с <span id="suma-word" class="inline-block">УМА</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-slate-300 reveal" data-reveal>
+          Твой супернавык в мире «очень интересных» людей
+        </p>
+        <div class="mt-8 reveal" data-reveal>
+          <p class="text-slate-400 text-sm sm:text-base mb-2">Начнём со знакомства</p>
+          <p class="text-slate-300 text-sm mb-3">Чтобы опыт был персональным, а сертификат — именным, представься.</p>
+          <div class="name-input-wrap">
+            <input type="text" id="userNameInput" placeholder="Твоё имя и фамилия" autocomplete="name" maxlength="80" />
+          </div>
+          <div class="mt-6 btn-go-hero-wrap" id="btn-go-hero-wrap" style="opacity:0; pointer-events:none;">
+            <a href="#situations" id="btn-go-hero" class="btn-go inline-block px-8 py-4 rounded-xl font-display font-bold text-dark bg-accent text-center uppercase tracking-wider">
+              Поехали в мозг!
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="flex-shrink-0 lg:w-[45%] xl:w-[400px] reveal" data-reveal>
+        <img src="hero.png" alt="" class="w-full h-auto rounded-2xl object-cover shadow-2xl" />
+      </div>
+    </section>
+
+    <!-- Знакомая ситуация? -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="situations">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Знакомая ситуация?</h2>
+      <p class="text-slate-400 text-sm sm:text-base mb-8 reveal" data-reveal>Отметьте карточки, которые «попали» в сердце</p>
+      <ul class="space-y-4">
+        <li class="situation-card reveal flex items-start gap-4 p-5 sm:p-6 rounded-2xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-card>
+          <span class="check-icon w-8 h-8 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span class="text-slate-200">В пятницу в 18:00 прилетает «мелкая правка», и вы чувствуете, как внутри просыпается древнее зло 🌋</span>
+        </li>
+        <li class="situation-card reveal flex items-start gap-4 p-5 sm:p-6 rounded-2xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-card>
+          <span class="check-icon w-8 h-8 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span class="text-slate-200">Коллега говорит «Я тебя услышал», но вы понимаете, что он вас <em>не слушал</em> 🙉</span>
+        </li>
+        <li class="situation-card reveal flex items-start gap-4 p-5 sm:p-6 rounded-2xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-card>
+          <span class="check-icon w-8 h-8 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span class="text-slate-200">Вы обещали себе быть спокойным, но через 5 минут спорите о цвете штор так, будто от этого зависит судьба человечества 🛡️</span>
+        </li>
+      </ul>
+      <p class="mt-6 text-slate-400 italic reveal" data-reveal>Если вы узнали себя — поздравляем, вы живой человек!</p>
+    </section>
+
+    <!-- Зачем вам это? -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="why">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-3 reveal" data-reveal>Зачем вам это?</h2>
+      <p class="text-slate-400 text-sm sm:text-base mb-10 reveal" data-reveal>Кроме того, что нужно пройти курс</p>
+      <ol class="space-y-5">
+        <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
+          <span class="font-display font-bold text-accent text-xl shrink-0 w-10">1.</span>
+          <div><strong class="text-white">Для кошелька:</strong> <span class="text-slate-300">Люди с высоким EQ зарабатывают в среднем на $29,000 в год больше.</span></div>
+        </li>
+        <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
+          <span class="font-display font-bold text-accent text-xl shrink-0 w-10">2.</span>
+          <div><strong class="text-white">Для здоровья:</strong> <span class="text-slate-300">Вы перестанете «переваривать» стресс внутри и начнёте выгружать его экологично.</span></div>
+        </li>
+        <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
+          <span class="font-display font-bold text-accent text-xl shrink-0 w-10">3.</span>
+          <div><strong class="text-white">Для власти:</strong> <span class="text-slate-300">Тот, кто управляет своими эмоциями, управляет атмосферой в комнате.</span></div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Наше обещание -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="promise">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-10 reveal" data-reveal>Наше обещание</h2>
+      <ul class="space-y-4 mb-10">
+        <li class="reveal flex items-center gap-3 text-slate-200" data-reveal><span class="text-accent font-bold">—</span> <strong>Никакой эзотерики.</strong></li>
+        <li class="reveal flex items-center gap-3 text-slate-200" data-reveal><span class="text-accent font-bold">—</span> <strong>Никаких обниманий деревьев.</strong></li>
+        <li class="reveal flex items-center gap-3 text-slate-200" data-reveal><span class="text-accent font-bold">—</span> <strong>Никакой воды.</strong></li>
+      </ul>
+      <p class="reveal text-slate-300 mb-10 leading-relaxed" data-reveal>Только нейробиология, здравый смысл и техники, которые можно применить уже на следующем созвоне.</p>
+    </section>
+
+    <!-- Модуль 1: Глава 1 -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="module1">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Глава 1. Почему мы сначала кричим, а потом думаем? 🧠</h2>
+      <p class="text-slate-400 mb-10 reveal" data-reveal>Разбираем устройство вашего «биологического софта»</p>
+      <div class="brain-viz my-10 reveal mx-auto max-w-2xl" data-reveal>
+        <img src="m1.png" alt="Нейроанатомия: Амигдала и Префронтальная кора" />
+        <div class="brain-zone brain-zone-amygdala" title="Амигдала" aria-label="Зона: Амигдала"></div>
+        <div class="brain-zone brain-zone-cortex" title="Префронтальная кора" aria-label="Зона: Префронтальная кора"></div>
+      </div>
+      <p class="text-slate-400 text-sm text-center reveal" data-reveal>Клик по левой половине — Амигдала, по правой — Ваш внутренний CEO</p>
+    </section>
+
+    <!-- Знакомьтесь, ваша Амигдала -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="amygdala">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Знакомьтесь, ваша Амигдала 🚨</h2>
+      <p class="text-slate-400 text-sm sm:text-base mb-8 reveal" data-reveal">Ваш личный «детектор дыма»</p>
+      <ul class="space-y-4 mb-6">
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Где она:</strong> Крошечный участок в глубине мозга.</li>
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Зачем она:</strong> Отвечает за выживание. Сканирует мир на угрозы 24/7.</li>
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Баг:</strong> Она не видит разницы между саблезубым тигром и едким письмом начальника.</li>
+      </ul>
+      <blockquote class="reveal border-l-4 border-amygdala pl-6 py-3 rounded-r-xl bg-red-500/10 text-slate-200 italic" data-reveal>
+        <strong>Реакция Амигдалы:</strong> 0.01 секунды. Она бьёт тревогу раньше, чем вы успеваете осознать, что произошло.
+      </blockquote>
+    </section>
+
+    <!-- Ваш внутренний CEO -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="ceo">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Ваш внутренний CEO 👔</h2>
+      <p class="text-slate-400 text-sm sm:text-base mb-6 reveal" data-reveal">Префронтальная кора</p>
+      <p class="reveal text-slate-200 mb-6" data-reveal>Это «молодой» отдел мозга, который делает нас людьми.</p>
+      <ul class="space-y-3 mb-6">
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Функции:</strong> Логика, анализ, ирония, планирование.</li>
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Минус:</strong> Она медленная и потребляет много энергии.</li>
+      </ul>
+      <p class="reveal text-slate-300 font-medium" data-reveal><strong>Конфликт:</strong> Пока «Директор» анализирует данные, Амигдала уже отправила гневное письмо и заблокировала контакт.</p>
+    </section>
+
+    <!-- Эмоциональный захват -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="hijack">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Эмоциональный захват (Hijack) ⚡</h2>
+      <p class="text-slate-400 text-sm sm:text-base mb-8 reveal" data-reveal>Состояние, когда «Директор» ушёл в отпуск</p>
+      <p class="reveal text-slate-200 mb-6" data-reveal>Когда эмоция зашкаливает, связь между Амигдалой и Корой обрывается.</p>
+      <ul class="space-y-3 mb-6">
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Ваш IQ падает на 20–30 пунктов.</strong> Вы буквально глупеете в момент ярости.</li>
+        <li class="reveal text-slate-200" data-reveal><strong class="text-white">Симптомы:</strong> Туннельное зрение, жар в груди, звон в ушах.</li>
+      </ul>
+    </section>
+
+    <!-- Практика: Поймай захват -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="practice">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Практика: «Поймай захват»</h2>
+      <p class="text-slate-400 text-sm sm:text-base mb-8 reveal" data-reveal>Вспомните недавний случай, когда вы «вспыхнули».</p>
+      <p class="reveal text-white font-medium mb-6" data-reveal>Что вы почувствовали в теле первым?</p>
+      <ul class="space-y-3 mb-8">
+        <li class="practice-option reveal flex items-center gap-4 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-practice>
+          <span class="check-icon w-7 h-7 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span>Сжатые челюсти</span>
+        </li>
+        <li class="practice-option reveal flex items-center gap-4 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-practice>
+          <span class="check-icon w-7 h-7 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span>Комок в горле</span>
+        </li>
+        <li class="practice-option reveal flex items-center gap-4 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-practice>
+          <span class="check-icon w-7 h-7 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span>Жар или холод</span>
+        </li>
+        <li class="practice-option reveal flex items-center gap-4 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-reveal data-practice>
+          <span class="check-icon w-7 h-7 rounded-full bg-accent flex items-center justify-center text-dark shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
+          <span>Учащённое сердцебиение</span>
+        </li>
+      </ul>
+      <p class="reveal text-slate-400 italic text-sm" data-reveal>Заметить физику — значит дать сигнал логическому мозгу: «Проснись, нас захватили!»</p>
+      <a href="#module2" class="btn-go mt-8 inline-block px-6 py-3 rounded-xl font-display font-semibold text-dark bg-accent text-center reveal" data-reveal>Перейти к Модулю 2 →</a>
+    </section>
+
+    <!-- ========== МОДУЛЬ 2: Радар осознанности ========== -->
+    <div class="module-2">
+      <section class="mb-24 sm:mb-32 scroll-mt-24 pt-8" id="module2">
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Глава 2. Радар осознанности 📡</h2>
+        <p class="text-slate-400 mb-10 reveal" data-reveal>Как заметить пожар до того, как сгорит весь офис?</p>
+        <div class="reveal max-w-2xl mx-auto" data-reveal>
+          <img src="m2.png" alt="Радар осознанности — Сканер тела" class="w-full h-auto rounded-2xl object-cover shadow-xl" />
+        </div>
+      </section>
+
+      <section class="mb-24 sm:mb-32 scroll-mt-24" id="m2-problem">
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-6 reveal" data-reveal>Проблема: Эмоциональная слепота</h2>
+        <p class="reveal text-slate-200 mb-6 leading-relaxed" data-reveal>Большинство людей замечают эмоцию только тогда, когда она уже превратилась в скандал или апатию.</p>
+        <p class="reveal text-mint font-medium mb-6" data-reveal><strong>Ваша цель:</strong> Сократить время между <em>возникновением</em> чувства и его <em>осознанием</em>.</p>
+        <blockquote class="reveal border-l-4 pl-6 py-3 rounded-r-xl text-slate-200 italic section-card" data-reveal>
+          <strong>Факт:</strong> Исследования UCLA показали, что простая вербализация (называние) эмоции снижает активность Амигдалы на 30–40%.
+        </blockquote>
+      </section>
+
+      <section class="mb-24 sm:mb-32 scroll-mt-24" id="m2-labeling">
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-4 reveal" data-reveal>Техника «Маркировка» (Labeling) 🏷️</h2>
+        <p class="reveal text-slate-200 mb-8" data-reveal>Как только вы чувствуете дискомфорт, сделайте паузу на 2 секунды и дайте чувству имя.</p>
+        <p class="reveal text-mint font-medium mb-4" data-reveal><strong>Правила маркировки:</strong></p>
+        <ul class="space-y-4">
+          <li class="reveal section-card p-5 rounded-xl text-slate-200 border" data-reveal><strong class="text-white">Будьте точны:</strong> Вместо «мне плохо» скажите «я чувствую уязвлённость».</li>
+          <li class="reveal section-card p-5 rounded-xl text-slate-200 border" data-reveal><strong class="text-white">Дистанцируйтесь:</strong> Не говорите «Я злюсь». Говорите: «Я <em>замечаю</em>, что сейчас во мне рождается гнев».</li>
+          <li class="reveal section-card p-5 rounded-xl text-slate-200 border" data-reveal><strong class="text-white">Не оценивайте:</strong> Эмоция — это просто информация. Она не «плохая» и не «хорошая».</li>
+        </ul>
+      </section>
+
+      <section class="mb-24 sm:mb-32 scroll-mt-24" id="m2-lab">
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Лаборатория эмоций 🔬</h2>
+        <p class="text-slate-400 text-sm sm:text-base mb-10 reveal" data-reveal>Подберите верное слово для этих состояний. Нажмите на вариант — карточка перевернётся с пояснением.</p>
+        <div class="space-y-6">
+          <div class="lab-card reveal section-card rounded-2xl border overflow-hidden" data-reveal data-lab-card>
+            <div class="lab-card-inner">
+              <div class="lab-card-front p-5">
+                <p class="text-slate-200 font-medium mb-4">Коллега перебил вас на важном моменте:</p>
+                <div class="flex flex-wrap gap-3">
+                  <button type="button" class="lab-option px-4 py-2 rounded-lg border-2 border-slate-500 bg-slate-800/60 text-slate-200" data-flip>Гнев</button>
+                  <button type="button" class="lab-option px-4 py-2 rounded-lg border-2 border-slate-500 bg-slate-800/60 text-slate-200" data-flip>Обида / Обесценивание</button>
+                </div>
+              </div>
+              <div class="lab-card-back p-5">
+                <p class="text-mint font-semibold mb-2">Ключевая эмоция: Обида / Обесценивание</p>
+                <p class="text-slate-300 text-sm leading-relaxed">Перебивание бьёт по чувству значимости. За гневом часто скрывается именно обида: «Моё мнение не важно». Назвать это — первый шаг к диалогу.</p>
+              </div>
+            </div>
+          </div>
+          <div class="lab-card reveal section-card rounded-2xl border overflow-hidden" data-reveal data-lab-card>
+            <div class="lab-card-inner">
+              <div class="lab-card-front p-5">
+                <p class="text-slate-200 font-medium mb-4">Вам дали проект, который вы никогда не делали:</p>
+                <div class="flex flex-wrap gap-3">
+                  <button type="button" class="lab-option px-4 py-2 rounded-lg border-2 border-slate-500 bg-slate-800/60 text-slate-200" data-flip>Страх</button>
+                  <button type="button" class="lab-option px-4 py-2 rounded-lg border-2 border-slate-500 bg-slate-800/60 text-slate-200" data-flip>Азарт / Неуверенность</button>
+                </div>
+              </div>
+              <div class="lab-card-back p-5">
+                <p class="text-mint font-semibold mb-2">Ключевая эмоция: Азарт / Неуверенность</p>
+                <p class="text-slate-300 text-sm leading-relaxed">Один и тот же вызов может переживаться и как «страшно», и как «интересно». Точная маркировка помогает отделить тревогу от здорового азарта и опереться на ресурс.</p>
+              </div>
+            </div>
+          </div>
+          <div class="lab-card reveal section-card rounded-2xl border overflow-hidden" data-reveal data-lab-card>
+            <div class="lab-card-inner">
+              <div class="lab-card-front p-5">
+                <p class="text-slate-200 font-medium mb-4">Клиент не отвечает на письмо 3 дня:</p>
+                <div class="flex flex-wrap gap-3">
+                  <button type="button" class="lab-option px-4 py-2 rounded-lg border-2 border-slate-500 bg-slate-800/60 text-slate-200" data-flip>Ярость</button>
+                  <button type="button" class="lab-option px-4 py-2 rounded-lg border-2 border-slate-500 bg-slate-800/60 text-slate-200" data-flip>Тревога / Ожидание</button>
+                </div>
+              </div>
+              <div class="lab-card-back p-5">
+                <p class="text-mint font-semibold mb-2">Ключевая эмоция: Тревога / Ожидание</p>
+                <p class="text-slate-300 text-sm leading-relaxed">До ярости часто идёт накопленная тревога и ощущение потери контроля. Заметить «я тревожусь» раньше, чем «я в ярости», даёт время выбрать реакцию.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-24 sm:mb-32 scroll-mt-24" id="m2-scanner">
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Практическое упражнение: «Сканер тела»</h2>
+        <p class="text-slate-400 mb-6 reveal" data-reveal>Прямо сейчас, не меняя позы, просканируйте себя сверху вниз.</p>
+        <div class="scanner-wrap reveal rounded-2xl section-card border p-6 relative" data-reveal>
+          <div class="scanner-line" id="scanner-line" aria-hidden="true"></div>
+          <ul class="relative z-10 space-y-3 text-slate-200">
+            <li><strong class="text-mint">Где</strong> в теле скопилось напряжение? (Плечи, челюсть, живот)</li>
+            <li><strong class="text-mint">Какое</strong> это ощущение? (Сжатие, пульсация, тяжесть)</li>
+          </ul>
+        </div>
+        <p class="reveal text-slate-400 text-sm mt-6 italic" data-reveal><strong>Совет:</strong> Если вы поймали напряжение в челюсти — это «привет» от вашей Амигдалы. Просто расслабьте её, и мозг получит сигнал: «Всё в порядке, мы в безопасности».</p>
+        <a href="#module3" class="btn-go mt-8 inline-block px-6 py-3 rounded-xl font-display font-semibold text-dark bg-mint text-center reveal" data-reveal>Перейти к Модулю 3 →</a>
+      </section>
+    </div>
+
+    <!-- ========== МОДУЛЬ 3: Квадрант состояний ========== -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="module3">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Глава 3. Квадрант состояний 🧭</h2>
+      <p class="text-slate-400 mb-10 reveal" data-reveal>Как превратить гнев в топливо, а грусть — в анализ?</p>
+      <div class="reveal max-w-2xl mx-auto mb-12" data-reveal>
+        <img src="m3.png" alt="Квадрант состояний — Энергия и Вектор" class="w-full h-auto rounded-2xl object-cover shadow-xl" />
+      </div>
+
+      <section class="mb-16 scroll-mt-24" id="m3-axes">
+        <h3 class="font-display text-xl font-bold text-white mb-6 reveal" data-reveal>Энергия и Вектор</h3>
+        <p class="reveal text-slate-200 mb-6" data-reveal>Эмоции различаются по двум осям:</p>
+        <ol class="space-y-3 mb-6">
+          <li class="reveal text-slate-200" data-reveal><strong class="text-white">Знак (Вектор):</strong> Приятно (+) или Неприятно (−).</li>
+          <li class="reveal text-slate-200" data-reveal><strong class="text-white">Энергия:</strong> Высокая (Заряд) или Низкая (Разряд).</li>
+        </ol>
+        <blockquote class="reveal border-l-4 border-amber-400 pl-6 py-3 rounded-r-xl bg-amber-500/10 text-slate-200 italic" data-reveal>
+          <strong>Премиум-инсайт:</strong> Эмоциональный интеллект — это не значит всегда быть «на позитиве». Это значит уметь выбирать правильную зону под задачу.
+        </blockquote>
+      </section>
+
+      <section class="mb-16 scroll-mt-24" id="m3-matrix">
+        <h3 class="font-display text-xl font-bold text-white mb-6 reveal" data-reveal>Матрица эмоций 🟥🟦🟩🟨</h3>
+        <p class="text-slate-400 text-sm mb-6 reveal" data-reveal>Нажмите на квадрант — ваша эмоция в правом нижнем углу обновится. Наведение подсвечивает ячейку.</p>
+        <div class="quadrant-grid reveal" data-reveal>
+          <div class="quadrant-cell quadrant-red">
+            <span class="font-display font-bold text-white drop-shadow">🔴 Красная зона</span>
+            <span class="text-white/90 text-sm">Высокая энергия / Минус</span>
+            <span class="text-white/80 text-xs mt-1">Гнев, паника, фрустрация. Рывок, защита границ.</span>
+          </div>
+          <div class="quadrant-cell quadrant-yellow">
+            <span class="font-display font-bold text-slate-900 drop-shadow">🟡 Желтая зона</span>
+            <span class="text-slate-800 text-sm">Высокая энергия / Плюс</span>
+            <span class="text-slate-800/90 text-xs mt-1">Азарт, радость, вдохновение. Мозговые штурмы, креатив.</span>
+          </div>
+          <div class="quadrant-cell quadrant-blue">
+            <span class="font-display font-bold text-white drop-shadow">🔵 Синяя зона</span>
+            <span class="text-white/90 text-sm">Низкая энергия / Минус</span>
+            <span class="text-white/80 text-xs mt-1">Печаль, скепсис. Поиск ошибок, глубокий анализ.</span>
+          </div>
+          <div class="quadrant-cell quadrant-green">
+            <span class="font-display font-bold text-white drop-shadow">🟢 Зелёная зона</span>
+            <span class="text-white/90 text-sm">Низкая энергия / Плюс</span>
+            <span class="text-white/80 text-xs mt-1">Спокойствие, доверие. Отношения, слушание, отдых.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16 scroll-mt-24" id="m3-navigator">
+        <h3 class="font-display text-xl font-bold text-white mb-2 reveal" data-reveal>«Настрой свой навигатор» 🎯</h3>
+        <p class="text-slate-400 text-sm mb-8 reveal" data-reveal>В какой зоне вы должны быть для этих задач? Выберите ответ — фон окрасится в цвет зоны.</p>
+        <div class="space-y-8">
+          <div class="reveal" data-reveal>
+            <p class="text-slate-200 font-medium mb-4">1. Проверка сложного юридического договора:</p>
+            <div class="flex flex-wrap gap-3">
+              <button type="button" class="navigator-option px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-zone="yellow">Желтая (Азарт)</button>
+              <button type="button" class="navigator-option px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-zone="blue">Синяя (Скепсис и фокус) ✓</button>
+            </div>
+          </div>
+          <div class="reveal" data-reveal>
+            <p class="text-slate-200 font-medium mb-4">2. Выступление на конференции перед инвесторами:</p>
+            <div class="flex flex-wrap gap-3">
+              <button type="button" class="navigator-option px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-zone="green">Зелёная (Спокойствие)</button>
+              <button type="button" class="navigator-option px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-zone="yellow">Желтая (Вдохновение) ✓</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-24 scroll-mt-24" id="m3-filter">
+        <h3 class="font-display text-xl font-bold text-white mb-4 reveal" data-reveal>Практика: Техника «Смена фильтра»</h3>
+        <p class="reveal text-slate-200 mb-6" data-reveal>Если вы «застряли» в красной зоне (злитесь), но нужно идти на переговоры (в зелёную):</p>
+        <ol class="space-y-4">
+          <li class="reveal text-slate-200" data-reveal><strong class="text-white">Сбросьте излишек:</strong> 10 приседаний или 1 минута интенсивного дыхания.</li>
+          <li class="reveal text-slate-200" data-reveal><strong class="text-white">Переключите фокус:</strong> Найдите в ситуации 3 объективных факта, очищенных от оценок.</li>
+          <li class="reveal text-slate-200" data-reveal><strong class="text-white">Визуализация:</strong> Представьте итог переговоров как свершившийся успех.</li>
+        </ol>
+        <a href="#module4" class="btn-go mt-8 inline-block px-6 py-3 rounded-xl font-display font-semibold text-dark bg-accent text-center reveal" data-reveal>Перейти к Модулю 4 →</a>
+      </section>
+    </section>
+
+    <!-- ========== МОДУЛЬ 4: Аптечка EQ ========== -->
+    <section class="mb-24 sm:mb-32 scroll-mt-24" id="module4">
+      <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Глава 4. Аптечка EQ 🧰</h2>
+      <p class="text-slate-400 mb-10 reveal" data-reveal>Техники экспресс-помощи в «горячих» ситуациях</p>
+      <div class="reveal max-w-2xl mx-auto mb-12" data-reveal>
+        <img src="m4.png" alt="Аптечка EQ" class="w-full h-auto rounded-2xl object-cover shadow-xl" />
+      </div>
+
+      <section class="mb-16 scroll-mt-24" id="m4-6sec">
+        <h3 class="font-display text-xl font-bold text-white mb-6 reveal" data-reveal>Когда эмоции зашкаливают...</h3>
+        <p class="reveal text-slate-200 mb-4" data-reveal>У вас есть ровно <strong class="text-amber-400">6 секунд</strong>. Это время, за которое химические вещества эмоций проходят через вашу кровь. Если вы не поддались импульсу в эти секунды — вы победили.</p>
+        <p class="reveal text-slate-300 text-sm" data-reveal>Вот три инструмента, которые должны быть под рукой:</p>
+      </section>
+
+      <section class="mb-16 scroll-mt-24" id="m4-breathing">
+        <h3 class="font-display text-xl font-bold text-white mb-2 reveal" data-reveal>Инструмент 1. Дыхание «Квадрат» 🧊</h3>
+        <p class="text-slate-400 text-sm mb-6 reveal" data-reveal>Метод спецназа для мгновенного спокойствия. Следуйте за квадратом: вдох — задержка — выдох — задержка (по 4 счёта).</p>
+        <div class="breathing-wrap reveal rounded-2xl bg-slate-800/40 border border-slate-700/50 p-8" data-reveal>
+          <div class="breathing-square-box" id="breathing-square"></div>
+          <p class="breathing-phase" id="breathing-phase">Нажмите «Старт», чтобы начать</p>
+          <button type="button" id="breathing-start" class="mt-6 px-6 py-2 rounded-xl font-semibold bg-accent text-dark text-sm">Старт</button>
+        </div>
+        <p class="reveal text-slate-400 text-xs mt-4 italic" data-reveal>Это принудительно переключает нервную систему из режима «Бей или беги» в режим «Отдыхай и переваривай».</p>
+      </section>
+
+      <section class="mb-16 scroll-mt-24" id="m4-firstaid">
+        <h3 class="font-display text-xl font-bold text-white mb-4 reveal" data-reveal>Аптечка техник</h3>
+        <p class="text-slate-400 text-sm mb-6 reveal" data-reveal>Нажмите на инструмент — развернётся инструкция.</p>
+        <div class="first-aid-kit reveal" data-reveal>
+          <div class="first-aid-item">
+            <button type="button" class="first-aid-tool" data-tool aria-expanded="false">
+              <span class="tool-icon">🧊</span>
+              <span class="tool-title">Квадрат</span>
+            </button>
+            <div class="first-aid-instruction">
+              <div class="first-aid-instruction-inner">1. Вдох на 4 счёта. 2. Задержка на 4 счёта. 3. Выдох на 4 счёта. 4. Задержка на 4 счёта.</div>
+            </div>
+          </div>
+          <div class="first-aid-item">
+            <button type="button" class="first-aid-tool" data-tool aria-expanded="false">
+              <span class="tool-icon">🖐️</span>
+              <span class="tool-title">5-4-3-2-1</span>
+            </button>
+            <div class="first-aid-instruction">
+              <div class="first-aid-instruction-inner">Найдите: 5 предметов, которые видите; 4 звука; 3 текстуры, которых касаетесь; 2 запаха; 1 вкус или то, что цените в себе. Заземление при панике.</div>
+            </div>
+          </div>
+          <div class="first-aid-item">
+            <button type="button" class="first-aid-tool" data-tool aria-expanded="false">
+              <span class="tool-icon">🔄</span>
+              <span class="tool-title">Зато...</span>
+            </button>
+            <div class="first-aid-instruction">
+              <div class="first-aid-instruction-inner">Найдите выгоду в дискомфорте. Пример: «Клиент сорвал созвон» → «ЗАТО у меня 30 минут, чтобы допить кофе и разобрать почту».</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="mt-10 text-center">
+        <a href="#m4-final-exam" class="btn-go inline-block px-8 py-4 rounded-xl font-display font-bold text-dark bg-accent text-center uppercase tracking-wider reveal" data-reveal>Перейти к экзамену →</a>
+      </div>
+      </section>
+    </div>
+
+    <div id="exam-page" class="exam-page">
+      <section class="mb-24 scroll-mt-24" id="m4-final-exam">
+        <header class="exam-header reveal" data-reveal>
+          <h2 class="exam-title">Финальный экзамен 🎓</h2>
+          <p class="exam-subtitle">Проверьте, насколько ваш «Директор» взял управление в свои руки</p>
+        </header>
+
+        <div class="space-y-10" id="final-quiz">
+          <div class="reveal" data-reveal data-quiz-q="0">
+            <p class="text-white font-medium mb-3">Вопрос 1. Какая часть мозга отвечает за мгновенную реакцию страха, срабатывая за 0.01 секунды?</p>
+            <div class="space-y-2">
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Префронтальная кора (CEO)</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Амигдала (Детектор дыма)</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Гиппокамп (Архивариус)</button>
+            </div>
+          </div>
+          <div class="reveal" data-reveal data-quiz-q="1">
+            <p class="text-white font-medium mb-3">Вопрос 2. Что происходит с вашим IQ в состоянии «эмоционального захвата»?</p>
+            <div class="space-y-2">
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Повышается для решения проблем</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Не меняется</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Временно падает на 20–30 пунктов</button>
+            </div>
+          </div>
+          <div class="reveal" data-reveal data-quiz-q="2">
+            <p class="text-white font-medium mb-3">Вопрос 3. Вы ищете ошибки в годовом отчёте. Какая зона квадранта вам нужна?</p>
+            <div class="space-y-2">
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Желтая (Азарт)</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Синяя (Скепсис и фокус)</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Зеленая (Уют)</button>
+            </div>
+          </div>
+          <div class="reveal" data-reveal data-quiz-q="3">
+            <p class="text-white font-medium mb-3">Вопрос 4. Техника «5-4-3-2-1» помогает за счёт:</p>
+            <div class="space-y-2">
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Интенсивного воображения</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Переключения внимания на внешние органы чувств</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Повторения правил этикета</button>
+            </div>
+          </div>
+          <div class="reveal" data-reveal data-quiz-q="4">
+            <p class="text-white font-medium mb-3">Вопрос 5. Как правильно использовать «Рефрейминг»?</p>
+            <div class="space-y-2">
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Скрывать гнев за улыбкой</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Найти конструктивную выгоду через связку «ЗАТО...»</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Перестать чувствовать эмоции вообще</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-12 text-center reveal hidden" id="certificate-block" data-reveal>
+          <p class="text-white font-display text-xl font-bold mb-2" id="cert-block-title">Поздравляем! 🏆</p>
+          <p class="text-slate-300 mb-6" id="cert-block-desc">Вы завершили путь к управлению своим состоянием.</p>
+          <button type="button" id="btn-complete" class="btn-go px-8 py-4 rounded-xl font-display font-bold text-dark bg-accent uppercase tracking-wider">
+            Сформировать сертификат (LMS completed)
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Финальное окно: сертификат и поздравление -->
+    <div class="final-screen" id="final-screen" role="dialog" aria-labelledby="final-screen-title" aria-modal="true">
+      <div class="final-screen-content">
+        <div class="certificate-wrap">
+          <img src="cert.png" alt="Сертификат о прохождении курса" />
+          <div class="cert-overlay-name-date" id="cert-overlay-name-date" aria-hidden="true">
+            <span class="cert-overlay-name" id="cert-overlay-name"></span>
+            <span class="cert-overlay-date" id="cert-overlay-date"></span>
+          </div>
+        </div>
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-4" id="final-screen-title">Поздравляем!</h2>
+        <p class="text-slate-200 text-lg mb-2" id="final-screen-subtitle">Ваш EQ теперь — ваше преимущество.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      var STORAGE_NAME_KEY = 'eq_course_user_name';
+      var courseUserName = '';
+      try {
+        courseUserName = localStorage.getItem(STORAGE_NAME_KEY) || '';
+      } catch (e) {}
+
+      function formatRussianDate(date) {
+        var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+        return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+      }
+
+      function applyPersonalization(name) {
+        var displayName = (name && name.trim()) ? name.trim() : 'Вы';
+        document.querySelectorAll('[data-personalize="name"]').forEach(function(el) {
+          var t = (el.getAttribute('data-personalize-template') || '').replace(/\{\{name\}\}/g, displayName);
+          if (t) el.textContent = t;
+        });
+        var titleEl = document.getElementById('final-screen-title');
+        if (titleEl) titleEl.textContent = (displayName !== 'Вы' ? 'Поздравляем, ' + displayName + '!' : 'Поздравляем!');
+        var subEl = document.getElementById('final-screen-subtitle');
+        if (subEl) subEl.textContent = (displayName !== 'Вы' ? displayName + ', ваш EQ теперь — ваше преимущество.' : 'Ваш EQ теперь — ваше преимущество.');
+        var certNameEl = document.getElementById('cert-overlay-name');
+        if (certNameEl) certNameEl.textContent = displayName !== 'Вы' ? displayName.toUpperCase() : '';
+        var certDateEl = document.getElementById('cert-overlay-date');
+        if (certDateEl) certDateEl.textContent = formatRussianDate(new Date());
+        var certBlockTitle = document.getElementById('cert-block-title');
+        if (certBlockTitle) certBlockTitle.textContent = (displayName !== 'Вы' ? 'Поздравляем, ' + displayName + '! 🏆' : 'Поздравляем! 🏆');
+        var certBlockDesc = document.getElementById('cert-block-desc');
+        if (certBlockDesc) certBlockDesc.textContent = 'Вы завершили путь к управлению своим состоянием.';
+      }
+
+      function connectLMS() {
+        if (typeof SCORM_API !== 'undefined') {
+          var ok = SCORM_API.initialize();
+          if (ok) console.log('SCORM: connected to LMS');
+          return ok;
+        }
+        return false;
+      }
+
+      function finishCourse() {
+        if (typeof SCORM_API !== 'undefined' && SCORM_API.finish()) {
+          var msg = document.getElementById('complete-message');
+          if (msg) {
+            msg.textContent = 'Результат отправлен в LMS. Курс завершён.';
+            msg.classList.remove('hidden');
+          }
+          return true;
+        }
+        var msg = document.getElementById('complete-message');
+        if (msg) {
+          msg.textContent = 'LMS не обнаружена. Результат сохранён локально.';
+          msg.classList.remove('hidden');
+        }
+        return false;
+      }
+
+      connectLMS();
+
+      function updateExamView() {
+        var hash = window.location.hash || '';
+        var isExam = hash === '#m4-final-exam';
+        document.body.classList.toggle('exam-view', isExam);
+        if (isExam) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (hash) {
+          var id = hash.slice(1);
+          var el = document.getElementById(id);
+          if (el) {
+            setTimeout(function() {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+          }
+        }
+      }
+      updateExamView();
+      window.addEventListener('hashchange', updateExamView);
+
+      var userNameInput = document.getElementById('userNameInput');
+      var btnGoHeroWrap = document.getElementById('btn-go-hero-wrap');
+      if (userNameInput && btnGoHeroWrap) {
+        if (courseUserName) {
+          userNameInput.value = courseUserName;
+          gsap.to(btnGoHeroWrap, { opacity: 1, duration: 0.5, ease: 'power2.out', overwrite: true });
+          btnGoHeroWrap.style.pointerEvents = '';
+        }
+        userNameInput.addEventListener('input', function() {
+          var val = this.value.trim();
+          if (val.length >= 1) {
+            courseUserName = val;
+            try { localStorage.setItem(STORAGE_NAME_KEY, courseUserName); } catch (e) {}
+            gsap.to(btnGoHeroWrap, { opacity: 1, duration: 0.6, ease: 'power2.out', overwrite: true });
+            btnGoHeroWrap.style.pointerEvents = '';
+          } else {
+            courseUserName = '';
+            try { localStorage.removeItem(STORAGE_NAME_KEY); } catch (e) {}
+            gsap.to(btnGoHeroWrap, { opacity: 0, duration: 0.3, ease: 'power2.in', overwrite: true });
+            btnGoHeroWrap.style.pointerEvents = 'none';
+          }
+        });
+        userNameInput.addEventListener('blur', function() {
+          var val = this.value.trim();
+          if (val.length >= 1) {
+            courseUserName = val;
+            try { localStorage.setItem(STORAGE_NAME_KEY, courseUserName); } catch (e) {}
+          }
+        });
+      }
+
+      var progressBar = document.getElementById('course-progress-bar');
+      if (progressBar) {
+        ScrollTrigger.create({
+          trigger: 'body',
+          start: 'top top',
+          end: 'bottom bottom',
+          onUpdate: function(self) {
+            gsap.set(progressBar, { scaleX: self.progress, transformOrigin: 'left' });
+          },
+        });
+      }
+
+      var sumaEl = document.getElementById('suma-word');
+      if (sumaEl) {
+        gsap.set(sumaEl, { color: '#ef4444' });
+        gsap.to(sumaEl, {
+          keyframes: [
+            { x: -3, color: '#ef4444', duration: 0.08 },
+            { x: 3, color: '#ef4444', duration: 0.08 },
+            { x: -2, color: '#ef4444', duration: 0.08 },
+            { x: 2, color: '#ef4444', duration: 0.08 },
+            { x: 0, color: '#ef4444', duration: 0.08 },
+          ],
+          repeat: 5,
+          onComplete: function() {
+            gsap.to(sumaEl, { color: '#e2e8f0', duration: 1.2, ease: 'power2.out', overwrite: true });
+          },
+        });
+      }
+
+      gsap.utils.toArray('[data-reveal]').forEach(function(el) {
+        gsap.fromTo(el, { opacity: 0, y: 28 }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.65,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+        });
+      });
+
+      document.querySelectorAll('.brain-zone-amygdala').forEach(function(z) {
+        z.addEventListener('click', function() {
+          var el = document.getElementById('amygdala');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+      document.querySelectorAll('.brain-zone-cortex').forEach(function(z) {
+        z.addEventListener('click', function() {
+          var el = document.getElementById('ceo');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      function quadrantColor(energy, mood) {
+        var e = Math.max(0, Math.min(100, energy)) / 100;
+        var m = Math.max(0, Math.min(100, mood)) / 100;
+        var y = 1 - e;
+        var x = m;
+        var red = [239, 68, 68], yellow = [234, 179, 8], blue = [59, 130, 246], green = [34, 197, 94];
+        var r = (1 - x) * (1 - y) * red[0] + x * (1 - y) * yellow[0] + (1 - x) * y * blue[0] + x * y * green[0];
+        var g = (1 - x) * (1 - y) * red[1] + x * (1 - y) * yellow[1] + (1 - x) * y * blue[1] + x * y * green[1];
+        var b = (1 - x) * (1 - y) * red[2] + x * (1 - y) * yellow[2] + (1 - x) * y * blue[2] + x * y * green[2];
+        return 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',0.92)';
+      }
+
+      function setMoodTracker(energy, mood) {
+        var energySlider = document.getElementById('energy-slider');
+        var moodSlider = document.getElementById('mood-slider');
+        if (energySlider) energySlider.value = Math.max(0, Math.min(100, energy));
+        if (moodSlider) moodSlider.value = Math.max(0, Math.min(100, mood));
+        var widget = document.getElementById('mood-tracker');
+        var valEl = document.getElementById('mood-tracker-value');
+        if (widget) widget.style.background = quadrantColor(energySlider ? parseInt(energySlider.value, 10) : 50, moodSlider ? parseInt(moodSlider.value, 10) : 50);
+        if (valEl) {
+          var e = energySlider ? parseInt(energySlider.value, 10) : 50;
+          var s = moodSlider ? parseInt(moodSlider.value, 10) : 50;
+          valEl.textContent = (e < 40 ? 'Низкая' : e > 60 ? 'Высокая' : 'Средняя') + ' / ' + (s < 40 ? '−' : s > 60 ? '+' : '0');
+        }
+      }
+
+      function updateMoodTrackerUI() {
+        var energySlider = document.getElementById('energy-slider');
+        var moodSlider = document.getElementById('mood-slider');
+        if (!energySlider || !moodSlider) return;
+        var e = parseInt(energySlider.value, 10);
+        var m = parseInt(moodSlider.value, 10);
+        var widget = document.getElementById('mood-tracker');
+        var valEl = document.getElementById('mood-tracker-value');
+        if (widget) widget.style.background = quadrantColor(e, m);
+        if (valEl) valEl.textContent = (e < 40 ? 'Низкая' : e > 60 ? 'Высокая' : 'Средняя') + ' / ' + (m < 40 ? '−' : m > 60 ? '+' : '0');
+      }
+
+      var moodTrackerEl = document.getElementById('mood-tracker');
+      var moodTrackerBtn = document.getElementById('mood-tracker-btn');
+      var moodTrackerToggleArea = document.getElementById('mood-tracker-toggle');
+      if (moodTrackerEl && (moodTrackerBtn || moodTrackerToggleArea)) {
+        var toggleMoodTracker = function() {
+          moodTrackerEl.classList.toggle('mood-tracker--collapsed');
+          moodTrackerBtn.setAttribute('aria-label', moodTrackerEl.classList.contains('mood-tracker--collapsed') ? 'Развернуть' : 'Свернуть');
+          moodTrackerBtn.textContent = moodTrackerEl.classList.contains('mood-tracker--collapsed') ? '☺' : '−';
+        };
+        if (moodTrackerBtn) moodTrackerBtn.addEventListener('click', function(ev) { ev.stopPropagation(); toggleMoodTracker(); });
+        if (moodTrackerToggleArea) moodTrackerToggleArea.addEventListener('click', function(ev) { if (ev.target === moodTrackerBtn) return; toggleMoodTracker(); });
+      }
+
+      var energySlider = document.getElementById('energy-slider');
+      var moodSlider = document.getElementById('mood-slider');
+      if (energySlider && moodSlider) {
+        energySlider.addEventListener('input', updateMoodTrackerUI);
+        moodSlider.addEventListener('input', updateMoodTrackerUI);
+        updateMoodTrackerUI();
+      }
+
+      document.querySelectorAll('.quadrant-cell').forEach(function(cell) {
+        cell.addEventListener('click', function() {
+          var energy = 50, mood = 50, label = '';
+          if (cell.classList.contains('quadrant-red')) { energy = 80; mood = 20; label = 'Красная зона'; }
+          else if (cell.classList.contains('quadrant-yellow')) { energy = 80; mood = 80; label = 'Желтая зона'; }
+          else if (cell.classList.contains('quadrant-blue')) { energy = 20; mood = 20; label = 'Синяя зона'; }
+          else if (cell.classList.contains('quadrant-green')) { energy = 20; mood = 80; label = 'Зелёная зона'; }
+          setMoodTracker(energy, mood);
+          var valEl = document.getElementById('mood-tracker-value');
+          if (valEl && label) valEl.textContent = label;
+        });
+      });
+
+      document.querySelectorAll('[data-card]').forEach(function(card) {
+        card.addEventListener('click', function() {
+          this.classList.toggle('selected');
+          if (this.classList.contains('selected')) setMoodTracker(70, 30);
+        });
+      });
+      document.querySelectorAll('[data-practice]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          this.classList.toggle('selected');
+          if (this.classList.contains('selected')) setMoodTracker(75, 25);
+        });
+      });
+
+      document.querySelectorAll('[data-flip]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var card = this.closest('.lab-card');
+          if (card && !card.classList.contains('flipped')) {
+            card.classList.add('flipped');
+            var cardIndex = Array.prototype.indexOf.call(document.querySelectorAll('.lab-card'), card);
+            var energy = 50, mood = 50;
+            if (cardIndex === 0) { energy = 50; mood = 30; }
+            else if (cardIndex === 1) { energy = 75; mood = 65; }
+            else if (cardIndex === 2) { energy = 40; mood = 35; }
+            setMoodTracker(energy, mood);
+            if (typeof gsap !== 'undefined') {
+              gsap.fromTo(card.querySelector('.lab-card-back'), { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.25 });
+            }
+          }
+        });
+      });
+
+      var breathingSquare = document.getElementById('breathing-square');
+      var breathingPhase = document.getElementById('breathing-phase');
+      var breathingStart = document.getElementById('breathing-start');
+      if (breathingSquare && breathingPhase && breathingStart) {
+        var phaseNames = ['Вдох', 'Задержка', 'Выдох', 'Задержка'];
+        var breathingActive = false;
+        breathingStart.addEventListener('click', function() {
+          if (breathingActive) return;
+          breathingActive = true;
+          breathingStart.disabled = true;
+          breathingStart.textContent = '…';
+          if (typeof gsap !== 'undefined') gsap.set(breathingSquare, { scale: 0.7 });
+          var phase = 0;
+          function nextPhase() {
+            if (phase >= 4) {
+              breathingPhase.textContent = 'Упражнение завершено. Вы в зелёной зоне.';
+              breathingStart.disabled = false;
+              breathingStart.textContent = 'Старт';
+              breathingActive = false;
+              if (typeof setMoodTracker === 'function') setMoodTracker(20, 80);
+              return;
+            }
+            breathingPhase.textContent = phaseNames[phase];
+            var targetScale = (phase === 0 || phase === 1) ? 1.5 : 0.7;
+            if (typeof gsap !== 'undefined') {
+              gsap.to(breathingSquare, { scale: targetScale, duration: 4, ease: 'none', onComplete: function() {
+                phase++;
+                nextPhase();
+              }});
+            } else {
+              breathingSquare.style.transform = 'scale(' + targetScale + ')';
+              setTimeout(function() { phase++; nextPhase(); }, 4000);
+            }
+          }
+          nextPhase();
+        });
+      }
+
+      document.querySelectorAll('.first-aid-tool[data-tool]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var item = this.closest('.first-aid-item');
+          var isOpen = this.classList.toggle('first-aid-tool--open');
+          this.setAttribute('aria-expanded', isOpen);
+          document.querySelectorAll('.first-aid-item').forEach(function(other) {
+            if (other !== item) {
+              other.querySelector('.first-aid-tool').classList.remove('first-aid-tool--open');
+              other.querySelector('.first-aid-tool').setAttribute('aria-expanded', 'false');
+            }
+          });
+        });
+      });
+
+      // Финальный квиз: правильные ответы (индекс 0-based)
+      var finalQuizCorrect = [1, 2, 1, 1, 1];
+      var finalQuizAnswered = [false, false, false, false, false];
+      var finalQuizCorrectCount = 0;
+      var finalQuizContainer = document.getElementById('final-quiz');
+      if (finalQuizContainer) {
+        finalQuizContainer.addEventListener('click', function(e) {
+          var opt = e.target.closest('.quiz-final-option');
+          if (!opt) return;
+          var block = opt.closest('[data-quiz-q]');
+          if (!block) return;
+          var qIndex = parseInt(block.getAttribute('data-quiz-q'), 10);
+          if (finalQuizAnswered[qIndex]) return;
+          var answer = parseInt(opt.getAttribute('data-answer'), 10);
+          var correct = finalQuizCorrect[qIndex];
+          var options = block.querySelectorAll('.quiz-final-option');
+          options.forEach(function(o) { o.classList.remove('quiz-correct', 'quiz-wrong'); });
+          if (answer === correct) {
+            opt.classList.add('quiz-correct');
+            finalQuizCorrectCount++;
+            finalQuizAnswered[qIndex] = true;
+            if (finalQuizAnswered.every(Boolean)) {
+              var certBlock = document.getElementById('certificate-block');
+              if (certBlock) {
+                if (typeof applyPersonalization === 'function') applyPersonalization(courseUserName);
+                certBlock.classList.remove('hidden');
+                certBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          } else {
+            opt.classList.add('quiz-wrong');
+            finalQuizAnswered[qIndex] = true;
+          }
+        });
+      }
+
+      var btnComplete = document.getElementById('btn-complete');
+      var finalScreen = document.getElementById('final-screen');
+      if (btnComplete) {
+        btnComplete.addEventListener('click', function() {
+          var scorePercent = (typeof finalQuizCorrectCount !== 'undefined' ? finalQuizCorrectCount : 0) / 5 * 100;
+          if (typeof SCORM_API !== 'undefined' && SCORM_API.initialized) {
+            SCORM_API.setScore(scorePercent);
+          }
+          if (typeof finishCourse === 'function') finishCourse();
+          this.setAttribute('disabled', 'disabled');
+          this.classList.add('opacity-75', 'cursor-not-allowed');
+          if (typeof applyPersonalization === 'function') applyPersonalization(courseUserName);
+          if (finalScreen) finalScreen.classList.add('final-screen--show');
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'EQ_COURSE_COMPLETED', userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+            }
+          } catch (e) {}
+        });
+      }
+
+      var zoneOverlay = document.getElementById('zone-overlay');
+      var zoneColors = { red: 'rgba(239, 68, 68, 0.4)', yellow: 'rgba(234, 179, 8, 0.35)', blue: 'rgba(59, 130, 246, 0.35)', green: 'rgba(34, 197, 94, 0.35)' };
+      document.querySelectorAll('.navigator-option[data-zone]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var zone = this.getAttribute('data-zone');
+          document.querySelectorAll('.navigator-option').forEach(function(b) { b.classList.remove('selected'); });
+          this.classList.add('selected');
+          var energy = 50, mood = 50;
+          if (zone === 'red') { energy = 80; mood = 20; }
+          else if (zone === 'yellow') { energy = 80; mood = 80; }
+          else if (zone === 'blue') { energy = 20; mood = 20; }
+          else if (zone === 'green') { energy = 20; mood = 80; }
+          setMoodTracker(energy, mood);
+          if (zoneOverlay && zoneColors[zone] && typeof gsap !== 'undefined') {
+            gsap.to(zoneOverlay, { backgroundColor: zoneColors[zone], duration: 0.6, ease: 'power2.out' });
+            gsap.to(zoneOverlay, { backgroundColor: 'transparent', duration: 0.8, delay: 1.5, ease: 'power2.inOut' });
+          }
+        });
+      });
+
+      window.addEventListener('beforeunload', function() {
+        if (typeof SCORM_API !== 'undefined') SCORM_API.setCompleted();
+      });
+    })();
+  </script>
+</body>
+</html>
