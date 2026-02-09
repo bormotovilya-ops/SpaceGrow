@@ -70,7 +70,7 @@
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
     @media (max-width: 480px) {
-      .progress-bar-top { top: 52px; }
+      .progress-bar-top { top: 40px; }
     }
     .font-display { font-family: 'Montserrat', system-ui, sans-serif; }
 
@@ -161,6 +161,60 @@
       font-size: clamp(0.375rem, 1.25vw, 0.5rem);
       color: rgba(241, 245, 249, 0.95);
       letter-spacing: 0.03em;
+    }
+
+    /* Hero: искры вулкана — свечение и дым */
+    .hero-image-wrap {
+      position: relative;
+      display: inline-block;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .hero-image-wrap img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 1rem;
+      position: relative;
+      z-index: 0;
+    }
+    .hero-image-wrap::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 15%;
+      width: 70%;
+      height: 45%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(251, 146, 60, 0.45) 0%, rgba(249, 115, 22, 0.25) 25%, rgba(234, 88, 12, 0.12) 50%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+      animation: hero-volcano-glow 2.5s ease-in-out infinite;
+    }
+    .hero-image-wrap::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 10%;
+      width: 80%;
+      height: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(248, 250, 252, 0.12) 0%, rgba(203, 213, 225, 0.08) 30%, transparent 60%);
+      border-radius: 50%;
+      filter: blur(12px);
+      pointer-events: none;
+      z-index: 2;
+      animation: hero-volcano-smoke 3s ease-in-out infinite;
+    }
+    @keyframes hero-volcano-glow {
+      0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); filter: brightness(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.08); filter: brightness(1.15); }
+    }
+    @keyframes hero-volcano-smoke {
+      0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0) scale(1); }
+      50% { opacity: 0.9; transform: translateX(-50%) translateY(-8%) scale(1.1); }
     }
 
     /* Модуль 1: карта мозга — зоны наведения */
@@ -427,9 +481,12 @@
     }
     .course-nav a:hover { color: #f1f5f9; background: rgba(56, 189, 248, 0.15); }
     .course-nav a:active { background: rgba(56, 189, 248, 0.2); }
+    .course-nav a.course-nav-exit { margin-left: auto; color: #94a3b8; }
+    .course-nav a.course-nav-exit:hover { color: #f1f5f9; }
     @media (max-width: 480px) {
-      .course-nav { gap: 0.2rem; padding: 0.4rem max(0.4rem, env(safe-area-inset-left)); }
-      .course-nav a { padding: 0.4rem 0.5rem; font-size: 0.65rem; min-height: 40px; }
+      .course-nav { gap: 0.2rem; padding: 0.25rem max(0.35rem, env(safe-area-inset-left)); padding-right: max(0.35rem, env(safe-area-inset-right)); padding-top: max(0.25rem, env(safe-area-inset-top)); min-height: 32px; align-items: center; }
+      .course-nav a { padding: 0.25rem 0.4rem; font-size: 0.65rem; min-height: 28px; }
+      .course-nav a.course-nav-exit { margin-left: 0.25rem; }
     }
 
     /* Финальный квиз: правильный / неправильный ответ */
@@ -515,7 +572,15 @@
       min-height: 52px;
     }
     @media (max-width: 480px) {
-      .main-offset { height: 56px; min-height: 56px; }
+      .main-offset { height: 40px; min-height: 40px; }
+    }
+    /* Мобильная версия: контент курса на всю высоту экрана */
+    @media (max-width: 480px) {
+      body { display: flex; flex-direction: column; min-height: 100vh; }
+      body .main-offset { flex-shrink: 0; }
+      body main { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; -webkit-overflow-scrolling: touch; }
+      body main #course-theory { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
+      body.exam-view main #exam-page { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
     }
   </style>
 </head>
@@ -527,6 +592,7 @@
     <a href="#module3">Модуль 3</a>
     <a href="#module4">Модуль 4</a>
     <a href="#m4-final-exam">Экзамен</a>
+    <a href="/alchemy" class="course-nav-exit" id="eq-exit-link" title="Выйти в Алхимию">Выйти</a>
   </nav>
   <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0)"></div>
   <div class="main-offset" style="height: 52px;"></div>
@@ -562,15 +628,15 @@
           <div class="name-input-wrap">
             <input type="text" id="userNameInput" placeholder="Твоё имя и фамилия" autocomplete="name" maxlength="80" />
           </div>
-          <div class="mt-6 btn-go-hero-wrap" id="btn-go-hero-wrap" style="opacity:0; pointer-events:none;">
+          <div class="mt-6 btn-go-hero-wrap text-center" id="btn-go-hero-wrap" style="opacity:0; pointer-events:none;">
             <a href="#situations" id="btn-go-hero" class="btn-go inline-block px-8 py-4 rounded-xl font-display font-bold text-dark bg-accent text-center uppercase tracking-wider">
               Поехали в мозг!
             </a>
           </div>
         </div>
       </div>
-      <div class="flex-shrink-0 lg:w-[45%] xl:w-[400px] reveal" data-reveal>
-        <img src="hero.png" alt="" class="w-full h-auto rounded-2xl object-cover shadow-2xl" />
+      <div class="flex-shrink-0 lg:w-[45%] xl:w-[400px] reveal hero-image-wrap" data-reveal>
+        <img src="hero.png" alt="" class="w-full h-auto rounded-2xl object-cover" />
       </div>
     </section>
 
@@ -602,7 +668,7 @@
       <ol class="space-y-5">
         <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
           <span class="font-display font-bold text-accent text-xl shrink-0 w-10">1.</span>
-          <div><strong class="text-white">Для кошелька:</strong> <span class="text-slate-300">Люди с высоким EQ зарабатывают в среднем на $29,000 в год больше.</span></div>
+          <div><strong class="text-white">Для кошелька:</strong> <span class="text-slate-300">Люди с высоким EQ зарабатывают в среднем на 20–30% больше в год.</span></div>
         </li>
         <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
           <span class="font-display font-bold text-accent text-xl shrink-0 w-10">2.</span>
@@ -1100,6 +1166,25 @@
       }
       updateExamView();
       window.addEventListener('hashchange', updateExamView);
+
+      document.body.addEventListener('click', function(e) {
+        var exitLink = e.target && e.target.closest ? e.target.closest('#eq-exit-link') : null;
+        if (!exitLink) return;
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          var topWin = window.top || window.parent;
+          var alchemyUrl = exitLink.href || (topWin.location.origin + '/alchemy');
+          if (topWin !== window) {
+            topWin.postMessage({ type: 'EQ_EXIT' }, '*');
+            topWin.location.href = alchemyUrl;
+          } else {
+            window.location.href = alchemyUrl;
+          }
+        } catch (err) {
+          console.warn('EQ_EXIT:', err);
+        }
+      }, true);
 
       var userNameInput = document.getElementById('userNameInput');
       var btnGoHeroWrap = document.getElementById('btn-go-hero-wrap');
