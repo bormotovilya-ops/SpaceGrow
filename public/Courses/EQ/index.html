@@ -58,19 +58,25 @@
     }
     body::-webkit-scrollbar { width: 0; height: 0; display: none; }
     *::-webkit-scrollbar { width: 0; height: 0; display: none; }
-    .progress-bar-top {
-      position: fixed;
-      top: 44px;
+    .progress-bar-track {
+      position: absolute;
       left: 0;
       right: 0;
+      bottom: 0;
+      height: 4px;
+      background: rgba(30, 41, 59, 0.95);
+      pointer-events: none;
+    }
+    .progress-bar-top {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
       height: 4px;
       background: linear-gradient(90deg, var(--accent), #0ea5e9);
       transform-origin: left;
-      z-index: 9998;
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-    }
-    @media (max-width: 480px) {
-      .progress-bar-top { top: 40px; }
     }
     .font-display { font-family: 'Montserrat', system-ui, sans-serif; }
 
@@ -449,7 +455,7 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 9999;
+      z-index: 10000;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
@@ -574,13 +580,58 @@
     @media (max-width: 480px) {
       .main-offset { height: 40px; min-height: 40px; }
     }
-    /* Мобильная версия: контент курса на всю высоту экрана */
+    /* Мобильная версия: контент по ширине экрана и на всю высоту, всё влезает */
+    @media (max-width: 640px) {
+      html, body { overflow-x: hidden; }
+      body main { box-sizing: border-box; width: 100%; max-width: 100%; }
+      .quadrant-grid { max-width: 100%; }
+      .first-aid-kit { max-width: 100%; }
+      .brain-viz, .hero-image-wrap { max-width: 100%; }
+    }
     @media (max-width: 480px) {
       body { display: flex; flex-direction: column; min-height: 100vh; }
       body .main-offset { flex-shrink: 0; }
-      body main { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; -webkit-overflow-scrolling: touch; }
-      body main #course-theory { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
-      body.exam-view main #exam-page { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
+      body main {
+        flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100vw;
+        width: 100%;
+        box-sizing: border-box;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 0.75rem;
+        padding-bottom: 1rem;
+      }
+      body main #course-theory {
+        flex: 1; min-height: 0; overflow: auto; overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+        box-sizing: border-box;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      body main #course-theory img { max-width: 100%; width: auto; height: auto; display: block; }
+      body main #course-theory section { max-width: 100%; box-sizing: border-box; }
+      body main #course-theory .section-card,
+      body main #course-theory .lab-card,
+      body main #course-theory blockquote,
+      body main #course-theory .scanner-wrap,
+      body main #course-theory .breathing-wrap,
+      body main #course-theory .first-aid-kit { max-width: 100%; box-sizing: border-box; }
+      body.exam-view main #exam-page {
+        flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+    }
+    /* Экзамен: уменьшенные отступы на мобильных */
+    @media (max-width: 480px) {
+      body.exam-view #exam-page {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 1rem;
+      }
     }
   </style>
 </head>
@@ -593,8 +644,10 @@
     <a href="#module4">Модуль 4</a>
     <a href="#m4-final-exam">Экзамен</a>
     <a href="/alchemy" class="course-nav-exit" id="eq-exit-link" title="Выйти в Алхимию">Выйти</a>
+    <div class="progress-bar-track" aria-hidden="true">
+      <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0)"></div>
+    </div>
   </nav>
-  <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0)"></div>
   <div class="main-offset" style="height: 52px;"></div>
   <div class="zone-overlay" id="zone-overlay" aria-hidden="true"></div>
   <div id="mood-tracker" class="mood-tracker mood-tracker--collapsed" role="region" aria-label="Мой трекер состояния">
@@ -1356,23 +1409,28 @@
         });
       });
 
-      document.querySelectorAll('[data-flip]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var card = this.closest('.lab-card');
-          if (card && !card.classList.contains('flipped')) {
-            card.classList.add('flipped');
-            var cardIndex = Array.prototype.indexOf.call(document.querySelectorAll('.lab-card'), card);
-            var energy = 50, mood = 50;
-            if (cardIndex === 0) { energy = 50; mood = 30; }
-            else if (cardIndex === 1) { energy = 75; mood = 65; }
-            else if (cardIndex === 2) { energy = 40; mood = 35; }
-            setMoodTracker(energy, mood);
-            if (typeof gsap !== 'undefined') {
-              gsap.fromTo(card.querySelector('.lab-card-back'), { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.25 });
-            }
+      var labSection = document.getElementById('m2-lab');
+      if (labSection) {
+        labSection.addEventListener('click', function(e) {
+          var btn = e.target && e.target.closest ? e.target.closest('[data-flip]') : null;
+          if (!btn) return;
+          e.preventDefault();
+          e.stopPropagation();
+          var card = btn.closest('.lab-card');
+          if (!card || card.classList.contains('flipped')) return;
+          card.classList.add('flipped');
+          var labCards = labSection.querySelectorAll('.lab-card');
+          var cardIndex = Array.prototype.indexOf.call(labCards, card);
+          var energy = 50, mood = 50;
+          if (cardIndex === 0) { energy = 50; mood = 30; }
+          else if (cardIndex === 1) { energy = 75; mood = 65; }
+          else if (cardIndex === 2) { energy = 40; mood = 35; }
+          setMoodTracker(energy, mood);
+          if (typeof gsap !== 'undefined') {
+            gsap.fromTo(card.querySelector('.lab-card-back'), { opacity: 0 }, { opacity: 1, duration: 0.3, delay: 0.25 });
           }
         });
-      });
+      }
 
       var breathingSquare = document.getElementById('breathing-square');
       var breathingPhase = document.getElementById('breathing-phase');
