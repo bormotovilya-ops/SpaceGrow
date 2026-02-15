@@ -148,7 +148,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
               <div className="home-hero-value">
                 <div className="home-hero-subtitle">
                   <p className="subtitle-paragraph">
-                    Если ваш бизнес — это эскалатор идущий вниз, значит пора задуматься об эффективности используемых технологий              
+                    Если ваш бизнес порой напоинает эскалатор идущий вниз, значит пора задуматься об эффективности используемых технологий              
                   </p>
                   <p className="subtitle-paragraph">
                     и внедрить IT-решения нового поколения 
@@ -156,7 +156,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
                     <span className="tech-highlight">(ИИ, Боты, MiniApps и др.)</span>
                   </p>
                   <p className="subtitle-paragraph subtitle-highlight">
-                    Наш IT-Service "SpaceGrowth" превратит привычную стабильность в управляемый взлет до <strong>1–2 млн ₽ в месяц и выше.</strong>
+                    IT-Service "SpaceGrowth" превратит привычную стабильность в <strong>управляеый взлет</strong>
                   </p>
                 </div>
               </div>
