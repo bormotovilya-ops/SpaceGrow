@@ -403,10 +403,10 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                 session_duration_display: totalSessionDurationSeconds ? `${Math.floor(totalSessionDurationSeconds / 60)}м ${totalSessionDurationSeconds % 60}с` : null
               }
 
-              // Маркетинговый контент: гибридный RPC (гость — по cookie_id)
+              // Маркетинговый контент: гость — по cookie_id (RPC с двумя параметрами)
               let marketingContent = null
               try {
-                const { data: rpcData } = await supabase.rpc('get_user_marketing_content', {
+                const { data: rpcData } = await supabase.rpc('get_user_marketing_content_with_cookie', {
                   p_user_id: null,
                   p_cookie_id: cookieId ?? null
                 })
@@ -690,12 +690,11 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               session_duration_display: totalSessionDurationSeconds ? `${Math.floor(totalSessionDurationSeconds / 60)}м ${totalSessionDurationSeconds % 60}с` : null
             }
 
-            // Маркетинговый контент: гибридный RPC (авторизованный — по tg_user_id, второй параметр null)
+            // Маркетинговый контент: авторизованный — по tg_user_id (RPC с одним параметром)
             let marketingContent = null
             try {
               const { data: rpcData } = await supabase.rpc('get_user_marketing_content', {
-                p_user_id: tgUserId != null ? Number(tgUserId) : null,
-                p_cookie_id: null
+                p_user_id: tgUserId != null ? Number(tgUserId) : null
               })
               const raw = Array.isArray(rpcData) && rpcData.length > 0 ? rpcData[0] : rpcData
               if (raw && (raw.message_text != null || (raw.buttons && raw.buttons.length))) {

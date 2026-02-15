@@ -133,7 +133,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
               Прокачаем IT-движок вашего бизнеса!<br/>                
             </h1>
             <div className="home-hero-badge-wrap">
-              <span className="value-badge">🎓 Для экспертов и создателей онлайн-школ</span>
+              <span className="value-badge">🎓 Для экспертов и создателей онлайн-продуктов</span>
             </div>
           </div>
           <div className="home-hero-content">

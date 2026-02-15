@@ -120,6 +120,10 @@ class NotificationService:
                             last_dt = last_dt.replace(tzinfo=timezone.utc)
                         minutes_ago = (now_utc - last_dt).total_seconds() / 60
                         if minutes_ago < marketing_interval_minutes:
+                            logger.info(
+                                "Маркетинг: пользователь %s пропущен — интервал не прошёл (%.1f мин < %s мин)",
+                                tg_user_id, minutes_ago, marketing_interval_minutes,
+                            )
                             continue
                     except (ValueError, TypeError):
                         pass
@@ -131,6 +135,10 @@ class NotificationService:
                 elif isinstance(raw, dict) and raw.get("message_text"):
                     content = raw
                 if not content or not content.get("message_text"):
+                    logger.info(
+                        "Маркетинг: пользователь %s пропущен — контент пуст (get_user_marketing_content не вернул message_text)",
+                        tg_user_id,
+                    )
                     continue
                 message_text = content.get("message_text", "")
                 buttons_data = content.get("buttons", [])
