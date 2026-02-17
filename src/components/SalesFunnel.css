@@ -762,9 +762,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.hunt-ladder-bar {
+}.hunt-ladder-bar {
   position: relative;
   width: 80px;
   height: 20px;

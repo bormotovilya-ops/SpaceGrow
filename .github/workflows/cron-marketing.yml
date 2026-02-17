@@ -2,8 +2,8 @@ name: Cron — маркетинг раз в сутки
 
 on:
   schedule:
-    # Каждый день в 09:00 UTC (12:00 МСК)
-    - cron: '0 9 * * *'
+    # Каждый час в минуту 0
+    - cron: '0 * * * *'
   workflow_dispatch: # ручной запуск из вкладки Actions
 
 jobs:
