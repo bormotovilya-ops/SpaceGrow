@@ -37,13 +37,25 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
     logContentView('page', 'profile', { content_title: 'Профиль (Илья Бормотов)' })
   }, [logContentView])
 
+  // Нормализация строки для сравнения: без @, без пробелов/кавычек, нижний регистр
+  const normalizeContact = (s) => {
+    if (s == null || typeof s !== 'string') return ''
+    return s
+      .replace(/[\s\u00A0\u200B\u200C\u200D\uFEFF]+/g, '') // пробелы и невидимые символы
+      .replace(/^["']|["']$/g, '') // кавычки по краям
+      .replace(/^@+/g, '')
+      .toLowerCase()
+      .trim()
+  }
+
   // Проверка: текущий пользователь = support_contact из bot_settings → показываем кнопку «Администрирование»
   useEffect(() => {
     let cancelled = false
     const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null
     const tgUser = tg?.initDataUnsafe?.user
-    const currentId = tgUser?.id != null ? String(tgUser.id) : null
-    const currentUsername = tgUser?.username ? tgUser.username.replace(/^@/, '') : null
+    const currentId = tgUser?.id != null ? String(tgUser.id).trim() : null
+    const rawUsername = tgUser?.username != null ? String(tgUser.username) : ''
+    const currentUsername = normalizeContact(rawUsername)
 
     if (!currentId && !currentUsername) {
       setIsSupportContact(false)
@@ -58,17 +70,19 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         if (error || cancelled) return
         const list = Array.isArray(data) ? data : []
         const supportRow = list.find((s) => s && s.key === SUPPORT_CONTACT_KEY)
-        const supportValue = supportRow?.value != null ? String(supportRow.value).trim() : ''
+        let raw = supportRow?.value
+        if (raw != null && typeof raw === 'object' && !Array.isArray(raw)) {
+          raw = raw.value ?? raw.v ?? raw.data ?? JSON.stringify(raw)
+        }
+        const supportValue = raw != null ? String(raw).trim() : ''
         if (!supportValue) {
           if (!cancelled) setIsSupportContact(false)
           return
         }
-        const supportNorm = supportValue.replace(/^@/, '')
+        const supportNorm = normalizeContact(supportValue)
         const match =
-          currentId === supportValue ||
-          currentId === supportNorm ||
-          currentUsername === supportValue ||
-          currentUsername === supportNorm
+          (currentId && (currentId === supportValue.trim() || currentId === supportNorm)) ||
+          (currentUsername && (currentUsername === supportNorm || supportNorm === currentUsername))
         if (!cancelled) setIsSupportContact(!!match)
       } catch (_) {
         if (!cancelled) setIsSupportContact(false)
