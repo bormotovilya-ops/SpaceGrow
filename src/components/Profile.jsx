@@ -456,7 +456,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                         <span className="typing-dot">.</span>
                       </p>
                     ) : visibleMessages[0] ? (
-                      <p>Меня зовут Бормотов Илья, я IT-интегратор АИЦП.</p>
+                      <p>Меня зовут Бормотов Илья, я IT-интегратор.</p>
                     ) : null}
                   </div>
                   <div className={`dialog-message ${(typingMessages[1] || visibleMessages[1]) ? 'visible' : ''}`}>
@@ -467,7 +467,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                         <span className="typing-dot">.</span>
                       </p>
                     ) : visibleMessages[1] ? (
-                      <p>Работаю с экспертами и онлайн-школами с доходом от 200 тысяч и довожу до 1–2 миллионов в месяц.</p>
+                      <p>Работаю с экспертами и онлайн-школами с доходом от 200 тысяч и довожу до 1–2 миллионов за запуск.</p>
                     ) : null}
                   </div>
                   <div className={`dialog-message ${(typingMessages[2] || visibleMessages[2]) ? 'visible' : ''}`}>

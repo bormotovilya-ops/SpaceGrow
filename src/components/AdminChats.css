@@ -1,10 +1,13 @@
 .admin-chats-page {
+  height: 100vh;
   min-height: 100vh;
   padding: 1rem 1.5rem 2rem;
   max-width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .admin-chats-header {
@@ -56,6 +59,15 @@
   flex-direction: column;
   border-right: 1px solid var(--glass-border);
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.admin-chats-sidebar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .admin-chats-sidebar-item {
@@ -135,10 +147,21 @@
 .admin-chats-messages {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-height: 0;
+  /* Невидимая полоса прокрутки */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.admin-chats-messages::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .admin-chats-msg {
