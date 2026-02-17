@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Header from './Header'
 import './Profile.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
+import { getSupabase } from '../utils/supabaseClient'
 
 // Импорт изображений технологического стека
 import img11 from '../assets/images/11.png'
@@ -15,7 +17,10 @@ import img44 from '../assets/images/44.png'
 const MAX_METADATA_TEXT = 1000
 const truncateForMetadata = (s) => (s == null ? '' : String(s).substring(0, MAX_METADATA_TEXT))
 
+const SUPPORT_CONTACT_KEY = 'support_contact'
+
 function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatClick, onHomeClick, onPersonReport }) {
+  const navigate = useNavigate()
   const { logContentView, logEvent, logCTAClick, trackSectionView } = useLogEvent()
   const trackedSectionsRef = useRef(new Set())
   // Добавляем пятый слот для блока персонального отчета
@@ -26,10 +31,52 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
   const [chatMessages, setChatMessages] = useState([]) // Сообщения чата (вопросы и ответы)
   const [chatInput, setChatInput] = useState('') // Текст в поле ввода
   const [isLoadingChat, setIsLoadingChat] = useState(false) // Загрузка ответа
+  const [isSupportContact, setIsSupportContact] = useState(false) // Показывать кнопку «Администрирование»
   
   useEffect(() => {
     logContentView('page', 'profile', { content_title: 'Профиль (Илья Бормотов)' })
   }, [logContentView])
+
+  // Проверка: текущий пользователь = support_contact из bot_settings → показываем кнопку «Администрирование»
+  useEffect(() => {
+    let cancelled = false
+    const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null
+    const tgUser = tg?.initDataUnsafe?.user
+    const currentId = tgUser?.id != null ? String(tgUser.id) : null
+    const currentUsername = tgUser?.username ? tgUser.username.replace(/^@/, '') : null
+
+    if (!currentId && !currentUsername) {
+      setIsSupportContact(false)
+      return
+    }
+
+    const check = async () => {
+      try {
+        const supabase = await getSupabase()
+        if (!supabase || cancelled) return
+        const { data, error } = await supabase.rpc('get_all_bot_settings')
+        if (error || cancelled) return
+        const list = Array.isArray(data) ? data : []
+        const supportRow = list.find((s) => s && s.key === SUPPORT_CONTACT_KEY)
+        const supportValue = supportRow?.value != null ? String(supportRow.value).trim() : ''
+        if (!supportValue) {
+          if (!cancelled) setIsSupportContact(false)
+          return
+        }
+        const supportNorm = supportValue.replace(/^@/, '')
+        const match =
+          currentId === supportValue ||
+          currentId === supportNorm ||
+          currentUsername === supportValue ||
+          currentUsername === supportNorm
+        if (!cancelled) setIsSupportContact(!!match)
+      } catch (_) {
+        if (!cancelled) setIsSupportContact(false)
+      }
+    }
+    check()
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     trackSectionView('profile')
@@ -376,6 +423,15 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
               <div className="profile-dialog-container">
                 <div className="profile-avatar-wrapper">
                   <img src="/images/me.jpg" alt="Илья Бормотов" className="profile-avatar-large" />
+                  {isSupportContact && (
+                    <button
+                      type="button"
+                      className="profile-admin-btn"
+                      onClick={() => navigate('/admin/settings')}
+                    >
+                      ⚙️ Администрирование
+                    </button>
+                  )}
                 </div>
                 <div className="profile-dialog-messages">
                   <div className={`dialog-message ${(typingMessages[0] || visibleMessages[0]) ? 'visible' : ''}`}>
