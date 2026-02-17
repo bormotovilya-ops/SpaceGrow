@@ -3,6 +3,7 @@ import logging
 import asyncio
 from dotenv import load_dotenv
 from aiohttp import web
+import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ApplicationHandlerStop
 from db import Database
@@ -75,6 +76,10 @@ async def _run_cron_server() -> None:
 
 # URL вашего сайта (MiniApp)
 MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrow.vercel.app/')
+
+# URL Python backend-а с эндпоинтом /api/chat (нейросеть, как на странице Профиля)
+# По умолчанию — локальный backend на 5000 порту, можно переопределить в переменных окружения.
+BACKEND_API_BASE = os.getenv('BACKEND_API_BASE', 'http://localhost:5000')
 
 # Инициализация БД и сервиса уведомлений
 db = Database()
@@ -352,17 +357,39 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif any(word in text_lower for word in ['контакт', 'связаться', 'написать']):
         await update.message.reply_text(f"📞 Контакты:\n\n{support_contact}")
     else:
-        keyboard = [
-            [InlineKeyboardButton(
-                "🚀 Открыть SpaceGrowth",
-                web_app=WebAppInfo(url=MINIAPP_URL)
-            )]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(
-            "Не совсем понял вопрос. Открой мой сайт, там есть вся информация и чат-бот, который ответит на вопросы!",
-            reply_markup=reply_markup
-        )
+        # ====== НОВОЕ: отвечаем через нейросеть (тот же /api/chat, что и на странице Профиля) ======
+        ai_reply = None
+        try:
+            url = BACKEND_API_BASE.rstrip('/') + '/api/chat'
+            payload = {"message": text}
+            resp = requests.post(url, json=payload, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                raw = (data.get("response") or "").strip()
+                if raw:
+                    ai_reply = raw
+                else:
+                    logger.warning("AI /api/chat вернул пустой response: %s", data)
+            else:
+                logger.warning("AI /api/chat вернул статус %s: %s", resp.status_code, resp.text[:500])
+        except Exception as e:
+            logger.exception("Ошибка при запросе к backend /api/chat: %s", e)
+
+        if ai_reply:
+            await update.message.reply_text(ai_reply)
+        else:
+            # Фолбэк на прежнюю заглушку, если backend недоступен
+            keyboard = [
+                [InlineKeyboardButton(
+                    "🚀 Открыть SpaceGrowth",
+                    web_app=WebAppInfo(url=MINIAPP_URL)
+                )]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await update.message.reply_text(
+                "Не совсем понял вопрос. Открой мой сайт, там есть вся информация и чат-бот, который ответит на вопросы!",
+                reply_markup=reply_markup
+            )
 
 # Обработка ошибок
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
