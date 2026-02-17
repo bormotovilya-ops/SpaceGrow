@@ -1,0 +1,21 @@
+name: Cron — маркетинг раз в сутки
+
+on:
+  schedule:
+    # Каждый день в 09:00 UTC (12:00 МСК)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # ручной запуск из вкладки Actions
+
+jobs:
+  trigger-marketing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Вызов эндпоинта маркетинга на Railway
+        run: |
+          url="${{ secrets.RAILWAY_CRON_URL }}"
+          secret="${{ secrets.CRON_SECRET }}"
+          if [ -z "$url" ] || [ -z "$secret" ]; then
+            echo "Добавьте секреты репозитория: RAILWAY_CRON_URL и CRON_SECRET"
+            exit 1
+          fi
+          curl -fsS -X POST "${url}?token=${secret}" -o /dev/null -w "%{http_code}" | grep -q 200 && echo "OK" || exit 1

@@ -1,6 +1,8 @@
 import os
 import logging
+import asyncio
 from dotenv import load_dotenv
+from aiohttp import web
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ApplicationHandlerStop
 from db import Database
@@ -33,6 +35,43 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.info("Логирование настроено. Логи сохраняются в bot.log")
+
+
+async def _cron_marketing_handler(request: web.Request) -> web.Response:
+    """Эндпоинт для внешнего cron: проверка токена и запуск маркетинга + дожимов."""
+    token = request.headers.get("Authorization") or request.query.get("token") or ""
+    if token.startswith("Bearer "):
+        token = token[7:].strip()
+    secret = os.getenv("CRON_SECRET")
+    if not secret or token != secret:
+        return web.Response(status=403, text="Forbidden")
+    global notification_service
+    if notification_service is None:
+        return web.Response(status=503, text="Service not ready")
+    try:
+        await notification_service.check_and_send_marketing(None)
+        await notification_service.check_and_send_marketing_nudges(None)
+        return web.Response(text="OK")
+    except Exception as e:
+        logger.exception("Cron marketing error: %s", e)
+        return web.Response(status=500, text=str(e))
+
+
+async def _run_cron_server() -> None:
+    """Запуск HTTP-сервера для вызова маркетинга по cron (порт из PORT для Railway)."""
+    if not os.getenv("CRON_SECRET"):
+        logger.info("CRON_SECRET не задан — HTTP cron-сервер не запускается")
+        return
+    port = int(os.getenv("PORT", "8080"))
+    app = web.Application()
+    app.router.add_get("/internal/run-marketing", _cron_marketing_handler)
+    app.router.add_post("/internal/run-marketing", _cron_marketing_handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    logger.info("Cron HTTP-сервер слушает порт %s, путь /internal/run-marketing", port)
+
 
 # URL вашего сайта (MiniApp)
 MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrow.vercel.app/')
@@ -364,7 +403,12 @@ def main() -> None:
         logger.info("Планировщик: проверка маркетинговых сообщений каждые 5 мин (интервал рассылки из bot_settings)")
     else:
         logger.error("JobQueue не доступен!")
-    
+
+    async def _post_init(app: Application) -> None:
+        asyncio.create_task(_run_cron_server())
+
+    application.post_init = _post_init
+
     # Регистрируем обработчики: сначала проверка техработ (group=-1), затем остальные (group=0)
     application.add_handler(
         MessageHandler(filters.ALL, maintenance_check_handler),
