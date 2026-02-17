@@ -392,7 +392,9 @@ def main() -> None:
     # Настраиваем планировщик задач через JobQueue
     job_queue = application.job_queue
     
-    # Периодическая проверка маркетинга: запуск каждые 5 мин; интервал рассылки по пользователю — из БД (marketing_interval_minutes)
+    # Периодическая проверка маркетинга и очереди user_message_delivery:
+    # - check_and_send_marketing         — сценарные/маркетинговые сообщения
+    # - check_and_send_marketing_nudges  — очередь user_message_delivery (в т.ч. ручные сообщения из AdminChats)
     if job_queue:
         job_queue.run_repeating(
             notification_service.check_and_send_marketing,
@@ -401,6 +403,16 @@ def main() -> None:
             name="check_marketing",
         )
         logger.info("Планировщик: проверка маркетинговых сообщений каждые 5 мин (интервал рассылки из bot_settings)")
+
+        # Отдельная более частая проверка очереди user_message_delivery (manual + маркетинговые дожимы)
+        # Чтобы сообщения, отправленные через AdminChats, доходили до пользователя практически сразу.
+        job_queue.run_repeating(
+            notification_service.check_and_send_marketing_nudges,
+            interval=30,   # каждые 30 секунд проверяем очередь доставки
+            first=10,
+            name="check_marketing_nudges",
+        )
+        logger.info("Планировщик: проверка очереди user_message_delivery (в т.ч. ручные сообщения) каждые 30 секунд")
     else:
         logger.error("JobQueue не доступен!")
 

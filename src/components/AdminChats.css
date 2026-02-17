@@ -278,3 +278,154 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
 }
+
+/* ——— Планшет ——— */
+@media (max-width: 768px) {
+  .admin-chats-page {
+    padding: 0.75rem 1rem 1rem;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .admin-chats-header {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .admin-chats-back,
+  .admin-chats-home {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .admin-chats-title {
+    font-size: 1.2rem;
+    min-width: 0;
+  }
+
+  .admin-chats-layout {
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    border-radius: 0.5rem;
+  }
+
+  .admin-chats-sidebar {
+    width: 100%;
+    min-width: 0;
+    max-height: 35vh;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+  }
+
+  .admin-chats-sidebar-item {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .admin-chats-sidebar-user-id {
+    font-size: 0.85rem;
+  }
+
+  .admin-chats-sidebar-preview {
+    font-size: 0.75rem;
+    -webkit-line-clamp: 1;
+  }
+
+  .admin-chats-main {
+    min-height: 200px;
+  }
+
+  .admin-chats-main-header {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    word-break: break-word;
+  }
+
+  .admin-chats-messages {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .admin-chats-msg-bubble {
+    max-width: 88%;
+  }
+
+  .admin-chats-input-row {
+    padding: 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .admin-chats-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    min-width: 0;
+  }
+
+  .admin-chats-send {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ——— Мобильный ——— */
+@media (max-width: 480px) {
+  .admin-chats-page {
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+
+  .admin-chats-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-chats-title {
+    font-size: 1.1rem;
+  }
+
+  .admin-chats-sidebar {
+    max-height: 30vh;
+  }
+
+  .admin-chats-sidebar-item {
+    padding: 0.5rem 0.6rem;
+  }
+
+  .admin-chats-placeholder {
+    font-size: 0.9rem;
+    padding: 1rem;
+  }
+
+  .admin-chats-msg-bubble {
+    max-width: 92%;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .admin-chats-msg-text {
+    font-size: 0.9rem;
+  }
+
+  .admin-chats-msg-time {
+    font-size: 0.65rem;
+  }
+
+  .admin-chats-input-row {
+    padding: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .admin-chats-input {
+    padding: 0.45rem 0.6rem;
+    font-size: 16px; /* уменьшает зум на iOS при фокусе */
+  }
+
+  .admin-chats-send {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .admin-chats-loading,
+  .admin-chats-empty {
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+}

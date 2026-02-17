@@ -145,3 +145,133 @@
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ——— Планшет и мобильный ——— */
+@media (max-width: 768px) {
+  .admin-settings-page {
+    padding: 0.75rem 1rem 1.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .admin-settings-header {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-settings-back,
+  .admin-settings-home {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .admin-settings-title {
+    font-size: 1.2rem;
+    min-width: 0;
+  }
+
+  .admin-settings-list {
+    gap: 0.75rem;
+  }
+
+  .admin-settings-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .admin-settings-card-left {
+    min-width: 0;
+  }
+
+  .admin-settings-card-right {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .admin-settings-input {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .admin-settings-toast {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 1rem;
+    transform: none;
+    text-align: center;
+  }
+
+  .admin-settings-toast-error {
+    /* уже задан выше */
+  }
+
+  .admin-settings-toast {
+    animation: admin-settings-toast-in-mobile 0.2s ease;
+  }
+}
+
+@keyframes admin-settings-toast-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ——— Узкий мобильный ——— */
+@media (max-width: 480px) {
+  .admin-settings-page {
+    padding: 0.5rem 0.75rem 1rem;
+  }
+
+  .admin-settings-header {
+    margin-bottom: 0.75rem;
+  }
+
+  .admin-settings-title {
+    font-size: 1.05rem;
+  }
+
+  .admin-settings-card {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .admin-settings-name {
+    font-size: 0.95rem;
+  }
+
+  .admin-settings-description {
+    font-size: 0.8rem;
+  }
+
+  .admin-settings-input {
+    padding: 0.5rem 0.65rem;
+    font-size: 16px; /* уменьшает зум на iOS */
+  }
+
+  .admin-settings-loading,
+  .admin-settings-error {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .admin-settings-empty {
+    padding: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .admin-settings-toast {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    bottom: 0.75rem;
+    left: 0.5rem;
+    right: 0.5rem;
+  }
+}
