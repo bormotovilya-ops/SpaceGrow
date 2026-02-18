@@ -188,6 +188,20 @@ async function loadKnowledgeFiles() {
   }
 }
 
+// Функция для загрузки промпта бота (Telegram)
+async function loadBotPrompt() {
+  try {
+    const botPrompt = await readFile(join(process.cwd(), 'botAIprompt.md'), 'utf-8').catch(() => null)
+    if (!botPrompt) {
+      return 'Файл botAIprompt.md не найден'
+    }
+    return botPrompt
+  } catch (error) {
+    console.error('❌ Ошибка при загрузке botAIprompt.md:', error)
+    return 'Ошибка загрузки botAIprompt.md'
+  }
+}
+
 // Функция для загрузки промпта зеркала
 async function loadMirrorPrompt(userName = 'Путник') {
   try {
@@ -240,6 +254,12 @@ async function buildSystemContext(shouldAddCTA = false, promptType = 'profile', 
   if (promptType === 'mirror') {
     const mirrorPrompt = await loadMirrorPrompt(userName)
     return mirrorPrompt
+  }
+
+  // Специальный промпт для Telegram-бота
+  if (promptType === 'bot_ai') {
+    const botPrompt = await loadBotPrompt()
+    return botPrompt
   }
 
   // Стандартный промпт для профиля

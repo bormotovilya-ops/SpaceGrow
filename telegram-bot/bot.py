@@ -361,7 +361,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         ai_reply = None
         try:
             url = BACKEND_API_BASE.rstrip('/') + '/api/chat'
-            payload = {"message": text}
+            payload = {
+                "message": text,
+                "promptType": "bot_ai",
+            }
             resp = requests.post(url, json=payload, timeout=30)
             if resp.status_code == 200:
                 data = resp.json()
@@ -376,6 +379,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             logger.exception("Ошибка при запросе к backend /api/chat: %s", e)
 
         if ai_reply:
+            # Сохраняем ответ AI в user_chat_messages как исходящее сообщение бота
+            try:
+                if user and getattr(user, "id", None) is not None:
+                    db.save_outgoing_bot_message(user.id, ai_reply, source="bot")
+            except Exception as e:
+                logger.exception("Не удалось сохранить исходящее AI-сообщение в user_chat_messages: %s", e)
+
             await update.message.reply_text(ai_reply)
         else:
             # Фолбэк на прежнюю заглушку, если backend недоступен

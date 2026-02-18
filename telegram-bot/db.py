@@ -311,6 +311,21 @@ class Database:
         """Алиас для save_incoming_message (тот же функционал)."""
         self.save_incoming_message(tg_user_id, message_text)
 
+    def save_outgoing_bot_message(self, user_id: int, text: str, source: str = "bot") -> None:
+        """
+        Сохранить исходящее сообщение бота (AI) в user_chat_messages.
+        Используется для диалога пользователя с AI через Telegram-бота.
+        """
+        payload = {
+            "tg_user_id": user_id,
+            "direction": "outbound",
+            "message_text": text or "",
+            "source": source or "bot",
+        }
+        r = self._post("user_chat_messages", payload=payload)
+        self._check_response(r, "save_outgoing_bot_message")
+        logger.info("Исходящее AI-сообщение сохранено в user_chat_messages: user_id=%s", user_id)
+
     def get_pending_deliveries(self, now_iso: str) -> List[dict]:
         """Получить pending записи user_message_delivery с scheduled_at <= now_iso (включая is_manual, manual_text)."""
         r = self._get("user_message_delivery", params={
