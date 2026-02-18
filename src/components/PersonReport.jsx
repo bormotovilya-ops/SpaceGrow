@@ -6,6 +6,7 @@ import './PersonReport.css'
 import './Visualization.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { getSupabase } from '../utils/supabaseClient'
 import { findSectionByPath } from '../config/sitemapData'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -742,7 +743,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
         }
 
         // Fallback: existing backend endpoints (use userId so we request 888888 when in browser)
-        const response = await fetch(`/api/user/${userId}/personal-report`)
+        const response = await fetchWithTimeout(`/api/user/${userId}/personal-report`)
 
         if (!response.ok) {
           throw new Error('Не удалось загрузить данные отчета')
@@ -781,7 +782,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
         }
       } catch (err) {
         console.error('Error fetching personal report:', err)
-        setError(err.message)
+        setError(err?.name === 'AbortError' ? 'Запрос занял слишком много времени. Проверьте соединение и обновите страницу.' : err.message)
         setReportData(null)
       } finally {
         setLoading(false)
@@ -824,7 +825,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
         return
       }
 
-      const response = await fetch('/api/generate-personal-report-pdf', {
+      const response = await fetchWithTimeout('/api/generate-personal-report-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -849,7 +850,9 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
     } catch (error) {
       console.error('Error generating PDF:', error)
-      alert('❌ Ошибка при генерации PDF. Попробуйте позже.')
+      alert(error?.name === 'AbortError'
+        ? '❌ Запрос занял слишком много времени. Проверьте соединение и попробуйте снова.'
+        : '❌ Ошибка при генерации PDF. Попробуйте позже.')
     } finally {
       setGeneratingPDF(false)
     }

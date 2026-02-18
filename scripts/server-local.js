@@ -839,8 +839,7 @@ function cleanResponse(text) {
 const CTA_MARKDOWN = '[Записаться на диагностику](https://t.me/ilyaborm)'
 const CTA_URL = 'https://t.me/ilyaborm'
 
-const MAX_RESPONSE_CHARS = 330 // соответствует ограничению в botAIprompt.md
-function formatFinalResponse(rawText, shouldAddCTA, maxChars = MAX_RESPONSE_CHARS) {
+function formatFinalResponse(rawText, shouldAddCTA) {
   const text = cleanResponse(rawText || '')
 
   // Убираем возможные литералы "\n" / "\r" из ответа модели (в т.ч. двойное экранирование)
@@ -862,14 +861,7 @@ function formatFinalResponse(rawText, shouldAddCTA, maxChars = MAX_RESPONSE_CHAR
     .trim()
 
   if (!shouldAddCTA) {
-    return main.length > maxChars ? main.slice(0, maxChars).trimEnd() : main
-  }
-
-  // CTA нужен: оставляем место под "\n" + CTA
-  const reserve = 1 + CTA_MARKDOWN.length
-  const maxMain = Math.max(0, maxChars - reserve)
-  if (main.length > maxMain) {
-    main = main.slice(0, maxMain).trimEnd()
+    return main
   }
 
   return (main ? `${main}\n` : '') + CTA_MARKDOWN

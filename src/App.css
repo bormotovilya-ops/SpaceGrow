@@ -28,6 +28,78 @@
     }
 }
 
+/* Оверлей «сессия устарела» (Telegram Mini App, долгая неактивность) */
+.session-stale-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+.session-stale-overlay__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+.session-stale-overlay__card {
+    position: relative;
+    max-width: 360px;
+    width: 100%;
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.session-stale-overlay__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #fff;
+}
+.session-stale-overlay__text {
+    margin: 0 0 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.85);
+}
+.session-stale-overlay__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.session-stale-overlay__btn {
+    padding: 0.65rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.session-stale-overlay__btn--primary {
+    background: #4361ee;
+    color: #fff;
+}
+.session-stale-overlay__btn--primary:hover {
+    background: #3651d4;
+}
+.session-stale-overlay__btn--secondary {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+.session-stale-overlay__btn--secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.session-stale-overlay__btn--link {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+}
+.session-stale-overlay__btn--link:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
 
 
 

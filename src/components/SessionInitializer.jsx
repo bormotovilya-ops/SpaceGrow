@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useLogEvent } from '../hooks/useLogEvent';
+import { useSessionLifecycle } from '../hooks/useSessionLifecycle';
 import { userUtils } from '../utils/logging';
+import SessionStaleOverlay from './SessionStaleOverlay';
 
 /**
- * SessionInitializer - компонент для инициализации сессии и логирования прихода пользователя
- * Должен быть размещен в корне приложения для автоматической инициализации
+ * SessionInitializer - компонент для инициализации сессии и логирования прихода пользователя.
+ * Также обрабатывает долгую неактивность в Telegram Mini App (visibilitychange) и предлагает
+ * перезагрузку, чтобы избежать зависания WebView.
  */
 const SessionInitializer = ({ children }) => {
   const { logArrival, logMiniAppOpen, logEvent, ensureSession } = useLogEvent();
   const [isInitialized, setIsInitialized] = useState(false);
+  const { sessionStale, dismissStale, reload, closeMiniApp } = useSessionLifecycle();
 
   useEffect(() => {
     const initializeSession = async () => {
@@ -106,7 +110,18 @@ const SessionInitializer = ({ children }) => {
     );
   }
 
-  return children;
+  return (
+    <>
+      {children}
+      {sessionStale && (
+        <SessionStaleOverlay
+          onReload={reload}
+          onClose={closeMiniApp}
+          onDismiss={dismissStale}
+        />
+      )}
+    </>
+  );
 };
 
 export default SessionInitializer;

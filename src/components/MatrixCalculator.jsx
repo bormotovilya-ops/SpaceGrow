@@ -5,6 +5,7 @@ import jsPDF from 'jspdf'
 import astroData from '../../scripts/astroData.json'
 import interpretations from '../../scripts/interpretations.json'
 import './MatrixCalculator.css'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { useLogEvent } from '../hooks/useLogEvent'
 
 // Функция для приведения числа к диапазону 1-22
@@ -2511,7 +2512,7 @@ function MatrixCalculator() {
     if (isTelegram || isMobile) {
       try {
         // Отправляем данные на сервер для генерации PDF
-        const response = await fetch('/api/generate-pdf', {
+        const response = await fetchWithTimeout('/api/generate-pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

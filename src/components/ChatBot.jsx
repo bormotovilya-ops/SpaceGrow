@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './ChatBot.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { useLogEvent } from '../hooks/useLogEvent'
 
 function ChatBot({ onClose }) {
@@ -70,7 +71,7 @@ function ChatBot({ onClose }) {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,10 +90,10 @@ function ChatBot({ onClose }) {
         }])
       }
     } catch (error) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Не удалось подключиться к серверу. Проверьте, что backend запущен, или свяжитесь напрямую: @ilyaborm в Telegram.'
-      }])
+      const message = error?.name === 'AbortError'
+        ? 'Запрос занял слишком много времени. Проверьте соединение и попробуйте снова или напишите @ilyaborm в Telegram.'
+        : 'Не удалось подключиться к серверу. Проверьте, что backend запущен, или свяжитесь напрямую: @ilyaborm в Telegram.'
+      setMessages(prev => [...prev, { role: 'assistant', content: message }])
     } finally {
       setIsLoading(false)
     }

@@ -4,6 +4,7 @@ import Header from './Header'
 import './Profile.css'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { openTelegramLink } from '../utils/telegram'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
 import { getSupabase } from '../utils/supabaseClient'
@@ -243,7 +244,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
       const userMessageCount = chatMessages.filter(msg => msg.role === 'user').length + 1
       
       console.log('📡 Отправка запроса к /api/chat...', { messageCount: userMessageCount })
-      const response = await fetch('/api/chat', {
+      const response = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +348,9 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
         stack: error.stack,
         name: error.name
       })
-      const networkErrorContent = `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
+      const networkErrorContent = error?.name === 'AbortError'
+        ? 'Запрос занял слишком много времени. Проверьте соединение и попробуйте снова или напишите @ilyaborm в Telegram.'
+        : `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
       setChatMessages(prev => [...prev, { role: 'assistant', content: networkErrorContent }])
       logEvent('ai', 'ai_chat_message', {
         page: '/profile',

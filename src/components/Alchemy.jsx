@@ -6,6 +6,7 @@ import Diagnostics from './Diagnostics'
 import IKIGAI_TEST from '../../scripts/ikigai.json'
 import ONBOARDING_TEST from '../../scripts/Onboarding.json'
 import './Alchemy.css'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { useHashSectionScroll } from '../hooks/useHashSectionScroll'
 
@@ -247,7 +248,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       const userMessageCount = mirrorMessages.filter(msg => msg.role === 'user').length + 1
       
       console.log('📡 Отправка запроса к /api/chat...', { messageCount: userMessageCount, promptType: 'mirror', userName })
-      const response = await fetch('/api/chat', {
+      const response = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -365,7 +366,9 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         stack: error.stack,
         name: error.name
       })
-      const networkErrorContent = `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
+      const networkErrorContent = error?.name === 'AbortError'
+        ? 'Запрос занял слишком много времени. Проверьте соединение и попробуйте снова или напишите @ilyaborm в Telegram.'
+        : `Не удалось подключиться к серверу. Убедитесь, что локальный сервер запущен (npm run dev:server). Ошибка: ${error.message}`
       setMirrorMessages(prev => [...prev, { role: 'assistant', content: networkErrorContent }])
       logEvent('ai', 'ai_chat_message', {
         page: '/alchemy/mirror',
