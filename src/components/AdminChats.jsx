@@ -6,6 +6,7 @@ import './AdminChats.css'
 function AdminChats({ onBack, onHomeClick }) {
   const navigate = useNavigate()
   const [chats, setChats] = useState([])           // { tg_user_id, lastMessage, lastAt }
+  const [userProfiles, setUserProfiles] = useState({}) // tg_user_id -> { first_name, last_name, username }
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [messages, setMessages] = useState([])
   const [deliveryStatuses, setDeliveryStatuses] = useState({}) // delivery_id -> 'pending' | 'sent'
@@ -51,7 +52,28 @@ function AdminChats({ onBack, onHomeClick }) {
           })
         }
       }
-      setChats(Array.from(byUser.values()).sort((a, b) => (b.lastAt || '').localeCompare(a.lastAt || '')))
+      const chatList = Array.from(byUser.values()).sort((a, b) => (b.lastAt || '').localeCompare(a.lastAt || ''))
+      setChats(chatList)
+
+      // Загрузка имён/фамилий/username из users
+      const userIds = chatList.map((c) => c.tg_user_id).filter(Boolean)
+      if (userIds.length > 0) {
+        const { data: profileRows } = await supabase
+          .from('users')
+          .select('user_id, first_name, last_name, username')
+          .in('user_id', userIds)
+        const profiles = {}
+        for (const r of profileRows || []) {
+          profiles[r.user_id] = {
+            first_name: r.first_name ?? '',
+            last_name: r.last_name ?? '',
+            username: r.username ?? '',
+          }
+        }
+        setUserProfiles(profiles)
+      } else {
+        setUserProfiles({})
+      }
     } catch (err) {
       setError(err?.message || 'Ошибка загрузки')
     } finally {
@@ -232,6 +254,27 @@ function AdminChats({ onBack, onHomeClick }) {
     return 'Пользователь'
   }
 
+  // Имя для отображения: "Имя Фамилия" и/или "@username", иначе ID
+  const getChatDisplayName = (tgUserId) => {
+    const id = tgUserId
+    const p = userProfiles[id]
+    const parts = []
+    if (p) {
+      const fullName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
+      if (fullName) parts.push(fullName)
+      if (p.username) parts.push(`@${p.username}`)
+    }
+    if (parts.length > 0) return parts.join(' · ')
+    return `ID: ${id}`
+  }
+
+  const getChatTitleFull = (tgUserId) => {
+    const id = tgUserId
+    const p = userProfiles[id]
+    const namePart = getChatDisplayName(id)
+    return namePart.startsWith('ID:') ? namePart : `${namePart} (ID: ${id})`
+  }
+
   return (
     <div className="admin-chats-page">
       <header className="admin-chats-header">
@@ -258,7 +301,7 @@ function AdminChats({ onBack, onHomeClick }) {
                 className={`admin-chats-sidebar-item ${selectedUserId === chat.tg_user_id ? 'active' : ''}`}
                 onClick={() => setSelectedUserId(chat.tg_user_id)}
               >
-                <span className="admin-chats-sidebar-user-id">ID: {chat.tg_user_id}</span>
+                <span className="admin-chats-sidebar-user-id">{getChatDisplayName(chat.tg_user_id)}</span>
                 <span className="admin-chats-sidebar-preview">
                   {(chat.lastMessage || '').slice(0, 60)}
                   {(chat.lastMessage || '').length > 60 ? '…' : ''}
@@ -273,7 +316,7 @@ function AdminChats({ onBack, onHomeClick }) {
           )}
           {selectedUserId && (
             <>
-              <div className="admin-chats-main-header">Чат с пользователем {selectedUserId}</div>
+              <div className="admin-chats-main-header">Чат: {getChatTitleFull(selectedUserId)}</div>
               {error && <div className="admin-chats-error">{error}</div>}
               {loadingMessages && <div className="admin-chats-loading">Загрузка сообщений…</div>}
               <div className="admin-chats-messages">

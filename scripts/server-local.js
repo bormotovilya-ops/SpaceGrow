@@ -839,7 +839,8 @@ function cleanResponse(text) {
 const CTA_MARKDOWN = '[Записаться на диагностику](https://t.me/ilyaborm)'
 const CTA_URL = 'https://t.me/ilyaborm'
 
-function formatFinalResponse(rawText, shouldAddCTA, maxChars = 300) {
+const MAX_RESPONSE_CHARS = 330 // соответствует ограничению в botAIprompt.md
+function formatFinalResponse(rawText, shouldAddCTA, maxChars = MAX_RESPONSE_CHARS) {
   const text = cleanResponse(rawText || '')
 
   // Убираем возможные литералы "\n" / "\r" из ответа модели (в т.ч. двойное экранирование)
@@ -1000,7 +1001,7 @@ ${siteKnowledge}
 
 # Правила ответа:
 - Говори от первого лица (Я, меня, мой), обращайся на "вы"
-- Максимальная длина ответа — 300 символов. Только суть!
+- Максимальная длина ответа — 330 символов. Только суть!
 - Если добавляешь CTA — ставь ссылку на новой строке (один перенос строки), без пустой строки. Формат: [Записаться на диагностику](https://t.me/ilyaborm)
 - Не используй фразы "Как я могу вам помочь?"
 - Будь живым экспертом, не роботом${ctaInstruction}`
