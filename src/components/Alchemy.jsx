@@ -438,6 +438,11 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     navigate('/eq-module')
   }
 
+  const handleSnitchPeopleGamesCourse = () => {
+    logEvent('alchemy', 'snitch_action', { page: '/alchemy', metadata: { game_name: 'Корпоративные игры (Берн)' } })
+    navigate('/people-games-module')
+  }
+
   const handleCrystalTestClick = (testId, testTitle) => {
     logEvent('alchemy', 'crystal_action', { page: '/alchemy', metadata: { test_name: testTitle } })
     if (testId === 'ikigai') navigate('/alchemy/ikigai')
@@ -1137,6 +1142,15 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
                   <h3 className="test-card-title">Эмоциональный интеллект</h3>
                   <p className="test-card-desc">Твой супернавык для работы и жизни — интерактивный модуль с сертификатом.</p>
                   <button className="novella-start-btn">Запустить курс</button>
+                </div>
+
+                {/* КАРТОЧКА: КОРПОРАТИВНЫЕ ИГРЫ (БЕРН) */}
+                <div className="test-card novella-card active-demo" onClick={handleSnitchPeopleGamesCourse}>
+                  <div className="novella-badge">Курс-новелла</div>
+                  <div className="test-card-icon">🎭</div>
+                  <h3 className="test-card-title">Люди, которые играют в игры</h3>
+                  <p className="test-card-desc">Приёмы из книги Берна: как не стать пешкой в офисных психологических играх. Сертификат «Анти-манипулятор».</p>
+                  <button className="novella-start-btn">Начать расследование</button>
                 </div>
         
                 {/* КАРТОЧКА 2: МЕХАНИКА "КВЕСТ" */}

@@ -5,6 +5,7 @@ import SessionInitializer from './components/SessionInitializer'
 import Sitemap from './components/Sitemap'
 import Scorm from './components/Scorm'
 import EqModule from './components/EqModule'
+import PeopleGamesModule from './components/PeopleGamesModule'
 import {
   HomeRoute,
   ProfileRoute,
@@ -30,6 +31,7 @@ function App() {
         <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/scorm" element={<Scorm />} />
         <Route path="/eq-module" element={<EqModule />} />
+        <Route path="/people-games-module" element={<PeopleGamesModule />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<AppContainer><HomeRoute /></AppContainer>} />
         <Route path="/profile" element={<AppContainer><ProfileRoute /></AppContainer>} />
