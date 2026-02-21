@@ -56,6 +56,7 @@
     #slide-container {
       flex: 1;
       min-height: 0;
+      max-height: 100%;
       position: relative;
       overflow: hidden;
     }
@@ -63,11 +64,10 @@
       display: none;
       position: absolute;
       inset: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 1rem 1.25rem 2rem;
+      overflow: hidden;
+      padding: 0.5rem 1.25rem 0.5rem;
       box-sizing: border-box;
-      -webkit-overflow-scrolling: touch;
+      max-height: 100%;
     }
     .slide.active {
       display: flex;
@@ -75,17 +75,241 @@
       align-items: center;
       justify-content: center;
     }
+    .slide.slide-intro .slide-inner {
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      min-height: 0;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      padding: clamp(0.35rem, 1.2vw, 1.5rem) clamp(1rem, 3vw, 2rem) 0;
+      padding-bottom: min(48vh, 260px);
+      box-sizing: border-box;
+      position: relative;
+      background-color: #0f172a;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    .slide-intro .intro-bg-center {
+      position: absolute;
+      left: 15%;
+      right: 15%;
+      top: 0;
+      bottom: 0;
+      z-index: 0;
+      background-image: url('First.png');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-color: #0f172a;
+      pointer-events: none;
+    }
+    .slide-intro .intro-stripe {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 10%;
+      z-index: 1;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .slide-intro .intro-stripe-left { left: 0; }
+    .slide-intro .intro-stripe-right { right: 0; }
+    .slide-intro .intro-header {
+      flex-shrink: 1;
+      min-height: 0;
+      position: relative;
+      z-index: 2;
+    }
+    .slide-intro .intro-spacer {
+      flex: 1;
+      min-height: 0;
+    }
+    .slide-intro .intro-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: clamp(0.75rem, 1.5vw, 2rem);
+      flex-wrap: wrap;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      max-height: min(48vh, 260px);
+      padding: 0 clamp(1rem, 3vw, 2rem) clamp(0.5rem, 1.5vw, 1.5rem);
+      box-sizing: border-box;
+    }
+    .slide-intro .intro-header h1 {
+      font-family: var(--font-display, 'Montserrat', system-ui, sans-serif);
+      font-size: clamp(1.15rem, 3.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin: 0;
+      color: #e2e8f0;
+      text-align: center;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
+    }
+    .slide-intro .intro-header h1 .highlight {
+      color: #e11d48;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
+    }
+    .slide-intro .intro-header h1 .emoji {
+      color: #fbbf24;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
+    }
+    .slide-intro .intro-left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: clamp(0.5rem, 1.2vw, 1.25rem);
+      min-width: 0;
+      max-width: min(40vw, 378px);
+      padding: clamp(0.5rem, 1.5vw, 1.25rem);
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    }
+    .slide-intro .intro-left .description {
+      font-size: clamp(0.8rem, 1.8vw, 18px);
+      color: #e2e8f0;
+      line-height: 1.55;
+      margin: 0;
+      text-align: left;
+      font-weight: 400;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
+    }
+    @keyframes cta-blink {
+      0%, 100% { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(251, 191, 36, 0.5); filter: brightness(1); }
+      50% { box-shadow: 0 6px 20px rgba(251, 191, 36, 0.45), 0 0 24px 4px rgba(251, 191, 36, 0.25); filter: brightness(1.08); }
+    }
+    .slide-intro .cta-button {
+      display: inline-block;
+      padding: clamp(0.5rem, 1.2vw, 0.95rem) clamp(1.25rem, 2vw, 2.25rem);
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      color: #0f172a;
+      font-size: clamp(0.95rem, 2vw, 18px);
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+      font-family: var(--font-display, 'Montserrat', system-ui, sans-serif);
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      animation: cta-blink 2s ease-in-out infinite;
+    }
+    .slide-intro .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.35);
+      filter: brightness(1.02);
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #0f172a;
+    }
+    .slide-intro .intro-name-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      min-width: 0;
+      padding: clamp(0.4rem, 1vw, 1rem) clamp(0.75rem, 2vw, 1.25rem);
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .slide-intro .intro-name-wrap label {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fbbf24;
+      text-align: center;
+      display: block;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
+    }
+    .slide-intro .intro-name-wrap input {
+      padding: 0.55rem 0.85rem;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      color: #f1f5f9;
+      font-size: 1rem;
+      width: 100%;
+      min-width: 180px;
+      max-width: 220px;
+      box-sizing: border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .slide-intro .intro-name-wrap input::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+    }
+    .slide-intro .intro-name-wrap input:focus {
+      outline: none;
+      border-color: #fbbf24;
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+    }
+    /* Нижний блок — описание + CTA; выше — представление (имя) */
+    .slide-intro .intro-left { order: 2; }
+    .slide-intro .intro-name-wrap { order: 1; }
+    @media (min-width: 769px) {
+      .slide-intro .intro-bottom {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      .slide-intro .intro-left { max-width: min(40vw, 342px); }
+      .slide-intro .intro-name-wrap { max-width: 260px; }
+    }
+    @media (max-width: 768px) {
+      .slide-intro .intro-bottom {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+      .slide-intro .intro-left { max-width: min(40vw, 100%); }
+      .slide-intro .intro-header h1 { text-align: center; }
+    }
+    @media (max-height: 560px) {
+      .slide.slide-intro .slide-inner { padding-top: 0.35rem; padding-bottom: min(54vh, 280px); }
+      .slide-intro .intro-header h1 { font-size: clamp(0.85rem, 2.2vw, 1.35rem); }
+      .slide-intro .intro-bottom { padding-bottom: 0.5rem; max-height: min(54vh, 280px); }
+      .slide-intro .intro-left .description { font-size: 0.75rem; }
+      .slide-intro .cta-button { padding: 0.4rem 1rem; font-size: 0.8rem; }
+      .slide-intro .intro-name-wrap { padding: 0.35rem 0.6rem; }
+      .slide-intro .intro-name-wrap input { min-height: 28px; font-size: 0.9rem; }
+    }
     .slide.slide-stretch { justify-content: flex-start; align-items: stretch; }
     .slide .slide-inner {
       width: 100%;
       max-width: 640px;
       margin: 0 auto;
     }
+    .slide:has(.novella-scene) .slide-inner {
+      max-width: min(96vw, 1200px);
+    }
     .slide-clickable { cursor: pointer; }
+    .slide .slide-inner.flex-1 { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .slide .slide-inner.flex-1 .slide-hint { margin-top: auto; flex-shrink: 0; }
     .slide-hint {
       margin-top: auto;
-      padding-top: 1rem;
-      font-size: 0.75rem;
+      flex-shrink: 0;
+      padding: 0.35rem 0 0.5rem;
+      font-size: 0.7rem;
+      line-height: 1.2;
       color: rgba(148, 163, 184, 0.8);
       text-align: center;
     }
@@ -210,22 +434,27 @@
       color: rgba(241, 245, 249, 0.95);
     }
 
-    .course-nav {
+    .course-topbar {
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 10000;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      padding: 0.5rem max(0.5rem, env(safe-area-inset-left));
-      padding-right: max(0.5rem, env(safe-area-inset-right));
-      padding-top: max(0.5rem, env(safe-area-inset-top));
-      min-height: 44px;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.98);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem max(0.5rem, env(safe-area-inset-left));
+      padding-right: max(0.5rem, env(safe-area-inset-right));
+      padding-top: max(0.35rem, env(safe-area-inset-top));
+      min-height: 44px;
+    }
+    .course-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
     }
     .course-nav a {
       padding: 0.5rem 0.6rem;
@@ -243,9 +472,88 @@
       white-space: nowrap;
     }
     .course-nav a:hover { color: #f1f5f9; background: rgba(167, 139, 250, 0.15); }
-    .course-nav a.course-nav-exit { margin-left: auto; }
+    .course-topbar > a.course-nav-exit {
+      margin-left: auto;
+      margin-right: 0.5rem;
+      padding: 0.5rem 0.6rem;
+      min-height: 44px;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 0.375rem;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .course-topbar > a.course-nav-exit:hover { color: #f1f5f9; background: rgba(167, 139, 250, 0.15); }
+    .course-nav-chapters { display: flex; align-items: center; gap: 2px; margin-right: 8px; }
+    .course-nav-chapter-btn {
+      padding: 0.25rem 0.5rem;
+      min-width: 28px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .course-nav-chapter-btn:hover { color: #e2e8f0; background: rgba(167, 139, 250, 0.2); border-color: rgba(167, 139, 250, 0.5); }
+    .course-nav-chapter-btn.active { color: #e2e8f0; background: rgba(167, 139, 250, 0.35); border-color: rgba(167, 139, 250, 0.8); }
+
+    /* Панель инструментов в одну строку: подсказка + баллы по системе курса */
+    .course-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+    .toolbar-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 0.5rem;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .toolbar-btn:hover { background: rgba(56, 189, 248, 0.35); transform: scale(1.05); }
+    .toolbar-btn img { width: 100%; height: 100%; object-fit: contain; padding: 4px; box-sizing: border-box; }
+    .toolbar-points {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .toolbar-points.toolbar-awareness { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .toolbar-points.toolbar-influence { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+    .toolbar-points.toolbar-resource { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .toolbar-points span.label { color: rgba(241, 245, 249, 0.8); font-weight: 500; font-size: 0.65rem; }
+    @media (max-width: 480px) {
+      .toolbar-btn { width: 36px; height: 36px; font-size: 1.1rem; }
+      .toolbar-points { font-size: 0.625rem; padding: 0.15rem 0.35rem; }
+      .toolbar-points span.label { font-size: 0.6rem; }
+    }
     @media (max-width: 480px) {
       .course-nav a { padding: 0.25rem 0.4rem; font-size: 0.65rem; min-height: 28px; }
+      .course-topbar > a.course-nav-exit { padding: 0.25rem 0.4rem; font-size: 0.65rem; min-height: 28px; margin-right: 0.35rem; }
     }
 
     .berne-option, .choice-option {
@@ -323,12 +631,16 @@
     .final-screen-content { text-align: center; max-width: 520px; }
 
     .main-offset { height: 52px; min-height: 52px; }
-    @media (max-width: 480px) { .main-offset { height: 40px; min-height: 40px; } }
+    @media (max-width: 480px) { .main-offset { height: 48px; min-height: 48px; } }
 
-    /* Сцены новеллы: фон офиса */
+    /* Сцены новеллы: персонаж слева, текст справа. Единый размер персонажа (как у Леночки) — масштаб 1.22 */
     .novella-scene {
+      --chapter-character-max-width: clamp(180px, 42vw, 333px);
+      --chapter-character-max-height: clamp(280px, 58vh, 556px);
+      --chapter-character-height-pct: 70%;
+      --chapter-character-scale: 1.22;
       position: relative;
-      min-height: 420px;
+      min-height: 380px;
       border-radius: 1rem;
       overflow: hidden;
       background-size: cover;
@@ -338,35 +650,157 @@
       flex-direction: column;
       justify-content: flex-end;
     }
+    /* Сцена = 80% области под топбаром; в остальные 20% — заголовок слайда и подпись внизу (без прокрутки) */
+    .novella-chapter-scene {
+      width: 100%;
+      height: calc(0.8 * (100vh - 52px));
+      min-height: 260px;
+      max-height: calc(0.8 * (100vh - 52px));
+      flex: 0 0 auto;
+      background-size: cover;
+      background-position: center;
+    }
+    .novella-scene.has-character {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: auto 1fr;
+      align-content: flex-end;
+      gap: 0;
+    }
     .novella-scene::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%);
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.45) 45%, transparent 100%);
       pointer-events: none;
+      grid-column: 1 / -1;
+      grid-row: 1 / -1;
     }
-    .novella-scene .scene-content { position: relative; z-index: 2; }
     .boss-sprite {
-      position: absolute;
-      bottom: 0;
-      right: 5%;
-      height: 75%;
-      max-height: 320px;
+      grid-column: 1;
+      grid-row: 1 / -1;
+      align-self: end;
+      justify-self: start;
+      width: 100%;
+      max-width: var(--chapter-character-max-width);
+      height: var(--chapter-character-height-pct);
+      max-height: var(--chapter-character-max-height);
       object-fit: contain;
-      object-position: bottom right;
+      object-position: bottom left;
+      transform: scale(var(--chapter-character-scale));
+      transform-origin: bottom left;
       z-index: 1;
       pointer-events: none;
     }
     .boss-sprite.boss-dim { opacity: 0.5; }
+    #slide-problem .boss-sprite.boss-enter {
+      transform: scale(var(--chapter-character-scale)) translateX(-120%);
+      animation: boss-slide-in 0.7s ease-out forwards;
+    }
+    @keyframes boss-slide-in {
+      from { transform: scale(1.22) translateX(-120%); }
+      to { transform: scale(1.22) translateX(0); }
+    }
+    /* Глава 2: кухня — контент слева, персонаж справа, выезд справа (размер общий для всех глав) */
+    .novella-scene.scene-kitchen {
+      background-image: url('KITCHEN.png');
+    }
+    .novella-scene.scene-kitchen.has-character {
+      grid-template-columns: 1fr minmax(200px, 360px);
+    }
+    .novella-scene.scene-kitchen .character-sprite {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      justify-self: end;
+      align-self: end;
+      margin-top: 0;
+      width: 100%;
+      max-width: var(--chapter-character-max-width);
+      height: var(--chapter-character-height-pct);
+      max-height: var(--chapter-character-max-height);
+      object-fit: cover;
+      object-position: top center;
+      transform: scale(var(--chapter-character-scale));
+      transform-origin: bottom center;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .novella-scene.scene-kitchen .character-sprite.enter-right {
+      animation: ch2-enter-right 0.6s ease-out forwards;
+    }
+    @keyframes ch2-enter-right {
+      from { transform: scale(1.22) translateX(100%); opacity: 0.3; }
+      to { transform: scale(1.22) translateX(0); opacity: 1; }
+    }
+    .novella-scene.scene-kitchen .novella-choices {
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: start;
+      text-align: left;
+    }
+    .novella-scene.scene-kitchen.has-character .scene-text-zone {
+      grid-column: 1;
+      grid-row: 2;
+      justify-self: start;
+      text-align: left;
+    }
+    .novella-scene.scene-kitchen .scene-content,
+    .novella-scene.scene-kitchen .dialog-box { text-align: left; }
+    .character-sprite {
+      grid-column: 1;
+      grid-row: 1 / -1;
+      align-self: end;
+      justify-self: start;
+      width: 100%;
+      max-width: var(--chapter-character-max-width);
+      height: var(--chapter-character-height-pct);
+      max-height: var(--chapter-character-max-height);
+      object-fit: contain;
+      object-position: bottom left;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .character-sprite.dim { opacity: 0.5; filter: brightness(0.7); }
+    .character-sprite.dim-heavy { opacity: 0.4; filter: brightness(0.5) grayscale(100%); }
+    .novella-choices {
+      grid-column: 2;
+      grid-row: 1;
+      z-index: 10;
+      padding: 0.5rem 0.75rem 0.25rem;
+      max-width: 100%;
+      overflow: visible;
+      min-height: 0;
+    }
+    .novella-choices .novella-choice {
+      display: block;
+    }
+    .scene-text-zone {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 120px;
+      padding: 0 1rem 1rem;
+      width: 100%;
+    }
+    .novella-scene.has-character .scene-text-zone {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    .novella-scene .scene-content {
+      position: relative;
+      width: 100%;
+    }
     .dialog-box {
-      margin: 1rem 1.25rem 1.25rem;
-      padding: 1.25rem 1.5rem;
+      margin: 0;
+      padding: 0.65rem 0.9rem;
       background: rgba(15, 23, 42, 0.92);
       border: 2px solid #38bdf8;
-      border-radius: 1rem;
+      border-radius: 0.75rem;
       color: #f1f5f9;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      font-size: 1rem;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+      font-size: 0.9375rem;
       line-height: 1.5;
     }
     .dialog-box .dialog-name {
@@ -376,15 +810,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       display: block;
-      margin-bottom: 0.5rem;
-    }
-    .novella-choices {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      right: auto;
-      max-width:  min(100%, 320px);
-      z-index: 10;
+      margin-bottom: 0.3rem;
     }
     .novella-choice {
       display: block;
@@ -392,11 +818,12 @@
       background: rgba(15, 23, 42, 0.95);
       border: 2px solid #38bdf8;
       color: #f1f5f9;
-      padding: 0.875rem 1rem;
-      margin-bottom: 0.5rem;
-      border-radius: 0.75rem;
+      padding: 0.5rem 0.7rem;
+      margin-bottom: 0.3rem;
+      border-radius: 0.6rem;
       text-align: left;
       font-size: 0.9375rem;
+      line-height: 1.4;
       cursor: pointer;
       transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
@@ -404,12 +831,11 @@
       background: #38bdf8;
       color: #0f172a;
     }
-    .novella-choice.premium { border-color: #fbbf24; color: #fbbf24; }
-    .novella-choice.premium:hover { background: #fbbf24; color: #0f172a; }
     .novella-choice.chosen-correct { border-color: #22c55e; background: rgba(34, 197, 94, 0.2); }
     .success-badge { color: #4ade80; font-weight: 700; }
 
     .hidden { display: none !important; }
+    #btn-show-hint { display: none !important; }
     .psychologist-hint-btn {
       display: inline-block;
       margin-top: 0.5rem;
@@ -431,211 +857,574 @@
     }
     .psychologist-hint-box { margin-top: 0.75rem; }
     @media (max-width: 640px) {
-      .novella-scene { min-height: 380px; }
-      .boss-sprite { height: 60%; right: 0; }
-      .novella-choices { max-width: 100%; }
-      .psychologist-hint-btn { padding: 0.875rem 1rem; font-size: 0.875rem; min-height: 48px; width: 100%; }
+      .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
+      .novella-scene.has-character { grid-template-columns: 240px 1fr; }
+      .novella-scene { --chapter-character-max-width: clamp(160px, 38vw, 260px); --chapter-character-max-height: clamp(240px, 52vh, 440px); }
+      .scene-text-zone { padding: 0 0.65rem 0.65rem; min-height: 100px; }
+      .dialog-box { font-size: 0.875rem; padding: 0.55rem 0.7rem; }
+      .dialog-box .dialog-name { font-size: 0.6875rem; }
+      .novella-choices { padding: 0.3rem 0.45rem 0.15rem; }
+      .novella-choice { min-height: 40px; padding: 0.35rem 0.55rem; font-size: 0.875rem; margin-bottom: 0.25rem; }
+      .psychologist-hint-btn { padding: 0.5rem 0.75rem; font-size: 0.8125rem; min-height: 44px; }
     }
     @media (max-width: 480px) {
       .slide { padding: 0.75rem 1rem 1.5rem; }
       .btn-next { min-height: 44px; padding: 0.625rem 1rem; font-size: 0.875rem; }
-      .novella-choice { min-height: 48px; padding: 0.75rem 1rem; font-size: 0.875rem; }
+      .novella-choice { min-height: 40px; padding: 0.4rem 0.6rem; font-size: 0.75rem; margin-bottom: 0.25rem; }
+      .novella-chapter-scene { height: calc(0.8 * (100vh - 48px)); max-height: calc(0.8 * (100vh - 48px)); }
+    }
+
+    .slide-inner.position-relative { position: relative; }
+    .confetti-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 5;
+    }
+    .confetti-container-global {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 5000;
+    }
+    .outcome-lose {
+      animation: outcome-lose 1.1s ease-in-out;
+    }
+    @keyframes outcome-lose {
+      0%, 100% { opacity: 1; filter: brightness(1); }
+      20% { opacity: 0.9; transform: translateX(-6px); filter: brightness(0.85); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    .confetti-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+      animation: confetti-fall 2.5s ease-out forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .points-highlight {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.75rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(167, 139, 250, 0.25));
+      border: 2px solid rgba(167, 139, 250, 0.5);
+      box-shadow: 0 0 20px rgba(167, 139, 250, 0.3);
+      animation: points-pulse 1.2s ease-in-out 2;
+    }
+    @keyframes points-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .points-rows {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .points-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(167, 139, 250, 0.2));
+      border: 1px solid rgba(167, 139, 250, 0.4);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+    .points-row .points-icon { font-size: 1.25rem; }
+    .points-row .points-num { min-width: 1.5em; text-align: right; color: #a78bfa; }
+    .points-row.points-negative { background: linear-gradient(135deg, rgba(248, 113, 113, 0.15), rgba(239, 68, 68, 0.1)); border-color: rgba(248, 113, 113, 0.4); }
+    .points-row.points-hint-deduction { animation: points-hint-flash 0.6s ease-out; }
+    @keyframes points-hint-flash { 0% { background: rgba(251, 191, 36, 0.25); } 100% { background: transparent; } }
+    .points-row.points-hint-deduction .points-num { color: #f59e0b; }
+    .hint-penalty-comment { font-size: 0.8125rem; color: #94a3b8; margin-top: 0.35rem; margin-bottom: 0; }
+    .founder-column { display: flex; flex-direction: column; align-items: center; }
+    .founder-photo { filter: grayscale(100%) contrast(105%); border-bottom: 4px solid #fbbf24; width: 100%; margin-bottom: 20px; }
+    .quote-box { font-style: italic; color: #94a3b8; font-size: 15px; line-height: 1.5; text-align: left; border-left: 2px solid #fbbf24; padding-left: 15px; margin-top: 10px; }
+    .book-badge { background: #fbbf24; color: #0f172a; padding: 5px 15px; font-weight: 900; font-size: 14px; display: inline-block; margin-bottom: 15px; }
+    @media (max-width: 768px) {
+      #berne-method .slide-inner > div { grid-template-columns: 1fr; gap: 24px; }
+      #berne-method .slide-inner h2 { font-size: 1.75rem !important; }
+      #berne-method .slide-inner p { font-size: 1rem !important; }
+      #berne-method .slide-inner ul { font-size: 0.95rem !important; }
+    }
+    /* Слайд «Что получит ученик» — премиум glassmorphism + анимации */
+    #slide-outcomes { background: #0f172a; }
+    #slide-outcomes .outcomes-title { font-family: var(--font-display, 'Montserrat', sans-serif); font-size: clamp(1.5rem, 4vw, 2.25rem); font-weight: 800; color: #fff; margin: 0 0 0.5rem 0; letter-spacing: -0.02em; }
+    #slide-outcomes .outcomes-subtitle { color: #94a3b8; font-size: clamp(0.9rem, 2vw, 1.1rem); margin: 0 0 1.5rem 0; }
+    #slide-outcomes .outcomes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; max-width: 960px; margin: 0 auto; }
+    #slide-outcomes .outcome-card { position: relative; border-radius: 20px; padding: 1.5rem; overflow: hidden; opacity: 0; transform: translateY(20px); animation: outcome-reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.2); transition: border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+    #slide-outcomes .outcome-card:nth-child(1) { animation-delay: 0.1s; }
+    #slide-outcomes .outcome-card:nth-child(2) { animation-delay: 0.25s; }
+    #slide-outcomes .outcome-card:nth-child(3) { animation-delay: 0.4s; }
+    #slide-outcomes .outcome-card:hover { border-color: rgba(251, 191, 36, 0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(251, 191, 36, 0.1); }
+    #slide-outcomes .outcome-num { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #0f172a; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.75rem; }
+    #slide-outcomes .outcome-card h3 { color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0 0 0.5rem 0; line-height: 1.3; }
+    #slide-outcomes .outcome-card .outcome-text { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; margin: 0; }
+    @keyframes outcome-reveal { to { opacity: 1; transform: translateY(0); } }
+    /* Карточка 1: за 6 с полоса равномерно проходит всю карточку; с 5 по 6 с — красная фраза + пульс */
+    #slide-outcomes .card-xray .scanner-beam { position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, rgba(251,191,36,0.9), rgba(251,191,36,0.3), transparent); box-shadow: 0 0 20px #fbbf24; animation: scanner-sweep-6s 6s linear infinite; pointer-events: none; }
+    @keyframes scanner-sweep-6s { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 1; } }
+    #slide-outcomes .card-xray .outcome-text-wrap { position: relative; }
+    /* С 5 по 6 с: фраза «Мы же одна семья» красная и пульсирует (на самом тексте) */
+    #slide-outcomes .card-xray .phrase-target { display: inline-block; animation: phrase-red-pulse 6s linear infinite; }
+    @keyframes phrase-red-pulse { 0%, 83.32% { color: inherit; text-shadow: none; } 83.33% { color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.7); } 88.33% { color: #ef4444; text-shadow: 0 0 24px rgba(239,68,68,1), 0 0 36px rgba(239,68,68,0.6); } 93.33% { color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.7); } 98.33% { color: #ef4444; text-shadow: 0 0 24px rgba(239,68,68,1), 0 0 36px rgba(239,68,68,0.6); } 100% { color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.7); } }
+    #slide-outcomes .card-xray .phrase-red-overlay { display: none; }
+    /* Карточка 2: силовое поле + точки */
+    #slide-outcomes .card-shield { overflow: visible; }
+    #slide-outcomes .card-shield .force-field { position: absolute; inset: -2px; border-radius: 22px; pointer-events: none; border: 1px solid rgba(251,191,36,0.25); box-shadow: 0 0 30px rgba(251,191,36,0.15), inset 0 0 30px rgba(251,191,36,0.05); animation: force-pulse 2.5s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+    @keyframes force-pulse { 0%, 100% { opacity: 0.6; box-shadow: 0 0 20px rgba(251,191,36,0.2), inset 0 0 20px rgba(251,191,36,0.03); } 50% { opacity: 1; box-shadow: 0 0 40px rgba(251,191,36,0.35), inset 0 0 40px rgba(251,191,36,0.08); } }
+    #slide-outcomes .card-shield .dots-canvas { position: absolute; inset: 0; border-radius: 20px; pointer-events: none; overflow: visible; }
+    #slide-outcomes .card-shield .spark { position: absolute; width: 8px; height: 8px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 16px #fbbf24; animation: spark-fade 0.5s ease-out forwards; pointer-events: none; }
+    @keyframes spark-fade { to { opacity: 0; transform: scale(0); } }
+    /* Карточка 3: пешки + ферзь */
+    #slide-outcomes .card-queen .pawns-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    #slide-outcomes .card-queen .pawn { position: absolute; font-size: 1.25rem; color: rgba(148,163,184,0.4); transition: transform 5s cubic-bezier(0.22, 1, 0.36, 1); }
+    #slide-outcomes .card-queen.pawns-aligned .pawn { transition-duration: 0.4s; }
+    #slide-outcomes .card-queen .queen-burst { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); font-size: 3rem; color: #fbbf24; text-shadow: 0 0 30px #fbbf24; opacity: 0; pointer-events: none; }
+    #slide-outcomes .card-queen.queen-visible .queen-burst { animation: queen-flash 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    @keyframes queen-flash { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0); } 30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 70% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+    @media (max-width: 768px) {
+      #slide-outcomes .outcomes-grid { grid-template-columns: 1fr; gap: 1rem; }
+      #slide-outcomes .outcome-card { padding: 1.25rem; }
     }
   </style>
 </head>
 <body class="antialiased min-h-screen">
+  <div class="course-topbar">
   <nav class="course-nav" aria-label="Навигация по курсу">
-    <span class="text-slate-500 text-xs mr-2" id="slide-counter">1 / 15</span>
-    <a href="/alchemy" class="course-nav-exit" id="pg-exit-link" title="Выйти в Алхимию">Выйти</a>
+    <span class="text-slate-500 text-xs mr-2" id="slide-counter">1 / 27</span>
+    <div class="course-nav-chapters" aria-label="Переход к главам">
+      <button type="button" class="course-nav-chapter-btn" data-goto="0" title="Глава 1">1</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="11" title="Глава 2">2</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="18" title="Глава 3">3</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="21" title="Глава 4">4</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="26" title="Глава 5">5</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Тест">6</button>
+    </div>
     <div class="progress-bar-track" aria-hidden="true">
-      <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0.0667)"></div>
+      <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0.0588)"></div>
     </div>
   </nav>
+  <div class="course-toolbar" aria-label="Инструменты">
+    <button type="button" class="toolbar-btn" id="toolbar-hint-btn" title="Получить подсказку от психолога" aria-label="Подсказка психолога">💡</button>
+    <div class="toolbar-points toolbar-awareness" title="Осознанность">💎 <span class="label">Осознанность</span> <span id="toolbar-awareness">0</span></div>
+    <div class="toolbar-points toolbar-influence hidden" title="Влияние" aria-hidden="true">🔥 <span class="label">Влияние</span> <span id="toolbar-influence">0</span></div>
+    <div class="toolbar-points toolbar-resource hidden" title="Ресурс" aria-hidden="true">🔋 <span class="label">Ресурс</span> <span id="toolbar-resource">0</span></div>
+  </div>
+  <a href="/alchemy" class="course-nav-exit" id="pg-exit-link" title="Выйти в Алхимию">Выйти</a>
+</div>
   <div class="main-offset"></div>
+  <div id="confetti-container" class="confetti-container confetti-container-global" aria-hidden="true"></div>
 
   <div id="slide-container">
-    <div class="slide active" data-slide="0" id="slide-0">
+    <div class="slide slide-intro active" data-slide="0" id="slide-0">
       <div class="slide-inner">
-        <div class="novella-scene min-h-[50vh] justify-center rounded-2xl overflow-hidden">
-          <div class="scene-content w-full max-w-xl px-4 pb-6">
-            <h1 class="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3">
-              Корпоративные игры:<br />Как не стать <span id="peshka-word">ПЕШКОЙ</span>
-            </h1>
-            <p class="text-base sm:text-lg text-slate-300 mb-6">Твой гид по выживанию в офисном «Клубе Романтики»</p>
-            <p class="text-slate-400 text-sm mb-2">Знакомимся с героем</p>
-            <div class="name-input-wrap">
-              <input type="text" id="userNameInput" placeholder="Имя и Фамилия" autocomplete="name" maxlength="80" />
+        <div class="intro-bg-center" aria-hidden="true"></div>
+        <div class="intro-stripe intro-stripe-left" aria-hidden="true"></div>
+        <div class="intro-stripe intro-stripe-right" aria-hidden="true"></div>
+        <div class="intro-header">
+          <h1 class="font-display">ОФИСНЫЕ ИГРЫ: Эволюция<br>из <span class="highlight">пешки</span> в ГР<span class="emoji">♛</span>ССМЕЙСТЕРА</h1>
+        </div>
+        <div class="intro-spacer" aria-hidden="true"></div>
+        <div class="intro-bottom">
+          <div class="intro-left">
+            <p class="description">
+              Интерактивный практикум.<br>
+              Научитесь видеть скрытые мотивы коллег и перехватывать инициативу в любой ситуации.
+            </p>
+            <div id="btn-go-hero-wrap">
+              <button type="button" id="btn-go-hero" class="cta-button">Принять вызов</button>
             </div>
-            <div class="mt-4 text-center" id="btn-go-hero-wrap" style="opacity:0; pointer-events:none;">
-              <button type="button" id="btn-go-hero" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-accent uppercase tracking-wider text-sm">Начать расследование</button>
-            </div>
+          </div>
+          <div class="intro-name-wrap">
+            <label for="userNameInput">Как к вам обращаться?</label>
+            <input type="text" id="userNameInput" placeholder="Имя" autocomplete="name" maxlength="80" />
           </div>
         </div>
       </div>
     </div>
 
-    <div class="slide slide-stretch slide-clickable" data-slide="1">
+    <section class="slide slide-stretch slide-clickable" data-slide="1" id="berne-method">
       <div class="slide-inner">
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-3">Было такое? 🚩</h2>
-        <p class="text-slate-400 text-sm mb-4">Отметь моменты, где хотелось уволиться</p>
-        <ul class="space-y-3 mb-4">
-          <li class="situation-card flex items-start gap-3 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-card>
-            <span class="check-icon w-6 h-6 rounded-full bg-accent flex items-center justify-center text-white shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
-            <span class="text-slate-200 text-sm">Босс хвалит, а через минуту вешает задачу «никто, кроме тебя, не вытянет» 🎣</span>
-          </li>
-          <li class="situation-card flex items-start gap-3 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-card>
-            <span class="check-icon w-6 h-6 rounded-full bg-accent flex items-center justify-center text-white shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
-            <span class="text-slate-200 text-sm">Коллега просит совета — он: «Да, но в моем случае не сработает...» 🧱</span>
-          </li>
-          <li class="situation-card flex items-start gap-3 p-4 rounded-xl border-2 border-slate-600/80 bg-slate-800/40" data-card>
-            <span class="check-icon w-6 h-6 rounded-full bg-accent flex items-center justify-center text-white shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></span>
-            <span class="text-slate-200 text-sm">Чувствуешь вину, хотя просто ушёл с работы вовремя 🏃‍♂️</span>
-          </li>
-        </ul>
-        <p class="text-slate-400 italic text-sm mb-4">Если узнал себя — добро пожаловать в мир психологических игр.</p>
+        <div style="display: grid; grid-template-columns: 35% 65%; gap: 40px; align-items: start;">
+          <div class="founder-column">
+            <img src="Bern.png" alt="Эрик Берн" class="founder-photo">
+            <div class="quote-box">
+              «Сценарий — это жизненный план, созданный в детстве... Но именно <b>осознание</b> дает человеку возможность отложить свой сценарий в сторону и начать новую игру».
+              <br><span style="font-size: 12px; color: #64748b; font-style: normal;">— Эрик Берн</span>
+            </div>
+          </div>
+          <div class="content-column">
+            <div class="book-badge">БАЗИС КУРСА</div>
+            <h2 style="font-size: 42px; margin: 0 0 15px 0; line-height: 1.1;">
+              МЕТОД, КОТОРЫЙ <br><span style="color:#fbbf24">ИЗМЕНИЛ МИР</span>
+            </h2>
+            <p style="font-size: 19px; line-height: 1.5; color: #cbd5e1; margin-bottom: 20px;">
+              В основе курса — <b>Трансакционный анализ</b> из книги Эрика Берна
+              <span style="color:#fff;">«Игры, в которые играют люди»</span>.
+              Это глубокое исследование того, как мы бессознательно манипулируем друг другом.
+            </p>
+            <div style="background: rgba(255,255,255,0.03); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+              <h4 style="color:#fbbf24; margin-bottom: 12px; font-size: 18px; text-transform: uppercase;">Мировой статус метода:</h4>
+              <ul style="list-style: none; padding: 0; font-size: 17px; line-height: 1.7;">
+                <li>✅ <b>Академическая база:</b> Преподается в университетах Лиги Плюща.</li>
+                <li>✅ <b>Проверка временем:</b> Бестселлер №1 по версии New York Times более 50 лет.</li>
+                <li>✅ <b>Масштаб личности:</b> Эрик Берн (MD, Stanford) — доктор медицины и гений системного анализа.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
-    </div>
-    <section class="slide slide-stretch slide-clickable" data-slide="2" id="benefits">
-      <div class="slide-inner">
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-4">Твои суперсилы после курса</h2>
-        <ol class="space-y-5">
-          <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
-            <span class="font-display font-bold text-accent text-xl shrink-0 w-10">1.</span>
-            <div><strong class="text-white">Рентгеновское зрение:</strong> <span class="text-slate-300">Ты начнёшь видеть, что на самом деле стоит за фразой «Мы же одна семья».</span></div>
-          </li>
-          <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
-            <span class="font-display font-bold text-accent text-xl shrink-0 w-10">2.</span>
-            <div><strong class="text-white">Иммунитет к чувству вины:</strong> <span class="text-slate-300">Ты научишься говорить «нет» так, что на тебя не обидятся.</span></div>
-          </li>
-          <li class="reveal flex items-start gap-4 p-5 rounded-2xl bg-slate-800/40 border border-slate-700/50" data-reveal>
-            <span class="font-display font-bold text-accent text-xl shrink-0 w-10">3.</span>
-            <div><strong class="text-white">Карьерный рывок:</strong> <span class="text-slate-300">Тот, кто не играет в чужие игры, сам устанавливает правила.</span></div>
-          </li>
-        </ol>
-        <p class="slide-hint">Нажмите на экран для продолжения</p>
-      </div>
-      </section>
+    </section>
 
-      <!-- Глава 2: заголовок -->
-      <div class="slide slide-clickable" data-slide="3">
+    <!-- Что получит ученик -->
+    <section class="slide slide-stretch slide-clickable" data-slide="2" id="slide-outcomes">
       <div class="slide-inner">
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Глава 2. Дело о «Загнанной лошади» 🐎</h2>
+        <h2 class="outcomes-title">Что вы получите после курса</h2>
+        <p class="outcomes-subtitle">Практические навыки, которые меняют правила игры в офисе и в жизни</p>
+        <div class="outcomes-grid">
+          <div class="outcome-card card-xray">
+            <div class="scanner-beam" aria-hidden="true"></div>
+            <div class="outcome-num">1</div>
+            <h3>Рентгеновское зрение</h3>
+            <div class="outcome-text-wrap">
+              <p class="outcome-text">Рентгеновское зрение: Ты начнёшь видеть, что на самом деле стоит за фразой <span class="phrase-target">«Мы же одна семья»</span></p>
+              <p class="phrase-red-overlay" aria-hidden="true">Рентгеновское зрение: Ты начнёшь видеть, что на самом деле стоит за фразой <span class="phrase-red">«Мы же одна семья»</span></p>
+            </div>
+          </div>
+          <div class="outcome-card card-shield">
+            <div class="force-field" aria-hidden="true"></div>
+            <div class="dots-canvas" id="outcomes-dots-canvas"></div>
+            <div class="outcome-num">2</div>
+            <h3>Иммунитет к чувству вины</h3>
+            <p class="outcome-text">Иммунитет к чувству вины: Ты научишься говорить «нет» так, что на тебя не обидятся.</p>
+          </div>
+          <div class="outcome-card card-queen" id="outcomes-card-queen">
+            <div class="pawns-bg" id="outcomes-pawns-bg"></div>
+            <div class="queen-burst" aria-hidden="true">♛</div>
+            <div class="outcome-num">3</div>
+            <h3>Карьерный рывок</h3>
+            <p class="outcome-text">Карьерный рывок: Тот, кто не играет в чужие игры, сам устанавливает правила.</p>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+
+    <!-- Глава 1: Пятничный капкан -->
+    <div class="slide slide-clickable" data-slide="3">
+      <div class="slide-inner">
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Глава 1. Пятничный капкан 🐎</h2>
         <p class="text-slate-400 text-sm">Разбор реального офисного кейса</p>
         <p class="slide-hint mt-6">Нажмите на экран для продолжения</p>
       </div>
     </div>
+    <!-- Глава: 1. Вступление, текущая ситуация -->
     <div class="slide slide-stretch slide-clickable" data-slide="4">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
-        <div class="novella-scene flex-1 min-h-[280px]">
-          <div class="scene-content">
-            <div class="dialog-box"><span class="dialog-name">Вы (мысли)</span> 17:50. Ещё десять минут — и я вне зоны доступа. Выключить почту и просто... жить.</div>
+        <p class="text-slate-500 text-xs mb-1">1. Вступление, текущая ситуация</p>
+        <div class="novella-scene novella-chapter-scene">
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box"><span class="dialog-name">Вы (мысли)</span> 17:50. Последние десять минут до свободы. План безупречен: исчезнуть из офиса раньше, чем реальность осознает мое отсутствие. Вечер обещает быть долгим и абсолютно нерабочим...</div>
+            </div>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
-    <div class="slide slide-stretch slide-clickable" data-slide="5">
+    <!-- Глава: 2. Появляется проблема -->
+    <div class="slide slide-stretch slide-clickable" data-slide="5" id="slide-problem">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
-        <div class="novella-scene flex-1 min-h-[280px]">
-          <img src="boss..png" alt="" class="boss-sprite" />
-          <div class="scene-content">
-            <div class="dialog-box"><span class="dialog-name">Артур Борисович</span> «О, привет! Как удачно, что ты ещё здесь. Слушай, выручай... Только ты можешь это сделать. Клиент в ярости. Не подведешь команду?»</div>
+        <p class="text-slate-500 text-xs mb-1">2. Появляется проблема</p>
+        <div class="novella-scene novella-chapter-scene has-character">
+          <img src="boss..png" alt="" class="boss-sprite boss-enter" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+            <div class="dialog-box"><span class="dialog-name">Артур Борисович</span> О, <span id="boss-dialog-name">[Имя]</span>! Твое чутье тебя не подвело — ты еще здесь! Слушай, катастрофа планетарного масштаба. Только ты со своим стальным спокойствием вытащишь этот проект. Клиент в ярости, правки нужны к понедельнику. Не бросишь команду в беде?</div>
+            </div>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
+    <!-- Глава: 3. Выбор варианта решения -->
     <div class="slide slide-stretch" data-slide="6" id="slide-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
-        <div class="novella-scene flex-1 min-h-[280px]">
+        <p class="text-slate-500 text-xs mb-1">3. Выбор варианта решения</p>
+        <div class="novella-scene novella-chapter-scene has-character">
           <img src="boss..png" alt="" class="boss-sprite boss-dim" aria-hidden="true" />
           <div class="novella-choices" id="novella-choices">
-            <button type="button" class="novella-choice" data-novella-choice="0">1. «Конечно, Артур Борисович. Я всё сделаю».</button>
-            <button type="button" class="novella-choice" data-novella-choice="1">2. «Почему всегда я?! У меня свои планы!»</button>
-            <button type="button" class="novella-choice premium" data-novella-choice="2">3. 💎 «Давайте обсудим приоритеты на понедельник».</button>
+            <button type="button" class="novella-choice" data-novella-choice="0">1. Конечно, Артур Борисович. Я всё сделаю, не переживайте.</button>
+            <button type="button" class="novella-choice" data-novella-choice="1">2. Опять я?! У меня вообще-то личная жизнь есть!</button>
+            <button type="button" class="novella-choice" data-novella-choice="2">3. Я готов спасти ситуацию. Как насчет премии или отгула за эти переработки?</button>
           </div>
-          <div class="scene-content">
-            <button type="button" id="btn-show-hint" class="psychologist-hint-btn">💡 Получить подсказку от психолога</button>
-            <div class="dialog-box psychologist-hint-box hidden" id="psychologist-hint-box" aria-hidden="true">
-              <span class="dialog-name">Интуиция Психолога</span>
-              Артур Борисович закидывает крючок Родителя. Он ждёт ответа Послушного Ребёнка. Твой ход?
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <button type="button" id="btn-show-hint" class="psychologist-hint-btn">💡 Получить подсказку</button>
+              <div class="dialog-box psychologist-hint-box hidden" id="psychologist-hint-box" aria-hidden="true">
+                <span class="dialog-name">Совет психолога</span>
+                Внимание: Артур Борисович использует игру из сценария «Загнанная лошадь»: смешивает лесть («ты лучший») с чувством вины («не бросишь команду»). Он ждет, что ты ответишь из позиции Послушного Ребенка. Твой ход?
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch slide-clickable" data-slide="7" id="slide-outcome-success">
+    <!-- Глава: 4. Результат решения -->
+    <div class="slide slide-stretch slide-clickable" data-slide="7" id="slide-result">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
-        <div class="novella-scene flex-1 min-h-[280px]">
+        <p class="text-slate-500 text-xs mb-1">4. Результат решения</p>
+        <div class="novella-scene novella-chapter-scene has-character" id="result-scene">
           <img src="boss..png" alt="" class="boss-sprite" aria-hidden="true" />
-          <div class="scene-content">
-            <div class="dialog-box"><span class="dialog-name">Артур Борисович</span> «Э-э... Ну, в понедельник так в понедельник. Ладно, беги.»<br><br><span class="success-badge">Успех! Игра «Загнанная лошадь» разрушена. +20 Осознанности.</span></div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div id="result-success" class="dialog-box">
+                <span class="dialog-name">Артур Борисович</span>
+                Оу... Ты сразу берешь быка за рога. Ладно, справедливо. Если закроешь этот вопрос до утра понедельника — с меня отгул в любое время и бонус к квартальной премии. Договорились?
+              </div>
+              <div id="result-wrong" class="dialog-box hidden">
+                <!-- Текст подставляется по JS в зависимости от выбора (0 или 1) -->
+                <span class="dialog-name">Артур Борисович</span>
+                <span id="result-wrong-text"></span>
+              </div>
+            </div>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
-    <!-- Теория после главы: что произошло -->
-    <section class="slide slide-stretch slide-clickable" data-slide="8" id="theory-after-chapter">
+    <!-- Глава: 5а. Общая теория Э. Берна — три эго-состояния -->
+    <section class="slide slide-stretch slide-clickable" data-slide="8" id="theory-berne">
       <div class="slide-inner">
-        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Что тут произошло? 🧠</h2>
-        <p class="text-slate-400 mb-6 reveal" data-reveal">Краткая теория — чтобы закрепить</p>
-        <h3 class="font-display text-xl font-bold text-white mb-3 reveal" data-reveal>Трое внутри тебя (Эрик Берн)</h3>
-        <p class="text-slate-300 mb-4 reveal" data-reveal">В каждом из нас живут три состояния:</p>
-        <ul class="space-y-3 mb-5">
-          <li class="reveal p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm" data-reveal>
-            <strong class="text-amber-400">Родитель:</strong> поучает, давит. Артур Борисович закинул крючок — ждал ответа Послушного Ребёнка.
+        <p class="text-slate-500 text-xs mb-2">5. Общая теория Э. Берна на данную тему</p>
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Трое внутри тебя (Эрик Берн) 🧠</h2>
+        <p class="text-slate-400 mb-4 reveal" data-reveal">Психолог Эрик Берн описал три эго-состояния, из которых мы общаемся. В каждой ситуации «включается» одно из них.</p>
+        <ul class="space-y-4 mb-4">
+          <li class="reveal p-4 rounded-xl bg-slate-800/40 border border-amber-500/30 text-slate-200" data-reveal>
+            <strong class="text-amber-400">Родитель</strong> — голос правил, долга, критики или опеки. Фразы: «Надо», «Как тебе не стыдно?», «Я тебя научу». В нашем сценарии Артур Борисович давит из позиции Родителя и ждёт, что ты ответишь послушным Ребёнком.
           </li>
-          <li class="reveal p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm" data-reveal>
-            <strong class="text-accent">Взрослый:</strong> факты, переговоры. Вариант 3 — из этой позиции: «Давайте обсудим приоритеты».
+          <li class="reveal p-4 rounded-xl bg-slate-800/40 border border-accent/30 text-slate-200" data-reveal>
+            <strong class="text-accent">Взрослый</strong> — опора на факты, переговоры, без манипуляций. Фразы: «Давай разберёмся», «Сколько времени это займёт?», «Как насчёт обмена: я делаю — вы даёте отгул?». Вариант 3 в «Пятничном капкане» — ответ из Взрослого.
           </li>
-          <li class="reveal p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm" data-reveal>
-            <strong class="text-green-400">Ребёнок:</strong> эмоции, вина или бунт. Варианты 1 и 2 — из Ребёнка.
+          <li class="reveal p-4 rounded-xl bg-slate-800/40 border border-green-500/30 text-slate-200" data-reveal>
+            <strong class="text-green-400">Ребёнок</strong> — эмоции, желания, страх или бунт. Вариант 1 («Я всё сделаю») — Послушный Ребёнок, подстройка. Вариант 2 («У меня личная жизнь!») — Бунтующий Ребёнок. Оба оставляют игру в силе.
           </li>
         </ul>
-        <p class="reveal text-accent font-medium mb-2" data-reveal><strong>Психологическая игра</strong> — общение на двух уровнях: словами «помоги», по сути — манипуляция. Цель — «выплата» (вина, гнев). Ответ Взрослого игру снимает.</p>
+        <p class="reveal text-accent font-medium" data-reveal><strong>Вывод:</strong> На работе выгоднее общаться Взрослый — Взрослый.</p>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
-    <section class="slide slide-stretch slide-clickable" data-slide="9" id="chapter3">
-        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Глава 3. Популярная игра: «Да, но...» 🧱</h2>
-        <p class="text-slate-400 mb-6 reveal" data-reveal">Как не дать себя обесценить</p>
-        <div class="reveal mb-6" data-reveal>
-          <p class="text-white font-medium mb-2">Механика игры:</p>
-          <ol class="list-decimal list-inside space-y-2 text-slate-200">
-            <li>Коллега просит помощи.</li>
-            <li>Ты предлагаешь решение.</li>
-            <li>Коллега находит 100 причин, почему это не сработает.</li>
-            <li><strong>Финал:</strong> Ты чувствуешь себя бездарным экспертом, а коллега — уникальным мучеником.</li>
-          </ol>
-        </div>
-        <div class="reveal p-6 rounded-2xl bg-accent/10 border border-accent/30" data-reveal>
-          <p class="text-white font-medium mb-2">Как нейтрализовать? 🛠️</p>
-          <p class="text-slate-200 mb-2">Перестань давать советы! Переходи во <strong class="text-accent">Взрослого</strong>.</p>
-          <p class="text-slate-300 text-sm">Вместо: «Попробуй сделать так...» → Скажи: «Похоже, задача сложная. А как ты сам планируешь её решать?»</p>
+    <!-- Глава: 5б. Общая теория — психологическая игра + «Загнанная лошадь» -->
+    <section class="slide slide-stretch slide-clickable" data-slide="9" id="theory-game">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">5. Общая теория Э. Берна на данную тему</p>
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2 reveal" data-reveal>Что такое «Психологическая игра»? 🎭</h2>
+        <p class="text-slate-400 mb-3 reveal" data-reveal">Это когда в общении есть два уровня: то, что говорят вслух, и скрытая цель. Цель игры — получить эмоциональную «выплату» или выгодное действие от другого, а не решить задачу по существу.</p>
+        <h3 class="font-display text-lg font-bold text-amber-400 mt-4 mb-2 reveal" data-reveal>Игра «Загнанная лошадь»</h3>
+        <p class="text-slate-300 mb-2 reveal" data-reveal"><strong class="text-white">Суть:</strong> манипулятор выжимает из человека работу или уступки, не предлагая равного обмена. Смешивает <strong>лесть</strong> («только ты справишься», «ты лучший») с <strong>чувством вины</strong> («не бросишь команду», «все на тебя надеются») и <strong>срочностью</strong>. Ждёт ответа из позиции Послушного Ребёнка: «Хорошо, я всё сделаю» — без условий и переговоров.</p>
+        <p class="text-slate-300 mb-3 reveal" data-reveal"><strong class="text-white">Что делал Артур Борисович:</strong> включил именно эту игру. Комплимент («твое чутьё», «стальное спокойствие») + давление виной («не бросишь команду в беде») + дедлайн («к понедельнику»). Цель — получить твоё согласие на переработку без отгула и премии.</p>
+        <p class="reveal text-accent font-medium" data-reveal">Ответ из позиции <strong>Взрослый</strong> (вариант 3: переговоры, «как насчёт отгула и бонуса?») игру снимает: манипулятору не за что зацепиться, приходится договариваться по-настоящему.</p>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Глава: 6. Пояснение выбранного варианта с точки зрения теории + начисление баллов -->
+    <section class="slide slide-stretch slide-clickable" data-slide="10" id="slide-explanation">
+      <div class="slide-inner position-relative">
+        <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта с точки зрения теории Э. Берна, начисление баллов</p>
+        <div id="chapter-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3">
+          <!-- Заполняется по JS в зависимости от выбора -->
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
-      </section>
-
-    <div class="slide slide-clickable" data-slide="10">
+      </div>
+    </section>
+    <section class="slide slide-stretch slide-clickable" data-slide="11" id="chapter2-title">
+      <div class="slide-inner flex-1 flex flex-col justify-center items-center min-h-0">
+        <div class="novella-scene scene-kitchen rounded-2xl flex-1 w-full min-h-[320px] flex flex-col justify-center items-center p-6">
+          <h1 class="font-display text-3xl sm:text-5xl font-bold text-accent mb-2 reveal" data-reveal>Глава 2</h1>
+          <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mb-4 reveal" data-reveal>«Кухонная западня»</h2>
+          <div class="w-20 h-1 bg-amber-400 rounded-full mb-4 reveal" data-reveal></div>
+          <p class="text-slate-300 text-center text-sm sm:text-base reveal" data-reveal>Уровень сложности: <strong>Средний</strong><br>Цель: сохранить ресурс и не провалиться в роль «Спасателя»</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <div class="slide slide-stretch slide-clickable" data-slide="12" id="ch2-dialog1">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 2. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character">
+          <img src="Леночка1.png" alt="" class="character-sprite enter-right" id="ch2-char-12" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box"><span class="dialog-name">Леночка</span> Ой, привет... Как я тебе завидую, у тебя всегда всё по полочкам. А у меня этот отчёт по регионам... Сижу три часа, цифры просто плывут. Кажется, я завалю дедлайн и меня уничтожат.</div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="13" id="ch2-choice1">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 2. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character">
+          <img src="Леночка1.png" alt="" class="character-sprite dim" aria-hidden="true" />
+          <div class="novella-choices" id="ch2-choices-1">
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="0">Не паникуй. Попробуй выгрузить данные через Power BI, там всё само посчитается.</button>
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="1">Да, ситуация сложная. И что ты планируешь делать?</button>
+          </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box"><span class="dialog-name">Вы</span> Нужно как-то подбодрить коллегу, она выглядит совсем потерянной...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide slide-stretch slide-clickable" data-slide="14" id="ch2-dialog2">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 2. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character">
+          <img src="Леночка1.png" alt="" class="character-sprite" id="ch2-char-14" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Леночка</span>
+                <strong>Да, но...</strong> наш айтишник сказал, что у меня старая версия, и она постоянно вылетает. Я боюсь, что если нажму не туда, всё вообще удалится!
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="15" id="ch2-choice2">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 2. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character">
+          <img src="Леночка1.png" alt="" class="character-sprite dim" aria-hidden="true" />
+          <div class="novella-choices" id="ch2-choices-2">
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="0">Тогда просто скопируй прошлый отчёт и подставь цифры вручную.</button>
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="1">Жаль. Похоже, тебе предстоит непростой вечер. Ладно, я пойду?</button>
+          </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box"><span class="dialog-name">Вы</span> Может, ручной способ ей поможет? Это же элементарно.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide slide-stretch slide-clickable" data-slide="16" id="ch2-dialog3">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 2. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character">
+          <img src="Леночка1.png" alt="" class="character-sprite" id="ch2-char-16" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Леночка</span>
+                <strong>Да, но...</strong> в прошлый раз там была ошибка в формуле, и шеф меня чуть не съел. Я теперь к тому файлу даже прикасаться боюсь... Может, ты взглянешь одним глазком? Ты же профи!
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="17" id="ch2-choice3">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 2. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character">
+          <img src="Леночка1.png" alt="" class="character-sprite dim-heavy" aria-hidden="true" />
+          <div class="novella-choices" id="ch2-choices-3">
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="0">Ладно, давай файл, я быстро гляну формулы.</button>
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="1">Хватит ныть, Лена! Просто сядь и сделай, там работы на час!</button>
+            <button type="button" class="novella-choice ch2-choice" data-ch2-choice="2">Понимаю твою тревогу. И какой у тебя план? Что будешь делать?</button>
+          </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box border-amber-500/50 hidden" id="ch2-psychologist-hint-box" aria-hidden="true">
+                <span class="dialog-name" style="color: #fbbf24;">Совет психолога</span>
+                Леночка играет в <strong>«Да, но...»</strong>. Каждый твой совет — это еда для её Жертвы. Она не ищет решения, она ищет того, кто разделит с ней ответственность или заберёт работу.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <section class="slide slide-stretch slide-clickable" data-slide="18" id="ch2-outcome">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Итоги главы 2</p>
+        <div class="novella-scene novella-chapter-scene scene-kitchen has-character mb-4">
+          <img src="Леночка2.png" alt="" class="character-sprite" id="ch2-outcome-character" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div id="chapter2-outcome-explanation" class="scene-content"></div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <section class="slide slide-stretch slide-clickable" data-slide="19" id="ch2-theory1">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 2</p>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Игра «Да, но...»</h2>
+        <p class="text-slate-300 mb-3 reveal" data-reveal"><strong>Что это за игра:</strong> Внешне выглядит как запрос о помощи (Взрослый — Взрослому). На самом деле это трансакция Ребёнок — Родитель. Игрок в роли «Жертвы» отвергает все советы, чтобы доказать: «никто не может мне помочь». Цель — не решить задачу, а получить внимание, снять с себя ответственность или переложить работу на Спасателя.</p>
+        <p class="text-slate-300 reveal" data-reveal"><strong>Выход:</strong> Не давать советов. Вернуть ответственность вопросом: «И как ты планируешь поступить?» — это вынуждает человека включить своего Взрослого.</p>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <section class="slide slide-stretch slide-clickable" data-slide="20" id="ch2-theory2">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 2</p>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Кухня: разбор ситуации</h2>
+        <p class="text-slate-300 mb-3 reveal" data-reveal"><strong>Ситуация:</strong> Леночка на кухне жалуется на отчёт по регионам и просит по сути совета или помощи. Каждый ваш совет («Power BI», «скопируй прошлый отчёт», «давай файл») она парирует «Да, но...» — так игра укрепляется.</p>
+        <p class="text-slate-300 mb-3 reveal" data-reveal"><strong>Корректный ход:</strong> В любой момент можно было вернуть ответственность: «И что ты планируешь делать?», «Какой у тебя план?» — без советов. Тогда игра прекращается, вы не тратите Ресурс и Влияние на чужую задачу.</p>
+        <p class="text-slate-300 reveal" data-reveal"><strong>Итог:</strong> Если вы начислили баллы — вы вышли из игры. Если Леночка «молодец» — вы вступили в роль Спасателя; в следующий раз можно остановиться на вопросе «И как ты поступишь?».</p>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <section class="slide slide-stretch slide-clickable" data-slide="21" id="ch2-points">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
+        <div id="chapter2-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3">
+          <!-- Заполняется по JS при входе на слайд -->
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <div class="slide slide-clickable" data-slide="22">
       <div class="slide-inner">
         <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Финальный тест 🎓</h2>
         <p class="text-slate-400 text-sm">Проверка на Взрослого. Выберите ответ на каждый вопрос.</p>
         <p class="slide-hint mt-6">Нажмите на экран для продолжения</p>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="11" data-quiz="0">
+    <div class="slide slide-stretch" data-slide="23" data-quiz="0">
       <div class="slide-inner">
         <p class="text-white font-medium mb-3">Вопрос 1. Коллега: «Ой, я такая глупая в таблицах, поможешь?» Это призыв в игру:</p>
         <div class="space-y-2" id="quiz-q0">
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="0">«Глупышка»</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="1">«Профессионал»</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">«Бунт»</button>
+          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="0">Глупышка</button>
+          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="1">Профессионал</button>
+          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">Бунт</button>
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="12" data-quiz="1">
+    <div class="slide slide-stretch" data-slide="24" data-quiz="1">
       <div class="slide-inner">
         <p class="text-white font-medium mb-3">Вопрос 2. Какая позиция лучше для переговоров о повышении?</p>
         <div class="space-y-2" id="quiz-q1">
@@ -645,17 +1434,17 @@
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="13" data-quiz="2">
+    <div class="slide slide-stretch" data-slide="25" data-quiz="2">
       <div class="slide-inner">
         <p class="text-white font-medium mb-3">Вопрос 3. Начальник кричит. Что делать?</p>
         <div class="space-y-2" id="quiz-q2">
           <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="0">Кричать в ответ</button>
           <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="1">Плакать</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">Спокойно: «Какие ошибки мне исправить?»</button>
+          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">Спокойно: Какие ошибки мне исправить?</button>
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="14" id="slide-cert">
+    <div class="slide slide-stretch" data-slide="26" id="slide-cert">
       <div class="slide-inner text-center">
         <p class="text-white font-display text-xl font-bold mb-2" id="cert-block-title">Поздравляем! 🏆</p>
         <p class="text-slate-300 text-sm mb-6" id="cert-block-desc">Ты готов не дать себя «заиграть».</p>
@@ -673,9 +1462,9 @@
           <div class="reveal" data-reveal data-quiz-q="0">
             <p class="text-white font-medium mb-3">Вопрос 1. Коллега говорит: «Ой, я такая глупая в этих таблицах, поможешь?» Это призыв в игру:</p>
             <div class="space-y-2">
-              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">«Глупышка» (чтобы ты сделал работу за неё)</button>
-              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">«Профессионал»</button>
-              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">«Бунт»</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Глупышка (чтобы ты сделал работу за неё)</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Профессионал</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Бунт</button>
             </div>
           </div>
           <div class="reveal" data-reveal data-quiz-q="1">
@@ -691,7 +1480,7 @@
             <div class="space-y-2">
               <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="0">Кричать в ответ (Родитель)</button>
               <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="1">Плакать (Ребёнок)</button>
-              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Спокойно спросить: «Я вижу, вы расстроены. Какие конкретно ошибки в работе мне нужно исправить?» (Взрослый)</button>
+              <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200" data-answer="2">Спокойно спросить: Я вижу, вы расстроены. Какие конкретно ошибки в работе мне нужно исправить? (Взрослый)</button>
             </div>
           </div>
         </div>
@@ -726,8 +1515,147 @@
     (function() {
       gsap.registerPlugin(ScrollTrigger);
 
-      var TOTAL_SLIDES = 15;
+      var TOTAL_SLIDES = 27;
       var currentSlide = 0;
+
+      var lastNovellaChoice = -1;
+      var lastChapter2Choice = -1;
+      var ch1PointsAwarded = false;
+      var ch2PointsAwarded = false;
+      var ch2LosePenaltyApplied = false;
+      var ch2PendingResourcePenalty = 0;
+      var ch2PendingInfluencePenalty = 0;
+      var ch2WrongCount = 0;
+      var choiceChildCount = 0;
+      var choiceAdultCount = 0;
+      var choiceParentCount = 0;
+      var hintUseCount = 0;
+      var hintUseCountCh2 = 0;
+
+      function updateChapterHighlight() {
+        var i = currentSlide;
+        var idx = 0;
+        if (i <= 10) idx = 0;
+        else if (i <= 18) idx = 1;
+        else if (i <= 21) idx = 2;
+        else if (i <= 25) idx = 5;
+        else idx = 4;
+        var btns = document.querySelectorAll('.course-nav-chapter-btn');
+        btns.forEach(function(b, k) { b.classList.toggle('active', k === idx); });
+      }
+
+      var outcomesIntervals = [];
+      function stopOutcomesSlide() {
+        outcomesIntervals.forEach(function(id) { clearInterval(id); });
+        outcomesIntervals = [];
+        var canvas = document.getElementById('outcomes-dots-canvas');
+        if (canvas) canvas.innerHTML = '';
+        var pawnsBg = document.getElementById('outcomes-pawns-bg');
+        if (pawnsBg) pawnsBg.innerHTML = '';
+        var card = document.getElementById('outcomes-card-queen');
+        if (card) card.classList.remove('pawns-aligned', 'queen-visible');
+      }
+      function initOutcomesSlide() {
+        stopOutcomesSlide();
+        var canvas = document.getElementById('outcomes-dots-canvas');
+        var cardQueen = document.getElementById('outcomes-card-queen');
+        var pawnsBg = document.getElementById('outcomes-pawns-bg');
+        if (!canvas || !cardQueen || !pawnsBg) return;
+        var cardShield = canvas.closest('.card-shield');
+        if (!cardShield) return;
+
+        function spawnDot() {
+          var slide = document.getElementById('slide-outcomes');
+          if (!slide || !slide.classList.contains('active')) return;
+          var cw = canvas.offsetWidth || 200;
+          var ch = canvas.offsetHeight || 120;
+          var dot = document.createElement('div');
+          dot.className = 'outcome-dot';
+          dot.style.cssText = 'position:absolute;left:-20px;top:' + (Math.random() * (ch - 14)) + 'px;width:12px;height:12px;background:#64748b;border-radius:50%;pointer-events:none;z-index:5;';
+          canvas.appendChild(dot);
+          var x = -14;
+          var dx = 2.5 + Math.random() * 1.5;
+          var topY = parseFloat(dot.style.top);
+          function tick() {
+            x += dx;
+            dot.style.left = x + 'px';
+            if (x > cw + 5) {
+              for (var s = 0; s < 16; s++) {
+                var sp = document.createElement('div');
+                sp.className = 'spark';
+                sp.style.left = (cw - 10) + 'px';
+                sp.style.top = topY + 'px';
+                sp.style.setProperty('animation', 'spark-fade 0.5s ease-out forwards');
+                canvas.appendChild(sp);
+                setTimeout(function(el) { if (el && el.parentNode) el.parentNode.removeChild(el); }, 500, sp);
+              }
+              if (dot.parentNode) dot.parentNode.removeChild(dot);
+              return true;
+            }
+            return false;
+          }
+          var id = setInterval(function() { if (tick()) clearInterval(id); }, 20);
+          outcomesIntervals.push(id);
+        }
+        var dotId = setInterval(function() { spawnDot(); spawnDot(); spawnDot(); spawnDot(); }, 800);
+        outcomesIntervals.push(dotId);
+
+        var pawns = [];
+        for (var p = 0; p < 8; p++) {
+          var pawn = document.createElement('span');
+          pawn.className = 'pawn';
+          pawn.textContent = '\u265F';
+          pawnsBg.appendChild(pawn);
+          pawns.push(pawn);
+        }
+        function layoutPawns(align) {
+          var w = pawnsBg.offsetWidth || 200;
+          var h = pawnsBg.offsetHeight || 140;
+          if (align) {
+            cardQueen.classList.add('pawns-aligned');
+            var cols = 4;
+            var rows = 2;
+            pawns.forEach(function(pawn, idx) {
+              var col = idx % cols;
+              var row = Math.floor(idx / cols);
+              var x = (col + 0.5) * (w / cols) - 10;
+              var y = (row + 0.5) * (h / rows) - 12;
+              pawn.style.left = x + 'px';
+              pawn.style.top = y + 'px';
+              pawn.style.transform = 'none';
+            });
+            cardQueen.classList.add('queen-visible');
+            setTimeout(function() {
+              cardQueen.classList.remove('queen-visible');
+              setTimeout(function() {
+                cardQueen.classList.remove('pawns-aligned');
+                layoutPawns(false);
+              }, 400);
+            }, 1200);
+          } else {
+            pawns.forEach(function(pawn) {
+              var x = Math.random() * Math.max(0, w - 28);
+              var y = Math.random() * Math.max(0, h - 28);
+              pawn.style.left = x + 'px';
+              pawn.style.top = y + 'px';
+              pawn.style.transform = 'none';
+            });
+          }
+        }
+        layoutPawns(false);
+        var pawnScatterId = setInterval(function() {
+          var slide = document.getElementById('slide-outcomes');
+          if (!slide || !slide.classList.contains('active')) return;
+          if (!cardQueen.classList.contains('pawns-aligned') && !cardQueen.classList.contains('queen-visible')) layoutPawns(false);
+        }, 3500);
+        outcomesIntervals.push(pawnScatterId);
+        var queenId = setInterval(function() {
+          var slide = document.getElementById('slide-outcomes');
+          if (!slide || !slide.classList.contains('active')) return;
+          layoutPawns(true);
+        }, 5000);
+        outcomesIntervals.push(queenId);
+      }
 
       function goToSlide(i) {
         i = Math.max(0, Math.min(TOTAL_SLIDES - 1, i));
@@ -739,6 +1667,222 @@
         if (prog) prog.style.transform = 'scaleX(' + ((i + 1) / TOTAL_SLIDES) + ')';
         var counter = document.getElementById('slide-counter');
         if (counter) counter.textContent = (i + 1) + ' / ' + TOTAL_SLIDES;
+        updateChapterHighlight();
+        if (i === 2) initOutcomesSlide();
+        else stopOutcomesSlide();
+        if (i === 5) {
+          var bossEnter = document.querySelector('#slide-problem .boss-sprite.boss-enter');
+          if (bossEnter) {
+            bossEnter.classList.remove('boss-enter');
+            void bossEnter.offsetWidth;
+            bossEnter.classList.add('boss-enter');
+          }
+        }
+        if (i === 7) {
+          var ok = document.getElementById('result-success');
+          var wrong = document.getElementById('result-wrong');
+          var wrongText = document.getElementById('result-wrong-text');
+          if (ok) ok.classList.toggle('hidden', lastNovellaChoice !== 2);
+          if (wrong) wrong.classList.toggle('hidden', lastNovellaChoice === 2);
+          if (wrongText) {
+            if (lastNovellaChoice === 0) wrongText.textContent = 'Я так и знал, что на тебя можно положиться. Жду результат к понедельнику.';
+            else if (lastNovellaChoice === 1) wrongText.textContent = 'Если к понедельнику результата не будет — будем разбираться по-другому. На таких у меня времени нет.';
+            else wrongText.textContent = '';
+          }
+        }
+        if (i === 10) {
+          var block = document.getElementById('chapter-outcome-explanation');
+          if (block) {
+            block.classList.remove('outcome-lose');
+            if (lastNovellaChoice === 2) {
+              if (!ch1PointsAwarded) {
+                awarenessPoints += 20;
+                influencePoints += 10;
+                resourcePoints += 15;
+                ch1PointsAwarded = true;
+                updateToolbarPoints();
+              }
+              var grossCh1 = awarenessPoints + (hintUseCount > 0 ? hintUseCount * 10 : 0);
+              var hintCommentCh1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
+              block.innerHTML = '<p><strong>Ваш выбор: вариант 3 — позиция Взрослого.</strong></p><p>По Берну это ответ из эго-состояния Взрослый: вы перевели общение в переговоры и получили отгул и бонус.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh1 + '"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + hintCommentCh1;
+              runConfetti();
+              runPointsAnimation(block);
+              if (hintUseCount > 0) setTimeout(function() { runHintPenaltyDeduction(block); }, 2600);
+            } else {
+              if (lastNovellaChoice === 0 || lastNovellaChoice === 1) {
+                if (!ch1PointsAwarded) {
+                  awarenessPoints -= 20;
+                  ch1PointsAwarded = true;
+                  updateToolbarPoints();
+                }
+              }
+              if (lastNovellaChoice === 0) {
+                var hintCommentL0 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
+                block.innerHTML = '<p><strong>Ваш выбор: вариант 1 — позиция Послушного Ребёнка.</strong></p><p>По Берну это уход в подчинение. Для таких ситуаций эффективнее ответ из позиции Взрослого (вариант 3): перевести разговор в переговоры.</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL0;
+              } else if (lastNovellaChoice === 1) {
+                var hintCommentL1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
+                block.innerHTML = '<p><strong>Ваш выбор: вариант 2 — позиция Бунтующего Ребёнка.</strong></p><p>По Берну это реакция из Ребёнка. Для таких ситуаций эффективнее позиция Взрослого (вариант 3).</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL1;
+              } else {
+                block.innerHTML = '<p class="text-slate-400">Выберите вариант на слайде выбора.</p>';
+              }
+              if (lastNovellaChoice === 0 || lastNovellaChoice === 1) {
+                runPointsAnimation(block);
+                if (hintUseCount > 0) setTimeout(function() { runHintPenaltyDeduction(block); }, 2600);
+                runLoseAnimation(block);
+              }
+            }
+          }
+        }
+        if (i === 18) {
+          var block2 = document.getElementById('chapter2-outcome-explanation');
+          var ch2Img = document.getElementById('ch2-outcome-character');
+          if (ch2Img) ch2Img.src = (lastChapter2Choice === 2) ? 'Леночка1.png' : 'Леночка2.png';
+          if (block2) {
+            if (lastChapter2Choice === 2) {
+              block2.innerHTML = '<div class="dialog-box"><span class="dialog-name">Леночка</span> Ладно, не буду терять время, пойду разбираться, все равно...</div>';
+            } else {
+              var reply = lastChapter2Choice === 1
+                ? 'Спасибо! Ты сам-то ничего дельного не предложил — только указал, как надо. Пойду разбираться сама.'
+                : 'Спасибо, ты правда выручил! Я бы одна ни за что не разобралась.';
+              block2.innerHTML = '<div class="dialog-box"><span class="dialog-name">Леночка</span> ' + reply + '</div>';
+            }
+          }
+        }
+        if (i === 21) {
+          var pointsBlock = document.getElementById('chapter2-points-explanation');
+          if (pointsBlock) {
+            pointsBlock.classList.remove('outcome-lose');
+            if (lastChapter2Choice === 2) {
+              if (!ch2PointsAwarded) {
+                awarenessPoints += (20 - 5 * ch2WrongCount);
+                influencePoints += 15;
+                resourcePoints += 10;
+                ch2PointsAwarded = true;
+                updateToolbarPoints();
+              }
+              var grossCh2 = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0);
+              var ch2HintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
+              pointsBlock.innerHTML = '<p><strong>Ваш выбор: Вариант 3 — Возврат ответственности.</strong></p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh2 + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch2HintComment;
+              runConfetti();
+              runPointsAnimation(pointsBlock);
+              if (hintUseCountCh2 > 0) setTimeout(function() { runHintPenaltyDeduction(pointsBlock); }, 2600);
+            } else {
+              var oldA = awarenessPoints, oldI = influencePoints, oldR = resourcePoints;
+              if (!ch2LosePenaltyApplied) {
+                awarenessPoints -= 20;
+                influencePoints = Math.max(0, influencePoints - ch2PendingInfluencePenalty);
+                resourcePoints = Math.max(0, resourcePoints - ch2PendingResourcePenalty);
+                ch2LosePenaltyApplied = true;
+                ch2PendingInfluencePenalty = 0;
+                ch2PendingResourcePenalty = 0;
+                updateToolbarPoints();
+              }
+              var grossCh2Lose = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0);
+              var ch2LoseHintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
+              pointsBlock.innerHTML = '<p><strong>Вы вступили в игру «Да, но...».</strong></p><p class="text-slate-300">За время разговора вы потратили Ресурс, Влияние и Осознанность на советы.</p><p class="text-slate-300 mt-2"><strong>Итого баллов (сумма по всем главам):</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh2Lose + '" data-from="' + oldA + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">' + oldA + '</span></div></div>' + ch2LoseHintComment;
+              runPointsAnimation(pointsBlock);
+              if (hintUseCountCh2 > 0) setTimeout(function() { runHintPenaltyDeduction(pointsBlock); }, 2600);
+              runLoseAnimation(pointsBlock);
+            }
+          }
+        }
+        if (i === 12) {
+          document.querySelectorAll('.scene-kitchen .character-sprite.enter-right').forEach(function(img) { img.classList.remove('enter-right'); });
+          var charEl = document.getElementById('ch2-char-12');
+          if (charEl) { charEl.offsetHeight; charEl.classList.add('enter-right'); }
+        }
+        if (i !== 17) {
+          var ch2Box = document.getElementById('ch2-psychologist-hint-box');
+          if (ch2Box) { ch2Box.classList.add('hidden'); ch2Box.setAttribute('aria-hidden', 'true'); }
+        }
+      }
+
+      function runConfetti() {
+        var container = document.getElementById('confetti-container');
+        if (!container) return;
+        container.innerHTML = '';
+        var colors = ['#38bdf8', '#a78bfa', '#fbbf24', '#4ade80', '#f87171'];
+        var count = 60;
+        for (var i = 0; i < count; i++) {
+          var p = document.createElement('div');
+          p.className = 'confetti-particle';
+          p.style.left = Math.random() * 100 + '%';
+          p.style.animationDelay = (Math.random() * 0.8) + 's';
+          p.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+          p.style.background = colors[Math.floor(Math.random() * colors.length)];
+          container.appendChild(p);
+        }
+        setTimeout(function() { container.innerHTML = ''; }, 4000);
+      }
+
+      function runLoseAnimation(block) {
+        if (!block) return;
+        block.classList.add('outcome-lose');
+        setTimeout(function() { block.classList.remove('outcome-lose'); }, 1100);
+      }
+
+      function runPointsAnimation(block) {
+        var rows = block && block.querySelectorAll('.points-row');
+        if (!rows || !rows.length) return;
+        var staggerDelay = 0.65;
+        var rowDuration = 0.55;
+        var countDuration = 1.2;
+        rows.forEach(function(row, idx) {
+          var val = parseInt(row.getAttribute('data-value'), 10) || 0;
+          var fromAttr = row.getAttribute('data-from');
+          var startVal = (fromAttr !== null && fromAttr !== '') ? (parseInt(fromAttr, 10) || 0) : 0;
+          var numSpan = row.querySelector('.points-num');
+          gsap.set(row, { opacity: 0, y: 14 });
+          gsap.to(row, {
+            opacity: 1,
+            y: 0,
+            duration: rowDuration,
+            delay: 0.3 + idx * staggerDelay,
+            ease: 'power2.out',
+            overwrite: true
+          });
+          var obj = { n: startVal };
+          gsap.to(obj, {
+            n: val,
+            duration: countDuration,
+            delay: 0.35 + idx * staggerDelay,
+            ease: 'power2.out',
+            snap: { n: 1 },
+            onUpdate: function() {
+              if (numSpan) numSpan.textContent = Math.round(obj.n);
+            }
+          });
+        });
+      }
+
+      /** Показать комментарий про подсказки и анимировать уменьшение Осознанности в той же строке (без новой строки). */
+      function runHintPenaltyDeduction(block) {
+        var row = block && block.querySelector('.points-row[data-hint-penalty]');
+        var comment = block && block.querySelector('.hint-penalty-comment');
+        if (!row || !comment) return;
+        var penalty = parseInt(row.getAttribute('data-hint-penalty'), 10) || 0;
+        var fromVal = parseInt(row.getAttribute('data-value'), 10) || 0;
+        var toVal = fromVal - penalty;
+        var numSpan = row.querySelector('.points-num');
+        var isNegative = row.classList.contains('points-negative');
+        gsap.set(comment, { opacity: 0 });
+        comment.classList.remove('hidden');
+        gsap.to(comment, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+        row.classList.add('points-hint-deduction');
+        var obj = { n: fromVal };
+        gsap.to(obj, {
+          n: toVal,
+          duration: 1,
+          delay: 0.3,
+          ease: 'power2.inOut',
+          snap: { n: 1 },
+          onUpdate: function() {
+            if (numSpan) numSpan.textContent = Math.round(obj.n);
+          },
+          onComplete: function() {
+            row.classList.remove('points-hint-deduction');
+          }
+        });
       }
 
       function goNext() {
@@ -758,20 +1902,111 @@
       document.getElementById('btn-go-hero') && document.getElementById('btn-go-hero').addEventListener('click', function() {
         goToSlide(1);
       });
+      document.querySelectorAll('.course-nav-chapter-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var n = parseInt(this.getAttribute('data-goto'), 10);
+          if (!isNaN(n)) goToSlide(n);
+        });
+      });
 
+      var awarenessPoints = 0;
+      var influencePoints = 0;
+      var resourcePoints = 0;
+      function updateToolbarPoints() {
+        var elA = document.getElementById('toolbar-awareness');
+        var elI = document.getElementById('toolbar-influence');
+        var elR = document.getElementById('toolbar-resource');
+        if (elA) elA.textContent = awarenessPoints;
+        if (elI) elI.textContent = influencePoints;
+        if (elR) elR.textContent = resourcePoints;
+      }
+      function updateBossDialogName() {
+        var el = document.getElementById('boss-dialog-name');
+        if (el) el.textContent = (typeof courseUserName !== 'undefined' && courseUserName && courseUserName.trim()) ? courseUserName.trim() : 'Коллега';
+      }
       document.getElementById('novella-choices') && document.getElementById('novella-choices').addEventListener('click', function(e) {
         var btn = e.target.closest('.novella-choice');
         if (!btn) return;
         var val = parseInt(btn.getAttribute('data-novella-choice'), 10);
-        document.querySelectorAll('.novella-choice').forEach(function(b) { b.classList.remove('chosen-correct'); b.disabled = true; });
-        if (val === 2) btn.classList.add('chosen-correct');
-        goToSlide(val === 2 ? 7 : 8);
+        lastNovellaChoice = val;
+        if (val === 0 || val === 1) choiceChildCount++;
+        else if (val === 2) choiceAdultCount++;
+        document.querySelectorAll('#novella-choices .novella-choice').forEach(function(b) { b.classList.remove('chosen-correct'); b.disabled = true; });
+        goToSlide(7);
       });
-      document.getElementById('btn-show-hint') && document.getElementById('btn-show-hint').addEventListener('click', function() {
+      document.getElementById('ch2-choices-1') && document.getElementById('ch2-choices-1').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch2-choice');
+        if (!btn) return;
+        var val = btn.getAttribute('data-ch2-choice');
+        document.querySelectorAll('#ch2-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
+        if (val === '1') {
+          lastChapter2Choice = 2;
+          choiceAdultCount++;
+          goToSlide(18);
+        } else {
+          choiceParentCount++;
+          ch2WrongCount++;
+          ch2PendingResourcePenalty += 5;
+          goToSlide(14);
+        }
+      });
+      document.getElementById('ch2-choices-2') && document.getElementById('ch2-choices-2').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch2-choice');
+        if (!btn) return;
+        var val = btn.getAttribute('data-ch2-choice');
+        document.querySelectorAll('#ch2-choices-2 .novella-choice').forEach(function(b) { b.disabled = true; });
+        if (val === '1') {
+          lastChapter2Choice = 2;
+          choiceAdultCount++;
+          goToSlide(18);
+        } else {
+          choiceParentCount++;
+          ch2WrongCount++;
+          ch2PendingInfluencePenalty += 5;
+          ch2PendingResourcePenalty += 10;
+          goToSlide(16);
+        }
+      });
+      document.getElementById('ch2-choices-3') && document.getElementById('ch2-choices-3').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch2-choice');
+        if (!btn) return;
+        var val = btn.getAttribute('data-ch2-choice');
+        document.querySelectorAll('#ch2-choices-3 .novella-choice').forEach(function(b) { b.disabled = true; });
+        if (val === '2') {
+          lastChapter2Choice = 2;
+          choiceAdultCount++;
+          btn.classList.add('chosen-correct');
+          goToSlide(18);
+        } else {
+          lastChapter2Choice = parseInt(val, 10);
+          choiceParentCount++;
+          ch2WrongCount++;
+          goToSlide(18);
+        }
+      });
+      function applyHintPenalty() {
+        awarenessPoints -= 10;
+        hintUseCount++;
+        updateToolbarPoints();
+      }
+      function showPsychologistHint() {
+        applyHintPenalty();
         var box = document.getElementById('psychologist-hint-box');
+        var btn = document.getElementById('btn-show-hint');
         if (box) { box.classList.remove('hidden'); box.setAttribute('aria-hidden', 'false'); }
-        this.classList.add('hidden');
-        this.setAttribute('aria-hidden', 'true');
+        if (btn) { btn.classList.add('hidden'); btn.setAttribute('aria-hidden', 'true'); }
+      }
+      document.getElementById('btn-show-hint') && document.getElementById('btn-show-hint').addEventListener('click', showPsychologistHint);
+      document.getElementById('toolbar-hint-btn') && document.getElementById('toolbar-hint-btn').addEventListener('click', function() {
+        if (currentSlide === 6) showPsychologistHint();
+        if (currentSlide === 17) {
+          var box = document.getElementById('ch2-psychologist-hint-box');
+          if (box && box.classList.contains('hidden')) {
+            applyHintPenalty();
+            hintUseCountCh2++;
+          }
+          if (box) { box.classList.remove('hidden'); box.setAttribute('aria-hidden', 'false'); }
+        }
       });
 
       var finalQuizCorrect = [0, 1, 2];
@@ -784,19 +2019,22 @@
           var answer = parseInt(opt.getAttribute('data-answer'), 10);
           var correct = finalQuizCorrect[q];
           slide.querySelectorAll('.quiz-final-option').forEach(function(o) { o.classList.remove('quiz-correct', 'quiz-wrong'); });
-          if (answer === correct) { opt.classList.add('quiz-correct'); finalQuizCorrectCount++; }
-          else opt.classList.add('quiz-wrong');
-          goToSlide(11 + q + 1);
+          if (answer === correct) {
+            opt.classList.add('quiz-correct');
+            finalQuizCorrectCount++;
+          } else opt.classList.add('quiz-wrong');
+          goToSlide(23 + q + 1);
         });
       });
 
       goToSlide(0);
 
       var STORAGE_NAME_KEY = 'peoplegames_course_user_name';
+      var DEFAULT_USER_NAME = 'Коллега';
       var courseUserName = '';
       try {
-        courseUserName = localStorage.getItem(STORAGE_NAME_KEY) || '';
-      } catch (e) {}
+        courseUserName = localStorage.getItem(STORAGE_NAME_KEY) || DEFAULT_USER_NAME;
+      } catch (e) { courseUserName = DEFAULT_USER_NAME; }
 
       function formatRussianDate(date) {
         var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
@@ -855,25 +2093,29 @@
       var userNameInput = document.getElementById('userNameInput');
       var btnGoHeroWrap = document.getElementById('btn-go-hero-wrap');
       if (userNameInput && btnGoHeroWrap) {
-        if (courseUserName) {
-          userNameInput.value = courseUserName;
-          gsap.to(btnGoHeroWrap, { opacity: 1, duration: 0.5, ease: 'power2.out', overwrite: true });
-          btnGoHeroWrap.style.pointerEvents = '';
-        }
-        userNameInput.addEventListener('input', function() {
-          var val = this.value.trim();
-          if (val.length >= 1) {
-            courseUserName = val;
-            try { localStorage.setItem(STORAGE_NAME_KEY, courseUserName); } catch (e) {}
-            gsap.to(btnGoHeroWrap, { opacity: 1, duration: 0.6, ease: 'power2.out', overwrite: true });
-            btnGoHeroWrap.style.pointerEvents = '';
-          } else {
-            courseUserName = '';
-            try { localStorage.removeItem(STORAGE_NAME_KEY); } catch (e) {}
-            gsap.to(btnGoHeroWrap, { opacity: 0, duration: 0.3, ease: 'power2.in', overwrite: true });
-            btnGoHeroWrap.style.pointerEvents = 'none';
+        userNameInput.value = courseUserName;
+        userNameInput.placeholder = 'Имя';
+        userNameInput.addEventListener('focus', function() {
+          if (this.value.trim() === DEFAULT_USER_NAME) {
+            this.value = '';
           }
         });
+        userNameInput.addEventListener('blur', function() {
+          var val = this.value.trim();
+          if (!val) {
+            this.value = DEFAULT_USER_NAME;
+            courseUserName = DEFAULT_USER_NAME;
+            try { localStorage.setItem(STORAGE_NAME_KEY, DEFAULT_USER_NAME); } catch (e) {}
+            updateBossDialogName();
+          }
+        });
+        userNameInput.addEventListener('input', function() {
+          var val = this.value.trim();
+          courseUserName = val || DEFAULT_USER_NAME;
+          try { if (val) localStorage.setItem(STORAGE_NAME_KEY, val); else localStorage.setItem(STORAGE_NAME_KEY, DEFAULT_USER_NAME); } catch (e) {}
+          updateBossDialogName();
+        });
+        updateBossDialogName();
       }
 
       var peshkaEl = document.getElementById('peshka-word');

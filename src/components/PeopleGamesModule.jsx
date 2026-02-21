@@ -60,13 +60,12 @@ function PeopleGamesModule() {
   }, [displayName, logEvent])
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col p-3 md:p-6">
-      <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0">
-        <header className="flex-shrink-0 py-2 md:py-0 md:mb-4 md:mb-6">
-          <h1 className="text-base md:text-2xl font-semibold text-white">Корпоративные игры</h1>
-          <p className="hidden md:block text-sm text-slate-400 mt-1">Курс-новелла по Берну: Люди, которые играют в игры</p>
+    <div className="h-screen max-h-[100dvh] bg-[#020617] text-slate-100 flex flex-col p-3 md:p-6 overflow-hidden">
+      <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+        <header className="flex-shrink-0 py-1 md:py-0 md:mb-2">
+          <h1 className="text-base md:text-xl font-semibold text-white truncate">Курс-новелла по Берну: Люди, которые играют в игры</h1>
         </header>
-        <div className="relative w-full flex-1 min-h-0 md:flex-none md:min-h-0 md:aspect-video rounded-xl md:rounded-2xl overflow-hidden shadow-2xl ring-1 ring-slate-600/50 bg-slate-900/50">
+        <div className="relative w-full flex-1 min-h-0 rounded-xl md:rounded-2xl overflow-hidden shadow-2xl ring-1 ring-slate-600/50 bg-slate-900/50">
           <iframe
             src="/Courses/PeopleGames/index.html"
             title="Курс: Корпоративные игры — Люди, которые играют в игры"
