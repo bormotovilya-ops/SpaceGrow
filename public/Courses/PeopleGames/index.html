@@ -876,22 +876,25 @@
     .novella-scene.scene-kitchen.has-character {
       grid-template-columns: 1fr minmax(200px, 360px);
     }
-    .novella-scene.scene-kitchen .character-sprite {
-      grid-column: 2;
-      grid-row: 1 / -1;
-      justify-self: end;
-      align-self: end;
-      margin-top: 0;
-      width: 100%;
-      max-width: var(--chapter-character-max-width);
-      height: var(--chapter-character-height-pct);
-      max-height: var(--chapter-character-max-height);
-      object-fit: cover;
-      object-position: top center;
-      transform: scale(var(--chapter-character-scale));
-      transform-origin: bottom center;
-      z-index: 1;
-      pointer-events: none;
+    /* Позиция Леночки на десктопе (на мобильной переопределяется в @media (max-width: 640px)) */
+    @media (min-width: 641px) {
+      .novella-scene.scene-kitchen .character-sprite {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        justify-self: end;
+        align-self: end;
+        margin-top: 0;
+        width: 100%;
+        max-width: var(--chapter-character-max-width);
+        height: var(--chapter-character-height-pct);
+        max-height: var(--chapter-character-max-height);
+        object-fit: cover;
+        object-position: top center;
+        transform: scale(var(--chapter-character-scale));
+        transform-origin: bottom center;
+        z-index: 1;
+        pointer-events: none;
+      }
     }
     .novella-scene.scene-kitchen .character-sprite.enter-right {
       animation: ch2-enter-right 0.6s ease-out forwards;
@@ -1027,10 +1030,10 @@
     @media (max-width: 640px) {
       .slide:has(.novella-scene) .slide-inner { max-width: 100%; padding: 0 0.35rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
-      /* Глава 1 (офис): сверху слева — персонаж, сверху справа — варианты выбора (колонкой), снизу — реплика */
+      /* Единая высота ряда с персонажем — без доп. обёрток оба спрайта прямые дети .novella-scene, одна и та же базовая линия */
       .novella-scene.has-character:not(.scene-kitchen) {
         grid-template-columns: minmax(100px, 38%) 1fr;
-        grid-template-rows: minmax(180px, 50vh) auto;
+        grid-template-rows: 50vh auto;
         align-content: stretch;
       }
       .novella-scene.has-character:not(.scene-kitchen) .boss-sprite { grid-column: 1; grid-row: 1; }
@@ -1052,10 +1055,10 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      /* Глава 2 (кухня): слева — варианты выбора, справа — персонаж, снизу — реплика */
+      /* Глава 2 (кухня): та же высота ряда 50vh — глобальная позиция персонажа как у босса */
       .novella-scene.scene-kitchen.has-character {
         grid-template-columns: 1fr minmax(100px, 38%);
-        grid-template-rows: minmax(180px, 50vh) auto;
+        grid-template-rows: 50vh auto;
         align-content: stretch;
       }
       .novella-scene.scene-kitchen .novella-choices {
@@ -1092,17 +1095,23 @@
         max-width: var(--chapter-character-max-width);
         height: var(--chapter-character-height-pct);
         max-height: var(--chapter-character-max-height);
-        object-fit: contain;
-        object-position: bottom center;
+        object-fit: contain !important;
+        object-position: bottom center !important;
         transform: translateY(8%) scale(var(--chapter-character-scale));
+        transform-origin: bottom center;
         align-self: end;
+        margin-top: 0 !important;
+        margin-bottom: 0;
       }
       .novella-scene .boss-sprite { transform-origin: bottom left; justify-self: start; }
       .novella-scene.scene-kitchen .character-sprite {
-        object-fit: contain;
-        object-position: bottom center;
+        object-fit: contain !important;
+        object-position: bottom center !important;
+        transform: translateY(8%) scale(var(--chapter-character-scale));
         transform-origin: bottom center;
         justify-self: end;
+        align-self: end;
+        margin-top: 0 !important;
       }
       @keyframes boss-slide-in-mobile {
         from { transform: translateY(8%) scale(1.22) translateX(-120%); }
@@ -1126,8 +1135,8 @@
       .slide { padding: 0.75rem 1rem 1.5rem; }
       .btn-next { min-height: 44px; padding: 0.625rem 1rem; font-size: 0.875rem; }
       .slide:has(.novella-scene) .slide-inner { padding: 0 0.25rem; }
-      .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: minmax(160px, 48vh) auto; }
-      .novella-scene.scene-kitchen.has-character { grid-template-rows: minmax(160px, 48vh) auto; }
+      .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: 48vh auto; }
+      .novella-scene.scene-kitchen.has-character { grid-template-rows: 48vh auto; }
       .novella-scene.has-character .scene-text-zone { padding: 0.3rem 0.4rem 0.4rem; }
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
       .dialog-box { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
