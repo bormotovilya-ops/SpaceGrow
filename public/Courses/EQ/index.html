@@ -488,12 +488,12 @@
     }
     .course-nav a:hover { color: #f1f5f9; background: rgba(56, 189, 248, 0.15); }
     .course-nav a:active { background: rgba(56, 189, 248, 0.2); }
-    .course-nav a.course-nav-exit { margin-left: auto; color: #94a3b8; }
+    .course-nav a.course-nav-exit { margin-left: auto; color: #94a3b8; font-size: 1.5rem; line-height: 1; text-decoration: none; }
     .course-nav a.course-nav-exit:hover { color: #f1f5f9; }
     @media (max-width: 480px) {
       .course-nav { gap: 0.2rem; padding: 0.25rem max(0.35rem, env(safe-area-inset-left)); padding-right: max(0.35rem, env(safe-area-inset-right)); padding-top: max(0.25rem, env(safe-area-inset-top)); min-height: 32px; align-items: center; }
       .course-nav a { padding: 0.25rem 0.4rem; font-size: 0.65rem; min-height: 28px; }
-      .course-nav a.course-nav-exit { margin-left: 0.25rem; }
+      .course-nav a.course-nav-exit { margin-left: 0.25rem; font-size: 1.25rem; }
     }
 
     /* Финальный квиз: правильный / неправильный ответ */
@@ -644,7 +644,7 @@
     <a href="#module3">Модуль 3</a>
     <a href="#module4">Модуль 4</a>
     <a href="#m4-final-exam">Экзамен</a>
-    <a href="/alchemy" class="course-nav-exit" id="eq-exit-link" title="Выйти в Алхимию">Выйти</a>
+    <a href="/alchemy" class="course-nav-exit" id="eq-exit-link" title="Выйти в Алхимию" aria-label="Выйти">×</a>
     <div class="progress-bar-track" aria-hidden="true">
       <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0)"></div>
     </div>

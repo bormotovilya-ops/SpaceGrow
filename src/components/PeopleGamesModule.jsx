@@ -63,7 +63,12 @@ function PeopleGamesModule() {
     <div className="h-screen max-h-[100dvh] bg-[#020617] text-slate-100 flex flex-col p-3 md:p-6 overflow-hidden">
       <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0 overflow-hidden">
         <header className="flex-shrink-0 py-1 md:py-0 md:mb-2">
-          <h1 className="text-base md:text-xl font-semibold text-white truncate">Курс-новелла по Берну: Люди, которые играют в игры</h1>
+          <h1 className="text-[10px] font-light text-white/40 font-sans tracking-wide">
+            <span className="hidden md:inline">SPACEGROWTH</span>
+            <span className="md:hidden">SG</span>
+            <span className="mx-1.5 text-white/30" aria-hidden="true">•</span>
+            METAMIND
+          </h1>
         </header>
         <div className="relative w-full flex-1 min-h-0 rounded-xl md:rounded-2xl overflow-hidden shadow-2xl ring-1 ring-slate-600/50 bg-slate-900/50">
           <iframe
