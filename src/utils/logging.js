@@ -163,8 +163,14 @@ export const userUtils = {
     }
     return id;
   },
+  /** Telegram user id: приоритет у Mini App (оба варианта API — Telegram.WebApp и TelegramWebApp). */
   getTelegramUserId() {
-    return window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+    if (typeof window === 'undefined') return null;
+    const fromTg = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    if (fromTg != null) return fromTg;
+    const fromLegacy = window.TelegramWebApp?.initDataUnsafe?.user?.id;
+    if (fromLegacy != null) return fromLegacy;
+    return null;
   },
   getUTMParams() {
     const p = new URLSearchParams(window.location.search);

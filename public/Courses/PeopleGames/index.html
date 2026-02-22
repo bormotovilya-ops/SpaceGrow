@@ -347,6 +347,14 @@
       .slide-intro .intro-name-wrap input { min-height: 28px; font-size: 0.9rem; }
     }
     .slide.slide-stretch { justify-content: flex-start; align-items: stretch; }
+    /* Единый стиль подписи шага сверху на всех слайдах (1. Проблема, 5. Общая теория, Теория к главе 2 и т.д.) */
+    .slide .slide-inner > p.text-slate-500:first-of-type,
+    .slide .slide-inner > p:first-of-type.text-slate-500 {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
     .slide .slide-inner {
       width: 100%;
       max-width: 640px;
@@ -679,18 +687,6 @@
       border-radius: 1rem;
       border: 1px solid rgba(251, 191, 36, 0.2);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-    }
-    #theory-berne .slide-inner > p:first-of-type,
-    #theory-game .slide-inner > p:first-of-type,
-    #ch2-theory1 .slide-inner > p:first-of-type,
-    #ch2-theory2 .slide-inner > p:first-of-type {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(251, 191, 36, 0.85);
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid rgba(251, 191, 36, 0.25);
     }
     #theory-berne .slide-inner h2,
     #theory-game .slide-inner h2,
@@ -1102,7 +1098,12 @@
         align-self: end;
       }
       .novella-scene .boss-sprite { transform-origin: bottom left; justify-self: start; }
-      .novella-scene.scene-kitchen .character-sprite { transform-origin: bottom center; justify-self: end; }
+      .novella-scene.scene-kitchen .character-sprite {
+        object-fit: contain;
+        object-position: bottom center;
+        transform-origin: bottom center;
+        justify-self: end;
+      }
       @keyframes boss-slide-in-mobile {
         from { transform: translateY(8%) scale(1.22) translateX(-120%); }
         to { transform: translateY(8%) scale(1.22) translateX(0); }
@@ -1137,6 +1138,7 @@
     @media (max-width: 768px) {
       .slide .slide-inner { max-width: 100%; padding: 0 0.25rem; }
       .slide .slide-inner p.text-slate-500 { font-size: 0.65rem; margin-bottom: 0.25rem; }
+      .slide .slide-inner > p.text-slate-500:first-of-type { font-size: 0.65rem; margin-bottom: 0.25rem; }
       #theory-berne .slide-inner h2,
       #theory-game .slide-inner h2 { font-size: 1.15rem; margin-bottom: 0.35rem; }
       #theory-berne .slide-inner p,
@@ -1277,17 +1279,17 @@
     .points-row.points-hint-deduction .points-num { color: #f59e0b; }
     .hint-penalty-comment { font-size: 0.8125rem; color: #94a3b8; margin-top: 0.35rem; margin-bottom: 0; }
     .chapter-outcome-block .outcome-choice-line { font-size: 1.125rem; font-weight: 600; }
-    #berne-method .slide-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 1rem 1.25rem; box-sizing: border-box; }
-    #berne-method .slide-inner > div { min-height: 0; min-width: 0; grid-template-columns: minmax(0, 35%) minmax(0, 65%) !important; gap: clamp(12px, 2.5vw, 28px) !important; }
+    #berne-method .slide-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 1rem 1.25rem; box-sizing: border-box; max-width: min(92vw, 900px); margin-left: auto; margin-right: auto; }
+    #berne-method .slide-inner > div { flex: 1; min-height: 0; min-width: 0; display: grid !important; grid-template-columns: minmax(0, 35%) minmax(0, 65%) !important; gap: clamp(16px, 2.5vw, 32px) !important; align-items: stretch; }
     #berne-method .founder-column,
-    #berne-method .content-column { min-height: 0; min-width: 0; }
+    #berne-method .content-column { min-height: 0; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; }
     #berne-method .slide-inner h2 { font-size: clamp(1.25rem, 2.8vw, 1.75rem) !important; line-height: 1.12 !important; margin-bottom: 0.4rem !important; word-wrap: break-word; overflow-wrap: break-word; }
     #berne-method .content-column > div { box-sizing: border-box; max-width: 100%; padding: clamp(10px, 1.5vw, 18px) !important; }
     #berne-method .content-column > p { font-size: clamp(0.75rem, 1.2vw, 0.95rem) !important; line-height: 1.35 !important; margin-bottom: 0.5rem !important; }
     #berne-method .content-column h4 { font-size: clamp(0.75rem, 1.2vw, 0.95rem) !important; margin-bottom: 0.35rem !important; }
     #berne-method .content-column ul { font-size: clamp(0.7rem, 1.15vw, 0.9rem) !important; line-height: 1.4 !important; }
     .founder-column { display: flex; flex-direction: column; align-items: center; min-height: 0; }
-    .founder-photo { filter: grayscale(100%) contrast(105%); border-bottom: 4px solid #fbbf24; width: 100%; margin-bottom: 20px; max-height: 280px; object-fit: contain; object-position: top; }
+    .founder-photo { filter: grayscale(100%) contrast(105%); border-bottom: 4px solid #fbbf24; width: 100%; margin-bottom: 0; max-height: 320px; min-height: 140px; object-fit: contain; object-position: top; flex: 1 1 auto; }
     .quote-box { font-style: italic; color: #94a3b8; font-size: 15px; line-height: 1.5; text-align: left; border-left: 2px solid #fbbf24; padding-left: 15px; margin-top: 10px; }
     .book-badge { background: #fbbf24; color: #0f172a; padding: 5px 15px; font-weight: 900; font-size: 14px; display: inline-block; margin-bottom: 15px; }
     @media (max-width: 1024px), (max-height: 700px) {

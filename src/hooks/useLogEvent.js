@@ -326,12 +326,28 @@ export const useLogEvent = () => {
     });
   }, [ensureSession]);
 
-  // Get current session info
-  const getSessionInfo = useCallback(() => ({
-    sessionId: sessionIdRef.current,
-    cookieId: cookieIdRef.current,
-    tgUserId: tgUserIdRef.current
-  }), []);
+  // Get current session info. Telegram ID: приоритет у ref; если ref пустой — перечитываем из window (на случай поздней загрузки скрипта Mini App).
+  const getSessionInfo = useCallback(() => {
+    let tgUserId = tgUserIdRef.current;
+    if (tgUserId == null) {
+      tgUserId = userUtils.getTelegramUserId();
+      if (tgUserId != null) {
+        tgUserIdRef.current = tgUserId;
+        globalTgUserId = tgUserId;
+        // Связать текущую сессию и cookie с tg_user_id (stitching), если сессия уже создана
+        if (sessionIdRef.current && cookieIdRef.current) {
+          apiUtils.linkIdentities(tgUserId, cookieIdRef.current, sessionIdRef.current).catch((err) =>
+            console.warn('[getSessionInfo] linkIdentities:', err?.message ?? err)
+          );
+        }
+      }
+    }
+    return {
+      sessionId: sessionIdRef.current,
+      cookieId: cookieIdRef.current,
+      tgUserId: tgUserIdRef.current
+    };
+  }, []);
 
   return {
     // Core methods
