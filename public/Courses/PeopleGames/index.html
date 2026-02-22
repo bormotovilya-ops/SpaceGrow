@@ -107,8 +107,9 @@
       background-color: #0f172a;
       pointer-events: none;
     }
-    /* Только мобильная обложка: картинка 95% ширины, под ней имя и описание+CTA */
+    /* Только мобильная обложка: картинка на всю ширину, пропорциональные отступы, центрирование блоков */
     @media (max-width: 768px) {
+      .slide-intro .slide-inner { display: flex; flex-direction: column; gap: 1.25rem; }
       .slide-intro .intro-header { order: 0; }
       .slide-intro .intro-bg-center {
         order: 1;
@@ -117,8 +118,8 @@
         right: auto;
         top: auto;
         bottom: auto;
-        width: 95%;
-        margin: 0.5rem auto 0;
+        width: 100%;
+        margin: 0;
         flex-shrink: 0;
         aspect-ratio: 16/10;
         background-size: cover;
@@ -129,14 +130,21 @@
       .slide-intro .intro-bottom {
         order: 2;
         position: relative;
-        margin-top: 0.75rem;
+        margin-top: 0;
         max-height: none;
         flex-direction: column;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1.25rem;
       }
-      .slide-intro .intro-name-wrap { max-width: 100%; width: 100%; }
-      .slide-intro .intro-left { max-width: 100%; width: 100%; box-sizing: border-box; }
+      .slide-intro .intro-name-wrap { max-width: 100%; width: 100%; align-items: center; text-align: center; }
+      .slide-intro .intro-left {
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        align-items: center;
+        text-align: center;
+      }
+      .slide-intro .intro-left .description { text-align: center; }
     }
     .slide-intro .intro-stripe {
       position: absolute;
@@ -306,10 +314,10 @@
       .slide-intro .intro-name-wrap { max-width: 260px; }
     }
     @media (max-width: 768px) {
-      .slide-intro .intro-bottom { gap: 0.6rem; padding: 0 0.5rem 0.5rem; }
+      .slide-intro .intro-bottom { gap: 1rem; padding: 0 0.5rem 0.5rem; }
       .slide-intro .intro-left { max-width: 100%; }
       .slide-intro .intro-header h1 { text-align: center; }
-      .slide-intro .intro-bg-center { margin: 0.35rem auto 0; min-height: 80px; }
+      .slide-intro .intro-bg-center { min-height: 80px; }
     }
     @media (max-width: 768px) and (max-height: 560px) {
       .slide-intro .intro-bg-center { aspect-ratio: 16/8; min-height: 60px; }
@@ -1008,16 +1016,16 @@
     @media (max-width: 640px) {
       .slide:has(.novella-scene) .slide-inner { max-width: 100%; padding: 0 0.35rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
-      /* Глава 1 (офис): картинка — сверху, варианты выбора — колонкой (3 блока друг под другом), реплика — снизу */
+      /* Глава 1 (офис): сверху слева — персонаж, сверху справа — варианты выбора (колонкой), снизу — реплика */
       .novella-scene.has-character:not(.scene-kitchen) {
-        grid-template-columns: 1fr;
-        grid-template-rows: minmax(180px, 50vh) auto auto;
+        grid-template-columns: minmax(100px, 38%) 1fr;
+        grid-template-rows: minmax(180px, 50vh) auto;
         align-content: stretch;
       }
       .novella-scene.has-character:not(.scene-kitchen) .boss-sprite { grid-column: 1; grid-row: 1; }
       .novella-scene.has-character:not(.scene-kitchen) .novella-choices {
-        grid-column: 1;
-        grid-row: 2;
+        grid-column: 2;
+        grid-row: 1;
         flex-direction: column;
         padding: 0.4rem 0.5rem;
       }
@@ -1027,8 +1035,8 @@
         min-width: 0;
       }
       .novella-scene.has-character:not(.scene-kitchen) .scene-text-zone {
-        grid-column: 1;
-        grid-row: 3;
+        grid-column: 1 / -1;
+        grid-row: 2;
         min-height: 0;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
@@ -1062,6 +1070,15 @@
         padding: 0.4rem 0.5rem 0.5rem;
       }
       .novella-scene { --chapter-character-max-width: clamp(160px, 38vw, 260px); --chapter-character-max-height: clamp(200px, 48vh, 380px); }
+      .novella-scene .boss-sprite,
+      .novella-scene .character-sprite { transform: translateY(10%) scale(var(--chapter-character-scale)); }
+      .novella-scene .boss-sprite { transform-origin: bottom left; }
+      .novella-scene.scene-kitchen .character-sprite { transform: translateY(10%) scale(var(--chapter-character-scale)); transform-origin: bottom center; }
+      @keyframes boss-slide-in-mobile {
+        from { transform: translateY(10%) scale(1.22) translateX(-120%); }
+        to { transform: translateY(10%) scale(1.22) translateX(0); }
+      }
+      #slide-problem .boss-sprite.boss-enter { animation: boss-slide-in-mobile 0.7s ease-out forwards; }
       .scene-text-zone { width: 100%; box-sizing: border-box; }
       .dialog-box {
         font-size: 0.8125rem;
@@ -1079,7 +1096,7 @@
       .slide { padding: 0.75rem 1rem 1.5rem; }
       .btn-next { min-height: 44px; padding: 0.625rem 1rem; font-size: 0.875rem; }
       .slide:has(.novella-scene) .slide-inner { padding: 0 0.25rem; }
-      .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: minmax(160px, 48vh) auto auto; }
+      .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: minmax(160px, 48vh) auto; }
       .novella-scene.scene-kitchen.has-character { grid-template-rows: minmax(160px, 48vh) auto; }
       .novella-scene.has-character .scene-text-zone { padding: 0.3rem 0.4rem 0.4rem; }
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
