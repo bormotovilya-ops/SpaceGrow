@@ -15,21 +15,35 @@ export const useLogEvent = () => {
   const lastSectionIdRef = useRef(null);
   const lastSectionTimeRef = useRef(0);
 
-  // Initialize user identifiers
+  // Идентификаторы: cookie сразу. Telegram ID — только асинхронно (0 и повтор через 300 ms), никогда не блокируем UI
   useEffect(() => {
     if (!cookieIdRef.current) {
       cookieIdRef.current = userUtils.getCookieId();
       globalCookieId = cookieIdRef.current;
     }
-
-    if (!tgUserIdRef.current) {
-      tgUserIdRef.current = userUtils.getTelegramUserId();
-      globalTgUserId = tgUserIdRef.current;
-    }
-
     if (!sessionIdRef.current && globalSessionId) {
       sessionIdRef.current = globalSessionId;
     }
+    const tryTg = () => {
+      if (tgUserIdRef.current) return;
+      const id = userUtils.getTelegramUserId();
+      if (id == null) return;
+      tgUserIdRef.current = id;
+      globalTgUserId = id;
+      if (sessionIdRef.current && cookieIdRef.current) {
+        setTimeout(() => {
+          apiUtils.linkIdentities(id, cookieIdRef.current, sessionIdRef.current).catch((e) =>
+            console.warn('[useLogEvent] linkIdentities:', e?.message ?? e)
+          );
+        }, 0);
+      }
+    };
+    const t0 = setTimeout(tryTg, 0);
+    const t1 = setTimeout(tryTg, 300);
+    return () => {
+      clearTimeout(t0);
+      clearTimeout(t1);
+    };
   }, []);
 
   // Initialize session if not exists
@@ -326,28 +340,12 @@ export const useLogEvent = () => {
     });
   }, [ensureSession]);
 
-  // Get current session info. Telegram ID: приоритет у ref; если ref пустой — перечитываем из window (на случай поздней загрузки скрипта Mini App).
-  const getSessionInfo = useCallback(() => {
-    let tgUserId = tgUserIdRef.current;
-    if (tgUserId == null) {
-      tgUserId = userUtils.getTelegramUserId();
-      if (tgUserId != null) {
-        tgUserIdRef.current = tgUserId;
-        globalTgUserId = tgUserId;
-        // Связать текущую сессию и cookie с tg_user_id (stitching), если сессия уже создана
-        if (sessionIdRef.current && cookieIdRef.current) {
-          apiUtils.linkIdentities(tgUserId, cookieIdRef.current, sessionIdRef.current).catch((err) =>
-            console.warn('[getSessionInfo] linkIdentities:', err?.message ?? err)
-          );
-        }
-      }
-    }
-    return {
-      sessionId: sessionIdRef.current,
-      cookieId: cookieIdRef.current,
-      tgUserId: tgUserIdRef.current
-    };
-  }, []);
+  // Только возвращаем refs, без синхронного чтения Telegram — чтобы не висло, если Telegram долго отдаёт. Приоритет tg_user_id сохраняется: ref обновляется асинхронно в useEffect (0 и 300 ms).
+  const getSessionInfo = useCallback(() => ({
+    sessionId: sessionIdRef.current,
+    cookieId: cookieIdRef.current,
+    tgUserId: tgUserIdRef.current
+  }), []);
 
   return {
     // Core methods

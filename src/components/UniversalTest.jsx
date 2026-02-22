@@ -295,7 +295,7 @@ const UniversalTest = ({ data, onBack, onAvatarClick, onAlchemyClick, onConsulta
     }
 
     const sessionInfo = getSessionInfo()
-    const tgUserId = sessionInfo.tgUserId ?? window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null
+    const tgUserId = sessionInfo.tgUserId ?? null
     const cookieId = sessionInfo.cookieId ?? null
 
     if (tgUserId == null && (cookieId == null || String(cookieId).trim() === '')) {

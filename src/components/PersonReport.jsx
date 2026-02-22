@@ -116,8 +116,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
         if (alreadyHasData) setRefreshing(true)
         else setLoading(true)
         const sessionInfo = getSessionInfo()
-        // Приоритет: Telegram user id (из сессии или напрямую из Mini App), затем cookie
-        const tgUserId = sessionInfo.tgUserId ?? (typeof window !== 'undefined' && (window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? window.TelegramWebApp?.initDataUnsafe?.user?.id)) ?? null
+        // tg_user_id подставляется асинхронно в useLogEvent (приоритет у Telegram), здесь только ref — без синхронного чтения Telegram
+        const tgUserId = sessionInfo.tgUserId ?? null
         const cookieId = sessionInfo.cookieId
         // Use fallback test ID when in browser (no Telegram context) so we fetch the same user we track
         const FALLBACK_TG_USER_ID = 888888
@@ -810,8 +810,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
       setGeneratingPDF(true)
 
       const sessionInfo = getSessionInfo()
-      // Приоритет: Telegram user id (из сессии или напрямую из Mini App)
-      const tgUserId = sessionInfo.tgUserId ?? (typeof window !== 'undefined' && (window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? window.TelegramWebApp?.initDataUnsafe?.user?.id)) ?? null
+      const tgUserId = sessionInfo.tgUserId ?? null
 
       // Если нет Telegram ID, предлагаем перейти в бот
       if (!tgUserId) {
