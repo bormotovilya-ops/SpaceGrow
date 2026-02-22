@@ -304,11 +304,13 @@
     .slide-clickable { cursor: pointer; }
     .slide .slide-inner.flex-1 { flex: 1; min-height: 0; display: flex; flex-direction: column; }
     .slide .slide-inner.flex-1 .slide-hint { margin-top: auto; flex-shrink: 0; }
+    .slide.slide-stretch .slide-inner:not(.flex-1) { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .slide.slide-stretch .slide-inner:not(.flex-1) .slide-hint { margin-top: auto; flex-shrink: 0; }
     .slide-hint {
       margin-top: auto;
       flex-shrink: 0;
       padding: 0.35rem 0 0.5rem;
-      font-size: 0.7rem;
+      font-size: clamp(0.6rem, 1.8vw, 0.7rem);
       line-height: 1.2;
       color: rgba(148, 163, 184, 0.8);
       text-align: center;
@@ -542,12 +544,24 @@
       font-weight: 600;
       flex-shrink: 0;
     }
-    .toolbar-points.toolbar-awareness { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+    .toolbar-points.toolbar-awareness {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      width: auto;
+      min-width: 52px;
+      height: 40px;
+      padding: 0 0.5rem;
+      justify-content: center;
+      gap: 0.35rem;
+      font-size: 1rem;
+    }
+    .toolbar-points.toolbar-awareness #toolbar-awareness { font-weight: 600; }
     .toolbar-points.toolbar-influence { background: rgba(248, 113, 113, 0.2); color: #f87171; }
     .toolbar-points.toolbar-resource { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
     .toolbar-points span.label { color: rgba(241, 245, 249, 0.8); font-weight: 500; font-size: 0.65rem; }
     @media (max-width: 480px) {
       .toolbar-btn { width: 36px; height: 36px; font-size: 1.1rem; }
+      .toolbar-points.toolbar-awareness { min-width: 46px; height: 36px; padding: 0 0.4rem; font-size: 0.9rem; }
       .toolbar-points { font-size: 0.625rem; padding: 0.15rem 0.35rem; }
       .toolbar-points span.label { font-size: 0.6rem; }
     }
@@ -702,6 +716,36 @@
       to { transform: scale(1.22) translateX(0); }
     }
     /* Глава 2: кухня — контент слева, персонаж справа, выезд справа (размер общий для всех глав) */
+    .novella-scene.scene-office {
+      background-image: url('office.jpg');
+    }
+    /* Обложка главы: сцена той же высоты и положения, что и на первом слайде главы */
+    #chapter1-title .slide-inner,
+    #chapter2-title .slide-inner { justify-content: flex-start; }
+    #chapter1-title .novella-scene:not(.novella-chapter-scene),
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) {
+      width: 100%;
+      height: calc(0.8 * (100vh - 52px));
+      min-height: 260px;
+      max-height: calc(0.8 * (100vh - 52px));
+      flex: 0 0 auto;
+    }
+    .chapter-cover-spacer { flex: 0 0 auto; height: 1.5rem; }
+    @media (max-width: 480px) {
+      #chapter1-title .novella-scene:not(.novella-chapter-scene),
+      #chapter2-title .novella-scene:not(.novella-chapter-scene) {
+        height: calc(0.8 * (100vh - 48px));
+        max-height: calc(0.8 * (100vh - 48px));
+      }
+    }
+    #chapter1-title .novella-scene h1,
+    #chapter1-title .novella-scene h2,
+    #chapter1-title .novella-scene p {
+      text-shadow: 0 0 2px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.6);
+    }
+    #chapter1-title .novella-scene h1 { font-size: clamp(2rem, 6vw, 3.5rem); }
+    #chapter1-title .novella-scene h2 { font-size: clamp(1.5rem, 4.5vw, 2.75rem); }
+    #chapter1-title .novella-scene p { font-size: clamp(0.95rem, 2.2vw, 1.15rem); color: rgba(248,250,252,0.95); }
     .novella-scene.scene-kitchen {
       background-image: url('KITCHEN.png');
     }
@@ -800,17 +844,17 @@
       border-radius: 0.75rem;
       color: #f1f5f9;
       box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-      font-size: 0.9375rem;
-      line-height: 1.5;
+      font-size: 0.875rem;
+      line-height: 1.45;
     }
     .dialog-box .dialog-name {
       color: #38bdf8;
       font-weight: 700;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       display: block;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.25rem;
     }
     .novella-choice {
       display: block;
@@ -822,8 +866,8 @@
       margin-bottom: 0.3rem;
       border-radius: 0.6rem;
       text-align: left;
-      font-size: 0.9375rem;
-      line-height: 1.4;
+      font-size: 0.875rem;
+      line-height: 1.38;
       cursor: pointer;
       transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
@@ -857,21 +901,94 @@
     }
     .psychologist-hint-box { margin-top: 0.75rem; }
     @media (max-width: 640px) {
+      .slide:has(.novella-scene) .slide-inner { max-width: 100%; padding: 0 0.35rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
       .novella-scene.has-character { grid-template-columns: 240px 1fr; }
       .novella-scene { --chapter-character-max-width: clamp(160px, 38vw, 260px); --chapter-character-max-height: clamp(240px, 52vh, 440px); }
-      .scene-text-zone { padding: 0 0.65rem 0.65rem; min-height: 100px; }
-      .dialog-box { font-size: 0.875rem; padding: 0.55rem 0.7rem; }
-      .dialog-box .dialog-name { font-size: 0.6875rem; }
-      .novella-choices { padding: 0.3rem 0.45rem 0.15rem; }
-      .novella-choice { min-height: 40px; padding: 0.35rem 0.55rem; font-size: 0.875rem; margin-bottom: 0.25rem; }
+      .scene-text-zone { padding: 0 0.4rem 0.5rem; min-height: 100px; width: 100%; box-sizing: border-box; }
+      .dialog-box { font-size: 0.8125rem; padding: 0.5rem 0.6rem; width: 100%; box-sizing: border-box; }
+      .dialog-box .dialog-name { font-size: 0.65rem; }
+      .novella-choices { padding: 0.3rem 0.4rem 0.2rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+      .novella-choices .novella-choice { flex: 1 1 48%; min-width: 140px; margin-bottom: 0; }
+      .novella-choice { min-height: 38px; padding: 0.35rem 0.5rem; font-size: 0.8125rem; }
       .psychologist-hint-btn { padding: 0.5rem 0.75rem; font-size: 0.8125rem; min-height: 44px; }
     }
     @media (max-width: 480px) {
       .slide { padding: 0.75rem 1rem 1.5rem; }
       .btn-next { min-height: 44px; padding: 0.625rem 1rem; font-size: 0.875rem; }
-      .novella-choice { min-height: 40px; padding: 0.4rem 0.6rem; font-size: 0.75rem; margin-bottom: 0.25rem; }
+      .slide:has(.novella-scene) .slide-inner { padding: 0 0.25rem; }
+      .scene-text-zone { padding: 0 0.25rem 0.45rem; }
+      .dialog-box { padding: 0.45rem 0.5rem; font-size: 0.75rem; }
+      .novella-choices .novella-choice { min-width: 44%; }
+      .novella-choice { min-height: 36px; padding: 0.3rem 0.45rem; font-size: 0.75rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 48px)); max-height: calc(0.8 * (100vh - 48px)); }
+    }
+    /* Адаптация всех слайдов: компактнее шрифты и отступы на мобильной и планшете */
+    @media (max-width: 768px) {
+      .slide .slide-inner { max-width: 100%; padding: 0 0.25rem; }
+      .slide .slide-inner p.text-slate-500 { font-size: 0.65rem; margin-bottom: 0.25rem; }
+      #theory-berne .slide-inner h2,
+      #theory-game .slide-inner h2 { font-size: 1.15rem; margin-bottom: 0.35rem; }
+      #theory-berne .slide-inner p,
+      #theory-game .slide-inner p,
+      #theory-berne .slide-inner li,
+      #theory-game .slide-inner li { font-size: 0.78rem; line-height: 1.35; }
+      #theory-berne .slide-inner ul { margin-bottom: 0.4rem; }
+      #theory-berne .slide-inner li { padding: 0.4rem 0.5rem; margin-bottom: 0.25rem; }
+      #theory-game .slide-inner h3 { font-size: 0.9rem; margin-top: 0.4rem; margin-bottom: 0.2rem; }
+      #theory-game .slide-inner p { margin-bottom: 0.35rem; }
+      #ch2-theory1 .slide-inner h2,
+      #ch2-theory2 .slide-inner h2 { font-size: 1rem; margin-bottom: 0.35rem; }
+      #ch2-theory1 .slide-inner p,
+      #ch2-theory2 .slide-inner p { font-size: 0.78rem; line-height: 1.35; margin-bottom: 0.35rem; }
+      .chapter-outcome-block { padding: 0.5rem 0.6rem !important; font-size: 0.78rem !important; }
+      .chapter-outcome-block .outcome-choice-line { font-size: 0.95rem; }
+      .chapter-outcome-block .points-rows { margin-top: 0.35rem; gap: 0.25rem; }
+      .chapter-outcome-block .points-row { padding: 0.35rem 0.5rem; font-size: 0.8rem; }
+      [data-quiz] .slide-inner p.text-white { font-size: 0.82rem; margin-bottom: 0.4rem; }
+      [data-quiz] .slide-inner .quiz-final-option { padding: 0.4rem 0.5rem; font-size: 0.78rem; }
+      #slide-cert .slide-inner p { font-size: 0.9rem; margin-bottom: 0.4rem; }
+      #slide-cert .slide-inner .btn-go { padding: 0.45rem 0.85rem; font-size: 0.72rem; }
+      #slide-explanation .slide-inner .chapter-outcome-block,
+      #ch2-points .slide-inner .chapter-outcome-block { min-height: 0; flex: 1; }
+      .slide-hint { padding: 0.2rem 0 0.3rem; font-size: 0.58rem; }
+    }
+    @media (max-width: 480px) {
+      .slide .slide-inner { padding: 0 0.15rem; }
+      .slide { padding: 0.4rem 0.75rem 0.4rem; }
+      #theory-berne .slide-inner h2,
+      #theory-game .slide-inner h2 { font-size: 1.05rem; margin-bottom: 0.25rem; }
+      #theory-berne .slide-inner p,
+      #theory-game .slide-inner p,
+      #theory-berne .slide-inner li { font-size: 0.72rem; line-height: 1.3; }
+      #theory-berne .slide-inner li { padding: 0.35rem 0.45rem; margin-bottom: 0.2rem; }
+      #theory-game .slide-inner h3 { font-size: 0.85rem; margin-top: 0.3rem; margin-bottom: 0.15rem; }
+      #theory-game .slide-inner p { margin-bottom: 0.25rem; }
+      #ch2-theory1 .slide-inner h2,
+      #ch2-theory2 .slide-inner h2 { font-size: 0.95rem; }
+      #ch2-theory1 .slide-inner p,
+      #ch2-theory2 .slide-inner p { font-size: 0.72rem; margin-bottom: 0.25rem; }
+      .chapter-outcome-block { padding: 0.4rem 0.5rem !important; font-size: 0.72rem !important; }
+      .chapter-outcome-block .outcome-choice-line { font-size: 0.88rem; }
+      .chapter-outcome-block .points-rows { margin-top: 0.25rem; gap: 0.2rem; }
+      .chapter-outcome-block .points-row { padding: 0.3rem 0.4rem; font-size: 0.75rem; }
+      [data-quiz] .slide-inner .quiz-final-option { padding: 0.35rem 0.45rem; font-size: 0.72rem; }
+      .slide-hint { padding: 0.18rem 0 0.25rem; font-size: 0.55rem; }
+      #slide-cert .slide-inner .btn-go { font-size: 0.68rem; padding: 0.4rem 0.65rem; }
+      [data-slide="22"] .slide-inner h2 { font-size: 1.1rem; }
+      [data-slide="22"] .slide-inner p.text-slate-400 { font-size: 0.75rem; }
+    }
+    @media (max-height: 600px) {
+      #theory-berne .slide-inner h2, #theory-game .slide-inner h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+      #theory-berne .slide-inner p, #theory-berne .slide-inner li,
+      #theory-game .slide-inner p { font-size: 0.72rem; line-height: 1.28; margin-bottom: 0.2rem; }
+      #theory-berne .slide-inner li { padding: 0.3rem 0.45rem; margin-bottom: 0.15rem; }
+      #theory-game .slide-inner h3 { font-size: 0.85rem; margin-top: 0.25rem; margin-bottom: 0.1rem; }
+      #ch2-theory1 .slide-inner h2, #ch2-theory2 .slide-inner h2 { font-size: 0.95rem; }
+      #ch2-theory1 .slide-inner p, #ch2-theory2 .slide-inner p { font-size: 0.72rem; margin-bottom: 0.2rem; }
+      .chapter-outcome-block { padding: 0.35rem 0.5rem !important; font-size: 0.7rem !important; }
+      .chapter-outcome-block .outcome-choice-line { font-size: 0.85rem; }
+      .slide-hint { padding: 0.15rem 0 0.2rem; font-size: 0.52rem; }
     }
 
     .slide-inner.position-relative { position: relative; }
@@ -949,15 +1066,63 @@
     @keyframes points-hint-flash { 0% { background: rgba(251, 191, 36, 0.25); } 100% { background: transparent; } }
     .points-row.points-hint-deduction .points-num { color: #f59e0b; }
     .hint-penalty-comment { font-size: 0.8125rem; color: #94a3b8; margin-top: 0.35rem; margin-bottom: 0; }
-    .founder-column { display: flex; flex-direction: column; align-items: center; }
-    .founder-photo { filter: grayscale(100%) contrast(105%); border-bottom: 4px solid #fbbf24; width: 100%; margin-bottom: 20px; }
+    .chapter-outcome-block .outcome-choice-line { font-size: 1.125rem; font-weight: 600; }
+    #berne-method .slide-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 1rem 1.25rem; box-sizing: border-box; }
+    #berne-method .slide-inner > div { min-height: 0; min-width: 0; grid-template-columns: minmax(0, 35%) minmax(0, 65%) !important; gap: clamp(12px, 2.5vw, 28px) !important; }
+    #berne-method .founder-column,
+    #berne-method .content-column { min-height: 0; min-width: 0; }
+    #berne-method .slide-inner h2 { font-size: clamp(1.25rem, 2.8vw, 1.75rem) !important; line-height: 1.12 !important; margin-bottom: 0.4rem !important; word-wrap: break-word; overflow-wrap: break-word; }
+    #berne-method .content-column > div { box-sizing: border-box; max-width: 100%; padding: clamp(10px, 1.5vw, 18px) !important; }
+    #berne-method .content-column > p { font-size: clamp(0.75rem, 1.2vw, 0.95rem) !important; line-height: 1.35 !important; margin-bottom: 0.5rem !important; }
+    #berne-method .content-column h4 { font-size: clamp(0.75rem, 1.2vw, 0.95rem) !important; margin-bottom: 0.35rem !important; }
+    #berne-method .content-column ul { font-size: clamp(0.7rem, 1.15vw, 0.9rem) !important; line-height: 1.4 !important; }
+    .founder-column { display: flex; flex-direction: column; align-items: center; min-height: 0; }
+    .founder-photo { filter: grayscale(100%) contrast(105%); border-bottom: 4px solid #fbbf24; width: 100%; margin-bottom: 20px; max-height: 280px; object-fit: contain; object-position: top; }
     .quote-box { font-style: italic; color: #94a3b8; font-size: 15px; line-height: 1.5; text-align: left; border-left: 2px solid #fbbf24; padding-left: 15px; margin-top: 10px; }
     .book-badge { background: #fbbf24; color: #0f172a; padding: 5px 15px; font-weight: 900; font-size: 14px; display: inline-block; margin-bottom: 15px; }
+    @media (max-width: 1024px), (max-height: 700px) {
+      #berne-method .slide-inner > div { gap: 14px !important; }
+      #berne-method .slide-inner h2 { font-size: 1.4rem !important; margin-bottom: 6px !important; line-height: 1.12 !important; }
+      #berne-method .slide-inner .content-column > p { font-size: 0.82rem !important; line-height: 1.35 !important; margin-bottom: 8px !important; }
+      #berne-method .content-column > div { padding: 12px !important; }
+      #berne-method .content-column h4 { font-size: 0.8rem !important; margin-bottom: 5px !important; }
+      #berne-method .content-column ul { font-size: 0.78rem !important; line-height: 1.4 !important; }
+      #berne-method .founder-photo { max-height: 180px; margin-bottom: 8px; }
+      #berne-method .quote-box { font-size: 11px; padding-left: 10px; margin-top: 4px; }
+      #berne-method .book-badge { font-size: 11px; padding: 3px 10px; margin-bottom: 6px; }
+    }
     @media (max-width: 768px) {
-      #berne-method .slide-inner > div { grid-template-columns: 1fr; gap: 24px; }
-      #berne-method .slide-inner h2 { font-size: 1.75rem !important; }
-      #berne-method .slide-inner p { font-size: 1rem !important; }
-      #berne-method .slide-inner ul { font-size: 0.95rem !important; }
+      #berne-method .slide-inner > div { grid-template-columns: 1fr !important; gap: 10px !important; }
+      #berne-method .slide-inner h2 { font-size: 1.2rem !important; margin-bottom: 5px !important; }
+      #berne-method .slide-inner .content-column > p { font-size: 0.78rem !important; margin-bottom: 6px !important; }
+      #berne-method .content-column > div { padding: 10px !important; border-radius: 12px !important; }
+      #berne-method .content-column h4 { font-size: 0.75rem !important; margin-bottom: 4px !important; }
+      #berne-method .content-column ul { font-size: 0.72rem !important; line-height: 1.38 !important; }
+      #berne-method .content-column li { margin-bottom: 0.2rem; }
+      #berne-method .founder-photo { max-height: 140px; margin-bottom: 6px; }
+      #berne-method .quote-box { font-size: 10px; line-height: 1.35; padding-left: 8px; margin-top: 3px; }
+      #berne-method .book-badge { font-size: 10px; padding: 2px 8px; margin-bottom: 5px; }
+    }
+    @media (max-width: 480px) {
+      #berne-method .slide-inner > div { gap: 8px !important; }
+      #berne-method .slide-inner h2 { font-size: 1.05rem !important; margin-bottom: 4px !important; }
+      #berne-method .slide-inner .content-column > p { font-size: 0.72rem !important; margin-bottom: 5px !important; }
+      #berne-method .content-column > div { padding: 8px !important; }
+      #berne-method .content-column h4 { font-size: 0.7rem !important; margin-bottom: 3px !important; }
+      #berne-method .content-column ul { font-size: 0.68rem !important; line-height: 1.35 !important; }
+      #berne-method .founder-photo { max-height: 100px; margin-bottom: 4px; }
+      #berne-method .quote-box { font-size: 9px; padding-left: 6px; }
+      #berne-method .book-badge { font-size: 9px; padding: 2px 6px; margin-bottom: 4px; }
+    }
+    @media (max-height: 600px) {
+      #berne-method .founder-photo { max-height: 90px; margin-bottom: 4px; }
+      #berne-method .quote-box { font-size: 9px; margin-top: 2px; }
+      #berne-method .slide-inner h2 { font-size: 1rem !important; margin-bottom: 3px !important; }
+      #berne-method .slide-inner .content-column > p { font-size: 0.7rem !important; margin-bottom: 4px !important; }
+      #berne-method .content-column > div { padding: 6px !important; }
+      #berne-method .content-column h4 { font-size: 0.65rem !important; margin-bottom: 2px !important; }
+      #berne-method .content-column ul { font-size: 0.65rem !important; line-height: 1.3 !important; }
+      #berne-method .book-badge { font-size: 9px; margin-bottom: 3px; }
     }
     /* Слайд «Что получит ученик» — премиум glassmorphism + анимации */
     #slide-outcomes { background: #0f172a; }
@@ -971,6 +1136,45 @@
     #slide-outcomes .outcome-card:hover { border-color: rgba(251, 191, 36, 0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(251, 191, 36, 0.1); }
     #slide-outcomes .outcome-num { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #0f172a; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.75rem; }
     #slide-outcomes .outcome-card h3 { color: #fff; font-size: 1.05rem; font-weight: 700; margin: 0 0 0.5rem 0; line-height: 1.3; }
+    /* Мобильная и десктоп: слайд на экран, номер и заголовок в одной строке, текст не обрезается — уменьшен шрифт */
+    @media (max-width: 1024px), (max-height: 700px) {
+      #slide-outcomes { justify-content: flex-start; padding: 0.35rem 0.75rem 0.25rem; }
+      #slide-outcomes .slide-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 960px; }
+      #slide-outcomes .outcomes-title { font-size: clamp(1rem, 3vw, 1.35rem); margin-bottom: 0.2rem; }
+      #slide-outcomes .outcomes-subtitle { font-size: clamp(0.75rem, 1.8vw, 0.9rem); margin: 0 0 0.4rem 0; }
+      #slide-outcomes .outcomes-grid { flex: 1; min-height: 0; gap: 0.6rem; align-content: start; }
+      #slide-outcomes .outcome-card { padding: 0.5rem 0.75rem; border-radius: 14px; display: flex; flex-direction: column; min-height: 0; }
+      #slide-outcomes .outcome-card-head { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; margin-bottom: 0.25rem; }
+      #slide-outcomes .outcome-card-head .outcome-num { width: 28px; height: 28px; font-size: 0.85rem; margin-bottom: 0; flex-shrink: 0; }
+      #slide-outcomes .outcome-card-head h3 { margin: 0; font-size: clamp(0.8rem, 1.8vw, 0.95rem); flex: 1; min-width: 0; }
+      #slide-outcomes .outcome-card .outcome-text { font-size: clamp(0.7rem, 1.6vw, 0.82rem); line-height: 1.35; }
+      #slide-outcomes .card-queen .career-rush-wrap { flex: 1; min-height: 0; }
+      #slide-outcomes .card-queen .career-rush-letters { min-height: 2rem; }
+      #slide-outcomes .card-queen .career-rush-letter.letter-desc { font-size: 0.75rem; }
+      #slide-outcomes .slide-hint { margin-top: 0.15rem; flex-shrink: 0; }
+    }
+    @media (max-width: 768px) {
+      #slide-outcomes .outcomes-title { font-size: 1rem; }
+      #slide-outcomes .outcomes-subtitle { font-size: 0.72rem; margin-bottom: 0.3rem; }
+      #slide-outcomes .outcomes-grid { gap: 0.5rem; }
+      #slide-outcomes .outcome-card { padding: 0.45rem 0.6rem; }
+      #slide-outcomes .outcome-card-head .outcome-num { width: 26px; height: 26px; font-size: 0.8rem; }
+      #slide-outcomes .outcome-card-head h3 { font-size: 0.8rem; }
+      #slide-outcomes .outcome-card .outcome-text { font-size: 0.7rem; line-height: 1.32; }
+      #slide-outcomes .card-queen .career-rush-letter.letter-desc { font-size: 0.7rem; }
+    }
+    @media (max-height: 580px) {
+      #slide-outcomes .outcomes-title { font-size: 0.95rem; margin-bottom: 0.15rem; }
+      #slide-outcomes .outcomes-subtitle { font-size: 0.7rem; margin-bottom: 0.25rem; }
+      #slide-outcomes .outcomes-grid { gap: 0.4rem; }
+      #slide-outcomes .outcome-card { padding: 0.4rem 0.55rem; }
+      #slide-outcomes .outcome-card-head { margin-bottom: 0.2rem; }
+      #slide-outcomes .outcome-card-head .outcome-num { width: 24px; height: 24px; font-size: 0.75rem; }
+      #slide-outcomes .outcome-card-head h3 { font-size: 0.75rem; }
+      #slide-outcomes .outcome-card .outcome-text { font-size: 0.65rem; line-height: 1.3; }
+      #slide-outcomes .card-queen .career-rush-letters { min-height: 1.75rem; }
+      #slide-outcomes .card-queen .career-rush-letter.letter-desc { font-size: 0.65rem; }
+    }
     #slide-outcomes .outcome-card .outcome-text { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; margin: 0; }
     @keyframes outcome-reveal { to { opacity: 1; transform: translateY(0); } }
     /* Карточка 1: за 6 с полоса равномерно проходит всю карточку; с 5 по 6 с — красная фраза + пульс */
@@ -988,13 +1192,20 @@
     #slide-outcomes .card-shield .dots-canvas { position: absolute; inset: 0; border-radius: 20px; pointer-events: none; overflow: visible; }
     #slide-outcomes .card-shield .spark { position: absolute; width: 8px; height: 8px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 16px #fbbf24; animation: spark-fade 0.5s ease-out forwards; pointer-events: none; }
     @keyframes spark-fade { to { opacity: 0; transform: scale(0); } }
-    /* Карточка 3: пешки + ферзь */
-    #slide-outcomes .card-queen .pawns-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-    #slide-outcomes .card-queen .pawn { position: absolute; font-size: 1.25rem; color: rgba(148,163,184,0.4); transition: transform 5s cubic-bezier(0.22, 1, 0.36, 1); }
-    #slide-outcomes .card-queen.pawns-aligned .pawn { transition-duration: 0.4s; }
-    #slide-outcomes .card-queen .queen-burst { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); font-size: 3rem; color: #fbbf24; text-shadow: 0 0 30px #fbbf24; opacity: 0; pointer-events: none; }
-    #slide-outcomes .card-queen.queen-visible .queen-burst { animation: queen-flash 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-    @keyframes queen-flash { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0); } 30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 70% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+    /* Карточка 3: карьерный рывок — буквы собираются из хаоса */
+    #slide-outcomes .card-queen .career-rush-wrap { position: relative; min-height: 4.5rem; padding-top: 0.25rem; }
+    #slide-outcomes .card-queen .career-rush-letters { position: relative; min-height: 4rem; }
+    #slide-outcomes .card-queen .career-rush-letter { position: absolute; display: inline-block; will-change: transform; color: #94a3b8; white-space: pre; }
+    #slide-outcomes .card-queen .career-rush-letter.letter-title { color: #fff; font-size: 1.05rem; font-weight: 700; }
+    #slide-outcomes .card-queen .career-rush-letter.letter-desc { font-size: 0.9rem; }
+    #slide-outcomes .card-queen .career-rush-letter.scattered { animation: letter-float 4s ease-in-out infinite; }
+    @keyframes letter-float { 0%, 100% { transform: translate(0, 0) rotate(-2deg); } 25% { transform: translate(2px, -3px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(2deg); } 75% { transform: translate(1px, 1px) rotate(-1deg); } }
+    #slide-outcomes .card-queen .career-rush-wrap.assembled .career-rush-letter { animation: none; text-shadow: 0 0 20px rgba(251,191,36,0.9), 0 0 40px rgba(251,191,36,0.5); }
+    #slide-outcomes .card-queen .career-rush-wrap.assembled .career-rush-letter.letter-title { color: #fbbf24; }
+    #slide-outcomes .card-queen .career-rush-wrap.assembled .career-rush-letter.letter-desc { color: #fcd34d; }
+    #slide-outcomes .card-queen .career-rush-lines { position: absolute; left: 0; right: 0; bottom: 0; top: 0; pointer-events: none; overflow: hidden; }
+    #slide-outcomes .card-queen .rush-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(251,191,36,0.8), transparent); box-shadow: 0 0 12px #fbbf24; animation: rush-line-up 1.2s ease-out forwards; opacity: 0; }
+    @keyframes rush-line-up { 0% { bottom: 0; opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.4; } 100% { bottom: 100%; opacity: 0; } }
     @media (max-width: 768px) {
       #slide-outcomes .outcomes-grid { grid-template-columns: 1fr; gap: 1rem; }
       #slide-outcomes .outcome-card { padding: 1.25rem; }
@@ -1011,7 +1222,7 @@
       <button type="button" class="course-nav-chapter-btn" data-goto="18" title="Глава 3">3</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="21" title="Глава 4">4</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="26" title="Глава 5">5</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Тест">6</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Тест">🎯</button>
     </div>
     <div class="progress-bar-track" aria-hidden="true">
       <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0.0588)"></div>
@@ -1019,7 +1230,7 @@
   </nav>
   <div class="course-toolbar" aria-label="Инструменты">
     <button type="button" class="toolbar-btn" id="toolbar-hint-btn" title="Получить подсказку от психолога" aria-label="Подсказка психолога">💡</button>
-    <div class="toolbar-points toolbar-awareness" title="Осознанность">💎 <span class="label">Осознанность</span> <span id="toolbar-awareness">0</span></div>
+    <div class="toolbar-points toolbar-awareness" title="Осознанность" aria-label="Осознанность">💎 <span id="toolbar-awareness">0</span></div>
     <div class="toolbar-points toolbar-influence hidden" title="Влияние" aria-hidden="true">🔥 <span class="label">Влияние</span> <span id="toolbar-influence">0</span></div>
     <div class="toolbar-points toolbar-resource hidden" title="Ресурс" aria-hidden="true">🔋 <span class="label">Ресурс</span> <span id="toolbar-resource">0</span></div>
   </div>
@@ -1098,8 +1309,10 @@
         <div class="outcomes-grid">
           <div class="outcome-card card-xray">
             <div class="scanner-beam" aria-hidden="true"></div>
-            <div class="outcome-num">1</div>
-            <h3>Рентгеновское зрение</h3>
+            <div class="outcome-card-head">
+              <div class="outcome-num">1</div>
+              <h3>Рентгеновское зрение</h3>
+            </div>
             <div class="outcome-text-wrap">
               <p class="outcome-text">Рентгеновское зрение: Ты начнёшь видеть, что на самом деле стоит за фразой <span class="phrase-target">«Мы же одна семья»</span></p>
               <p class="phrase-red-overlay" aria-hidden="true">Рентгеновское зрение: Ты начнёшь видеть, что на самом деле стоит за фразой <span class="phrase-red">«Мы же одна семья»</span></p>
@@ -1108,28 +1321,38 @@
           <div class="outcome-card card-shield">
             <div class="force-field" aria-hidden="true"></div>
             <div class="dots-canvas" id="outcomes-dots-canvas"></div>
-            <div class="outcome-num">2</div>
-            <h3>Иммунитет к чувству вины</h3>
+            <div class="outcome-card-head">
+              <div class="outcome-num">2</div>
+              <h3>Иммунитет к чувству вины</h3>
+            </div>
             <p class="outcome-text">Иммунитет к чувству вины: Ты научишься говорить «нет» так, что на тебя не обидятся.</p>
           </div>
           <div class="outcome-card card-queen" id="outcomes-card-queen">
-            <div class="pawns-bg" id="outcomes-pawns-bg"></div>
-            <div class="queen-burst" aria-hidden="true">♛</div>
-            <div class="outcome-num">3</div>
-            <h3>Карьерный рывок</h3>
-            <p class="outcome-text">Карьерный рывок: Тот, кто не играет в чужие игры, сам устанавливает правила.</p>
+            <div class="outcome-card-head">
+              <div class="outcome-num">3</div>
+              <h3>Карьерный рывок</h3>
+            </div>
+            <div class="career-rush-wrap" id="career-rush-wrap">
+              <div class="career-rush-letters" id="career-rush-letters"></div>
+              <div class="career-rush-lines" id="career-rush-lines"></div>
+            </div>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
 
-    <!-- Глава 1: Пятничный капкан -->
-    <div class="slide slide-clickable" data-slide="3">
-      <div class="slide-inner">
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Глава 1. Пятничный капкан 🐎</h2>
-        <p class="text-slate-400 text-sm">Разбор реального офисного кейса</p>
-        <p class="slide-hint mt-6">Нажмите на экран для продолжения</p>
+    <!-- Глава 1: Пятничный капкан — обложка -->
+    <div class="slide slide-stretch slide-clickable" data-slide="3" id="chapter1-title">
+      <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
+        <div class="chapter-cover-spacer" aria-hidden="true"></div>
+        <div class="novella-scene scene-office rounded-2xl w-full flex flex-col justify-center items-center p-6">
+          <h1 class="font-display text-3xl sm:text-5xl font-bold text-accent mb-2 reveal" data-reveal>Глава 1</h1>
+          <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mb-4 reveal" data-reveal>«Пятничный капкан» 🐎</h2>
+          <div class="w-20 h-1 bg-amber-400 rounded-full mb-4 reveal" data-reveal></div>
+          <p class="text-slate-300 text-center text-sm sm:text-base reveal" data-reveal>Уровень сложности: <strong>Начальный</strong><br>Разбор реального офисного кейса</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
     <!-- Глава: 1. Вступление, текущая ситуация -->
@@ -1245,15 +1468,16 @@
     <section class="slide slide-stretch slide-clickable" data-slide="10" id="slide-explanation">
       <div class="slide-inner position-relative">
         <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта с точки зрения теории Э. Берна, начисление баллов</p>
-        <div id="chapter-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3">
+        <div id="chapter-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
           <!-- Заполняется по JS в зависимости от выбора -->
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
     <section class="slide slide-stretch slide-clickable" data-slide="11" id="chapter2-title">
-      <div class="slide-inner flex-1 flex flex-col justify-center items-center min-h-0">
-        <div class="novella-scene scene-kitchen rounded-2xl flex-1 w-full min-h-[320px] flex flex-col justify-center items-center p-6">
+      <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
+        <div class="chapter-cover-spacer" aria-hidden="true"></div>
+        <div class="novella-scene scene-kitchen rounded-2xl w-full flex flex-col justify-center items-center p-6">
           <h1 class="font-display text-3xl sm:text-5xl font-bold text-accent mb-2 reveal" data-reveal>Глава 2</h1>
           <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mb-4 reveal" data-reveal>«Кухонная западня»</h2>
           <div class="w-20 h-1 bg-amber-400 rounded-full mb-4 reveal" data-reveal></div>
@@ -1401,7 +1625,7 @@
     <section class="slide slide-stretch slide-clickable" data-slide="21" id="ch2-points">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
-        <div id="chapter2-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3">
+        <div id="chapter2-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
           <!-- Заполняется по JS при входе на слайд -->
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
@@ -1550,8 +1774,12 @@
         outcomesIntervals = [];
         var canvas = document.getElementById('outcomes-dots-canvas');
         if (canvas) canvas.innerHTML = '';
-        var pawnsBg = document.getElementById('outcomes-pawns-bg');
-        if (pawnsBg) pawnsBg.innerHTML = '';
+        var lettersEl = document.getElementById('career-rush-letters');
+        var linesEl = document.getElementById('career-rush-lines');
+        var wrap = document.getElementById('career-rush-wrap');
+        if (lettersEl) lettersEl.innerHTML = '';
+        if (linesEl) linesEl.innerHTML = '';
+        if (wrap) wrap.classList.remove('assembled');
         var card = document.getElementById('outcomes-card-queen');
         if (card) card.classList.remove('pawns-aligned', 'queen-visible');
       }
@@ -1559,8 +1787,7 @@
         stopOutcomesSlide();
         var canvas = document.getElementById('outcomes-dots-canvas');
         var cardQueen = document.getElementById('outcomes-card-queen');
-        var pawnsBg = document.getElementById('outcomes-pawns-bg');
-        if (!canvas || !cardQueen || !pawnsBg) return;
+        if (!canvas || !cardQueen) return;
         var cardShield = canvas.closest('.card-shield');
         if (!cardShield) return;
 
@@ -1571,7 +1798,7 @@
           var ch = canvas.offsetHeight || 120;
           var dot = document.createElement('div');
           dot.className = 'outcome-dot';
-          dot.style.cssText = 'position:absolute;left:-20px;top:' + (Math.random() * (ch - 14)) + 'px;width:12px;height:12px;background:#64748b;border-radius:50%;pointer-events:none;z-index:5;';
+          dot.style.cssText = 'position:absolute;left:-14px;top:' + (Math.random() * (ch - 8)) + 'px;width:6px;height:6px;background:#64748b;border-radius:50%;pointer-events:none;z-index:5;';
           canvas.appendChild(dot);
           var x = -14;
           var dx = 2.5 + Math.random() * 1.5;
@@ -1600,61 +1827,109 @@
         var dotId = setInterval(function() { spawnDot(); spawnDot(); spawnDot(); spawnDot(); }, 800);
         outcomesIntervals.push(dotId);
 
-        var pawns = [];
-        for (var p = 0; p < 8; p++) {
-          var pawn = document.createElement('span');
-          pawn.className = 'pawn';
-          pawn.textContent = '\u265F';
-          pawnsBg.appendChild(pawn);
-          pawns.push(pawn);
-        }
-        function layoutPawns(align) {
-          var w = pawnsBg.offsetWidth || 200;
-          var h = pawnsBg.offsetHeight || 140;
-          if (align) {
-            cardQueen.classList.add('pawns-aligned');
-            var cols = 4;
-            var rows = 2;
-            pawns.forEach(function(pawn, idx) {
-              var col = idx % cols;
-              var row = Math.floor(idx / cols);
-              var x = (col + 0.5) * (w / cols) - 10;
-              var y = (row + 0.5) * (h / rows) - 12;
-              pawn.style.left = x + 'px';
-              pawn.style.top = y + 'px';
-              pawn.style.transform = 'none';
-            });
-            cardQueen.classList.add('queen-visible');
-            setTimeout(function() {
-              cardQueen.classList.remove('queen-visible');
-              setTimeout(function() {
-                cardQueen.classList.remove('pawns-aligned');
-                layoutPawns(false);
-              }, 400);
-            }, 1200);
-          } else {
-            pawns.forEach(function(pawn) {
-              var x = Math.random() * Math.max(0, w - 28);
-              var y = Math.random() * Math.max(0, h - 28);
-              pawn.style.left = x + 'px';
-              pawn.style.top = y + 'px';
-              pawn.style.transform = 'none';
+        var wrap = document.getElementById('career-rush-wrap');
+        var lettersEl = document.getElementById('career-rush-letters');
+        var linesEl = document.getElementById('career-rush-lines');
+        if (wrap && lettersEl && linesEl) {
+          var desc = 'Тот, кто не играет в чужие игры, сам устанавливает правила';
+          var measureDiv = document.createElement('div');
+          measureDiv.setAttribute('aria-hidden', 'true');
+          measureDiv.style.cssText = 'position:absolute;visibility:hidden;top:0;left:0;width:' + (wrap.offsetWidth || 200) + 'px;pointer-events:none;';
+          var line1 = document.createElement('div');
+          line1.style.cssText = 'color:#94a3b8;font-size:0.9rem;line-height:1.5;margin:0;';
+          for (var j = 0; j < desc.length; j++) {
+            var sp2 = document.createElement('span');
+            sp2.textContent = desc[j];
+            line1.appendChild(sp2);
+          }
+          measureDiv.appendChild(line1);
+          lettersEl.appendChild(measureDiv);
+          var rect = lettersEl.getBoundingClientRect();
+          var positions = [];
+          var allSpans = measureDiv.querySelectorAll('span');
+          for (var k = 0; k < allSpans.length; k++) {
+            var r = allSpans[k].getBoundingClientRect();
+            positions.push({ left: r.left - rect.left, top: r.top - rect.top });
+          }
+          measureDiv.parentNode.removeChild(measureDiv);
+          var letters = [];
+          var w = wrap.offsetWidth || 200;
+          var h = Math.max(wrap.offsetHeight || 80, 80);
+          for (var idx = 0; idx < positions.length; idx++) {
+            var el = document.createElement('span');
+            el.className = 'career-rush-letter letter-desc';
+            el.textContent = desc[idx];
+            el.style.left = (Math.random() * (w - 8)) + 'px';
+            el.style.top = (Math.random() * (h - 12)) + 'px';
+            el.style.transition = 'left 0.6s cubic-bezier(0.22,1,0.36,1), top 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s';
+            el.style.animationDelay = (Math.random() * 2) + 's';
+            el.classList.add('scattered');
+            el.dataset.finalLeft = positions[idx].left;
+            el.dataset.finalTop = positions[idx].top;
+            lettersEl.appendChild(el);
+            letters.push({ el: el, left: positions[idx].left, top: positions[idx].top });
+          }
+          function scatter() {
+            wrap.classList.remove('assembled');
+            linesEl.innerHTML = '';
+            letters.forEach(function(item) {
+              item.el.style.transition = 'none';
+              item.el.style.left = (Math.random() * (w - 8)) + 'px';
+              item.el.style.top = (Math.random() * (h - 12)) + 'px';
+              item.el.classList.add('scattered');
+              void item.el.offsetWidth;
+              item.el.style.transition = 'left 0.6s cubic-bezier(0.22,1,0.36,1), top 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s';
             });
           }
+          function assemble() {
+            letters.forEach(function(item) {
+              item.el.classList.remove('scattered');
+              item.el.style.left = item.left + 'px';
+              item.el.style.top = item.top + 'px';
+            });
+            setTimeout(flashAndLines, 650);
+          }
+          function flashAndLines() {
+            wrap.classList.add('assembled');
+            for (var L = 0; L < 6; L++) {
+              var line = document.createElement('div');
+              line.className = 'rush-line';
+              line.style.left = (L * 16 + Math.random() * 8) + '%';
+              line.style.width = (25 + Math.random() * 20) + '%';
+              line.style.animationDelay = (L * 0.08) + 's';
+              linesEl.appendChild(line);
+            }
+            setTimeout(function() {
+              wrap.classList.remove('assembled');
+              linesEl.innerHTML = '';
+            }, 2500);
+          }
+          var assembleTimeoutId = null;
+          function runCycle() {
+            var slide = document.getElementById('slide-outcomes');
+            if (!slide || !slide.classList.contains('active')) return;
+            scatter();
+            if (assembleTimeoutId) clearTimeout(assembleTimeoutId);
+            assembleTimeoutId = setTimeout(function() {
+              assembleTimeoutId = null;
+              var s2 = document.getElementById('slide-outcomes');
+              if (!s2 || !s2.classList.contains('active')) return;
+              assemble();
+            }, 8000);
+          }
+          cardQueen.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var slide = document.getElementById('slide-outcomes');
+            if (!slide || !slide.classList.contains('active')) return;
+            if (wrap.classList.contains('assembled')) return;
+            if (assembleTimeoutId) { clearTimeout(assembleTimeoutId); assembleTimeoutId = null; }
+            assemble();
+          });
+          runCycle();
+          var careerId = setInterval(runCycle, 12000);
+          outcomesIntervals.push(careerId);
         }
-        layoutPawns(false);
-        var pawnScatterId = setInterval(function() {
-          var slide = document.getElementById('slide-outcomes');
-          if (!slide || !slide.classList.contains('active')) return;
-          if (!cardQueen.classList.contains('pawns-aligned') && !cardQueen.classList.contains('queen-visible')) layoutPawns(false);
-        }, 3500);
-        outcomesIntervals.push(pawnScatterId);
-        var queenId = setInterval(function() {
-          var slide = document.getElementById('slide-outcomes');
-          if (!slide || !slide.classList.contains('active')) return;
-          layoutPawns(true);
-        }, 5000);
-        outcomesIntervals.push(queenId);
       }
 
       function goToSlide(i) {
@@ -1704,7 +1979,7 @@
               }
               var grossCh1 = awarenessPoints + (hintUseCount > 0 ? hintUseCount * 10 : 0);
               var hintCommentCh1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
-              block.innerHTML = '<p><strong>Ваш выбор: вариант 3 — позиция Взрослого.</strong></p><p>По Берну это ответ из эго-состояния Взрослый: вы перевели общение в переговоры и получили отгул и бонус.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh1 + '"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + hintCommentCh1;
+              block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 3 — позиция Взрослого.</strong></p><p>По Берну это ответ из эго-состояния Взрослый: вы перевели общение в переговоры и получили отгул и бонус.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh1 + '"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + hintCommentCh1;
               runConfetti();
               runPointsAnimation(block);
               if (hintUseCount > 0) setTimeout(function() { runHintPenaltyDeduction(block); }, 2600);
@@ -1718,10 +1993,10 @@
               }
               if (lastNovellaChoice === 0) {
                 var hintCommentL0 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
-                block.innerHTML = '<p><strong>Ваш выбор: вариант 1 — позиция Послушного Ребёнка.</strong></p><p>По Берну это уход в подчинение. Для таких ситуаций эффективнее ответ из позиции Взрослого (вариант 3): перевести разговор в переговоры.</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL0;
+                block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 1 — позиция Послушного Ребёнка.</strong></p><p>По Берну это уход в подчинение. Для таких ситуаций эффективнее ответ из позиции Взрослого (вариант 3): перевести разговор в переговоры.</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL0;
               } else if (lastNovellaChoice === 1) {
                 var hintCommentL1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
-                block.innerHTML = '<p><strong>Ваш выбор: вариант 2 — позиция Бунтующего Ребёнка.</strong></p><p>По Берну это реакция из Ребёнка. Для таких ситуаций эффективнее позиция Взрослого (вариант 3).</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL1;
+                block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 2 — позиция Бунтующего Ребёнка.</strong></p><p>По Берну это реакция из Ребёнка. Для таких ситуаций эффективнее позиция Взрослого (вариант 3).</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL1;
               } else {
                 block.innerHTML = '<p class="text-slate-400">Выберите вариант на слайде выбора.</p>';
               }
@@ -1762,7 +2037,7 @@
               }
               var grossCh2 = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0);
               var ch2HintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
-              pointsBlock.innerHTML = '<p><strong>Ваш выбор: Вариант 3 — Возврат ответственности.</strong></p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh2 + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch2HintComment;
+              pointsBlock.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: Вариант 3 — Возврат ответственности.</strong></p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh2 + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch2HintComment;
               runConfetti();
               runPointsAnimation(pointsBlock);
               if (hintUseCountCh2 > 0) setTimeout(function() { runHintPenaltyDeduction(pointsBlock); }, 2600);
@@ -1779,7 +2054,7 @@
               }
               var grossCh2Lose = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0);
               var ch2LoseHintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
-              pointsBlock.innerHTML = '<p><strong>Вы вступили в игру «Да, но...».</strong></p><p class="text-slate-300">За время разговора вы потратили Ресурс, Влияние и Осознанность на советы.</p><p class="text-slate-300 mt-2"><strong>Итого баллов (сумма по всем главам):</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh2Lose + '" data-from="' + oldA + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">' + oldA + '</span></div></div>' + ch2LoseHintComment;
+              pointsBlock.innerHTML = '<p class="outcome-choice-line"><strong>Вы вступили в игру «Да, но...».</strong></p><p class="text-slate-300">За время разговора вы потратили Ресурс, Влияние и Осознанность на советы.</p><p class="text-slate-300 mt-2"><strong>Итого баллов (сумма по всем главам):</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh2Lose + '" data-from="' + oldA + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">' + oldA + '</span></div></div>' + ch2LoseHintComment;
               runPointsAnimation(pointsBlock);
               if (hintUseCountCh2 > 0) setTimeout(function() { runHintPenaltyDeduction(pointsBlock); }, 2600);
               runLoseAnimation(pointsBlock);
