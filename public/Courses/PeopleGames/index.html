@@ -1008,30 +1008,59 @@
     @media (max-width: 640px) {
       .slide:has(.novella-scene) .slide-inner { max-width: 100%; padding: 0 0.35rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
-      .novella-scene.has-character {
+      /* Глава 1 (офис): картинка — сверху, варианты выбора — колонкой (3 блока друг под другом), реплика — снизу */
+      .novella-scene.has-character:not(.scene-kitchen) {
         grid-template-columns: 1fr;
-        grid-template-rows: minmax(180px, 56vh) auto;
+        grid-template-rows: minmax(180px, 50vh) auto auto;
         align-content: stretch;
       }
-      .novella-scene.has-character .scene-text-zone {
+      .novella-scene.has-character:not(.scene-kitchen) .boss-sprite { grid-column: 1; grid-row: 1; }
+      .novella-scene.has-character:not(.scene-kitchen) .novella-choices {
         grid-column: 1;
+        grid-row: 2;
+        flex-direction: column;
+        padding: 0.4rem 0.5rem;
+      }
+      .novella-scene.has-character:not(.scene-kitchen) .novella-choices .novella-choice {
+        width: 100%;
+        flex: none;
+        min-width: 0;
+      }
+      .novella-scene.has-character:not(.scene-kitchen) .scene-text-zone {
+        grid-column: 1;
+        grid-row: 3;
+        min-height: 0;
+        justify-content: flex-start;
+        padding: 0.4rem 0.5rem 0.5rem;
+      }
+      /* Глава 2 (кухня): слева — варианты выбора, справа — персонаж, снизу — реплика */
+      .novella-scene.scene-kitchen.has-character {
+        grid-template-columns: 1fr minmax(100px, 38%);
+        grid-template-rows: minmax(180px, 50vh) auto;
+        align-content: stretch;
+      }
+      .novella-scene.scene-kitchen .novella-choices {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: column;
+        padding: 0.4rem 0.5rem;
+      }
+      .novella-scene.scene-kitchen .novella-choices .novella-choice {
+        width: 100%;
+        flex: none;
+        min-width: 0;
+      }
+      .novella-scene.scene-kitchen .character-sprite {
+        grid-column: 2;
+        grid-row: 1;
+      }
+      .novella-scene.scene-kitchen.has-character .scene-text-zone {
+        grid-column: 1 / -1;
         grid-row: 2;
         min-height: 0;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      .novella-scene .boss-sprite,
-      .novella-scene .character-sprite {
-        grid-column: 1;
-        grid-row: 1;
-      }
-      .novella-scene .novella-choices {
-        grid-column: 1;
-        grid-row: 1;
-      }
-      .novella-scene.scene-kitchen .character-sprite { grid-column: 1; grid-row: 1; }
-      .novella-scene.scene-kitchen .novella-choices { grid-column: 1; grid-row: 1; }
-      .novella-scene.scene-kitchen.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
       .novella-scene { --chapter-character-max-width: clamp(160px, 38vw, 260px); --chapter-character-max-height: clamp(200px, 48vh, 380px); }
       .scene-text-zone { width: 100%; box-sizing: border-box; }
       .dialog-box {
@@ -1042,8 +1071,7 @@
         max-height: none;
       }
       .dialog-box .dialog-name { font-size: 0.65rem; }
-      .novella-choices { padding: 0.3rem 0.4rem 0.2rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
-      .novella-choices .novella-choice { flex: 1 1 48%; min-width: 140px; margin-bottom: 0; }
+      .novella-choices { display: flex; gap: 0.35rem; }
       .novella-choice { min-height: 38px; padding: 0.35rem 0.5rem; font-size: 0.8125rem; }
       .psychologist-hint-btn { padding: 0.5rem 0.75rem; font-size: 0.8125rem; min-height: 44px; }
     }
@@ -1051,11 +1079,11 @@
       .slide { padding: 0.75rem 1rem 1.5rem; }
       .btn-next { min-height: 44px; padding: 0.625rem 1rem; font-size: 0.875rem; }
       .slide:has(.novella-scene) .slide-inner { padding: 0 0.25rem; }
-      .novella-scene.has-character { grid-template-rows: minmax(160px, 52vh) auto; }
+      .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: minmax(160px, 48vh) auto auto; }
+      .novella-scene.scene-kitchen.has-character { grid-template-rows: minmax(160px, 48vh) auto; }
       .novella-scene.has-character .scene-text-zone { padding: 0.3rem 0.4rem 0.4rem; }
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
       .dialog-box { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
-      .novella-choices .novella-choice { min-width: 44%; }
       .novella-choice { min-height: 36px; padding: 0.3rem 0.45rem; font-size: 0.75rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 48px)); max-height: calc(0.8 * (100vh - 48px)); }
     }
