@@ -676,11 +676,13 @@
       80% { transform: translateX(4px); }
     }
 
-    /* Слайды теории после глав — единый стиль (гл.1: theory-berne, theory-game; гл.2: ch2-theory1, ch2-theory2) */
+    /* Слайды теории после глав — единый стиль (гл.1: theory-berne, theory-game; гл.2: ch2-theory1, ch2-theory2; гл.3: ch3-theory1, ch3-theory2) */
     #theory-berne .slide-inner,
     #theory-game .slide-inner,
     #ch2-theory1 .slide-inner,
-    #ch2-theory2 .slide-inner {
+    #ch2-theory2 .slide-inner,
+    #ch3-theory1 .slide-inner,
+    #ch3-theory2 .slide-inner {
       max-width: 720px;
       padding: 1.5rem 1.25rem;
       background: linear-gradient(145deg, rgba(15, 23, 42, 0.97) 0%, rgba(30, 41, 59, 0.6) 100%);
@@ -691,27 +693,35 @@
     #theory-berne .slide-inner h2,
     #theory-game .slide-inner h2,
     #ch2-theory1 .slide-inner h2,
-    #ch2-theory2 .slide-inner h2 {
+    #ch2-theory2 .slide-inner h2,
+    #ch3-theory1 .slide-inner h2,
+    #ch3-theory2 .slide-inner h2 {
       font-size: 1.5rem;
       color: #fbbf24;
       margin-bottom: 1.25rem;
       text-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
     }
     #theory-berne .slide-inner h3,
-    #theory-game .slide-inner h3 {
+    #theory-game .slide-inner h3,
+    #ch3-theory1 .slide-inner h3,
+    #ch3-theory2 .slide-inner h3 {
       font-size: 1.1rem;
       color: rgba(251, 191, 36, 0.95);
       margin-top: 1rem;
       margin-bottom: 0.5rem;
     }
     #theory-berne .slide-inner ul li,
-    #theory-game .slide-inner ul li {
+    #theory-game .slide-inner ul li,
+    #ch3-theory1 .slide-inner ul li,
+    #ch3-theory2 .slide-inner ul li {
       background: rgba(255, 255, 255, 0.03);
       border-left: 3px solid rgba(251, 191, 36, 0.5);
       border-radius: 0 0.5rem 0.5rem 0;
     }
     #ch2-theory1 .theory-card,
-    #ch2-theory2 .theory-card {
+    #ch2-theory2 .theory-card,
+    #ch3-theory1 .theory-card,
+    #ch3-theory2 .theory-card {
       background: rgba(255, 255, 255, 0.03);
       border-left: 3px solid rgba(251, 191, 36, 0.6);
       border-radius: 0 0.5rem 0.5rem 0;
@@ -843,11 +853,30 @@
     .novella-scene.scene-office {
       background-image: url('office.jpg');
     }
+    /* Глава 3: офис ночью — фон OFFICE_NIGHT.png, персонаж Виктор справа (как кухня) */
+    .novella-scene.scene-office-night {
+      background-image: url('OFFICE_NIGHT.png');
+    }
+    .novella-scene.scene-office-night.has-character {
+      grid-template-columns: 1fr minmax(200px, 360px);
+    }
+    .novella-scene.scene-office-night .character-sprite {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      justify-self: end;
+      align-self: end;
+      object-position: bottom center;
+      transform-origin: bottom center;
+    }
+    .novella-scene.scene-office-night .novella-choices { grid-column: 1; grid-row: 1; }
+    .novella-scene.scene-office-night.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
     /* Обложка главы: сцена той же высоты и положения, что и на первом слайде главы */
     #chapter1-title .slide-inner,
-    #chapter2-title .slide-inner { justify-content: flex-start; }
+    #chapter2-title .slide-inner,
+    #chapter3-title .slide-inner { justify-content: flex-start; }
     #chapter1-title .novella-scene:not(.novella-chapter-scene),
-    #chapter2-title .novella-scene:not(.novella-chapter-scene) {
+    #chapter2-title .novella-scene:not(.novella-chapter-scene),
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) {
       width: 100%;
       height: calc(0.8 * (100vh - 52px));
       min-height: 260px;
@@ -857,7 +886,8 @@
     .chapter-cover-spacer { flex: 0 0 auto; height: 1.5rem; }
     @media (max-width: 480px) {
       #chapter1-title .novella-scene:not(.novella-chapter-scene),
-      #chapter2-title .novella-scene:not(.novella-chapter-scene) {
+      #chapter2-title .novella-scene:not(.novella-chapter-scene),
+      #chapter3-title .novella-scene:not(.novella-chapter-scene) {
         height: calc(0.8 * (100vh - 48px));
         max-height: calc(0.8 * (100vh - 48px));
       }
@@ -1083,6 +1113,29 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
+      /* Глава 3 (офис ночью): та же сетка, что кухня — персонаж справа */
+      .novella-scene.scene-office-night.has-character {
+        grid-template-columns: 1fr minmax(100px, 38%);
+        grid-template-rows: 50vh auto;
+        align-content: stretch;
+      }
+      .novella-scene.scene-office-night .novella-choices {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: column;
+        padding: 0.4rem 0.5rem;
+      }
+      .novella-scene.scene-office-night .character-sprite {
+        grid-column: 2;
+        grid-row: 1;
+      }
+      .novella-scene.scene-office-night.has-character .scene-text-zone {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-height: 0;
+        justify-content: flex-start;
+        padding: 0.4rem 0.5rem 0.5rem;
+      }
       /* Единые размер и вертикаль для всех персонажей на мобильной; по горизонтали различаются (сетка) */
       .novella-scene {
         --chapter-character-max-width: 42vw;
@@ -1104,7 +1157,8 @@
         margin-bottom: 0;
       }
       .novella-scene .boss-sprite { transform-origin: bottom left; justify-self: start; }
-      .novella-scene.scene-kitchen .character-sprite {
+      .novella-scene.scene-kitchen .character-sprite,
+      .novella-scene.scene-office-night .character-sprite {
         object-fit: contain !important;
         object-position: bottom center !important;
         transform: translateY(8%) scale(var(--chapter-character-scale));
@@ -1137,6 +1191,7 @@
       .slide:has(.novella-scene) .slide-inner { padding: 0 0.25rem; }
       .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: 48vh auto; }
       .novella-scene.scene-kitchen.has-character { grid-template-rows: 48vh auto; }
+      .novella-scene.scene-office-night.has-character { grid-template-rows: 48vh auto; }
       .novella-scene.has-character .scene-text-zone { padding: 0.3rem 0.4rem 0.4rem; }
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
       .dialog-box { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
@@ -1171,7 +1226,10 @@
       #slide-cert .slide-inner p { font-size: 0.9rem; margin-bottom: 0.4rem; }
       #slide-cert .slide-inner .btn-go { padding: 0.45rem 0.85rem; font-size: 0.72rem; }
       #slide-explanation .slide-inner .chapter-outcome-block,
-      #ch2-points .slide-inner .chapter-outcome-block { min-height: 0; flex: 1; }
+      #ch2-points .slide-inner .chapter-outcome-block,
+      #ch3-outcome .slide-inner .chapter-outcome-block { min-height: 0; flex: 1; }
+      #ch3-theory1 .slide-inner .theory-card,
+      #ch3-theory2 .slide-inner .theory-card { margin-bottom: 0.75rem; }
       .slide-hint { padding: 0.2rem 0 0.3rem; font-size: 0.58rem; }
     }
     @media (max-width: 480px) {
@@ -1198,6 +1256,8 @@
       #slide-cert .slide-inner .btn-go { font-size: 0.68rem; padding: 0.4rem 0.65rem; }
       [data-slide="22"] .slide-inner h2 { font-size: 1.1rem; }
       [data-slide="22"] .slide-inner p.text-slate-400 { font-size: 0.75rem; }
+      [data-slide="35"] .slide-inner h2 { font-size: 1.1rem; }
+      [data-slide="35"] .slide-inner p.text-slate-400 { font-size: 0.75rem; }
     }
     @media (max-height: 600px) {
       #theory-berne .slide-inner h2, #theory-game .slide-inner h2 { font-size: 1rem; margin-bottom: 0.25rem; }
@@ -1440,10 +1500,10 @@
     <div class="course-nav-chapters" aria-label="Переход к главам">
       <button type="button" class="course-nav-chapter-btn" data-goto="0" title="Глава 1">1</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="11" title="Глава 2">2</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="18" title="Глава 3">3</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="21" title="Глава 4">4</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="26" title="Глава 5">5</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Тест">🎯</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Глава 3">3</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="33" title="Теория к главе 3">4</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="39" title="Сертификат">5</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="35" title="Тест">🎯</button>
     </div>
     <div class="progress-bar-track" aria-hidden="true">
       <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0.0588)"></div>
@@ -1866,14 +1926,250 @@
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
-    <div class="slide slide-clickable" data-slide="22">
+    <!-- Глава 3: обложка -->
+    <div class="slide slide-stretch slide-clickable" data-slide="22" id="chapter3-title">
+      <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
+        <div class="chapter-cover-spacer" aria-hidden="true"></div>
+        <div class="novella-scene scene-office-night rounded-2xl w-full flex flex-col justify-center items-center p-6 chapter-cover-ch3">
+          <h1 class="font-display text-3xl sm:text-5xl font-bold text-white mb-2 reveal" data-reveal style="text-shadow: 0 0 2px #0f172a, 0 0 4px #0f172a, 0 1px 4px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.6);">Глава 3</h1>
+          <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mb-4 reveal" data-reveal style="text-shadow: 0 0 2px #0f172a, 0 0 4px #0f172a, 0 1px 4px rgba(0,0,0,0.8), 0 2px 8px rgba(0,0,0,0.6);">Цена сверхурочных</h2>
+          <div class="w-20 h-1 bg-white rounded-full mb-4 reveal" data-reveal style="box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>
+          <p class="text-white text-center text-sm sm:text-base reveal" data-reveal style="text-shadow: 0 0 2px #0f172a, 0 1px 3px rgba(0,0,0,0.8);">Уровень сложности: <strong>Продвинутый</strong></p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: диалог 1 — Виктор про презентацию -->
+    <div class="slide slide-stretch slide-clickable" data-slide="23" id="ch3-dialog1">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Виктор (Ведущий аналитик)</span>
+                О, вы еще здесь? Я как раз заканчиваю презентацию для совета директоров. Знаете, я не уходил из офиса последние две ночи... Хотел, чтобы данные по филиалам были безупречны. Не мог допустить, чтобы вы вышли к совету с сырыми цифрами.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: диалог 2 — только ремарка про файл -->
+    <div class="slide slide-stretch slide-clickable" data-slide="24" id="ch3-dialog2-narrator">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Ремарка</span>
+                <em>*Виктор открывает файл. Вы видите отличные графики, но на титульном листе — логотип конкурентов, а в выводах — грубая опечатка в фамилии гендиректора.*</em>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: диалог 2 — реплика пользователя -->
+    <div class="slide slide-stretch slide-clickable" data-slide="25" id="ch3-dialog2-user">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name"><span id="ch3-user-name">[Имя]</span></span>
+                Виктор, контент сильный, но тут логотип конкурентов и ошибка в фамилии шефа. Это же катастрофа для завтрашней встречи.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: диалог 2 — ответ Виктора -->
+    <div class="slide slide-stretch slide-clickable" data-slide="26" id="ch3-dialog2-viktor">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Виктор (Ведущий аналитик)</span>
+                Логотип? Видимо, системный сбой при выгрузке из облака... А опечатка... Знаете, при такой нагрузке, которую я на себя взял, человеческий фактор неизбежен. Я ведь один тяну аналитику за весь отдел.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: диалог 2 — выбор из трёх вариантов -->
+    <div class="slide slide-stretch" data-slide="27" id="ch3-dialog2">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name"><span id="ch3-user-name-choice">[Имя]</span></span>
+                Нужно как-то отреагировать...
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices" id="ch3-choices-1">
+            <button type="button" class="novella-choice ch3-choice" data-ch3-choice="0">Это твоя ответственность — проверить файл перед показом! Исправляй немедленно!</button>
+            <button type="button" class="novella-choice ch3-choice" data-ch3-choice="1">Ладно, я вижу, ты без сил. Давай флешку, я сам подправлю титульник, а ты иди домой.</button>
+            <button type="button" class="novella-choice ch3-choice" data-ch3-choice="2">Я вижу объем твоей работы. Тем не менее, презентация в таком виде не пойдет. Что нужно сделать, чтобы через 30 минут всё было идеально?</button>
+          </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box border-amber-500/50 hidden" id="ch3-psychologist-hint-box-1" aria-hidden="true">
+                <span class="dialog-name" style="color: #fbbf24;">Совет психолога</span>
+                Виктор ведёт игру <strong>«Попался, сукин сын!»</strong>: демонстрирует жертвенность и при этом даёт наживку (ошибки). Гнев сделает из него «мученика», а если взять работу на себя — закрепите за ним право косячить. Ищите вариант, где вы <strong>не входите ни в Преследователя, ни в Спасателя</strong> и не снимаете с него ответственность.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 3: шаг 2 — фраза 1 -->
+    <div class="slide slide-stretch slide-clickable" data-slide="28" id="ch3-step2-p1">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Виктор (Ведущий аналитик)</span>
+                30 минут? Чтобы гарантировать чистоту данных после сбоя CRM, нужно перепроверить все связи.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: шаг 2 — фраза 2 -->
+    <div class="slide slide-stretch slide-clickable" data-slide="29" id="ch3-step2-p2">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Виктор (Ведущий аналитик)</span>
+                Я на грани выгорания. Если я сейчас полезу в код презентации в такой спешке, я не ручаюсь за результат.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: шаг 2 — фраза 3 -->
+    <div class="slide slide-stretch slide-clickable" data-slide="30" id="ch3-step2-p3">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Виктор (Ведущий аналитик)</span>
+                Может, попросим стажера Андрея? Хотя... он точно всё испортит, и мне придется переделывать за ним в полночь.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 3: шаг 2 — выбор варианта -->
+    <div class="slide slide-stretch" data-slide="31" id="ch3-step2">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite dim" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Вы</span>
+                Нужно как-то отреагировать на его слова...
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices" id="ch3-choices-2">
+            <button type="button" class="novella-choice ch3-choice" data-ch3-choice="0">Хорошо, пусть Андрей поможет. Я прослежу.</button>
+            <button type="button" class="novella-choice ch3-choice" data-ch3-choice="1">Я услышал: ты устал и не ручаешься за результат. Сделай паузу 10 минут, выпей кофе и заверши правки. Я жду файл в 20:00. Твою нагрузку обсудим в понедельник.</button>
+          </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box border-amber-500/50 hidden" id="ch3-psychologist-hint-box-2" aria-hidden="true">
+                <span class="dialog-name" style="color: #fbbf24;">Совет психолога</span>
+                Важно разделить <strong>личность</strong> (усталость, выгорание) и <strong>процесс</strong> (ошибки в файле). Поддержать человека — да, снять ответственность за результат — нет. Ищите формулировку с чёткими рамками: время на передышку, дедлайн по файлу, отдельно — обсуждение нагрузки.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Теория к главе 3: игра «Попался, сукин сын!» (как в гл.1 — сначала теория об игре) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="32" id="ch3-theory1">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 3</p>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Игра «Попался, сукин сын!»</h2>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 mb-0"><strong>Суть игры:</strong> Игрок демонстрирует «сверхкомпетентность» и жертвенность (переработки, безупречность), но при этом допускает заметные ошибки. Ошибки — наживка. Если вы отреагируете <strong>гневом</strong> (Преследователь), он получает роль мученика. Если <strong>возьмёте работу на себя</strong> (Спасатель), закрепите за ним право косячить. Цель — снять с себя ответственность или получить индульгенцию за косяки.</p>
+        </div>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 mb-0"><strong>Выход:</strong> Разделить <em>личность</em> (усталость, вклад) и <em>процесс</em> (ошибка в файле). Подтвердить вклад, но не снимать ответственность за результат. Не кричать, не делать работу за него.</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Теория к главе 3: разбор конкретной ситуации (как в гл.1 — потом разбор ситуации) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="33" id="ch3-theory2">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 3</p>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Разбор ситуации: Виктор и презентация</h2>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 mb-0"><strong>Ситуация:</strong> Виктор две ночи в офисе, отличные графики, но логотип конкурентов и опечатка в фамилии гендиректора. Он оправдывается «нагрузкой» и «человеческим фактором», предлагает стажера — с намёком, что тот всё испортит.</p>
+        </div>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 mb-0"><strong>Правильный ход:</strong> Услышать усталость, но не снимать ответственность. Чёткие рамки: пауза, кофе, дедлайн по файлу, отдельно — обсуждение нагрузки в понедельник. Так вы не играете ни в Преследователя, ни в Спасателя.</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Глава 3: пояснение выбранного варианта и начисление баллов (как в гл.1 — после теории) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="34" id="ch3-outcome">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
+        <div id="chapter3-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
+          <!-- Заполняется по JS в зависимости от выбора -->
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <div class="slide slide-clickable" data-slide="35">
       <div class="slide-inner">
         <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Финальный тест 🎓</h2>
         <p class="text-slate-400 text-sm">Проверка на Взрослого. Выберите ответ на каждый вопрос.</p>
         <p class="slide-hint mt-6">Нажмите на экран для продолжения</p>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="23" data-quiz="0">
+    <div class="slide slide-stretch" data-slide="36" data-quiz="0">
       <div class="slide-inner">
         <p class="text-white font-medium mb-3">Вопрос 1. Коллега: «Ой, я такая глупая в таблицах, поможешь?» Это призыв в игру:</p>
         <div class="space-y-2" id="quiz-q0">
@@ -1883,7 +2179,7 @@
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="24" data-quiz="1">
+    <div class="slide slide-stretch" data-slide="37" data-quiz="1">
       <div class="slide-inner">
         <p class="text-white font-medium mb-3">Вопрос 2. Какая позиция лучше для переговоров о повышении?</p>
         <div class="space-y-2" id="quiz-q1">
@@ -1893,7 +2189,7 @@
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="25" data-quiz="2">
+    <div class="slide slide-stretch" data-slide="38" data-quiz="2">
       <div class="slide-inner">
         <p class="text-white font-medium mb-3">Вопрос 3. Начальник кричит. Что делать?</p>
         <div class="space-y-2" id="quiz-q2">
@@ -1903,7 +2199,7 @@
         </div>
       </div>
     </div>
-    <div class="slide slide-stretch" data-slide="26" id="slide-cert">
+    <div class="slide slide-stretch" data-slide="39" id="slide-cert">
       <div class="slide-inner text-center">
         <p class="text-white font-display text-xl font-bold mb-2" id="cert-block-title">Поздравляем! 🏆</p>
         <p class="text-slate-300 text-sm mb-6" id="cert-block-desc">Ты готов не дать себя «заиграть».</p>
@@ -1974,13 +2270,16 @@
     (function() {
       gsap.registerPlugin(ScrollTrigger);
 
-      var TOTAL_SLIDES = 27;
+      var TOTAL_SLIDES = 40;
       var currentSlide = 0;
 
       var lastNovellaChoice = -1;
       var lastChapter2Choice = -1;
       var ch1PointsAwarded = false;
       var ch2PointsAwarded = false;
+      var ch3Win = false;
+      var ch3Branch = '';
+      var ch3PointsAwarded = false;
       var ch2LosePenaltyApplied = false;
       var ch2PendingResourcePenalty = 0;
       var ch2PendingInfluencePenalty = 0;
@@ -1990,6 +2289,7 @@
       var choiceParentCount = 0;
       var hintUseCount = 0;
       var hintUseCountCh2 = 0;
+      var hintUseCountCh3 = 0;
 
       function updateChapterHighlight() {
         var i = currentSlide;
@@ -1997,7 +2297,8 @@
         if (i <= 10) idx = 0;
         else if (i <= 18) idx = 1;
         else if (i <= 21) idx = 2;
-        else if (i <= 25) idx = 5;
+        else if (i <= 34) idx = 2;
+        else if (i <= 38) idx = 5;
         else idx = 4;
         var btns = document.querySelectorAll('.course-nav-chapter-btn');
         btns.forEach(function(b, k) { b.classList.toggle('active', k === idx); });
@@ -2258,6 +2559,30 @@
             }
           }
         }
+        if (i === 34) {
+          var ch3Block = document.getElementById('chapter3-outcome-explanation');
+          if (ch3Block) {
+            ch3Block.classList.remove('outcome-lose');
+            if (ch3Win) {
+              if (!ch3PointsAwarded) {
+                awarenessPoints += 35;
+                ch3PointsAwarded = true;
+                updateToolbarPoints();
+              }
+              var grossCh3 = awarenessPoints;
+              var ch3HintComment = hintUseCountCh3 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh3 + '. Списывается 10 баллов за каждую.</p>' : '';
+              ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант «Гроссмейстер» — вы разделили личность и процесс, не сняли ответственность.</strong></p><p class="text-slate-300">По теории игры «Попался, сукин сын!» вы не вошли ни в Преследователя, ни в Спасателя — манипуляция не сработала.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh3 + '"' + (hintUseCountCh3 > 0 ? ' data-hint-penalty="' + (hintUseCountCh3 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch3HintComment;
+              runConfetti();
+              runPointsAnimation(ch3Block);
+              if (hintUseCountCh3 > 0) setTimeout(function() { runHintPenaltyDeduction(ch3Block); }, 2600);
+            } else {
+              var failLine = ch3Branch === 'anger' ? 'Ваш выбор: реакция из позиции Преследователя (гнев).' : ch3Branch === 'save' ? 'Ваш выбор: вы взяли на себя его работу (Спасатель).' : ch3Branch === 'delegate' ? 'Ваш выбор: передача стажёру без чётких границ.' : 'Выберите вариант на слайде.';
+              var failExplain = ch3Branch === 'anger' ? 'Виктор получает роль «мученика» — игра выиграна им.' : ch3Branch === 'save' ? 'Ответственность размыта, манипуляция сработала.' : ch3Branch === 'delegate' ? 'Виктору осталось пространство для оправданий.' : '';
+              ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>' + failLine + '</strong></p><p class="text-slate-300">' + failExplain + '</p><p class="text-slate-400 mt-2">Правильный ход: разделить личность (усталость) и процесс (ошибка), подтвердить вклад, но не снимать ответственность.</p>';
+              runLoseAnimation(ch3Block);
+            }
+          }
+        }
         if (i === 21) {
           var pointsBlock = document.getElementById('chapter2-points-explanation');
           if (pointsBlock) {
@@ -2296,6 +2621,7 @@
             }
           }
         }
+        if (i === 25) updateCh3UserName();
         if (i === 12) {
           document.querySelectorAll('.scene-kitchen .character-sprite.enter-right').forEach(function(img) { img.classList.remove('enter-right'); });
           var charEl = document.getElementById('ch2-char-12');
@@ -2304,6 +2630,14 @@
         if (i !== 17) {
           var ch2Box = document.getElementById('ch2-psychologist-hint-box');
           if (ch2Box) { ch2Box.classList.add('hidden'); ch2Box.setAttribute('aria-hidden', 'true'); }
+        }
+        if (i !== 27) {
+          var ch3Box1 = document.getElementById('ch3-psychologist-hint-box-1');
+          if (ch3Box1) { ch3Box1.classList.add('hidden'); ch3Box1.setAttribute('aria-hidden', 'true'); }
+        }
+        if (i !== 31) {
+          var ch3Box2 = document.getElementById('ch3-psychologist-hint-box-2');
+          if (ch3Box2) { ch3Box2.classList.add('hidden'); ch3Box2.setAttribute('aria-hidden', 'true'); }
         }
       }
 
@@ -2444,6 +2778,13 @@
         var el = document.getElementById('boss-dialog-name');
         if (el) el.textContent = (typeof courseUserName !== 'undefined' && courseUserName && courseUserName.trim()) ? courseUserName.trim() : 'Коллега';
       }
+      function updateCh3UserName() {
+        var name = (typeof courseUserName !== 'undefined' && courseUserName && courseUserName.trim()) ? courseUserName.trim() : 'Вы';
+        var el = document.getElementById('ch3-user-name');
+        if (el) el.textContent = name;
+        var elChoice = document.getElementById('ch3-user-name-choice');
+        if (elChoice) elChoice.textContent = name;
+      }
       document.getElementById('novella-choices') && document.getElementById('novella-choices').addEventListener('click', function(e) {
         var btn = e.target.closest('.novella-choice');
         if (!btn) return;
@@ -2504,6 +2845,34 @@
           goToSlide(18);
         }
       });
+      document.getElementById('ch3-choices-1') && document.getElementById('ch3-choices-1').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch3-choice');
+        if (!btn) return;
+        var val = btn.getAttribute('data-ch3-choice');
+        document.querySelectorAll('#ch3-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
+        if (val === '2') {
+          goToSlide(28);
+        } else {
+          ch3Win = false;
+          ch3Branch = (val === '0') ? 'anger' : 'save';
+          goToSlide(32);
+        }
+      });
+      document.getElementById('ch3-choices-2') && document.getElementById('ch3-choices-2').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch3-choice');
+        if (!btn) return;
+        var val = btn.getAttribute('data-ch3-choice');
+        document.querySelectorAll('#ch3-choices-2 .novella-choice').forEach(function(b) { b.disabled = true; });
+        if (val === '1') {
+          ch3Win = true;
+          var winBtn = document.querySelector('#ch3-choices-2 .novella-choice[data-ch3-choice="1"]');
+          if (winBtn) winBtn.classList.add('chosen-correct');
+        } else {
+          ch3Win = false;
+          ch3Branch = 'delegate';
+        }
+        goToSlide(32);
+      });
       function applyHintPenalty() {
         awarenessPoints -= 10;
         hintUseCount++;
@@ -2526,6 +2895,24 @@
             hintUseCountCh2++;
           }
           if (box) { box.classList.remove('hidden'); box.setAttribute('aria-hidden', 'false'); }
+        }
+        if (currentSlide === 27) {
+          var box1 = document.getElementById('ch3-psychologist-hint-box-1');
+          if (box1 && box1.classList.contains('hidden')) {
+            awarenessPoints -= 10;
+            hintUseCountCh3++;
+            updateToolbarPoints();
+          }
+          if (box1) { box1.classList.remove('hidden'); box1.setAttribute('aria-hidden', 'false'); }
+        }
+        if (currentSlide === 31) {
+          var box2 = document.getElementById('ch3-psychologist-hint-box-2');
+          if (box2 && box2.classList.contains('hidden')) {
+            awarenessPoints -= 10;
+            hintUseCountCh3++;
+            updateToolbarPoints();
+          }
+          if (box2) { box2.classList.remove('hidden'); box2.setAttribute('aria-hidden', 'false'); }
         }
       });
 
@@ -2627,6 +3014,7 @@
             courseUserName = DEFAULT_USER_NAME;
             try { localStorage.setItem(STORAGE_NAME_KEY, DEFAULT_USER_NAME); } catch (e) {}
             updateBossDialogName();
+            updateCh3UserName();
           }
         });
         userNameInput.addEventListener('input', function() {
@@ -2634,8 +3022,10 @@
           courseUserName = val || DEFAULT_USER_NAME;
           try { if (val) localStorage.setItem(STORAGE_NAME_KEY, val); else localStorage.setItem(STORAGE_NAME_KEY, DEFAULT_USER_NAME); } catch (e) {}
           updateBossDialogName();
+          updateCh3UserName();
         });
         updateBossDialogName();
+        updateCh3UserName();
       }
 
       var peshkaEl = document.getElementById('peshka-word');
