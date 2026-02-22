@@ -107,9 +107,8 @@
       background-color: #0f172a;
       pointer-events: none;
     }
-    /* Только мобильная обложка: картинка на всю ширину, пропорциональные отступы, центрирование блоков */
+    /* Мобильная обложка: порядок блоков (заголовок → картинка → имя и описание+CTA) */
     @media (max-width: 768px) {
-      .slide-intro .slide-inner { display: flex; flex-direction: column; gap: 1.25rem; }
       .slide-intro .intro-header { order: 0; }
       .slide-intro .intro-bg-center {
         order: 1;
@@ -118,8 +117,6 @@
         right: auto;
         top: auto;
         bottom: auto;
-        width: 100%;
-        margin: 0;
         flex-shrink: 0;
         aspect-ratio: 16/10;
         background-size: cover;
@@ -127,24 +124,7 @@
         min-height: 120px;
       }
       .slide-intro .intro-spacer { display: none; }
-      .slide-intro .intro-bottom {
-        order: 2;
-        position: relative;
-        margin-top: 0;
-        max-height: none;
-        flex-direction: column;
-        align-items: center;
-        gap: 1.25rem;
-      }
-      .slide-intro .intro-name-wrap { max-width: 100%; width: 100%; align-items: center; text-align: center; }
-      .slide-intro .intro-left {
-        max-width: 100%;
-        width: 100%;
-        box-sizing: border-box;
-        align-items: center;
-        text-align: center;
-      }
-      .slide-intro .intro-left .description { text-align: center; }
+      .slide-intro .intro-bottom { order: 2; }
     }
     .slide-intro .intro-stripe {
       position: absolute;
@@ -313,8 +293,43 @@
       .slide-intro .intro-left { max-width: min(40vw, 342px); }
       .slide-intro .intro-name-wrap { max-width: 260px; }
     }
+    /* Мобильная обложка (титульная страница): потоковая вёрстка, 100% картинка, пропорциональные отступы, центрирование */
     @media (max-width: 768px) {
-      .slide-intro .intro-bottom { gap: 1rem; padding: 0 0.5rem 0.5rem; }
+      .slide.slide-intro .slide-inner {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.25rem !important;
+        max-width: 100% !important;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      .slide-intro .intro-bottom {
+        position: relative !important;
+        bottom: auto;
+        left: auto;
+        right: auto;
+        margin-top: 0;
+        max-height: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 0 0.5rem 0.5rem;
+      }
+      .slide-intro .intro-bg-center {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+      .slide-intro .intro-left {
+        max-width: 100%;
+        width: 100%;
+        align-items: center;
+        text-align: center;
+      }
+      .slide-intro .intro-left .description { text-align: center; }
+      .slide-intro .intro-name-wrap { max-width: 100%; width: 100%; align-items: center; text-align: center; }
+    }
+    @media (max-width: 768px) {
+      .slide-intro .intro-bottom { gap: 1rem; }
       .slide-intro .intro-left { max-width: 100%; }
       .slide-intro .intro-header h1 { text-align: center; }
       .slide-intro .intro-bg-center { min-height: 80px; }
@@ -1069,14 +1084,28 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      .novella-scene { --chapter-character-max-width: clamp(160px, 38vw, 260px); --chapter-character-max-height: clamp(200px, 48vh, 380px); }
+      /* Единые размер и вертикаль для всех персонажей на мобильной; по горизонтали различаются (сетка) */
+      .novella-scene {
+        --chapter-character-max-width: 42vw;
+        --chapter-character-max-height: 50vh;
+        --chapter-character-height-pct: 65%;
+      }
       .novella-scene .boss-sprite,
-      .novella-scene .character-sprite { transform: translateY(10%) scale(var(--chapter-character-scale)); }
-      .novella-scene .boss-sprite { transform-origin: bottom left; }
-      .novella-scene.scene-kitchen .character-sprite { transform: translateY(10%) scale(var(--chapter-character-scale)); transform-origin: bottom center; }
+      .novella-scene .character-sprite {
+        width: 100%;
+        max-width: var(--chapter-character-max-width);
+        height: var(--chapter-character-height-pct);
+        max-height: var(--chapter-character-max-height);
+        object-fit: contain;
+        object-position: bottom center;
+        transform: translateY(8%) scale(var(--chapter-character-scale));
+        align-self: end;
+      }
+      .novella-scene .boss-sprite { transform-origin: bottom left; justify-self: start; }
+      .novella-scene.scene-kitchen .character-sprite { transform-origin: bottom center; justify-self: end; }
       @keyframes boss-slide-in-mobile {
-        from { transform: translateY(10%) scale(1.22) translateX(-120%); }
-        to { transform: translateY(10%) scale(1.22) translateX(0); }
+        from { transform: translateY(8%) scale(1.22) translateX(-120%); }
+        to { transform: translateY(8%) scale(1.22) translateX(0); }
       }
       #slide-problem .boss-sprite.boss-enter { animation: boss-slide-in-mobile 0.7s ease-out forwards; }
       .scene-text-zone { width: 100%; box-sizing: border-box; }
