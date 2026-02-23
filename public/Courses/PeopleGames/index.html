@@ -676,13 +676,18 @@
       80% { transform: translateX(4px); }
     }
 
-    /* Слайды теории после глав — единый стиль (гл.1: theory-berne, theory-game; гл.2: ch2-theory1, ch2-theory2; гл.3: ch3-theory1, ch3-theory2) */
+    /* Слайды теории после глав — единый стиль (гл.1: theory-berne, theory-game; гл.2: ch2-theory1, ch2-theory2; гл.3: ch3-theory1, ch3-theory2; гл.4: ch4-theory1, ch4-theory2) */
     #theory-berne .slide-inner,
     #theory-game .slide-inner,
     #ch2-theory1 .slide-inner,
     #ch2-theory2 .slide-inner,
     #ch3-theory1 .slide-inner,
-    #ch3-theory2 .slide-inner {
+    #ch3-theory2 .slide-inner,
+    #ch4-theory1 .slide-inner,
+    #ch4-theory2 .slide-inner,
+    #ch5-theory1 .slide-inner,
+    #ch5-theory2 .slide-inner,
+    #ch5-theory3 .slide-inner {
       max-width: 720px;
       padding: 1.5rem 1.25rem;
       background: linear-gradient(145deg, rgba(15, 23, 42, 0.97) 0%, rgba(30, 41, 59, 0.6) 100%);
@@ -690,6 +695,11 @@
       border: 1px solid rgba(251, 191, 36, 0.2);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
     }
+    #ch4-theory1 .slide-inner { border-color: rgba(236, 72, 153, 0.35); }
+    #ch4-theory2 .slide-inner { border-color: rgba(16, 185, 129, 0.35); }
+    #ch5-theory1 .slide-inner,
+    #ch5-theory2 .slide-inner,
+    #ch5-theory3 .slide-inner { border-color: rgba(251, 191, 36, 0.35); }
     #theory-berne .slide-inner h2,
     #theory-game .slide-inner h2,
     #ch2-theory1 .slide-inner h2,
@@ -721,7 +731,11 @@
     #ch2-theory1 .theory-card,
     #ch2-theory2 .theory-card,
     #ch3-theory1 .theory-card,
-    #ch3-theory2 .theory-card {
+    #ch3-theory2 .theory-card,
+    #ch4-theory1 .theory-card,
+    #ch5-theory1 .theory-card,
+    #ch5-theory2 .theory-card,
+    #ch5-theory3 .theory-card {
       background: rgba(255, 255, 255, 0.03);
       border-left: 3px solid rgba(251, 191, 36, 0.6);
       border-radius: 0 0.5rem 0.5rem 0;
@@ -729,6 +743,10 @@
       margin-bottom: 0.85rem;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     }
+    #ch4-theory1 .theory-card { border-left-color: rgba(236, 72, 153, 0.6); }
+    #ch5-theory1 .theory-card,
+    #ch5-theory2 .theory-card,
+    #ch5-theory3 .theory-card { border-left-color: rgba(251, 191, 36, 0.6); }
     #ch2-theory1 .theory-card strong,
     #ch2-theory2 .theory-card strong {
       color: rgba(251, 191, 36, 0.95);
@@ -739,9 +757,14 @@
     #ch2-theory1 .theory-card:last-of-type,
     #ch2-theory2 .theory-card:last-of-type { margin-bottom: 0; }
 
-    /* Глава 3 — теория: авто-масштаб под высоту экрана (обильная версия), чтобы слайд входил целиком */
+    /* Глава 3–4 — теория: авто-масштаб под высоту экрана (обильная версия), чтобы слайд входил целиком */
     #ch3-theory1 .slide-inner,
-    #ch3-theory2 .slide-inner {
+    #ch3-theory2 .slide-inner,
+    #ch4-theory1 .slide-inner,
+    #ch4-theory2 .slide-inner,
+    #ch5-theory1 .slide-inner,
+    #ch5-theory2 .slide-inner,
+    #ch5-theory3 .slide-inner {
       max-height: 100%;
       display: flex;
       flex-direction: column;
@@ -750,35 +773,74 @@
       box-sizing: border-box;
     }
     #ch3-theory1 .slide-inner > p.text-slate-500:first-of-type,
-    #ch3-theory2 .slide-inner > p.text-slate-500:first-of-type {
+    #ch3-theory2 .slide-inner > p.text-slate-500:first-of-type,
+    #ch4-theory1 .slide-inner > p.text-slate-500:first-of-type,
+    #ch4-theory2 .slide-inner > p.text-slate-500:first-of-type,
+    #ch5-theory1 .slide-inner > p.text-slate-500:first-of-type,
+    #ch5-theory2 .slide-inner > p.text-slate-500:first-of-type,
+    #ch5-theory3 .slide-inner > p.text-slate-500:first-of-type {
       font-size: clamp(0.5rem, 1.15vh, 0.7rem);
       margin-bottom: clamp(0.15rem, 0.5vh, 0.5rem);
       flex-shrink: 0;
     }
     #ch3-theory1 .slide-inner h2,
-    #ch3-theory2 .slide-inner h2 {
+    #ch3-theory2 .slide-inner h2,
+    #ch4-theory1 .slide-inner h2,
+    #ch4-theory2 .slide-inner h2,
+    #ch5-theory1 .slide-inner h2,
+    #ch5-theory2 .slide-inner h2,
+    #ch5-theory3 .slide-inner h2 {
       font-size: clamp(0.95rem, 3.2vh, 1.5rem);
       margin-bottom: clamp(0.4rem, 1.2vh, 1.25rem);
       flex-shrink: 0;
     }
     #ch3-theory1 .slide-inner .theory-card,
-    #ch3-theory2 .slide-inner .theory-card {
+    #ch3-theory2 .slide-inner .theory-card,
+    #ch4-theory1 .slide-inner .theory-card,
+    #ch4-theory2 .slide-inner .theory-card,
+    #ch5-theory1 .slide-inner .theory-card,
+    #ch5-theory2 .slide-inner .theory-card,
+    #ch5-theory3 .slide-inner .theory-card {
       padding: clamp(0.4rem, 1.4vh, 0.9rem) clamp(0.5rem, 1.1vw, 1rem);
       margin-bottom: clamp(0.3rem, 1vh, 0.85rem);
       min-height: 0;
       flex-shrink: 1;
     }
     #ch3-theory1 .slide-inner .theory-card:last-of-type,
-    #ch3-theory2 .slide-inner .theory-card:last-of-type { margin-bottom: 0; }
+    #ch3-theory2 .slide-inner .theory-card:last-of-type,
+    #ch4-theory1 .slide-inner .theory-card:last-of-type,
+    #ch4-theory2 .slide-inner .theory-card:last-of-type,
+    #ch5-theory1 .slide-inner .theory-card:last-of-type,
+    #ch5-theory2 .slide-inner .theory-card:last-of-type,
+    #ch5-theory3 .slide-inner .theory-card:last-of-type { margin-bottom: 0; }
     #ch3-theory1 .slide-inner .theory-card p,
-    #ch3-theory2 .slide-inner .theory-card p {
+    #ch3-theory2 .slide-inner .theory-card p,
+    #ch4-theory1 .slide-inner .theory-card p,
+    #ch4-theory2 .slide-inner .theory-card p,
+    #ch5-theory1 .slide-inner .theory-card p,
+    #ch5-theory2 .slide-inner .theory-card p,
+    #ch5-theory3 .slide-inner .theory-card p {
       font-size: clamp(0.6rem, 1.55vh, 0.95rem);
       line-height: 1.35;
       margin-bottom: 0;
     }
     #ch3-theory1 .slide-inner .slide-hint,
-    #ch3-theory2 .slide-inner .slide-hint {
+    #ch3-theory2 .slide-inner .slide-hint,
+    #ch4-theory1 .slide-inner .slide-hint,
+    #ch4-theory2 .slide-inner .slide-hint,
+    #ch5-theory1 .slide-inner .slide-hint,
+    #ch5-theory2 .slide-inner .slide-hint,
+    #ch5-theory3 .slide-inner .slide-hint,
+    #ch5-theory3 .slide-inner .btn-go {
       flex-shrink: 0;
+    }
+    #ch3-theory1 .slide-inner .slide-hint,
+    #ch3-theory2 .slide-inner .slide-hint,
+    #ch4-theory1 .slide-inner .slide-hint,
+    #ch4-theory2 .slide-inner .slide-hint,
+    #ch5-theory1 .slide-inner .slide-hint,
+    #ch5-theory2 .slide-inner .slide-hint,
+    #ch5-theory3 .slide-inner .slide-hint {
       margin-top: auto;
       padding-top: clamp(0.2rem, 0.6vh, 0.5rem);
       font-size: clamp(0.5rem, 1.1vh, 0.7rem);
@@ -915,13 +977,91 @@
     }
     .novella-scene.scene-office-night .novella-choices { grid-column: 1; grid-row: 1; }
     .novella-scene.scene-office-night.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
+    /* Глава 4: офис Алисы ночью — фон ALISA_OFFICE_NIGHT.png, персонаж Алиса справа */
+    .novella-scene.scene-alisa-office {
+      background-image: url('ALISA_OFFICE_NIGHT.png');
+    }
+    .novella-scene.scene-alisa-office.has-character {
+      grid-template-columns: 1fr minmax(240px, 400px);
+    }
+    .novella-scene.scene-alisa-office .character-sprite {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      justify-self: end;
+      align-self: end;
+      object-position: bottom center;
+      transform-origin: bottom center;
+    }
+    .novella-scene.scene-alisa-office .novella-choices { grid-column: 1; grid-row: 1; }
+    .novella-scene.scene-alisa-office.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
+    /* Глава 5: зал совета — фоны по контексту, без отдельного слоя справа (картинка = фон) */
+    .novella-scene.scene-boardroom,
+    .novella-scene.scene-boardroom-dialogue,
+    .novella-scene.scene-boardroom-boss,
+    .novella-scene.scene-boardroom-leno {
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      flex: 1;
+      min-height: 0;
+    }
+    .novella-scene.scene-boardroom {
+      background-image: url('FinalFon.png');
+    }
+    #chapter5-title .novella-scene.scene-boardroom { background-image: url('FinalFon.png'); }
+    .novella-scene.scene-boardroom-dialogue { background-image: url('bossalisevictor.png'); }
+    .novella-scene.scene-boardroom-boss {
+      background-image: url('boss_bad..png');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #0f172a;
+    }
+    .novella-scene.scene-boardroom-leno { background-image: url('lenfinal.png'); }
+    .novella-scene.scene-boardroom-zam { background-image: url('bosszam.png'); background-size: cover; background-position: center; background-repeat: no-repeat; }
+    /* Все фоны гл.5 — только фон, без колонки под спрайт; текст на весь экран */
+    .novella-scene.scene-boardroom.has-character,
+    .novella-scene.scene-boardroom-dialogue.has-character,
+    .novella-scene.scene-boardroom-boss.has-character,
+    .novella-scene.scene-boardroom-leno.has-character {
+      grid-template-columns: 1fr;
+    }
+    .novella-scene.scene-boardroom .character-sprite,
+    .novella-scene.scene-boardroom-dialogue .character-sprite,
+    .novella-scene.scene-boardroom-boss .character-sprite,
+    .novella-scene.scene-boardroom-leno .character-sprite {
+      display: none;
+    }
+    .novella-scene.scene-boardroom.has-character .scene-text-zone,
+    .novella-scene.scene-boardroom-dialogue.has-character .scene-text-zone,
+    .novella-scene.scene-boardroom-boss.has-character .scene-text-zone,
+    .novella-scene.scene-boardroom-leno.has-character .scene-text-zone {
+      grid-column: 1 / -1;
+    }
+    .novella-scene.scene-boardroom .novella-choices,
+    .novella-scene.scene-boardroom-dialogue .novella-choices {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    #ch5-reversal .slide-inner,
+    #ch5-ending .slide-inner {
+      background-image: url('bosszam.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100%;
+    }
     /* Обложка главы: сцена той же высоты и положения, что и на первом слайде главы */
     #chapter1-title .slide-inner,
     #chapter2-title .slide-inner,
-    #chapter3-title .slide-inner { justify-content: flex-start; }
+    #chapter3-title .slide-inner,
+    #chapter4-title .slide-inner,
+    #chapter5-title .slide-inner { justify-content: flex-start; }
     #chapter1-title .novella-scene:not(.novella-chapter-scene),
     #chapter2-title .novella-scene:not(.novella-chapter-scene),
-    #chapter3-title .novella-scene:not(.novella-chapter-scene) {
+    #chapter3-title .novella-scene:not(.novella-chapter-scene),
+    #chapter4-title .novella-scene:not(.novella-chapter-scene),
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) {
       width: 100%;
       height: calc(0.8 * (100vh - 52px));
       min-height: 260px;
@@ -932,7 +1072,9 @@
     @media (max-width: 480px) {
       #chapter1-title .novella-scene:not(.novella-chapter-scene),
       #chapter2-title .novella-scene:not(.novella-chapter-scene),
-      #chapter3-title .novella-scene:not(.novella-chapter-scene) {
+      #chapter3-title .novella-scene:not(.novella-chapter-scene),
+      #chapter4-title .novella-scene:not(.novella-chapter-scene),
+      #chapter5-title .novella-scene:not(.novella-chapter-scene) {
         height: calc(0.8 * (100vh - 48px));
         max-height: calc(0.8 * (100vh - 48px));
       }
@@ -949,34 +1091,56 @@
     #chapter3-title .novella-scene:not(.novella-chapter-scene) p {
       text-shadow: 0 0 2px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.6);
     }
-    #chapter1-title .novella-scene:not(.novella-chapter-scene) h1,
-    #chapter2-title .novella-scene:not(.novella-chapter-scene) h1,
-    #chapter3-title .novella-scene:not(.novella-chapter-scene) h1 { font-size: clamp(2rem, 6vw, 3.5rem); }
-    #chapter1-title .novella-scene:not(.novella-chapter-scene) h2,
-    #chapter2-title .novella-scene:not(.novella-chapter-scene) h2,
-    #chapter3-title .novella-scene:not(.novella-chapter-scene) h2 { font-size: clamp(1.5rem, 4.5vw, 2.75rem); }
-    #chapter1-title .novella-scene:not(.novella-chapter-scene) p,
-    #chapter2-title .novella-scene:not(.novella-chapter-scene) p,
-    #chapter3-title .novella-scene:not(.novella-chapter-scene) p { font-size: clamp(0.95rem, 2.2vw, 1.15rem); color: rgba(248,250,252,0.95); }
+    /* Усиленная читаемость обложки главы 4 на тёмном фоне офиса */
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) p {
+      text-shadow: 0 0 2px rgba(0,0,0,1), 0 0 4px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.6);
+    }
     #chapter1-title .novella-scene:not(.novella-chapter-scene) h1,
     #chapter2-title .novella-scene:not(.novella-chapter-scene) h1,
     #chapter3-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) h1 { font-size: clamp(2rem, 6vw, 3.5rem); }
     #chapter1-title .novella-scene:not(.novella-chapter-scene) h2,
     #chapter2-title .novella-scene:not(.novella-chapter-scene) h2,
     #chapter3-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) h2 { font-size: clamp(1.5rem, 4.5vw, 2.75rem); }
     #chapter1-title .novella-scene:not(.novella-chapter-scene) p,
     #chapter2-title .novella-scene:not(.novella-chapter-scene) p,
-    #chapter3-title .novella-scene:not(.novella-chapter-scene) p { text-align: center; }
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) p { font-size: clamp(0.95rem, 2.2vw, 1.15rem); color: rgba(248,250,252,0.95); }
+    #chapter1-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter1-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter1-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter4-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter5-title .novella-scene:not(.novella-chapter-scene) p { text-align: center; }
     .novella-scene.scene-kitchen {
       background-image: url('KITCHEN.png');
     }
     .novella-scene.scene-kitchen.has-character {
       grid-template-columns: 1fr minmax(200px, 360px);
     }
-    /* Позиция Леночки и Виктора на десктопе — единый размер персонажа (на мобильной переопределяется в @media (max-width: 640px)) */
+    /* Позиция Леночки, Виктора и Алисы на десктопе — единый размер персонажа (на мобильной переопределяется в @media (max-width: 640px)) */
     @media (min-width: 641px) {
       .novella-scene.scene-kitchen .character-sprite,
-      .novella-scene.scene-office-night .character-sprite {
+      .novella-scene.scene-office-night .character-sprite,
+      .novella-scene.scene-alisa-office .character-sprite {
         grid-column: 2;
         grid-row: 1 / -1;
         justify-self: end;
@@ -1032,6 +1196,10 @@
     }
     .character-sprite.dim { opacity: 0.5; filter: brightness(0.7); }
     .character-sprite.dim-heavy { opacity: 0.4; filter: brightness(0.5) grayscale(100%); }
+    .character-sprite.ch4-dim { filter: brightness(0.7) sepia(0.3); }
+    /* Алиса использует тот же масштаб, что и остальные персонажи;
+       отдельный класс ch4-scale оставляем только для явной привязки точки трансформации. */
+    #ch4-adult3 .character-sprite.ch4-scale { transform-origin: bottom center; }
     .novella-choices {
       grid-column: 2;
       grid-row: 1;
@@ -1043,6 +1211,13 @@
     }
     .novella-choices .novella-choice {
       display: block;
+    }
+    .novella-choices.choices-slide-in {
+      animation: choices-slide-in 0.5s ease-out forwards;
+    }
+    @keyframes choices-slide-in {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     .scene-text-zone {
       position: relative;
@@ -1210,6 +1385,34 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
+      /* Глава 4 (офис Алисы): та же сетка */
+      .novella-scene.scene-alisa-office.has-character {
+        grid-template-columns: 1fr minmax(140px, 45%);
+        grid-template-rows: 55vh auto;
+        align-content: stretch;
+      }
+      .novella-scene.scene-alisa-office .novella-choices {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: column;
+        padding: 0.4rem 0.5rem;
+      }
+      .novella-scene.scene-alisa-office .novella-choices .novella-choice {
+        width: 100%;
+        flex: none;
+        min-width: 0;
+      }
+      .novella-scene.scene-alisa-office .character-sprite {
+        grid-column: 2;
+        grid-row: 1;
+      }
+      .novella-scene.scene-alisa-office.has-character .scene-text-zone {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-height: 0;
+        justify-content: flex-start;
+        padding: 0.4rem 0.5rem 0.5rem;
+      }
       /* Единые размер и вертикаль для всех персонажей на мобильной; по горизонтали различаются (сетка) */
       .novella-scene {
         --chapter-character-max-width: 48vw;
@@ -1232,7 +1435,8 @@
       }
       .novella-scene .boss-sprite { transform-origin: bottom left; justify-self: start; }
       .novella-scene.scene-kitchen .character-sprite,
-      .novella-scene.scene-office-night .character-sprite {
+      .novella-scene.scene-office-night .character-sprite,
+      .novella-scene.scene-alisa-office .character-sprite {
         object-fit: contain !important;
         object-position: bottom center !important;
         transform: translateY(8%) scale(var(--chapter-character-scale));
@@ -1266,6 +1470,7 @@
       .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: 48vh auto; }
       .novella-scene.scene-kitchen.has-character { grid-template-rows: 48vh auto; }
       .novella-scene.scene-office-night.has-character { grid-template-rows: 48vh auto; }
+      .novella-scene.scene-alisa-office.has-character { grid-template-rows: 48vh auto; }
       .novella-scene.has-character .scene-text-zone { padding: 0.3rem 0.4rem 0.4rem; }
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
       .dialog-box { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
@@ -1330,8 +1535,8 @@
       #slide-cert .slide-inner .btn-go { font-size: 0.68rem; padding: 0.4rem 0.65rem; }
       [data-slide="22"] .slide-inner h2 { font-size: 1.1rem; }
       [data-slide="22"] .slide-inner p.text-slate-400 { font-size: 0.75rem; }
-      [data-slide="35"] .slide-inner h2 { font-size: 1.1rem; }
-      [data-slide="35"] .slide-inner p.text-slate-400 { font-size: 0.75rem; }
+      [data-slide="37"] .slide-inner h2 { font-size: 1.1rem; }
+      [data-slide="37"] .slide-inner p.text-slate-400 { font-size: 0.75rem; }
     }
     @media (max-height: 600px) {
       #theory-berne .slide-inner h2, #theory-game .slide-inner h2 { font-size: 1rem; margin-bottom: 0.25rem; }
@@ -1576,14 +1781,13 @@
 <body class="antialiased min-h-screen">
   <div class="course-topbar">
   <nav class="course-nav" aria-label="Навигация по курсу">
-    <span class="text-slate-500 text-xs mr-2" id="slide-counter">1 / 27</span>
+    <span class="text-slate-500 text-xs mr-2" id="slide-counter">1 / 50</span>
     <div class="course-nav-chapters" aria-label="Переход к главам">
       <button type="button" class="course-nav-chapter-btn" data-goto="0" title="Глава 1">1</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="11" title="Глава 2">2</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Глава 3">3</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="33" title="Теория к главе 3">4</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="39" title="Сертификат">5</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="35" title="Тест">🎯</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="37" title="Глава 4">4</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="56" title="Глава 5: Финальная битва">🎯</button>
     </div>
     <div class="progress-bar-track" aria-hidden="true">
       <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0.0588)"></div>
@@ -2091,8 +2295,25 @@
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
-    <!-- Глава 3: диалог 2 — выбор из трёх вариантов -->
-    <div class="slide slide-stretch" data-slide="27" id="ch3-dialog2">
+    <!-- Глава 3: диалог 2 — только текст, затем выбор -->
+    <div class="slide slide-stretch slide-clickable" data-slide="27" id="ch3-dialog2-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name"><span class="ch3-user-name-placeholder">[Имя]</span></span>
+                Нужно как-то отреагировать...
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="28" id="ch3-dialog2">
       <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
         <p class="text-slate-500 text-xs mb-1">Глава 3. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-office-night has-character">
@@ -2105,7 +2326,7 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices" id="ch3-choices-1">
+          <div class="novella-choices choices-slide-in" id="ch3-choices-1">
             <button type="button" class="novella-choice ch3-choice" data-ch3-choice="0">Это твоя ответственность — проверить файл перед показом! Исправляй немедленно!</button>
             <button type="button" class="novella-choice ch3-choice" data-ch3-choice="1">Ладно, я вижу, ты без сил. Давай флешку, я сам подправлю титульник, а ты иди домой.</button>
             <button type="button" class="novella-choice ch3-choice" data-ch3-choice="2">Я вижу объем твоей работы. Тем не менее, презентация в таком виде не пойдет. Что нужно сделать, чтобы через 30 минут всё было идеально?</button>
@@ -2122,7 +2343,7 @@
       </div>
     </div>
     <!-- Глава 3: шаг 2 — фраза 1 -->
-    <div class="slide slide-stretch slide-clickable" data-slide="28" id="ch3-step2-p1">
+    <div class="slide slide-stretch slide-clickable" data-slide="29" id="ch3-step2-p1">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
         <div class="novella-scene novella-chapter-scene scene-office-night has-character">
@@ -2140,7 +2361,7 @@
       </div>
     </div>
     <!-- Глава 3: шаг 2 — фраза 2 -->
-    <div class="slide slide-stretch slide-clickable" data-slide="29" id="ch3-step2-p2">
+    <div class="slide slide-stretch slide-clickable" data-slide="30" id="ch3-step2-p2">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
         <div class="novella-scene novella-chapter-scene scene-office-night has-character">
@@ -2158,7 +2379,7 @@
       </div>
     </div>
     <!-- Глава 3: шаг 2 — фраза 3 -->
-    <div class="slide slide-stretch slide-clickable" data-slide="30" id="ch3-step2-p3">
+    <div class="slide slide-stretch slide-clickable" data-slide="31" id="ch3-step2-p3">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 3. Диалог</p>
         <div class="novella-scene novella-chapter-scene scene-office-night has-character">
@@ -2175,8 +2396,25 @@
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
-    <!-- Глава 3: шаг 2 — выбор варианта -->
-    <div class="slide slide-stretch" data-slide="31" id="ch3-step2">
+    <!-- Глава 3: шаг 2 — только текст, затем выбор -->
+    <div class="slide slide-stretch slide-clickable" data-slide="32" id="ch3-step2-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 3. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-office-night has-character">
+          <img src="Виктор.png" alt="" class="character-sprite dim" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Вы</span>
+                Нужно как-то отреагировать на его слова...
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="33" id="ch3-step2">
       <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
         <p class="text-slate-500 text-xs mb-1">Глава 3. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-office-night has-character">
@@ -2189,7 +2427,7 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices" id="ch3-choices-2">
+          <div class="novella-choices choices-slide-in" id="ch3-choices-2">
             <button type="button" class="novella-choice ch3-choice" data-ch3-choice="0">Хорошо, пусть Андрей поможет. Я прослежу.</button>
             <button type="button" class="novella-choice ch3-choice" data-ch3-choice="1">Я услышал: ты устал и не ручаешься за результат. Сделай паузу 10 минут, выпей кофе и заверши правки. Я жду файл в 20:00. Твою нагрузку обсудим в понедельник.</button>
           </div>
@@ -2205,7 +2443,7 @@
       </div>
     </div>
     <!-- Теория к главе 3: игра «Попался, сукин сын!» (как в гл.1 — сначала теория об игре) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="32" id="ch3-theory1">
+    <section class="slide slide-stretch slide-clickable" data-slide="34" id="ch3-theory1">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 3</p>
         <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Игра «Попался, сукин сын!»</h2>
@@ -2219,7 +2457,7 @@
       </div>
     </section>
     <!-- Теория к главе 3: разбор конкретной ситуации (как в гл.1 — потом разбор ситуации) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="33" id="ch3-theory2">
+    <section class="slide slide-stretch slide-clickable" data-slide="35" id="ch3-theory2">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 3</p>
         <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Разбор ситуации: Виктор и презентация</h2>
@@ -2232,8 +2470,8 @@
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
-    <!-- Глава 3: пояснение выбранного варианта и начисление баллов (как в гл.1 — после теории) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="34" id="ch3-outcome">
+    <!-- Глава 3: пояснение выбранного варианта и начисление баллов (после теории) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="36" id="ch3-outcome">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
         <div id="chapter3-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
@@ -2242,44 +2480,659 @@
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
-    <div class="slide slide-clickable" data-slide="35">
+    <!-- Глава 4: Охота на ведьм — обложка -->
+    <div class="slide slide-stretch slide-clickable" data-slide="37" id="chapter4-title">
+      <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
+        <div class="chapter-cover-spacer" aria-hidden="true"></div>
+        <div class="novella-scene scene-alisa-office rounded-2xl w-full flex flex-col justify-center items-center p-6">
+          <h1 class="font-display text-3xl sm:text-5xl font-bold text-accent mb-2 reveal" data-reveal>Глава 4</h1>
+          <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mb-4 reveal" data-reveal>«Охота на ведьм»</h2>
+          <div class="w-20 h-1 bg-amber-400 rounded-full mb-4 reveal" data-reveal></div>
+          <p class="text-slate-300 text-center text-sm sm:text-base reveal" data-reveal>Уровень сложности: <strong>Продвинутый</strong></p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 4: Алиса — только текст, затем кнопка -->
+    <div class="slide slide-stretch slide-clickable" data-slide="38" id="ch4-dialog1-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Ремарка</span>
+                <em>*Вы заходите в кабинет Алисы, арт-директора. Завтра Совет директоров, и вы пришли узнать, как обстоят дела с презентацией к этой встрече.*</em>
+              </div>
+              <div class="dialog-box">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Я закончила правки. Учла ваше замечание о том, что Совет не любит перегруженных таблиц. Я вынесла всю финансовую часть в приложение и оставила только вдохновляющий визуал. Теперь презентация выглядит... дорого. Посмотрите.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 4: выбор — только текст, затем варианты -->
+    <div class="slide slide-stretch slide-clickable" data-slide="39" id="ch4-choice1-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Ремарка</span>
+                <em>*Вы видите, что без таблиц проект выглядит как набор картинок. Денег под это не дадут.*</em>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="40" id="ch4-choice1">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Ремарка</span>
+                <em>*Вы видите, что без таблиц проект выглядит как набор картинок. Денег под это не дадут.*</em>
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch4-choices-1">
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="parent">Алиса, не перегружать — это про дизайн, а не про удаление сути. Нужно вернуть расчёты.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="rescuer">Смело, но рискованно. Давай я сам выберу 3 главных цифры, а ты их просто вставишь?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_1">Эстетично. А как мы ответим Боссу, когда на 3-й минуте он спросит про ROI?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 4: ветка Родитель — только текст, затем выбор -->
+    <div class="slide slide-stretch slide-clickable" data-slide="41" id="ch4-parent-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite ch4-dim" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Вчера это был мусор, сегодня — суть. Я ориентируюсь на ваши слова, а не на интуицию. Если я буду сама решать, что важно, зачем тогда мне ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch slide-clickable" data-slide="42" id="ch4-parent">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite ch4-dim" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Вчера это был мусор, сегодня — суть. Я ориентируюсь на ваши слова, а не на интуицию. Если я буду сама решать, что важно, зачем тогда мне ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch4-choices-parent">
+            <button type="button" class="novella-choice ch4-choice" data-ch4-goto="42">Вернуться к цели (Взрослый)</button>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 4: взрослый 1 — только текст, затем выбор -->
+    <div class="slide slide-stretch slide-clickable" data-slide="43" id="ch4-adult1-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Я полагала, что цифры — ваша часть выступления. Но если вы настаиваете... Я могу их вернуть, но за целостность я не ручаюсь. Будет винегрет, за который мне как дизайнеру будет стыдно. Мы всё равно возвращаем?
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="44" id="ch4-adult1">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Я полагала, что цифры — ваша часть выступления. Но если вы настаиваете... Я могу их вернуть, но за целостность я не ручаюсь. Будет винегрет, за который мне как дизайнеру будет стыдно. Мы всё равно возвращаем?
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch4-choices-adult1">
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_shame">Да, возвращаем. Результат важнее твоего стыда.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_compromise">Я не хочу, чтобы тебе было стыдно. Давай оставим цифры только на одном слайде?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_2">Твой профессионализм в том и заключается, чтобы упаковать сложные данные красиво. Сколько нужно времени?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 4: взрослый 2 — только текст, затем выбор -->
+    <div class="slide slide-stretch slide-clickable" data-slide="45" id="ch4-adult2-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Хорошо. Я сделаю красивые таблицы. Но давайте зафиксируем: если завтра Босс скажет, что презентация перегружена, вы подтвердите, что это была ваша прямая просьба — вернуть данные вопреки моему совету?
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="46" id="ch4-adult2">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Хорошо. Я сделаю красивые таблицы. Но давайте зафиксируем: если завтра Босс скажет, что презентация перегружена, вы подтвердите, что это была ваша прямая просьба — вернуть данные вопреки моему совету?
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch4-choices-adult2">
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_guarantee">Конечно. Я всегда беру ответственность на себя. Просто делай.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_weakness">Алиса, мы в одной лодке. К чему эти формальности с фиксацией?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_3">Моя просьба — не вернуть данные, а защитить проект. Я жду версию, за которую тебе не будет стыдно.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 4: взрослый 3 — только текст, затем выбор -->
+    <div class="slide slide-stretch slide-clickable" data-slide="47" id="ch4-adult3-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса2.png" alt="" class="character-sprite ch4-scale" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                <em>*Алиса медленно закрывает ноутбук.*</em>
+              </div>
+              <div class="dialog-box">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Знаете... у меня начинает дико болеть голова. Боюсь, в таком состоянии я наделаю ошибок в этих ваших таблицах. Может, вы сами подправите шрифты в финальной версии? Исходники я скинула.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch" data-slide="48" id="ch4-adult3">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 relative">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса2.png" alt="" class="character-sprite ch4-scale" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                <em>*Алиса медленно закрывает ноутбук.*</em>
+              </div>
+              <div class="dialog-box">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Знаете... у меня начинает дико болеть голова. Боюсь, в таком состоянии я наделаю ошибок в этих ваших таблицах. Может, вы сами подправите шрифты в финальной версии? Исходники я скинула.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch4-choices-adult3">
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="fail_worker">Ох, сочувствую. Иди домой, я сам докручу.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="fail_tyrant">Утром будет поздно. Выпей таблетку и доделай. Это критически важно.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="win_final">Мигрень — это серьёзно. Давай так: ты отдыхаешь 30 минут, а потом решаешь — доделываешь сейчас или завтра презентуешь пустую версию сама.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 4: победа — только текст, затем кнопка -->
+    <div class="slide slide-stretch slide-clickable" data-slide="49" id="ch4-win-final-text">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Я попробую закончить. Но учтите — завтра на Совете я просто буду молчать. Раз вы так уверены в своём видении, я не хочу вам мешать своим неправильным дизайном.
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <div class="slide slide-stretch slide-clickable" data-slide="50" id="ch4-win-final">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Я попробую закончить. Но учтите — завтра на Совете я просто буду молчать. Раз вы так уверены в своём видении, я не хочу вам мешать своим неправильным дизайном.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch4-choices-win">
+            <button type="button" class="novella-choice ch4-choice" data-ch4-goto="52">Завершить подготовку (Анализ)</button>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 4: сглаживающая реплика после неправильного выбора (контент и переход задаются по JS) -->
+    <section class="slide slide-stretch" data-slide="51" id="ch4-smooth">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
+        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
+          <img src="Алиса1.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Ремарка</span>
+                <span id="ch4-smooth-text"><em>Разговор продолжается.</em></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Глава 4 — структура: 1) Обложка (37) 2) Диалог (38–52) 3) Теория: 2 слайда (53–54) 4) Начисление баллов (55) -->
+    <!-- Глава 4: итог проигрышной ветки (динамический контент по JS) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="52" id="ch4-outcome">
       <div class="slide-inner">
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Финальный тест 🎓</h2>
-        <p class="text-slate-400 text-sm">Проверка на Взрослого. Выберите ответ на каждый вопрос.</p>
+        <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта</p>
+        <div id="chapter4-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
+          <!-- Заполняется по JS -->
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Теория к главе 4. Слайд 1: название и суть игр (по Берну), которые были в главе -->
+    <section class="slide slide-stretch slide-clickable" data-slide="53" id="ch4-theory1">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 4</p>
+        <div class="border-l-4 border-pink-500 pl-5 mb-6">
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-pink-400 mb-1 reveal" data-reveal>Игры по Берну в главе</h2>
+          <p class="text-slate-400 text-base opacity-90 reveal" data-reveal>Название и суть игр, которые были в главе</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div class="theory-card reveal" data-reveal>
+            <h3 class="text-pink-300 font-bold text-base mb-2">Игра: «Железная дева»</h3>
+            <p class="text-slate-300 text-sm mb-0">Разновидность игры <strong>«Посмотри, что ты со мной сделал»</strong>. Манипулятор подчеркнуто точно выполняет вашу просьбу, доводя её до абсурда, чтобы провалить дело и обвинить вас.</p>
+          </div>
+          <div class="theory-card reveal" data-reveal>
+            <h3 class="text-pink-300 font-bold text-base mb-2">Игра: «У меня лапки»</h3>
+            <p class="text-slate-300 text-sm mb-0">Использование психосоматики (мигрень, стресс), чтобы соскочить с ответственности. Цель — заставить вас выполнять чужую работу из чувства жалости.</p>
+          </div>
+        </div>
+        <blockquote class="border-l-4 border-slate-500 pl-4 my-4 text-slate-400 italic text-sm opacity-90 reveal" data-reveal>Скрытая транзакция здесь: «Я — беспомощный ребенок, а ты — злой родитель. Вини себя за мои страдания».</blockquote>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Теория к главе 4. Слайд 2: как правильно нужно было действовать -->
+    <section class="slide slide-stretch slide-clickable" data-slide="54" id="ch4-theory2">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 4</p>
+        <div class="border-l-4 border-emerald-500 pl-5 mb-6">
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Путь Гроссмейстера</h2>
+          <p class="text-slate-400 text-base opacity-90 reveal" data-reveal>Как правильно нужно было действовать</p>
+        </div>
+        <div class="theory-card bg-emerald-500/10 border border-dashed border-emerald-500/60 rounded-xl p-5 reveal" data-reveal>
+          <ol class="text-slate-300 text-sm space-y-3 list-decimal list-inside leading-relaxed">
+            <li><strong>Выход из ролей:</strong> Не становитесь «Преследователем» (гнев) и «Спасателем» (жалость). Оставайтесь в позиции <strong>Взрослого</strong>.</li>
+            <li><strong>Возврат ответственности:</strong> На жалобы об усталости отвечайте сочувствием («Жаль, что ты плохо себя чувствуешь»), но не снимайте задачу («Как мы можем решить вопрос к утру?»).</li>
+            <li><strong>Конфронтация со смыслом:</strong> Вместо обсуждения «кто что сказал», обсуждайте <strong>цель бизнеса</strong>. Манипуляция рассыпается, когда её сталкивают с реальностью (Совет Директоров).</li>
+            <li><strong>Отказ от «индульгенций»:</strong> Никогда не гарантируйте манипулятору, что «не будете ругаться». Ответственность за результат всегда общая.</li>
+          </ol>
+        </div>
+        <div class="text-center mt-6 flex-shrink-0">
+          <button type="button" class="ch4-theory-goto-test px-6 py-3 rounded-lg font-display font-bold text-white bg-emerald-500 hover:bg-emerald-400 transition-colors" data-goto-slide="56">ПЕРЕЙТИ К ФИНАЛЬНОЙ БИТВЕ →</button>
+        </div>
+        <p class="slide-hint mt-4">Нажмите на экран или кнопку выше для продолжения</p>
+      </div>
+    </section>
+    <!-- Глава 4: начисление баллов (после теории) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="55" id="ch4-points">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
+        <div id="chapter4-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
+          <!-- Заполняется по JS при входе на слайд -->
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Глава 5: Финальная битва — обложка -->
+    <div class="slide slide-stretch slide-clickable" data-slide="56" id="chapter5-title">
+      <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
+        <div class="chapter-cover-spacer" aria-hidden="true"></div>
+        <div class="novella-scene scene-boardroom rounded-2xl w-full flex flex-col justify-center items-center p-6">
+          <h1 class="font-display text-3xl sm:text-5xl font-bold text-accent mb-2 reveal" data-reveal>Глава 5</h1>
+          <h2 class="font-display text-2xl sm:text-4xl font-bold text-white mb-4 reveal" data-reveal>Финальная битва</h2>
+          <div class="w-20 h-1 bg-amber-400 rounded-full mb-4 reveal" data-reveal></div>
+          <p class="text-slate-300 text-center text-sm sm:text-base reveal" data-reveal>Презентация руководству</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 5: введение в ситуацию (что происходит, настроение) -->
+    <div class="slide slide-stretch slide-clickable" data-slide="57" id="ch5-intro">
+      <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
+        <div class="chapter-cover-spacer" aria-hidden="true"></div>
+        <div class="novella-scene scene-boardroom rounded-2xl w-full flex flex-col justify-center items-center p-6">
+          <p class="text-slate-300 text-center text-sm sm:text-base max-w-xl mb-4">Конференц-зал. Сейчас — презентация стратегии на 500 миллионов руководству компании.</p>
+          <p class="text-slate-400 text-center text-xs sm:text-sm max-w-xl mb-2">Во главе стола — Артур Борисович (CEO): ждёт цифр и решений, настроен жёстко. Рядом — ключевые руководители.</p>
+          <p class="text-slate-400 text-center text-xs sm:text-sm max-w-xl">Ваша команда — вы, Алиса (арт-директор) и Виктор (экономист). В зале заметное напряжение: от выступления ждут ясности и обоснований.</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 5: CEO — первый вопрос -->
+    <div class="slide slide-stretch slide-clickable" data-slide="58" id="ch5-ceo-intro">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Презентация руководству</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-boss has-character">
+          <img src="boss_bad..png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Артур Борисович (CEO)</span>
+                Коллеги, презентация красивая. Но я ищу стратегию на 500 миллионов, а не вдохновение. Виктор, где расчёты окупаемости?
+              </div>
+              <div class="dialog-box">
+                <span class="dialog-name">Ремарка</span>
+                <em>Тишина. Все смотрят на тебя.</em>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </div>
+    <!-- Глава 5: Виктор отвечает + выбор -->
+    <div class="slide slide-stretch" data-slide="59" id="ch5-viktor-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
+          <img src="bossalisevictor.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Виктор (Экономист)</span>
+                Полный пакет расчётов был подготовлен. Однако в финальной версии они были признаны избыточными для Совета. Нас попросили не «усыплять» аудиторию цифрами.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-1">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Мы решили не перегружать Совет деталями. Наша задача — направление.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если в версии нет расчётов — это мой управленческий просчёт. Готов обсудить.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Расчёты есть. Предлагаю начать с рамки решения, затем перейти к экономике.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: Алиса + выбор -->
+    <div class="slide slide-stretch" data-slide="60" id="ch5-alisa-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
+          <img src="bossalisevictor.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (Арт-директор)</span>
+                Мне было сказано сделать легче. Я арт-директор. Я не экономист...
+              </div>
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Артур Борисович</span>
+                То есть решение убрать цифры было управленческим?
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-2">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Финальное слово было за мной — я принимаю ответственность.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Мы обсуждали это вместе. Не стоит представлять это как давление.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Вопрос не в том, кто настоял, а в том, достаточна ли версия для принятия решения.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: Виктор ноутбук, стресс-сценарий + выбор -->
+    <div class="slide slide-stretch" data-slide="61" id="ch5-stress-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
+          <img src="bossalisevictor.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Виктор (открывает ноутбук)</span>
+                На экране вспыхивает красный график: <strong>Стресс-сценарий: −80 млн.</strong> В зале начинается движение и шёпот.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-3">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Любой проект имеет стресс-сценарий. Это не аргумент против.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если этот риск реален, возможно, нам стоит поставить проект на паузу.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Пессимистичный сценарий — инструмент управления. Давайте разберём факторы.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: CEO — кто принял решение + выбор -->
+    <div class="slide slide-stretch" data-slide="62" id="ch5-ceo-who-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-boss has-character">
+          <img src="boss_bad..png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Артур Борисович (CEO)</span>
+                Кто принял решение убрать расчёты из основной презентации? Назовите имя.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-4">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Финальное слово было за мной.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Это коллективное решение проектной группы.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Я отвечаю за формат обсуждения. Команда — за содержание. Оба аспекта представлены.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: Алиса драма + выбор -->
+    <div class="slide slide-stretch" data-slide="63" id="ch5-alisa-drama-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
+          <img src="bossalisevictor.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Алиса (усиливает драму)</span>
+                Если это ошибка, я готова покинуть проект прямо сейчас... <em>(её голос дрожит)</em>
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-5">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Эмоции понятны, но сейчас не об этом.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если это повлияло на качество, нам стоит пересмотреть роли.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Кадровые решения — отдельная плоскость. Сейчас фокус на стратегии.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: CEO — Леночка + выбор -->
+    <div class="slide slide-stretch" data-slide="64" id="ch5-lenochka-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-leno has-character">
+          <img src="lenfinal.png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Артур Борисович (CEO)</span>
+                Леночка, как вы считаете? Нам стоит доверять этой стратегии? Совет начинает бурно обсуждать риски между собой.
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-6">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Позвольте, я поясню прямо сейчас!</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Молчать и ждать завершения спора.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Коллеги, чтобы обсуждение было продуктивным — какие риски критичны? Зафиксируем.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: CEO — контроль проекта + выбор -->
+    <div class="slide slide-stretch" data-slide="65" id="ch5-control-choice">
+      <div class="slide-inner flex-1 flex flex-col min-h-0">
+        <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
+        <div class="novella-scene novella-chapter-scene scene-boardroom-boss has-character">
+          <img src="boss_bad..png" alt="" class="character-sprite" />
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="dialog-box mb-2">
+                <span class="dialog-name">Артур Борисович (CEO)</span>
+                Скажите прямо: вы вообще контролируете этот проект или он живет своей жизнью?
+              </div>
+            </div>
+          </div>
+          <div class="novella-choices choices-slide-in" id="ch5-choices-7">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Да. И именно поэтому мы сейчас обсуждаем риски.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Проект — живой процесс, требующий корректировок.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Контроль — это способность адаптироваться, а не игнорировать риски.</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Глава 5: ПЕРЕВОРОТ — развязка + финальный выбор (фон: босс предлагает зам) -->
+    <section class="slide slide-stretch" data-slide="66" id="ch5-reversal">
+      <div class="slide-inner flex-1 flex flex-col min-h-0 p-4 sm:p-6 bg-slate-900/70">
+        <p class="text-slate-500 text-xs mb-2">Глава 5. Финал</p>
+        <div class="rounded-2xl bg-slate-800/60 border border-slate-600/50 p-4 sm:p-6 text-slate-200 space-y-4">
+          <h2 class="font-display text-2xl font-bold text-emerald-400">ПЕРЕВОРОТ</h2>
+          <p>Виктор спокойно закрывает ноутбук. Алиса перестаёт тереть виски.</p>
+          <p><strong>Виктор:</strong> «Артур Борисович попросил меня не вмешиваться до момента пика. Мне важно было увидеть, войдёт ли руководитель в роль Жертвы или Тирана».</p>
+          <p><strong>Артур:</strong> «Цифры — это тест на интеллект. Люди — тест на устойчивость. Вы ни разу не атаковали и не оправдывались. Вы управляли процессом».</p>
+          <p class="text-xl sm:text-2xl font-bold text-amber-400 mt-6">«Я ищу заместителя по стратегии. Вы готовы?»</p>
+          <div class="novella-choices choices-slide-in mt-4" id="ch5-choices-final">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Конечно. Это честь.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если команда поддержит — да.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Если моя задача — усиливать систему, а не эго, — да.</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Глава 5: ПОБЕДА — концовка (фон: босс-зам) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="67" id="ch5-ending">
+      <div class="slide-inner flex-1 flex flex-col justify-center items-center min-h-0 p-6 text-center bg-slate-900/70">
+        <p class="text-slate-500 text-xs mb-2">Глава 5</p>
+        <div class="rounded-2xl bg-slate-900/80 border border-amber-500/30 p-6 sm:p-8 max-w-xl">
+          <h1 class="font-display text-2xl sm:text-3xl font-bold text-amber-400 mb-4">ПОБЕДА: ГРОССМЕЙСТЕР</h1>
+          <p class="text-white text-lg sm:text-xl mb-2">Артур: «С сегодняшнего дня вы — мой заместитель».</p>
+          <hr class="border-slate-600 my-4" />
+          <p class="text-slate-300 text-sm sm:text-base">Виктор закрывает ноутбук с уважением. Алиса впервые смотрит на вас не как на цель, а как на лидера.</p>
+          <p class="text-emerald-400 font-bold mt-6">ВЫ ВЫШЛИ ИЗ ИГРЫ, ЧТОБЫ УПРАВЛЯТЬ ЕЮ.</p>
+        </div>
         <p class="slide-hint mt-6">Нажмите на экран для продолжения</p>
       </div>
-    </div>
-    <div class="slide slide-stretch" data-slide="36" data-quiz="0">
+    </section>
+    <!-- Теория к главе 5. Слайд 1: психологические игры по Берну -->
+    <section class="slide slide-stretch slide-clickable" data-slide="68" id="ch5-theory1">
       <div class="slide-inner">
-        <p class="text-white font-medium mb-3">Вопрос 1. Коллега: «Ой, я такая глупая в таблицах, поможешь?» Это призыв в игру:</p>
-        <div class="space-y-2" id="quiz-q0">
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="0">Глупышка</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="1">Профессионал</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">Бунт</button>
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
+        <div class="border-l-4 border-amber-500 pl-5 mb-4">
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-1 reveal" data-reveal>Психологические игры в Главе 5 (по Эрику Берну)</h2>
         </div>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 text-sm mb-3"><strong>«Попался, сукин сын!»</strong> (Виктор): Суть в ожидании ошибки оппонента для публичного разоблачения. Цель — доказать превосходство «Я ОК — ты не ОК».</p>
+          <p class="text-slate-300 text-sm mb-3"><strong>«Смотри, что ты заставил меня сделать»</strong> (Артур): Перенос ответственности за жёсткие решения на подчинённых. Легитимизация агрессии через «ваши ошибки».</p>
+          <p class="text-slate-300 text-sm mb-0"><strong>«Меня заставили»</strong> (Алиса/Леночка): Уход от ответственности и давления через позицию «жертвы обстоятельств».</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
-    </div>
-    <div class="slide slide-stretch" data-slide="37" data-quiz="1">
+    </section>
+    <!-- Теория к главе 5. Слайд 2: мета-игра «Испытание на зрелость» -->
+    <section class="slide slide-stretch slide-clickable" data-slide="69" id="ch5-theory2">
       <div class="slide-inner">
-        <p class="text-white font-medium mb-3">Вопрос 2. Какая позиция лучше для переговоров о повышении?</p>
-        <div class="space-y-2" id="quiz-q1">
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="0">Ребёнок</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="1">Взрослый</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">Родитель</button>
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
+        <div class="border-l-4 border-emerald-500 pl-5 mb-4">
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Мета-игра «Испытание на зрелость»</h2>
         </div>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 text-sm mb-3"><strong>Скрытый смысл сцены:</strong> Виктор выступал в роли «агрессора», проверяя игрока на эмоциональную устойчивость.</p>
+          <p class="text-slate-300 text-sm mb-3"><strong>Проверка на Взрослого:</strong> Артур Борисович наблюдал, втянется ли игрок в оправдания (Ребёнок) или ответную агрессию (Родитель).</p>
+          <p class="text-slate-300 text-sm mb-0"><strong>Выигрыш:</strong> Сохранение спокойствия и оперирование фактами разрушает чужую игру и переводит коммуникацию в конструктив.</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
-    </div>
-    <div class="slide slide-stretch" data-slide="38" data-quiz="2">
+    </section>
+    <!-- Теория к главе 5. Слайд 3: как нужно было отвечать -->
+    <section class="slide slide-stretch slide-clickable" data-slide="70" id="ch5-theory3">
       <div class="slide-inner">
-        <p class="text-white font-medium mb-3">Вопрос 3. Начальник кричит. Что делать?</p>
-        <div class="space-y-2" id="quiz-q2">
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="0">Кричать в ответ</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="1">Плакать</button>
-          <button type="button" class="quiz-final-option w-full text-left px-4 py-3 rounded-xl border-2 border-slate-600 bg-slate-800/60 text-slate-200 text-sm" data-answer="2">Спокойно: Какие ошибки мне исправить?</button>
+        <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
+        <div class="border-l-4 border-emerald-500 pl-5 mb-4">
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Как нужно было отвечать</h2>
         </div>
+        <div class="theory-card reveal" data-reveal>
+          <p class="text-slate-300 text-sm mb-3"><strong>Игнорирование «крючков»:</strong> Не вступать в спор с Виктором, а признавать факты и предлагать решение.</p>
+          <p class="text-slate-300 text-sm mb-3"><strong>Разрушение сценария:</strong> Использование позиции «Взрослого» (спокойный тон, прямой взгляд, отсутствие оправданий).</p>
+          <p class="text-slate-300 text-sm mb-0"><strong>Итог:</strong> В большом бизнесе статус получает тот, кто управляет своими реакциями, а не просто делает красивые презентации.</p>
+        </div>
+        <p class="slide-hint mb-3">Нажмите на экран для продолжения</p>
+        <button type="button" id="btn-ch5-finish-theory" class="btn-go px-5 py-2.5 rounded-xl font-display font-bold text-white bg-accent hover:bg-amber-500 transition-colors text-sm mt-2">Узнать решение Босса</button>
       </div>
-    </div>
-    <div class="slide slide-stretch" data-slide="39" id="slide-cert">
+    </section>
+    <!-- Глава 5: начисление баллов (после теории) -->
+    <section class="slide slide-stretch slide-clickable" data-slide="71" id="ch5-points">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
+        <div id="chapter5-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
+          <!-- Заполняется по JS при входе на слайд -->
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <!-- Сертификат выдается после окончания игры (после начисления баллов, если достоин) -->
+    <div class="slide slide-stretch" data-slide="72" id="slide-cert">
       <div class="slide-inner text-center">
         <p class="text-white font-display text-xl font-bold mb-2" id="cert-block-title">Поздравляем! 🏆</p>
         <p class="text-slate-300 text-sm mb-6" id="cert-block-desc">Ты готов не дать себя «заиграть».</p>
@@ -2350,7 +3203,7 @@
     (function() {
       gsap.registerPlugin(ScrollTrigger);
 
-      var TOTAL_SLIDES = 40;
+      var TOTAL_SLIDES = 73;
       var currentSlide = 0;
 
       var lastNovellaChoice = -1;
@@ -2361,6 +3214,8 @@
       var ch3Branch = '';
       var ch3PointsAwarded = false;
       var ch2LosePenaltyApplied = false;
+      var ch5CorrectCount = 0;
+      var ch5PointsAwarded = false;
       var ch2PendingResourcePenalty = 0;
       var ch2PendingInfluencePenalty = 0;
       var ch2WrongCount = 0;
@@ -2375,10 +3230,9 @@
         var i = currentSlide;
         var idx = 0;
         if (i <= 10) idx = 0;
-        else if (i <= 18) idx = 1;
-        else if (i <= 21) idx = 2;
-        else if (i <= 34) idx = 2;
-        else if (i <= 38) idx = 5;
+        else if (i <= 21) idx = 1;
+        else if (i <= 35) idx = 2;
+        else if (i <= 55) idx = 3;
         else idx = 4;
         var btns = document.querySelectorAll('.course-nav-chapter-btn');
         btns.forEach(function(b, k) { b.classList.toggle('active', k === idx); });
@@ -2639,7 +3493,7 @@
             }
           }
         }
-        if (i === 34) {
+        if (i === 36) {
           var ch3Block = document.getElementById('chapter3-outcome-explanation');
           if (ch3Block) {
             ch3Block.classList.remove('outcome-lose');
@@ -2660,6 +3514,83 @@
               var failExplain = ch3Branch === 'anger' ? 'Виктор получает роль «мученика» — игра выиграна им.' : ch3Branch === 'save' ? 'Ответственность размыта, манипуляция сработала.' : ch3Branch === 'delegate' ? 'Виктору осталось пространство для оправданий.' : '';
               ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>' + failLine + '</strong></p><p class="text-slate-300">' + failExplain + '</p><p class="text-slate-400 mt-2">Правильный ход: разделить личность (усталость) и процесс (ошибка), подтвердить вклад, но не снимать ответственность.</p>';
               runLoseAnimation(ch3Block);
+            }
+          }
+        }
+        if (i === 51) {
+          var smoothTextEl = document.getElementById('ch4-smooth-text');
+          if (smoothTextEl && ch4SmoothText) smoothTextEl.textContent = ch4SmoothText;
+        }
+        if (i === 37) ch4AwarenessDelta = 0;
+        if (i === 52) {
+          var ch4Block = document.getElementById('chapter4-outcome-explanation');
+          if (ch4Block && typeof ch4Branch !== 'undefined') {
+            ch4Block.classList.remove('outcome-lose');
+            var ch4Titles = {
+              rescuer: '«Смело, но рискованно. Давай я сам выберу 3 главных цифры»',
+              trap_shame: '«Да, возвращаем. Результат важнее твоего "стыда"»',
+              trap_compromise: '«Давай оставим цифры только на одном слайде»',
+              trap_guarantee: '«Конечно. Я всегда беру ответственность на себя»',
+              trap_weakness: '«Алиса, мы в одной лодке. К чему эти формальности?»',
+              fail_worker: '«Ох, сочувствую. Иди домой, я сам докручу»',
+              fail_tyrant: '«Утром будет поздно. Выпей таблетку и доделай»'
+            };
+            var ch4Explain = {
+              rescuer: 'Вы вошли в роль Спасателя — взяли решение на себя. Алиса получает индульгенцию и право саботировать.',
+              trap_shame: 'Реакция из Родителя (давление на «стыд»). Алиса закрепляет образ «жертвы ваших требований».',
+              trap_compromise: 'Компромисс без чёткой цели. Алиса сохраняет контроль над форматом.',
+              trap_guarantee: 'Пообещав «взять вину на себя», вы дали Алисе гарантию саботировать результат.',
+              trap_weakness: 'Отказ от фиксации — слабость переговорной позиции. Алиса использует это.',
+              fail_worker: 'Вы взяли работу на себя (Спасатель). Ответственность снова переложена на вас.',
+              fail_tyrant: 'Реакция из Преследователя. Алиса получает роль «мученика».'
+            };
+            var title = ch4Titles[ch4Branch] || 'Ваш выбор';
+            var explain = ch4Explain[ch4Branch] || 'Игра «Посмотри, что ты со мной сделал» — злонамеренное послушание.';
+            ch4Block.innerHTML = '<p class="outcome-choice-line"><strong>' + title + '</strong></p><p class="text-slate-300">' + explain + '</p><p class="text-slate-400 mt-2">Правильный ход: возвращать к цели бизнеса (данные, ROI), а не к чувствам. Не давать гарантий «взять вину», не делать работу за неё.</p>';
+            runLoseAnimation(ch4Block);
+          }
+        }
+        if (i === 55) {
+          var ch4PointsBlock = document.getElementById('chapter4-points-explanation');
+          if (ch4PointsBlock) {
+            ch4PointsBlock.classList.remove('outcome-lose');
+            if (ch4AwarenessDelta >= 0) {
+              var line = '<p class="outcome-choice-line"><strong>Гроссмейстер:</strong> вы вернули Алису к цели бизнеса и не вошли в роли Преследователя или Спасателя.</p><p class="text-slate-300 mt-2"><strong>За главу 4 начислено:</strong></p><div class="points-rows"><div class="points-row" data-value="' + (ch4AwarenessDelta) + '"><span class="points-icon">💎</span> Осознанность: +<span class="points-num">' + ch4AwarenessDelta + '</span></div></div>';
+              ch4PointsBlock.innerHTML = line;
+              runConfetti();
+              runPointsAnimation(ch4PointsBlock);
+            } else {
+              var negLine = '<p class="outcome-choice-line">Вы вступили в игру или подпитали манипуляцию. За неправильные ответы списываются баллы.</p><p class="text-slate-300 mt-2"><strong>За главу 4 начислено:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + ch4AwarenessDelta + '"><span class="points-icon">💎</span> Осознанность: <span class="points-num">' + ch4AwarenessDelta + '</span></div></div>';
+              ch4PointsBlock.innerHTML = negLine;
+              runPointsAnimation(ch4PointsBlock);
+              runLoseAnimation(ch4PointsBlock);
+            }
+          }
+        }
+        if (i === 56) {
+          ch5CorrectCount = 0;
+        }
+        if (i === 71) {
+          var ch5PointsBlock = document.getElementById('chapter5-points-explanation');
+          if (ch5PointsBlock) {
+            ch5PointsBlock.classList.remove('outcome-lose');
+            var totalCh5 = 8;
+            var ch5Award = ch5CorrectCount * 10;
+            if (!ch5PointsAwarded) {
+              awarenessPoints += ch5Award;
+              ch5PointsAwarded = true;
+              updateToolbarPoints();
+            }
+            if (ch5CorrectCount >= totalCh5 - 2) {
+              var line = '<p class="outcome-choice-line"><strong>Глава 5. Презентация руководству.</strong></p><p class="text-slate-300">Правильных ответов: ' + ch5CorrectCount + ' из ' + totalCh5 + '.</p><p class="text-slate-300 mt-2"><strong>За главу 5 начислено:</strong></p><div class="points-rows"><div class="points-row" data-value="' + ch5Award + '"><span class="points-icon">💎</span> Осознанность: +<span class="points-num">' + ch5Award + '</span></div></div>';
+              ch5PointsBlock.innerHTML = line;
+              runConfetti();
+              runPointsAnimation(ch5PointsBlock);
+            } else {
+              var negLine = '<p class="outcome-choice-line"><strong>Глава 5. Презентация руководству.</strong></p><p class="text-slate-300">Правильных ответов: ' + ch5CorrectCount + ' из ' + totalCh5 + '.</p><p class="text-slate-300 mt-2"><strong>За главу 5 начислено:</strong></p><div class="points-rows"><div class="points-row" data-value="' + ch5Award + '"><span class="points-icon">💎</span> Осознанность: +<span class="points-num">' + ch5Award + '</span></div></div>';
+              ch5PointsBlock.innerHTML = negLine;
+              runPointsAnimation(ch5PointsBlock);
+              if (ch5CorrectCount <= 2) runLoseAnimation(ch5PointsBlock);
             }
           }
         }
@@ -2711,11 +3642,11 @@
           var ch2Box = document.getElementById('ch2-psychologist-hint-box');
           if (ch2Box) { ch2Box.classList.add('hidden'); ch2Box.setAttribute('aria-hidden', 'true'); }
         }
-        if (i !== 27) {
+        if (i !== 28) {
           var ch3Box1 = document.getElementById('ch3-psychologist-hint-box-1');
           if (ch3Box1) { ch3Box1.classList.add('hidden'); ch3Box1.setAttribute('aria-hidden', 'true'); }
         }
-        if (i !== 31) {
+        if (i !== 33) {
           var ch3Box2 = document.getElementById('ch3-psychologist-hint-box-2');
           if (ch3Box2) { ch3Box2.classList.add('hidden'); ch3Box2.setAttribute('aria-hidden', 'true'); }
         }
@@ -2824,7 +3755,7 @@
         });
       }
       document.getElementById('slide-container').addEventListener('click', function(e) {
-        if (e.target.closest('.slide-next') || e.target.closest('input') || e.target.closest('#btn-go-hero') || e.target.closest('.novella-choice') || e.target.closest('.quiz-final-option') || e.target.closest('#btn-complete') || e.target.closest('#pg-exit-link')) return;
+        if (e.target.closest('.slide-next') || e.target.closest('input') || e.target.closest('#btn-go-hero') || e.target.closest('.novella-choice') || e.target.closest('.quiz-final-option') || e.target.closest('#btn-complete') || e.target.closest('#pg-exit-link') || e.target.closest('.ch4-theory-goto-test')) return;
         if (e.target.closest('.slide-clickable')) {
           e.preventDefault();
           goNext();
@@ -2839,6 +3770,13 @@
       document.querySelectorAll('.course-nav-chapter-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var n = parseInt(this.getAttribute('data-goto'), 10);
+          if (!isNaN(n)) goToSlide(n);
+        });
+      });
+      document.querySelectorAll('.ch4-theory-goto-test').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var n = parseInt(this.getAttribute('data-goto-slide'), 10);
           if (!isNaN(n)) goToSlide(n);
         });
       });
@@ -2864,6 +3802,7 @@
         if (el) el.textContent = name;
         var elChoice = document.getElementById('ch3-user-name-choice');
         if (elChoice) elChoice.textContent = name;
+        document.querySelectorAll('.ch3-user-name-placeholder').forEach(function(p) { p.textContent = name; });
       }
       document.getElementById('novella-choices') && document.getElementById('novella-choices').addEventListener('click', function(e) {
         var btn = e.target.closest('.novella-choice');
@@ -2931,11 +3870,11 @@
         var val = btn.getAttribute('data-ch3-choice');
         document.querySelectorAll('#ch3-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
         if (val === '2') {
-          goToSlide(28);
+          goToSlide(29);
         } else {
           ch3Win = false;
           ch3Branch = (val === '0') ? 'anger' : 'save';
-          goToSlide(32);
+          goToSlide(34);
         }
       });
       document.getElementById('ch3-choices-2') && document.getElementById('ch3-choices-2').addEventListener('click', function(e) {
@@ -2951,7 +3890,97 @@
           ch3Win = false;
           ch3Branch = 'delegate';
         }
-        goToSlide(32);
+        goToSlide(34);
+      });
+
+      var ch4Branch = '';
+      var ch4SmoothGoto = 43;
+      var ch4SmoothText = '';
+      var ch4AwarenessDelta = 0;
+      function shuffleCh4Choices(containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var buttons = Array.from(container.querySelectorAll('.novella-choice'));
+        if (buttons.length < 2) return;
+        for (var i = buttons.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = buttons[i]; buttons[i] = buttons[j]; buttons[j] = t;
+        }
+        buttons.forEach(function(btn) { container.appendChild(btn); });
+      }
+      ['ch4-choices-1', 'ch4-choices-adult1', 'ch4-choices-adult2', 'ch4-choices-adult3'].forEach(shuffleCh4Choices);
+      document.getElementById('ch4-choices-1') && document.getElementById('ch4-choices-1').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch4-choice');
+        if (!btn) return;
+        var branch = btn.getAttribute('data-ch4-branch');
+        document.querySelectorAll('#ch4-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
+        ch4Branch = branch || '';
+        if (branch === 'parent') goToSlide(41);
+        else if (branch === 'rescuer') { ch4SmoothText = 'Алиса согласно кивает и записывает ваши слова. Разговор продолжается.'; ch4SmoothGoto = 43; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+        else if (branch === 'adult_1') goToSlide(43);
+      });
+      document.getElementById('ch4-choices-parent') && document.getElementById('ch4-choices-parent').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch4-choice');
+        if (!btn) return;
+        document.querySelectorAll('#ch4-choices-parent .novella-choice').forEach(function(b) { b.disabled = true; });
+        goToSlide(43);
+      });
+      document.getElementById('ch4-choices-adult1') && document.getElementById('ch4-choices-adult1').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch4-choice');
+        if (!btn) return;
+        var branch = btn.getAttribute('data-ch4-branch');
+        document.querySelectorAll('#ch4-choices-adult1 .novella-choice').forEach(function(b) { b.disabled = true; });
+        ch4Branch = branch || '';
+        if (branch === 'adult_2') goToSlide(45);
+        else { ch4SmoothText = 'Алиса замечает вашу реакцию и возвращается к теме презентации.'; ch4SmoothGoto = 45; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+      });
+      document.getElementById('ch4-choices-adult2') && document.getElementById('ch4-choices-adult2').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch4-choice');
+        if (!btn) return;
+        var branch = btn.getAttribute('data-ch4-branch');
+        document.querySelectorAll('#ch4-choices-adult2 .novella-choice').forEach(function(b) { b.disabled = true; });
+        ch4Branch = branch || '';
+        if (branch === 'adult_3') goToSlide(47);
+        else { ch4SmoothText = 'Алиса делает пометку. Разговор переходит к срокам и условиям.'; ch4SmoothGoto = 47; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+      });
+      document.getElementById('ch4-choices-adult3') && document.getElementById('ch4-choices-adult3').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch4-choice');
+        if (!btn) return;
+        var branch = btn.getAttribute('data-ch4-branch');
+        document.querySelectorAll('#ch4-choices-adult3 .novella-choice').forEach(function(b) { b.disabled = true; });
+        ch4Branch = branch || '';
+        if (branch === 'win_final') goToSlide(49);
+        else { ch4SmoothText = 'Тон разговора задан. Переходим к итогам главы.'; ch4SmoothGoto = 52; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+      });
+      document.getElementById('ch4-choices-win') && document.getElementById('ch4-choices-win').addEventListener('click', function(e) {
+        var btn = e.target.closest('.ch4-choice');
+        if (!btn) return;
+        document.querySelectorAll('#ch4-choices-win .novella-choice').forEach(function(b) { b.disabled = true; });
+        awarenessPoints += 40;
+        ch4AwarenessDelta += 40;
+        updateToolbarPoints();
+        goToSlide(53);
+      });
+      document.getElementById('ch4-smooth') && document.getElementById('ch4-smooth').addEventListener('click', function(e) {
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+        goToSlide(ch4SmoothGoto);
+      });
+      [].forEach.call(document.querySelectorAll('[id^="ch5-choices-"]'), function(container) {
+        if (!container) return;
+        container.addEventListener('click', function(e) {
+          var btn = e.target.closest('.ch5-choice');
+          if (!btn || btn.disabled) return;
+          var goto = parseInt(btn.getAttribute('data-ch5-goto'), 10);
+          var correct = btn.getAttribute('data-ch5-correct') === '1';
+          if (correct) ch5CorrectCount++;
+          container.querySelectorAll('.novella-choice').forEach(function(b) { b.disabled = true; });
+          if (correct) btn.classList.add('chosen-correct');
+          if (!isNaN(goto)) goToSlide(goto);
+        });
+      });
+      document.getElementById('btn-ch5-finish-theory') && document.getElementById('btn-ch5-finish-theory').addEventListener('click', function(e) {
+        e.stopPropagation();
+        goToSlide(71);
       });
       function applyHintPenalty() {
         awarenessPoints -= 10;
@@ -2994,24 +4023,6 @@
           }
           if (box2) { box2.classList.remove('hidden'); box2.setAttribute('aria-hidden', 'false'); }
         }
-      });
-
-      var finalQuizCorrect = [0, 1, 2];
-      var finalQuizCorrectCount = 0;
-      document.querySelectorAll('.slide[data-quiz]').forEach(function(slide) {
-        slide.addEventListener('click', function(e) {
-          var opt = e.target.closest('.quiz-final-option');
-          if (!opt || slide.querySelector('.quiz-correct') || slide.querySelector('.quiz-wrong')) return;
-          var q = parseInt(slide.getAttribute('data-quiz'), 10);
-          var answer = parseInt(opt.getAttribute('data-answer'), 10);
-          var correct = finalQuizCorrect[q];
-          slide.querySelectorAll('.quiz-final-option').forEach(function(o) { o.classList.remove('quiz-correct', 'quiz-wrong'); });
-          if (answer === correct) {
-            opt.classList.add('quiz-correct');
-            finalQuizCorrectCount++;
-          } else opt.classList.add('quiz-wrong');
-          goToSlide(23 + q + 1);
-        });
       });
 
       goToSlide(0);
