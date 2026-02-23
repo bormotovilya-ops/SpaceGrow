@@ -826,11 +826,11 @@
     .main-offset { height: 52px; min-height: 52px; }
     @media (max-width: 480px) { .main-offset { height: 48px; min-height: 48px; } }
 
-    /* Сцены новеллы: персонаж слева, текст справа. Единый размер персонажа (как у Леночки) — масштаб 1.22 */
+    /* Сцены новеллы: персонаж слева, текст справа. Единый размер персонажа (Леночка, Виктор, босс) — масштаб 1.22 */
     .novella-scene {
-      --chapter-character-max-width: clamp(180px, 42vw, 333px);
-      --chapter-character-max-height: clamp(280px, 58vh, 556px);
-      --chapter-character-height-pct: 70%;
+      --chapter-character-max-width: clamp(200px, 45vw, 380px);
+      --chapter-character-max-height: clamp(320px, 65vh, 600px);
+      --chapter-character-height-pct: 75%;
       --chapter-character-scale: 1.22;
       position: relative;
       min-height: 380px;
@@ -903,7 +903,7 @@
       background-image: url('OFFICE_NIGHT.png');
     }
     .novella-scene.scene-office-night.has-character {
-      grid-template-columns: 1fr minmax(200px, 360px);
+      grid-template-columns: 1fr minmax(240px, 400px);
     }
     .novella-scene.scene-office-night .character-sprite {
       grid-column: 2;
@@ -958,15 +958,25 @@
     #chapter1-title .novella-scene:not(.novella-chapter-scene) p,
     #chapter2-title .novella-scene:not(.novella-chapter-scene) p,
     #chapter3-title .novella-scene:not(.novella-chapter-scene) p { font-size: clamp(0.95rem, 2.2vw, 1.15rem); color: rgba(248,250,252,0.95); }
+    #chapter1-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) h1,
+    #chapter1-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) h2,
+    #chapter1-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter2-title .novella-scene:not(.novella-chapter-scene) p,
+    #chapter3-title .novella-scene:not(.novella-chapter-scene) p { text-align: center; }
     .novella-scene.scene-kitchen {
       background-image: url('KITCHEN.png');
     }
     .novella-scene.scene-kitchen.has-character {
       grid-template-columns: 1fr minmax(200px, 360px);
     }
-    /* Позиция Леночки на десктопе (на мобильной переопределяется в @media (max-width: 640px)) */
+    /* Позиция Леночки и Виктора на десктопе — единый размер персонажа (на мобильной переопределяется в @media (max-width: 640px)) */
     @media (min-width: 641px) {
-      .novella-scene.scene-kitchen .character-sprite {
+      .novella-scene.scene-kitchen .character-sprite,
+      .novella-scene.scene-office-night .character-sprite {
         grid-column: 2;
         grid-row: 1 / -1;
         justify-self: end;
@@ -977,12 +987,13 @@
         height: var(--chapter-character-height-pct);
         max-height: var(--chapter-character-max-height);
         object-fit: cover;
-        object-position: top center;
+        object-position: bottom center;
         transform: scale(var(--chapter-character-scale));
         transform-origin: bottom center;
         z-index: 1;
         pointer-events: none;
       }
+      .novella-scene.scene-kitchen .character-sprite { object-position: top center; }
     }
     .novella-scene.scene-kitchen .character-sprite.enter-right {
       animation: ch2-enter-right 0.6s ease-out forwards;
@@ -1143,10 +1154,10 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      /* Глава 2 (кухня): та же высота ряда 50vh — глобальная позиция персонажа как у босса */
+      /* Глава 2 (кухня): высота ряда 55vh, колонка персонажа до 45% — единый размер с главой 3 */
       .novella-scene.scene-kitchen.has-character {
-        grid-template-columns: 1fr minmax(100px, 38%);
-        grid-template-rows: 50vh auto;
+        grid-template-columns: 1fr minmax(140px, 45%);
+        grid-template-rows: 55vh auto;
         align-content: stretch;
       }
       .novella-scene.scene-kitchen .novella-choices {
@@ -1171,10 +1182,10 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      /* Глава 3 (офис ночью): та же сетка, что кухня — персонаж справа */
+      /* Глава 3 (офис ночью): та же сетка, что кухня — персонаж справа, колонка шире для единого размера */
       .novella-scene.scene-office-night.has-character {
-        grid-template-columns: 1fr minmax(100px, 38%);
-        grid-template-rows: 50vh auto;
+        grid-template-columns: 1fr minmax(140px, 45%);
+        grid-template-rows: 55vh auto;
         align-content: stretch;
       }
       .novella-scene.scene-office-night .novella-choices {
@@ -1196,9 +1207,9 @@
       }
       /* Единые размер и вертикаль для всех персонажей на мобильной; по горизонтали различаются (сетка) */
       .novella-scene {
-        --chapter-character-max-width: 42vw;
-        --chapter-character-max-height: 50vh;
-        --chapter-character-height-pct: 65%;
+        --chapter-character-max-width: 48vw;
+        --chapter-character-max-height: 58vh;
+        --chapter-character-height-pct: 75%;
       }
       .novella-scene .boss-sprite,
       .novella-scene .character-sprite {
