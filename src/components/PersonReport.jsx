@@ -108,17 +108,20 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     testConnection()
   }, [])
 
-  // Fetch personal report data (re-runs when selectedPeriod changes)
+  // Сессия: tgUserId может прийти асинхронно — добавляем в deps, чтобы перезапросить отчёт, когда определится
+  const sessionInfo = getSessionInfo()
+  const tgUserIdFromSession = sessionInfo.tgUserId ?? null
+  const cookieIdFromSession = sessionInfo.cookieId
+
+  // Fetch personal report data (re-runs when selectedPeriod or tgUserId/cookieId change, e.g. when Telegram ID appears)
   useEffect(() => {
     const fetchPersonalReport = async () => {
       const alreadyHasData = !!reportData
       try {
         if (alreadyHasData) setRefreshing(true)
         else setLoading(true)
-        const sessionInfo = getSessionInfo()
-        // tg_user_id подставляется асинхронно в useLogEvent (приоритет у Telegram), здесь только ref — без синхронного чтения Telegram
-        const tgUserId = sessionInfo.tgUserId ?? null
-        const cookieId = sessionInfo.cookieId
+        const tgUserId = tgUserIdFromSession
+        const cookieId = cookieIdFromSession
         // Use fallback test ID when in browser (no Telegram context) so we fetch the same user we track
         const FALLBACK_TG_USER_ID = 888888
         const userId = tgUserId ?? FALLBACK_TG_USER_ID
@@ -792,7 +795,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     }
 
     fetchPersonalReport()
-  }, [getSessionInfo, selectedPeriod])
+  }, [tgUserIdFromSession, cookieIdFromSession, selectedPeriod])
 
   // Log page open
   useEffect(() => {

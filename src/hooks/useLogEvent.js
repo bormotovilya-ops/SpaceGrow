@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
 import { apiUtils, userUtils, debounce } from '../utils/logging';
 
 // Global session state (session_id from last startSession; Guest Mode = tg_user_id null)
@@ -14,6 +14,8 @@ export const useLogEvent = () => {
   const tgUserIdRef = useRef(null);
   const lastSectionIdRef = useRef(null);
   const lastSectionTimeRef = useRef(0);
+  // Чтобы PersonReport и др. перезапросили данные, когда tg_user_id подтянется асинхронно
+  const [tgUserIdState, setTgUserIdState] = useState(null);
 
   // Идентификаторы: cookie сразу. Telegram ID — только асинхронно (0 и повтор через 300 ms), никогда не блокируем UI
   useEffect(() => {
@@ -30,6 +32,7 @@ export const useLogEvent = () => {
       if (id == null) return;
       tgUserIdRef.current = id;
       globalTgUserId = id;
+      setTgUserIdState(id);
       if (sessionIdRef.current && cookieIdRef.current) {
         setTimeout(() => {
           apiUtils.linkIdentities(id, cookieIdRef.current, sessionIdRef.current).catch((e) =>
