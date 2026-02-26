@@ -461,42 +461,52 @@
 
     .certificate-wrap {
       position: relative;
-      display: inline-block;
-      max-width: 100%;
-      width: 100%;
-      max-width: 420px;
-      margin: 0 auto 1.5rem;
+      display: block;
+      width: 90%;
+      max-width: 90vw;
+      margin: 0 auto 0.5rem;
     }
     .certificate-wrap .cert-placeholder {
       display: block;
       width: 100%;
       aspect-ratio: 1.4;
-      background: linear-gradient(145deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
-      border: 2px solid rgba(167, 139, 250, 0.4);
-      border-radius: 1rem;
+      background: url('cert.png') no-repeat center center;
+      background-size: contain;
+      border-radius: 0.5rem;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
-    .cert-overlay-name-date {
+    /* Графа «Ф.И.О. участника» — по центру, на 2 строки ниже */
+    .cert-overlay-fio {
       position: absolute;
-      left: 12%; top: 38%;
-      right: 12%;
+      left: 14%;
+      right: 14%;
+      top: 40%;
       font-family: 'Montserrat', system-ui, sans-serif;
-      line-height: 1.3;
-    }
-    .cert-overlay-name {
       font-weight: 700;
-      font-size: clamp(0.5rem, 2vw, 0.75rem);
-      color: #a78bfa;
-      text-transform: uppercase;
+      font-size: clamp(0.85rem, 4vw, 1.35rem);
+      color: #1e3a5f;
+      text-align: center;
       letter-spacing: 0.02em;
+      line-height: 1.3;
+      pointer-events: none;
     }
-    .cert-overlay-date {
-      display: block;
-      margin-top: 0.35em;
+    .cert-overlay-fio .cert-overlay-value { display: block; }
+    /* Графа «Дата» — смещена вправо на 8 символов */
+    .cert-overlay-date-field {
+      position: absolute;
+      left: 20%;
+      right: 42%;
+      bottom: 23%;
+      padding-left: 8ch;
+      font-family: 'Montserrat', system-ui, sans-serif;
       font-weight: 600;
-      font-size: clamp(0.375rem, 1.25vw, 0.5rem);
-      color: rgba(241, 245, 249, 0.95);
+      font-size: clamp(0.65rem, 2.5vw, 0.95rem);
+      color: #1e3a5f;
+      text-align: left;
+      line-height: 1.3;
+      pointer-events: none;
     }
+    .cert-overlay-date-field .cert-overlay-value { display: block; }
 
     .course-topbar {
       position: fixed;
@@ -599,6 +609,7 @@
       flex-shrink: 0;
     }
     .toolbar-btn:hover { background: rgba(56, 189, 248, 0.35); transform: scale(1.05); }
+    .toolbar-btn.hint-available { box-shadow: 0 0 12px rgba(251, 191, 36, 0.6); background: rgba(251, 191, 36, 0.15); }
     .toolbar-btn img { width: 100%; height: 100%; object-fit: contain; padding: 2px; box-sizing: border-box; }
     .toolbar-points {
       display: inline-flex;
@@ -747,6 +758,36 @@
     #ch5-theory1 .theory-card,
     #ch5-theory2 .theory-card,
     #ch5-theory3 .theory-card { border-left-color: rgba(251, 191, 36, 0.6); }
+    #ch5-theory2 .theory-card,
+    #ch5-theory3 .theory-card { border-left-color: rgba(16, 185, 129, 0.6); }
+    .ch5-game-block {
+      transition: box-shadow 0.25s ease, transform 0.2s ease;
+    }
+    .ch5-game-block:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+
+    /* Заключительное слово — тёплые тона, мягкое оформление */
+    .closing-slide .slide-inner {
+      max-width: 720px;
+      padding: clamp(0.75rem, 2vh, 1.5rem) clamp(1rem, 2.5vw, 1.5rem);
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.5) 50%, rgba(51, 65, 85, 0.3) 100%);
+      border-radius: 1rem;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    }
+    .closing-card {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 4px solid rgba(251, 191, 36, 0.6);
+      border-radius: 0 0.75rem 0.75rem 0;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+    }
+    .closing-card-final {
+      border-left-color: var(--accent);
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.08), rgba(251, 191, 36, 0.06));
+    }
     #ch2-theory1 .theory-card strong,
     #ch2-theory2 .theory-card strong {
       color: rgba(251, 191, 36, 0.95);
@@ -757,32 +798,47 @@
     #ch2-theory1 .theory-card:last-of-type,
     #ch2-theory2 .theory-card:last-of-type { margin-bottom: 0; }
 
-    /* Глава 3–4 — теория: авто-масштаб под высоту экрана (обильная версия), чтобы слайд входил целиком */
+    /* Все слайды теории: единый авто-масштаб под высоту экрана (веб и мобильная), чтобы шрифт был одинаковый и входил на экран */
+    #theory-berne .slide-inner,
+    #theory-game .slide-inner,
+    #ch2-theory1 .slide-inner,
+    #ch2-theory2 .slide-inner,
     #ch3-theory1 .slide-inner,
     #ch3-theory2 .slide-inner,
     #ch4-theory1 .slide-inner,
     #ch4-theory2 .slide-inner,
     #ch5-theory1 .slide-inner,
     #ch5-theory2 .slide-inner,
-    #ch5-theory3 .slide-inner {
+    #ch5-theory3 .slide-inner,
+    .closing-slide .slide-inner {
       max-height: 100%;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      padding: clamp(0.4rem, 1.5vh, 1.5rem) clamp(0.75rem, 1.5vw, 1.25rem);
+      overflow-y: auto;
+      padding: clamp(0.5rem, 1.8vh, 1.5rem) clamp(0.75rem, 1.5vw, 1.25rem);
       box-sizing: border-box;
     }
+    #theory-berne .slide-inner > p.text-slate-500:first-of-type,
+    #theory-game .slide-inner > p.text-slate-500:first-of-type,
+    #ch2-theory1 .slide-inner > p.text-slate-500:first-of-type,
+    #ch2-theory2 .slide-inner > p.text-slate-500:first-of-type,
     #ch3-theory1 .slide-inner > p.text-slate-500:first-of-type,
     #ch3-theory2 .slide-inner > p.text-slate-500:first-of-type,
     #ch4-theory1 .slide-inner > p.text-slate-500:first-of-type,
     #ch4-theory2 .slide-inner > p.text-slate-500:first-of-type,
     #ch5-theory1 .slide-inner > p.text-slate-500:first-of-type,
     #ch5-theory2 .slide-inner > p.text-slate-500:first-of-type,
-    #ch5-theory3 .slide-inner > p.text-slate-500:first-of-type {
-      font-size: clamp(0.5rem, 1.15vh, 0.7rem);
-      margin-bottom: clamp(0.15rem, 0.5vh, 0.5rem);
+    #ch5-theory3 .slide-inner > p.text-slate-500:first-of-type,
+    .closing-slide .slide-inner > p.text-slate-500:first-of-type {
+      font-size: clamp(0.65rem, 1.6vh, 0.8rem);
+      margin-bottom: clamp(0.2rem, 0.6vh, 0.5rem);
       flex-shrink: 0;
     }
+    #theory-berne .slide-inner h2,
+    #theory-game .slide-inner h2,
+    #ch2-theory1 .slide-inner h2,
+    #ch2-theory2 .slide-inner h2,
     #ch3-theory1 .slide-inner h2,
     #ch3-theory2 .slide-inner h2,
     #ch4-theory1 .slide-inner h2,
@@ -790,10 +846,22 @@
     #ch5-theory1 .slide-inner h2,
     #ch5-theory2 .slide-inner h2,
     #ch5-theory3 .slide-inner h2 {
-      font-size: clamp(0.95rem, 3.2vh, 1.5rem);
-      margin-bottom: clamp(0.4rem, 1.2vh, 1.25rem);
+      font-size: clamp(1.15rem, 3.5vh, 1.5rem);
+      margin-bottom: clamp(0.5rem, 1.2vh, 1.25rem);
       flex-shrink: 0;
     }
+    #theory-berne .slide-inner h3,
+    #theory-game .slide-inner h3,
+    #ch3-theory1 .slide-inner h3,
+    #ch3-theory2 .slide-inner h3 {
+      font-size: clamp(0.95rem, 2.5vh, 1.1rem);
+      margin-top: clamp(0.5rem, 1vh, 1rem);
+      margin-bottom: clamp(0.3rem, 0.6vh, 0.5rem);
+    }
+    #theory-berne .slide-inner .theory-card,
+    #theory-game .slide-inner .theory-card,
+    #ch2-theory1 .slide-inner .theory-card,
+    #ch2-theory2 .slide-inner .theory-card,
     #ch3-theory1 .slide-inner .theory-card,
     #ch3-theory2 .slide-inner .theory-card,
     #ch4-theory1 .slide-inner .theory-card,
@@ -801,11 +869,15 @@
     #ch5-theory1 .slide-inner .theory-card,
     #ch5-theory2 .slide-inner .theory-card,
     #ch5-theory3 .slide-inner .theory-card {
-      padding: clamp(0.4rem, 1.4vh, 0.9rem) clamp(0.5rem, 1.1vw, 1rem);
-      margin-bottom: clamp(0.3rem, 1vh, 0.85rem);
+      padding: clamp(0.5rem, 1.5vh, 0.9rem) clamp(0.5rem, 1.1vw, 1rem);
+      margin-bottom: clamp(0.35rem, 1vh, 0.85rem);
       min-height: 0;
       flex-shrink: 1;
     }
+    #theory-berne .slide-inner .theory-card:last-of-type,
+    #theory-game .slide-inner .theory-card:last-of-type,
+    #ch2-theory1 .slide-inner .theory-card:last-of-type,
+    #ch2-theory2 .slide-inner .theory-card:last-of-type,
     #ch3-theory1 .slide-inner .theory-card:last-of-type,
     #ch3-theory2 .slide-inner .theory-card:last-of-type,
     #ch4-theory1 .slide-inner .theory-card:last-of-type,
@@ -813,6 +885,10 @@
     #ch5-theory1 .slide-inner .theory-card:last-of-type,
     #ch5-theory2 .slide-inner .theory-card:last-of-type,
     #ch5-theory3 .slide-inner .theory-card:last-of-type { margin-bottom: 0; }
+    #theory-berne .slide-inner .theory-card p,
+    #theory-game .slide-inner .theory-card p,
+    #ch2-theory1 .slide-inner .theory-card p,
+    #ch2-theory2 .slide-inner .theory-card p,
     #ch3-theory1 .slide-inner .theory-card p,
     #ch3-theory2 .slide-inner .theory-card p,
     #ch4-theory1 .slide-inner .theory-card p,
@@ -820,10 +896,28 @@
     #ch5-theory1 .slide-inner .theory-card p,
     #ch5-theory2 .slide-inner .theory-card p,
     #ch5-theory3 .slide-inner .theory-card p {
-      font-size: clamp(0.6rem, 1.55vh, 0.95rem);
-      line-height: 1.35;
+      font-size: clamp(0.8rem, 2vh, 1rem);
+      line-height: 1.4;
       margin-bottom: 0;
     }
+    #theory-berne .slide-inner ul li,
+    #theory-game .slide-inner ul li {
+      font-size: clamp(0.8rem, 2vh, 1rem);
+      line-height: 1.4;
+      padding: clamp(0.5rem, 1.2vh, 1rem) clamp(0.6rem, 1vw, 1rem);
+      margin-bottom: clamp(0.35rem, 1vh, 0.75rem);
+    }
+    #theory-berne .slide-inner ul li:last-child,
+    #theory-game .slide-inner ul li:last-child { margin-bottom: 0; }
+    #theory-berne .slide-inner > p:not(.text-slate-500):not(.slide-hint),
+    #theory-game .slide-inner > p:not(.text-slate-500):not(.slide-hint) {
+      font-size: clamp(0.8rem, 2vh, 1rem);
+      line-height: 1.4;
+    }
+    #theory-berne .slide-inner .slide-hint,
+    #theory-game .slide-inner .slide-hint,
+    #ch2-theory1 .slide-inner .slide-hint,
+    #ch2-theory2 .slide-inner .slide-hint,
     #ch3-theory1 .slide-inner .slide-hint,
     #ch3-theory2 .slide-inner .slide-hint,
     #ch4-theory1 .slide-inner .slide-hint,
@@ -834,6 +928,10 @@
     #ch5-theory3 .slide-inner .btn-go {
       flex-shrink: 0;
     }
+    #theory-berne .slide-inner .slide-hint,
+    #theory-game .slide-inner .slide-hint,
+    #ch2-theory1 .slide-inner .slide-hint,
+    #ch2-theory2 .slide-inner .slide-hint,
     #ch3-theory1 .slide-inner .slide-hint,
     #ch3-theory2 .slide-inner .slide-hint,
     #ch4-theory1 .slide-inner .slide-hint,
@@ -842,8 +940,8 @@
     #ch5-theory2 .slide-inner .slide-hint,
     #ch5-theory3 .slide-inner .slide-hint {
       margin-top: auto;
-      padding-top: clamp(0.2rem, 0.6vh, 0.5rem);
-      font-size: clamp(0.5rem, 1.1vh, 0.7rem);
+      padding-top: clamp(0.25rem, 0.7vh, 0.5rem);
+      font-size: clamp(0.6rem, 1.4vh, 0.75rem);
     }
 
     #exam-page { display: none; }
@@ -876,14 +974,36 @@
       inset: 0;
       z-index: 10000;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       background: rgba(15, 23, 42, 0.97);
-      padding: 2rem;
-      overflow-y: auto;
+      padding: 0.5rem 0.5rem;
+      overflow: hidden;
     }
     .final-screen.final-screen--show { display: flex; }
-    .final-screen-content { text-align: center; max-width: 520px; }
+    .final-screen-content {
+      position: relative;
+      text-align: center;
+      max-width: 100%;
+      width: 100%;
+      padding: 0 0.5rem 0.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      max-height: 100vh;
+    }
+    .final-screen-content .certificate-wrap + h2,
+    #final-screen-title { margin-top: 0.25rem; margin-bottom: 0.15rem; font-size: 1.3rem; }
+    #final-screen-subtitle { margin-bottom: 0.35rem; font-size: 0.9rem; }
+    #final-screen-exit-btn {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.6rem;
+      margin-top: 0;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
 
     .main-offset { height: 52px; min-height: 52px; }
     @media (max-width: 480px) { .main-offset { height: 48px; min-height: 48px; } }
@@ -989,8 +1109,8 @@
       grid-row: 1 / -1;
       justify-self: end;
       align-self: end;
-      object-position: bottom center;
-      transform-origin: bottom center;
+      object-position: top center;
+      transform-origin: top center;
     }
     .novella-scene.scene-alisa-office .novella-choices { grid-column: 1; grid-row: 1; }
     .novella-scene.scene-alisa-office.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
@@ -1043,13 +1163,168 @@
       grid-column: 1;
       grid-row: 1;
     }
-    #ch5-reversal .slide-inner,
-    #ch5-ending .slide-inner {
-      background-image: url('bosszam.png');
-      background-size: cover;
+    /* Итоговый слайд: картинка видна полностью, адаптирована под экран */
+    #slide-cert.slide-cert-fired,
+    #slide-cert.slide-cert-rewarded,
+    #slide-cert.slide-cert-promoted {
+      background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
+    }
+    #slide-cert.slide-cert-fired {
+      background-image: url('boss_bad..png');
+      background-color: #0f172a;
+    }
+    #slide-cert.slide-cert-rewarded {
+      background-image: url('bossalisevictor.png');
+    }
+    /* Текст и кнопка поверх дождя — выше overlay */
+    #slide-cert.slide-cert-rewarded .slide-inner {
+      position: relative;
+      z-index: 10002;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      backdrop-filter: blur(8px);
+    }
+    #rewarded-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.75) 0%, rgba(30, 41, 59, 0.85) 40%, rgba(51, 65, 85, 0.7) 100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    #rewarded-overlay.rain-active {
+      visibility: visible;
+    }
+    #rewarded-rain {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      overflow: hidden;
+      visibility: hidden;
+    }
+    #rewarded-rain.rain-active {
+      visibility: visible;
+    }
+    .rain-drop {
+      position: absolute;
+      top: -40px;
+      width: 2px;
+      height: 24px;
+      background: linear-gradient(180deg, transparent 0%, rgba(200, 220, 255, 0.6) 40%, rgba(180, 210, 255, 0.4) 100%);
+      border-radius: 1px;
+      animation: rain-fall linear forwards;
+      box-shadow: 0 0 4px rgba(174, 199, 232, 0.3);
+    }
+    .rain-drop.rain-far {
+      width: 1px;
+      height: 14px;
+      background: linear-gradient(180deg, transparent 0%, rgba(174, 199, 232, 0.35) 100%);
+      box-shadow: none;
+    }
+    @keyframes rain-fall {
+      to { transform: translateY(calc(100vh + 60px)); }
+    }
+    #slide-cert.slide-cert-promoted {
+      background-color: #0f172a;
+      position: relative;
+      overflow: hidden;
       min-height: 100%;
+    }
+    /* Победная страница: картинка и эффекты на весь viewport, блок поздравления прижат к низу экрана */
+    #slide-cert.slide-cert-promoted .slide-inner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(1rem, 4vh, 2.5rem);
+      padding-top: 2rem;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.6) 50%, transparent);
+    }
+    /* Победный финал: картинка на весь экран */
+    #slide-cert.slide-cert-promoted #victory-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      background-image: url('bosszam.png');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+    /* Фейерверк на победной странице — на весь экран */
+    #slide-cert.slide-cert-promoted #victory-fireworks {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 5;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .firework-burst {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: firework-explode 2.2s ease-out forwards;
+      opacity: 0;
+    }
+    @keyframes firework-explode {
+      0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 1;
+      }
+      15% { opacity: 1; }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(1);
+        opacity: 0;
+      }
+    }
+    #fired-flash-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, #fff 0%, rgba(255,255,255,0.9) 40%, transparent 70%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    #fired-lightning {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+    }
+    #fired-lightning svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    @keyframes fired-screen-shake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-15px, 8px) rotate(-0.5deg); }
+      20% { transform: translate(14px, -6px) rotate(0.4deg); }
+      30% { transform: translate(-12px, -8px) rotate(-0.3deg); }
+      40% { transform: translate(16px, 6px) rotate(0.5deg); }
+      50% { transform: translate(-10px, 4px) rotate(-0.2deg); }
+      60% { transform: translate(12px, -10px) rotate(0.3deg); }
+      70% { transform: translate(-14px, 2px) rotate(-0.4deg); }
+      80% { transform: translate(11px, 8px) rotate(0.2deg); }
+      90% { transform: translate(-8px, -4px) rotate(-0.2deg); }
     }
     /* Обложка главы: сцена той же высоты и положения, что и на первом слайде главы */
     #chapter1-title .slide-inner,
@@ -1139,8 +1414,7 @@
     /* Позиция Леночки, Виктора и Алисы на десктопе — единый размер персонажа (на мобильной переопределяется в @media (max-width: 640px)) */
     @media (min-width: 641px) {
       .novella-scene.scene-kitchen .character-sprite,
-      .novella-scene.scene-office-night .character-sprite,
-      .novella-scene.scene-alisa-office .character-sprite {
+      .novella-scene.scene-office-night .character-sprite {
         grid-column: 2;
         grid-row: 1 / -1;
         justify-self: end;
@@ -1154,6 +1428,23 @@
         object-position: bottom center;
         transform: scale(var(--chapter-character-scale));
         transform-origin: bottom center;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .novella-scene.scene-alisa-office .character-sprite {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        justify-self: end;
+        align-self: end;
+        margin-top: 0;
+        width: 100%;
+        max-width: var(--chapter-character-max-width);
+        height: var(--chapter-character-height-pct);
+        max-height: var(--chapter-character-max-height);
+        object-fit: cover;
+        object-position: top center;
+        transform: scale(var(--chapter-character-scale));
+        transform-origin: top center;
         z-index: 1;
         pointer-events: none;
       }
@@ -1199,7 +1490,7 @@
     .character-sprite.ch4-dim { filter: brightness(0.7) sepia(0.3); }
     /* Алиса использует тот же масштаб, что и остальные персонажи;
        отдельный класс ch4-scale оставляем только для явной привязки точки трансформации. */
-    #ch4-adult3 .character-sprite.ch4-scale { transform-origin: bottom center; }
+    #ch4-adult3 .character-sprite.ch4-scale { transform-origin: top center; }
     .novella-choices {
       grid-column: 2;
       grid-row: 1;
@@ -1301,6 +1592,11 @@
       box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
     }
     .psychologist-hint-box { margin-top: 0.75rem; }
+    .berne-hint-box { display: flex; gap: 1rem; align-items: flex-start; margin-top: 0.75rem; padding: 1rem; border-radius: 1rem; border: 2px solid rgba(251, 191, 36, 0.5); background: rgba(15, 23, 42, 0.9); transform-origin: top center; }
+    .berne-hint-box .berne-hint-photo { flex-shrink: 0; width: 72px; height: 72px; border-radius: 0.75rem; object-fit: cover; object-position: top; }
+    .berne-hint-box .berne-hint-text { flex: 1; min-width: 0; }
+    .berne-hint-box .berne-hint-title { font-weight: 700; color: #fbbf24; font-size: 0.9375rem; margin-bottom: 0.35rem; }
+    .berne-hint-box .berne-hint-body { font-size: 0.875rem; color: #e2e8f0; line-height: 1.5; margin: 0; }
     @media (max-width: 640px) {
       .slide:has(.novella-scene) .slide-inner { max-width: 100%; padding: 0 0.35rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
@@ -1435,12 +1731,20 @@
       }
       .novella-scene .boss-sprite { transform-origin: bottom left; justify-self: start; }
       .novella-scene.scene-kitchen .character-sprite,
-      .novella-scene.scene-office-night .character-sprite,
-      .novella-scene.scene-alisa-office .character-sprite {
+      .novella-scene.scene-office-night .character-sprite {
         object-fit: contain !important;
         object-position: bottom center !important;
         transform: translateY(8%) scale(var(--chapter-character-scale));
         transform-origin: bottom center;
+        justify-self: end;
+        align-self: end;
+        margin-top: 0 !important;
+      }
+      .novella-scene.scene-alisa-office .character-sprite {
+        object-fit: contain !important;
+        object-position: top center !important;
+        transform: translateY(0) scale(var(--chapter-character-scale));
+        transform-origin: top center;
         justify-self: end;
         align-self: end;
         margin-top: 0 !important;
@@ -1591,6 +1895,19 @@
       0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
       100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
     }
+    /* Мерцающие радужные звёздочки для слайда повышения */
+    .promoted-star {
+      position: absolute;
+      font-size: 24px;
+      animation: promoted-star-twinkle 1.8s ease-in-out infinite;
+      filter: drop-shadow(0 0 6px currentColor);
+      pointer-events: none;
+    }
+    @keyframes promoted-star-twinkle {
+      0%, 100% { opacity: 0.4; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+    .promoted-star::before { content: '★'; }
     .points-highlight {
       display: inline-block;
       margin-top: 0.5rem;
@@ -1631,7 +1948,7 @@
     .points-row.points-hint-deduction { animation: points-hint-flash 0.6s ease-out; }
     @keyframes points-hint-flash { 0% { background: rgba(251, 191, 36, 0.25); } 100% { background: transparent; } }
     .points-row.points-hint-deduction .points-num { color: #f59e0b; }
-    .hint-penalty-comment { font-size: 0.8125rem; color: #94a3b8; margin-top: 0.35rem; margin-bottom: 0; }
+    .hint-penalty-comment, .wrong-penalty-comment { font-size: 0.8125rem; color: #94a3b8; margin-top: 0.35rem; margin-bottom: 0; }
     .chapter-outcome-block .outcome-choice-line { font-size: 1.125rem; font-weight: 600; }
     #berne-method .slide-inner { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 1rem 1.25rem; box-sizing: border-box; max-width: min(92vw, 900px); margin-left: auto; margin-right: auto; }
     #berne-method .slide-inner > div { flex: 1; min-height: 0; min-width: 0; display: grid !important; grid-template-columns: minmax(0, 35%) minmax(0, 65%) !important; gap: clamp(16px, 2.5vw, 32px) !important; align-items: stretch; }
@@ -1787,7 +2104,7 @@
       <button type="button" class="course-nav-chapter-btn" data-goto="11" title="Глава 2">2</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="22" title="Глава 3">3</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="37" title="Глава 4">4</button>
-      <button type="button" class="course-nav-chapter-btn" data-goto="56" title="Глава 5: Финальная битва">🎯</button>
+      <button type="button" class="course-nav-chapter-btn" data-goto="54" title="Глава 5: Финальная битва">🎯</button>
     </div>
     <div class="progress-bar-track" aria-hidden="true">
       <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0.0588)"></div>
@@ -1795,7 +2112,7 @@
   </nav>
   <div class="course-toolbar" aria-label="Инструменты">
     <button type="button" class="toolbar-btn" id="toolbar-music-btn" title="Выключить музыку" aria-label="Музыка">🎵</button>
-    <button type="button" class="toolbar-btn" id="toolbar-hint-btn" title="Получить подсказку от психолога" aria-label="Подсказка психолога">💡</button>
+    <button type="button" class="toolbar-btn" id="toolbar-hint-btn" title="Подсказка от Эрика Берна" aria-label="Подсказка от Эрика Берна">💡</button>
     <div class="toolbar-points toolbar-awareness" title="Осознанность" aria-label="Осознанность">💎 <span id="toolbar-awareness">0</span></div>
     <div class="toolbar-points toolbar-influence hidden" title="Влияние" aria-hidden="true">🔥 <span class="label">Влияние</span> <span id="toolbar-influence">0</span></div>
     <div class="toolbar-points toolbar-resource hidden" title="Ресурс" aria-hidden="true">🔋 <span class="label">Ресурс</span> <span id="toolbar-resource">0</span></div>
@@ -1803,10 +2120,30 @@
   <a href="/alchemy" class="course-nav-exit" id="pg-exit-link" title="Выйти в Алхимию" aria-label="Выйти">×</a>
 </div>
   <audio id="course-bg-music" loop preload="auto">
-    <source src="mfon.mp3" type="audio/mpeg">
+    <source src="mfon2.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="victory-applause" preload="auto">
+    <source src="applause.mp3" type="audio/mpeg">
   </audio>
   <div class="main-offset"></div>
   <div id="confetti-container" class="confetti-container confetti-container-global" aria-hidden="true"></div>
+  <div id="fired-flash-overlay" aria-hidden="true"></div>
+  <div id="rewarded-overlay" aria-hidden="true"></div>
+  <div id="rewarded-rain" aria-hidden="true"></div>
+  <div id="fired-lightning" aria-hidden="true">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lightning-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#fff;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#e0f2fe;stop-opacity:0.9" />
+          <stop offset="100%" style="stop-color:#7dd3fc;stop-opacity:0.6" />
+        </linearGradient>
+      </defs>
+      <path d="M50 0 L55 45 L45 45 L60 100 L52 55 L62 55 Z" fill="url(#lightning-grad)" opacity="0.95"/>
+      <path d="M35 0 L38 40 L30 40 L48 100 L40 52 L50 52 Z" fill="url(#lightning-grad)" opacity="0.6" transform="translate(-5,0)"/>
+      <path d="M65 0 L68 40 L60 40 L78 100 L70 52 L80 52 Z" fill="url(#lightning-grad)" opacity="0.6" transform="translate(5,0)"/>
+    </svg>
+  </div>
 
   <div id="slide-container">
     <div class="slide slide-intro active" data-slide="0" id="slide-0">
@@ -1960,16 +2297,19 @@
         <div class="novella-scene novella-chapter-scene has-character">
           <img src="boss..png" alt="" class="boss-sprite boss-dim" aria-hidden="true" />
           <div class="novella-choices" id="novella-choices">
-            <button type="button" class="novella-choice" data-novella-choice="0">1. Конечно, Артур Борисович. Я всё сделаю, не переживайте.</button>
-            <button type="button" class="novella-choice" data-novella-choice="1">2. Опять я?! У меня вообще-то личная жизнь есть!</button>
-            <button type="button" class="novella-choice" data-novella-choice="2">3. Я готов спасти ситуацию. Как насчет премии или отгула за эти переработки?</button>
+            <button type="button" class="novella-choice" data-novella-choice="0">Конечно, Артур Борисович. Я всё сделаю, не переживайте.</button>
+            <button type="button" class="novella-choice" data-novella-choice="1">Опять я?! У меня вообще-то личная жизнь есть!</button>
+            <button type="button" class="novella-choice" data-novella-choice="2">Я готов спасти ситуацию. Как насчет премии или отгула за эти переработки?</button>
           </div>
           <div class="scene-text-zone">
             <div class="scene-content">
-              <button type="button" id="btn-show-hint" class="psychologist-hint-btn">💡 Получить подсказку</button>
-              <div class="dialog-box psychologist-hint-box hidden" id="psychologist-hint-box" aria-hidden="true">
-                <span class="dialog-name">Совет психолога</span>
-                Внимание: Артур Борисович использует игру из сценария «Загнанная лошадь»: смешивает лесть («ты лучший») с чувством вины («не бросишь команду»). Он ждет, что ты ответишь из позиции Послушного Ребенка. Твой ход?
+              <button type="button" id="btn-show-hint" class="psychologist-hint-btn">💡 Подсказка от Эрика Берна</button>
+              <div class="berne-hint-box hidden" id="psychologist-hint-box" aria-hidden="true">
+                <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
+                <div class="berne-hint-text">
+                  <div class="berne-hint-title">Подсказка от Эрика Берна</div>
+                  <p class="berne-hint-body">Внимание: Артур Борисович использует игру из сценария «Загнанная лошадь»: смешивает лесть («ты лучший») с чувством вины («не бросишь команду»). Он ждет, что ты ответишь из позиции Послушного Ребенка. Твой ход?</p>
+                </div>
               </div>
             </div>
           </div>
@@ -2112,11 +2452,6 @@
             <button type="button" class="novella-choice ch2-choice" data-ch2-choice="0">Тогда просто скопируй прошлый отчёт и подставь цифры вручную.</button>
             <button type="button" class="novella-choice ch2-choice" data-ch2-choice="1">Жаль. Похоже, тебе предстоит непростой вечер. Ладно, я пойду?</button>
           </div>
-          <div class="scene-text-zone">
-            <div class="scene-content">
-              <div class="dialog-box"><span class="dialog-name">Вы</span> Может, ручной способ ей поможет? Это же элементарно.</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -2149,9 +2484,12 @@
           </div>
           <div class="scene-text-zone">
             <div class="scene-content">
-              <div class="dialog-box border-amber-500/50 hidden" id="ch2-psychologist-hint-box" aria-hidden="true">
-                <span class="dialog-name" style="color: #fbbf24;">Совет психолога</span>
-                Леночка играет в <strong>«Да, но...»</strong>. Каждый твой совет — это еда для её Жертвы. Она не ищет решения, она ищет того, кто разделит с ней ответственность или заберёт работу.
+              <div class="berne-hint-box hidden" id="ch2-psychologist-hint-box" aria-hidden="true">
+                <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
+                <div class="berne-hint-text">
+                  <div class="berne-hint-title">Подсказка от Эрика Берна</div>
+                  <p class="berne-hint-body">Леночка играет в <strong>«Да, но...»</strong>. Каждый твой совет — это еда для её Жертвы. Она не ищет решения, она ищет того, кто разделит с ней ответственность или заберёт работу.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -2268,7 +2606,7 @@
           <div class="scene-text-zone">
             <div class="scene-content">
               <div class="dialog-box">
-                <span class="dialog-name"><span id="ch3-user-name">[Имя]</span></span>
+                <span class="dialog-name"><span id="ch3-user-name">Вы</span></span>
                 Виктор, контент сильный, но тут логотип конкурентов и ошибка в фамилии шефа. Это же катастрофа для завтрашней встречи.
               </div>
             </div>
@@ -2304,7 +2642,7 @@
           <div class="scene-text-zone">
             <div class="scene-content">
               <div class="dialog-box mb-2">
-                <span class="dialog-name"><span class="ch3-user-name-placeholder">[Имя]</span></span>
+                <span class="dialog-name"><span class="ch3-user-name-placeholder">Вы</span></span>
                 Нужно как-то отреагировать...
               </div>
             </div>
@@ -2321,7 +2659,7 @@
           <div class="scene-text-zone">
             <div class="scene-content">
               <div class="dialog-box mb-2">
-                <span class="dialog-name"><span id="ch3-user-name-choice">[Имя]</span></span>
+                <span class="dialog-name"><span id="ch3-user-name-choice">Вы</span></span>
                 Нужно как-то отреагировать...
               </div>
             </div>
@@ -2333,9 +2671,12 @@
           </div>
           <div class="scene-text-zone">
             <div class="scene-content">
-              <div class="dialog-box border-amber-500/50 hidden" id="ch3-psychologist-hint-box-1" aria-hidden="true">
-                <span class="dialog-name" style="color: #fbbf24;">Совет психолога</span>
-                Виктор ведёт игру <strong>«Попался, сукин сын!»</strong>: демонстрирует жертвенность и при этом даёт наживку (ошибки). Гнев сделает из него «мученика», а если взять работу на себя — закрепите за ним право косячить. Ищите вариант, где вы <strong>не входите ни в Преследователя, ни в Спасателя</strong> и не снимаете с него ответственность.
+              <div class="berne-hint-box hidden" id="ch3-psychologist-hint-box-1" aria-hidden="true">
+                <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
+                <div class="berne-hint-text">
+                  <div class="berne-hint-title">Подсказка от Эрика Берна</div>
+                  <p class="berne-hint-body">Виктор ведёт игру <strong>«Попался, сукин сын!»</strong>: демонстрирует жертвенность и при этом даёт наживку (ошибки). Гнев сделает из него «мученика», а если взять работу на себя — закрепите за ним право косячить. Ищите вариант, где вы <strong>не входите ни в Преследователя, ни в Спасателя</strong> и не снимаете с него ответственность.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -2433,9 +2774,12 @@
           </div>
           <div class="scene-text-zone">
             <div class="scene-content">
-              <div class="dialog-box border-amber-500/50 hidden" id="ch3-psychologist-hint-box-2" aria-hidden="true">
-                <span class="dialog-name" style="color: #fbbf24;">Совет психолога</span>
-                Важно разделить <strong>личность</strong> (усталость, выгорание) и <strong>процесс</strong> (ошибки в файле). Поддержать человека — да, снять ответственность за результат — нет. Ищите формулировку с чёткими рамками: время на передышку, дедлайн по файлу, отдельно — обсуждение нагрузки.
+              <div class="berne-hint-box hidden" id="ch3-psychologist-hint-box-2" aria-hidden="true">
+                <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
+                <div class="berne-hint-text">
+                  <div class="berne-hint-title">Подсказка от Эрика Берна</div>
+                  <p class="berne-hint-body">Важно разделить <strong>личность</strong> (усталость, выгорание) и <strong>процесс</strong> (ошибки в файле). Поддержать человека — да, снять ответственность за результат — нет. Ищите формулировку с чёткими рамками: время на передышку, дедлайн по файлу, отдельно — обсуждение нагрузки.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -2551,6 +2895,17 @@
             <button type="button" class="novella-choice ch4-choice" data-ch4-branch="rescuer">Смело, но рискованно. Давай я сам выберу 3 главных цифры, а ты их просто вставишь?</button>
             <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_1">Эстетично. А как мы ответим Боссу, когда на 3-й минуте он спросит про ROI?</button>
           </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="berne-hint-box hidden" id="ch4-psychologist-hint-box" aria-hidden="true">
+                <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
+                <div class="berne-hint-text">
+                  <div class="berne-hint-title">Подсказка от Эрика Берна</div>
+                  <p class="berne-hint-body">Игра «Посмотри, что ты со мной сделал» — Алиса даёт наживку (стыд, вина). Ищите вариант, который возвращает к цели бизнеса и не входит ни в Преследователя (давление на чувства), ни в Спасателя (взять работу на себя).</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2584,9 +2939,6 @@
                 Вчера это был мусор, сегодня — суть. Я ориентируюсь на ваши слова, а не на интуицию. Если я буду сама решать, что важно, зачем тогда мне ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
               </div>
             </div>
-          </div>
-          <div class="novella-choices choices-slide-in" id="ch4-choices-parent">
-            <button type="button" class="novella-choice ch4-choice" data-ch4-goto="42">Вернуться к цели (Взрослый)</button>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
@@ -2717,8 +3069,8 @@
         </div>
       </div>
     </div>
-    <!-- Глава 4: победа — только текст, затем кнопка -->
-    <div class="slide slide-stretch slide-clickable" data-slide="49" id="ch4-win-final-text">
+    <!-- Глава 4: победа — финальная реплика Алисы, клик → теория -->
+    <div class="slide slide-stretch slide-clickable" data-slide="49" id="ch4-win-final">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
         <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
@@ -2730,33 +3082,13 @@
                 Я попробую закончить. Но учтите — завтра на Совете я просто буду молчать. Раз вы так уверены в своём видении, я не хочу вам мешать своим неправильным дизайном.
               </div>
             </div>
-          </div>
-        </div>
-        <p class="slide-hint">Нажмите на экран для продолжения</p>
-      </div>
-    </div>
-    <div class="slide slide-stretch slide-clickable" data-slide="50" id="ch4-win-final">
-      <div class="slide-inner flex-1 flex flex-col min-h-0">
-        <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
-        <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
-          <img src="Алиса1.png" alt="" class="character-sprite" />
-          <div class="scene-text-zone">
-            <div class="scene-content">
-              <div class="dialog-box">
-                <span class="dialog-name">Алиса (Арт-директор)</span>
-                Я попробую закончить. Но учтите — завтра на Совете я просто буду молчать. Раз вы так уверены в своём видении, я не хочу вам мешать своим неправильным дизайном.
-              </div>
-            </div>
-          </div>
-          <div class="novella-choices choices-slide-in" id="ch4-choices-win">
-            <button type="button" class="novella-choice ch4-choice" data-ch4-goto="52">Завершить подготовку (Анализ)</button>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
     <!-- Глава 4: сглаживающая реплика после неправильного выбора (контент и переход задаются по JS) -->
-    <section class="slide slide-stretch" data-slide="51" id="ch4-smooth">
+    <section class="slide slide-stretch" data-slide="50" id="ch4-smooth">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 4. Диалог</p>
         <div class="novella-scene novella-chapter-scene scene-alisa-office has-character">
@@ -2773,19 +3105,9 @@
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
-    <!-- Глава 4 — структура: 1) Обложка (37) 2) Диалог (38–52) 3) Теория: 2 слайда (53–54) 4) Начисление баллов (55) -->
-    <!-- Глава 4: итог проигрышной ветки (динамический контент по JS) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="52" id="ch4-outcome">
-      <div class="slide-inner">
-        <p class="text-slate-500 text-xs mb-2">6. Пояснение выбранного варианта</p>
-        <div id="chapter4-outcome-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
-          <!-- Заполняется по JS -->
-        </div>
-        <p class="slide-hint">Нажмите на экран для продолжения</p>
-      </div>
-    </section>
+    <!-- Глава 4 — структура: 1) Обложка (37) 2) Диалог (38–50) 3) Теория: 2 слайда (51–52) 4) Начисление баллов после теории (53) -->
     <!-- Теория к главе 4. Слайд 1: название и суть игр (по Берну), которые были в главе -->
-    <section class="slide slide-stretch slide-clickable" data-slide="53" id="ch4-theory1">
+    <section class="slide slide-stretch slide-clickable" data-slide="51" id="ch4-theory1">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 4</p>
         <div class="border-l-4 border-pink-500 pl-5 mb-6">
@@ -2807,7 +3129,7 @@
       </div>
     </section>
     <!-- Теория к главе 4. Слайд 2: как правильно нужно было действовать -->
-    <section class="slide slide-stretch slide-clickable" data-slide="54" id="ch4-theory2">
+    <section class="slide slide-stretch slide-clickable" data-slide="52" id="ch4-theory2">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 4</p>
         <div class="border-l-4 border-emerald-500 pl-5 mb-6">
@@ -2822,24 +3144,24 @@
             <li><strong>Отказ от «индульгенций»:</strong> Никогда не гарантируйте манипулятору, что «не будете ругаться». Ответственность за результат всегда общая.</li>
           </ol>
         </div>
-        <div class="text-center mt-6 flex-shrink-0">
-          <button type="button" class="ch4-theory-goto-test px-6 py-3 rounded-lg font-display font-bold text-white bg-emerald-500 hover:bg-emerald-400 transition-colors" data-goto-slide="56">ПЕРЕЙТИ К ФИНАЛЬНОЙ БИТВЕ →</button>
-        </div>
-        <p class="slide-hint mt-4">Нажмите на экран или кнопку выше для продолжения</p>
+        <p class="slide-hint mt-4">Нажмите на экран для продолжения</p>
       </div>
     </section>
     <!-- Глава 4: начисление баллов (после теории) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="55" id="ch4-points">
+    <section class="slide slide-stretch slide-clickable" data-slide="53" id="ch4-points">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
         <div id="chapter4-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
           <!-- Заполняется по JS при входе на слайд -->
         </div>
-        <p class="slide-hint">Нажмите на экран для продолжения</p>
+        <div class="text-center mt-4 flex-shrink-0">
+          <button type="button" class="ch4-goto-battle px-6 py-3 rounded-lg font-display font-bold text-white bg-amber-500 hover:bg-amber-400 transition-colors" data-goto-slide="54">К финальной битве →</button>
+        </div>
+        <p class="slide-hint mt-2">Нажмите на экран или кнопку выше для продолжения</p>
       </div>
     </section>
     <!-- Глава 5: Финальная битва — обложка -->
-    <div class="slide slide-stretch slide-clickable" data-slide="56" id="chapter5-title">
+    <div class="slide slide-stretch slide-clickable" data-slide="54" id="chapter5-title">
       <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
         <div class="chapter-cover-spacer" aria-hidden="true"></div>
         <div class="novella-scene scene-boardroom rounded-2xl w-full flex flex-col justify-center items-center p-6">
@@ -2852,19 +3174,26 @@
       </div>
     </div>
     <!-- Глава 5: введение в ситуацию (что происходит, настроение) -->
-    <div class="slide slide-stretch slide-clickable" data-slide="57" id="ch5-intro">
+    <div class="slide slide-stretch slide-clickable" data-slide="55" id="ch5-intro">
       <div class="slide-inner flex-1 flex flex-col justify-start items-center min-h-0">
         <div class="chapter-cover-spacer" aria-hidden="true"></div>
         <div class="novella-scene scene-boardroom rounded-2xl w-full flex flex-col justify-center items-center p-6">
-          <p class="text-slate-300 text-center text-sm sm:text-base max-w-xl mb-4">Конференц-зал. Сейчас — презентация стратегии на 500 миллионов руководству компании.</p>
-          <p class="text-slate-400 text-center text-xs sm:text-sm max-w-xl mb-2">Во главе стола — Артур Борисович (CEO): ждёт цифр и решений, настроен жёстко. Рядом — ключевые руководители.</p>
-          <p class="text-slate-400 text-center text-xs sm:text-sm max-w-xl">Ваша команда — вы, Алиса (арт-директор) и Виктор (экономист). В зале заметное напряжение: от выступления ждут ясности и обоснований.</p>
+          <div class="scene-text-zone max-w-xl">
+            <div class="scene-content">
+              <div class="dialog-box">
+                <span class="dialog-name">Ремарка</span>
+                <em>Конференц-зал. Сейчас — презентация стратегии на 500 миллионов руководству компании.<br><br>
+Во главе стола — Артур Борисович (CEO): ждёт цифр и решений, настроен жёстко. Рядом — ключевые руководители.<br><br>
+Ваша команда — вы, Алиса (арт-директор) и Виктор (экономист). В зале заметное напряжение: от выступления ждут ясности и обоснований.</em>
+              </div>
+            </div>
+          </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </div>
     <!-- Глава 5: CEO — первый вопрос -->
-    <div class="slide slide-stretch slide-clickable" data-slide="58" id="ch5-ceo-intro">
+    <div class="slide slide-stretch slide-clickable" data-slide="56" id="ch5-ceo-intro">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Презентация руководству</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-boss has-character">
@@ -2886,7 +3215,7 @@
       </div>
     </div>
     <!-- Глава 5: Виктор отвечает + выбор -->
-    <div class="slide slide-stretch" data-slide="59" id="ch5-viktor-choice">
+    <div class="slide slide-stretch" data-slide="57" id="ch5-viktor-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
@@ -2899,16 +3228,27 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-1">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Мы решили не перегружать Совет деталями. Наша задача — направление.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если в версии нет расчётов — это мой управленческий просчёт. Готов обсудить.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Расчёты есть. Предлагаю начать с рамки решения, затем перейти к экономике.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-1" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="0">Мы решили не перегружать Совет деталями. Наша задача — направление.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="0">Если в версии нет расчётов — это мой управленческий просчёт. Готов обсудить.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="1">Расчёты есть. Предлагаю начать с рамки решения, затем перейти к экономике.</button>
+          </div>
+          <div class="scene-text-zone">
+            <div class="scene-content">
+              <div class="berne-hint-box hidden" id="ch5-psychologist-hint-box" aria-hidden="true">
+                <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
+                <div class="berne-hint-text">
+                  <div class="berne-hint-title">Подсказка от Эрика Берна</div>
+                  <p class="berne-hint-body">На презентации важно держать фокус на содержании и стратегии, не уходить в эмоции и оборону. Ищите ответы, которые возвращают к фактам и решениям, а не к перекладыванию вины.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <!-- Глава 5: Алиса + выбор -->
-    <div class="slide slide-stretch" data-slide="60" id="ch5-alisa-choice">
+    <div class="slide slide-stretch" data-slide="58" id="ch5-alisa-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
@@ -2925,16 +3265,16 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-2">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Финальное слово было за мной — я принимаю ответственность.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Мы обсуждали это вместе. Не стоит представлять это как давление.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Вопрос не в том, кто настоял, а в том, достаточна ли версия для принятия решения.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-2" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="0">Финальное слово было за мной — я принимаю ответственность.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="0">Мы обсуждали это вместе. Не стоит представлять это как давление.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="1">Вопрос не в том, кто настоял, а в том, достаточна ли версия для принятия решения.</button>
           </div>
         </div>
       </div>
     </div>
     <!-- Глава 5: Виктор ноутбук, стресс-сценарий + выбор -->
-    <div class="slide slide-stretch" data-slide="61" id="ch5-stress-choice">
+    <div class="slide slide-stretch" data-slide="59" id="ch5-stress-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
@@ -2947,16 +3287,16 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-3">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Любой проект имеет стресс-сценарий. Это не аргумент против.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если этот риск реален, возможно, нам стоит поставить проект на паузу.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Пессимистичный сценарий — инструмент управления. Давайте разберём факторы.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-3" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="0">Любой проект имеет стресс-сценарий. Это не аргумент против.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="0">Если этот риск реален, возможно, нам стоит поставить проект на паузу.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="1">Пессимистичный сценарий — инструмент управления. Давайте разберём факторы.</button>
           </div>
         </div>
       </div>
     </div>
     <!-- Глава 5: CEO — кто принял решение + выбор -->
-    <div class="slide slide-stretch" data-slide="62" id="ch5-ceo-who-choice">
+    <div class="slide slide-stretch" data-slide="60" id="ch5-ceo-who-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-boss has-character">
@@ -2969,16 +3309,16 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-4">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Финальное слово было за мной.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Это коллективное решение проектной группы.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Я отвечаю за формат обсуждения. Команда — за содержание. Оба аспекта представлены.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-4" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="0">Финальное слово было за мной.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="0">Это коллективное решение проектной группы.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="1">Я отвечаю за формат обсуждения. Команда — за содержание. Оба аспекта представлены.</button>
           </div>
         </div>
       </div>
     </div>
     <!-- Глава 5: Алиса драма + выбор -->
-    <div class="slide slide-stretch" data-slide="63" id="ch5-alisa-drama-choice">
+    <div class="slide slide-stretch" data-slide="61" id="ch5-alisa-drama-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-dialogue has-character">
@@ -2991,16 +3331,16 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-5">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Эмоции понятны, но сейчас не об этом.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если это повлияло на качество, нам стоит пересмотреть роли.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Кадровые решения — отдельная плоскость. Сейчас фокус на стратегии.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-5" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="0">Эмоции понятны, но сейчас не об этом.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="0">Если это повлияло на качество, нам стоит пересмотреть роли.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="1">Кадровые решения — отдельная плоскость. Сейчас фокус на стратегии.</button>
           </div>
         </div>
       </div>
     </div>
     <!-- Глава 5: CEO — Леночка + выбор -->
-    <div class="slide slide-stretch" data-slide="64" id="ch5-lenochka-choice">
+    <div class="slide slide-stretch" data-slide="62" id="ch5-lenochka-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-leno has-character">
@@ -3013,16 +3353,16 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-6">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Позвольте, я поясню прямо сейчас!</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Молчать и ждать завершения спора.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Коллеги, чтобы обсуждение было продуктивным — какие риски критичны? Зафиксируем.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-6" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="0">Позвольте, я поясню прямо сейчас!</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="0">Молчать и ждать завершения спора.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="1">Коллеги, чтобы обсуждение было продуктивным — какие риски критичны? Зафиксируем.</button>
           </div>
         </div>
       </div>
     </div>
     <!-- Глава 5: CEO — контроль проекта + выбор -->
-    <div class="slide slide-stretch" data-slide="65" id="ch5-control-choice">
+    <div class="slide slide-stretch" data-slide="63" id="ch5-control-choice">
       <div class="slide-inner flex-1 flex flex-col min-h-0">
         <p class="text-slate-500 text-xs mb-1">Глава 5. Ваш ответ</p>
         <div class="novella-scene novella-chapter-scene scene-boardroom-boss has-character">
@@ -3035,108 +3375,160 @@
               </div>
             </div>
           </div>
-          <div class="novella-choices choices-slide-in" id="ch5-choices-7">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Да. И именно поэтому мы сейчас обсуждаем риски.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Проект — живой процесс, требующий корректировок.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Контроль — это способность адаптироваться, а не игнорировать риски.</button>
+          <div class="novella-choices choices-slide-in hidden" id="ch5-choices-7" aria-hidden="true">
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="0">Да. И именно поэтому мы сейчас обсуждаем риски.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="0">Проект — живой процесс, требующий корректировок.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="1">Контроль — это способность адаптироваться, а не игнорировать риски.</button>
           </div>
         </div>
       </div>
     </div>
-    <!-- Глава 5: ПЕРЕВОРОТ — развязка + финальный выбор (фон: босс предлагает зам) -->
-    <section class="slide slide-stretch" data-slide="66" id="ch5-reversal">
-      <div class="slide-inner flex-1 flex flex-col min-h-0 p-4 sm:p-6 bg-slate-900/70">
-        <p class="text-slate-500 text-xs mb-2">Глава 5. Финал</p>
-        <div class="rounded-2xl bg-slate-800/60 border border-slate-600/50 p-4 sm:p-6 text-slate-200 space-y-4">
-          <h2 class="font-display text-2xl font-bold text-emerald-400">ПЕРЕВОРОТ</h2>
-          <p>Виктор спокойно закрывает ноутбук. Алиса перестаёт тереть виски.</p>
-          <p><strong>Виктор:</strong> «Артур Борисович попросил меня не вмешиваться до момента пика. Мне важно было увидеть, войдёт ли руководитель в роль Жертвы или Тирана».</p>
-          <p><strong>Артур:</strong> «Цифры — это тест на интеллект. Люди — тест на устойчивость. Вы ни разу не атаковали и не оправдывались. Вы управляли процессом».</p>
-          <p class="text-xl sm:text-2xl font-bold text-amber-400 mt-6">«Я ищу заместителя по стратегии. Вы готовы?»</p>
-          <div class="novella-choices choices-slide-in mt-4" id="ch5-choices-final">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Конечно. Это честь.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="0">Если команда поддержит — да.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="67" data-ch5-correct="1">Если моя задача — усиливать систему, а не эго, — да.</button>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- Глава 5: ПОБЕДА — концовка (фон: босс-зам) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="67" id="ch5-ending">
-      <div class="slide-inner flex-1 flex flex-col justify-center items-center min-h-0 p-6 text-center bg-slate-900/70">
-        <p class="text-slate-500 text-xs mb-2">Глава 5</p>
-        <div class="rounded-2xl bg-slate-900/80 border border-amber-500/30 p-6 sm:p-8 max-w-xl">
-          <h1 class="font-display text-2xl sm:text-3xl font-bold text-amber-400 mb-4">ПОБЕДА: ГРОССМЕЙСТЕР</h1>
-          <p class="text-white text-lg sm:text-xl mb-2">Артур: «С сегодняшнего дня вы — мой заместитель».</p>
-          <hr class="border-slate-600 my-4" />
-          <p class="text-slate-300 text-sm sm:text-base">Виктор закрывает ноутбук с уважением. Алиса впервые смотрит на вас не как на цель, а как на лидера.</p>
-          <p class="text-emerald-400 font-bold mt-6">ВЫ ВЫШЛИ ИЗ ИГРЫ, ЧТОБЫ УПРАВЛЯТЬ ЕЮ.</p>
-        </div>
-        <p class="slide-hint mt-6">Нажмите на экран для продолжения</p>
-      </div>
-    </section>
     <!-- Теория к главе 5. Слайд 1: психологические игры по Берну -->
-    <section class="slide slide-stretch slide-clickable" data-slide="68" id="ch5-theory1">
+    <section class="slide slide-stretch slide-clickable" data-slide="64" id="ch5-theory1">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
         <div class="border-l-4 border-amber-500 pl-5 mb-4">
           <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-1 reveal" data-reveal>Психологические игры в Главе 5 (по Эрику Берну)</h2>
+          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Игры, применённые в презентации</p>
         </div>
-        <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 text-sm mb-3"><strong>«Попался, сукин сын!»</strong> (Виктор): Суть в ожидании ошибки оппонента для публичного разоблачения. Цель — доказать превосходство «Я ОК — ты не ОК».</p>
-          <p class="text-slate-300 text-sm mb-3"><strong>«Смотри, что ты заставил меня сделать»</strong> (Артур): Перенос ответственности за жёсткие решения на подчинённых. Легитимизация агрессии через «ваши ошибки».</p>
-          <p class="text-slate-300 text-sm mb-0"><strong>«Меня заставили»</strong> (Алиса/Леночка): Уход от ответственности и давления через позицию «жертвы обстоятельств».</p>
+        <div class="space-y-4 mb-4">
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-amber-300 font-bold text-base mb-2">«Попался, сукин сын!» <span class="text-slate-500 font-normal text-sm">(Виктор)</span></h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Суть в ожидании ошибки оппонента для публичного разоблачения. Цель — доказать превосходство «Я ОК — ты не ОК».</p>
+          </div>
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-amber-300 font-bold text-base mb-2">«Смотри, что ты заставил меня сделать» <span class="text-slate-500 font-normal text-sm">(Артур)</span></h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Перенос ответственности за жёсткие решения на подчинённых. Легитимизация агрессии через «ваши ошибки».</p>
+          </div>
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-amber-300 font-bold text-base mb-2">«Меня заставили» <span class="text-slate-500 font-normal text-sm">(Алиса / Леночка)</span></h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Уход от ответственности и давления через позицию «жертвы обстоятельств».</p>
+          </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
     <!-- Теория к главе 5. Слайд 2: мета-игра «Испытание на зрелость» -->
-    <section class="slide slide-stretch slide-clickable" data-slide="69" id="ch5-theory2">
+    <section class="slide slide-stretch slide-clickable" data-slide="65" id="ch5-theory2">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
         <div class="border-l-4 border-emerald-500 pl-5 mb-4">
           <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Мета-игра «Испытание на зрелость»</h2>
+          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Что происходило в сцене</p>
         </div>
-        <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 text-sm mb-3"><strong>Скрытый смысл сцены:</strong> Виктор выступал в роли «агрессора», проверяя игрока на эмоциональную устойчивость.</p>
-          <p class="text-slate-300 text-sm mb-3"><strong>Проверка на Взрослого:</strong> Артур Борисович наблюдал, втянется ли игрок в оправдания (Ребёнок) или ответную агрессию (Родитель).</p>
-          <p class="text-slate-300 text-sm mb-0"><strong>Выигрыш:</strong> Сохранение спокойствия и оперирование фактами разрушает чужую игру и переводит коммуникацию в конструктив.</p>
+        <div class="space-y-4 mb-4">
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Скрытый смысл сцены</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Виктор выступал в роли «агрессора», проверяя игрока на эмоциональную устойчивость.</p>
+          </div>
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Проверка на Взрослого</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Артур Борисович наблюдал, втянется ли игрок в оправдания (Ребёнок) или ответную агрессию (Родитель).</p>
+          </div>
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Выигрыш</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Сохранение спокойствия и оперирование фактами разрушает чужую игру и переводит коммуникацию в конструктив.</p>
+          </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
     <!-- Теория к главе 5. Слайд 3: как нужно было отвечать -->
-    <section class="slide slide-stretch slide-clickable" data-slide="70" id="ch5-theory3">
+    <section class="slide slide-stretch slide-clickable" data-slide="66" id="ch5-theory3">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
         <div class="border-l-4 border-emerald-500 pl-5 mb-4">
           <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Как нужно было отвечать</h2>
+          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Путь Гроссмейстера</p>
         </div>
-        <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 text-sm mb-3"><strong>Игнорирование «крючков»:</strong> Не вступать в спор с Виктором, а признавать факты и предлагать решение.</p>
-          <p class="text-slate-300 text-sm mb-3"><strong>Разрушение сценария:</strong> Использование позиции «Взрослого» (спокойный тон, прямой взгляд, отсутствие оправданий).</p>
-          <p class="text-slate-300 text-sm mb-0"><strong>Итог:</strong> В большом бизнесе статус получает тот, кто управляет своими реакциями, а не просто делает красивые презентации.</p>
+        <div class="space-y-4 mb-4">
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Игнорирование «крючков»</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Не вступать в спор с Виктором, а признавать факты и предлагать решение.</p>
+          </div>
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Разрушение сценария</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Использование позиции «Взрослого»: спокойный тон, прямой взгляд, отсутствие оправданий.</p>
+          </div>
+          <div class="theory-card ch5-game-block reveal" data-reveal>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Итог</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">В большом бизнесе статус получает тот, кто управляет своими реакциями, а не просто делает красивые презентации.</p>
+          </div>
         </div>
-        <p class="slide-hint mb-3">Нажмите на экран для продолжения</p>
-        <button type="button" id="btn-ch5-finish-theory" class="btn-go px-5 py-2.5 rounded-xl font-display font-bold text-white bg-accent hover:bg-amber-500 transition-colors text-sm mt-2">Узнать решение Босса</button>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
     <!-- Глава 5: начисление баллов (после теории) -->
-    <section class="slide slide-stretch slide-clickable" data-slide="71" id="ch5-points">
+    <section class="slide slide-stretch slide-clickable" data-slide="67" id="ch5-points">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Пояснение выбранного варианта с точки зрения теории, начисление баллов</p>
         <div id="chapter5-points-explanation" class="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 text-slate-200 text-sm space-y-3 chapter-outcome-block">
           <!-- Заполняется по JS при входе на слайд -->
         </div>
+        <div id="ch5-points-btn-wrap" class="text-center mt-4 flex-shrink-0">
+          <button type="button" id="btn-ch5-finish-theory" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-amber-500 hover:bg-amber-400 transition-colors text-sm">Узнать решение Босса</button>
+        </div>
+        <p class="slide-hint mt-2">Нажмите на экран или кнопку выше для продолжения</p>
+      </div>
+    </section>
+    <!-- Заключительное слово: только при повышении, 3 слайда -->
+    <section class="slide slide-stretch slide-clickable closing-slide" data-slide="68" id="closing-word-1">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-1">Заключительное слово</p>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-2 reveal" data-reveal style="text-shadow: 0 0 24px rgba(251, 191, 36, 0.25);">Жизнь — это не только игра, но и свобода выбора</h2>
+        <div class="closing-card reveal" data-reveal>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Поздравляем вас с завершением этого важного этапа! Теперь, когда вы освоили азы Трансакционного анализа и научились распознавать психологические игры в бизнесе (и не только), важно сделать последний, самый главный шаг.</p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Этот курс не был создан для того, чтобы вы превратились в хладнокровных роботов, всегда действующих только из позиции «Взрослого». Жизнь гораздо богаче, и истинное мастерство — в гибкости.</p>
+          <p class="text-amber-400 font-semibold text-sm mb-0">Вот три главные истины, которые стоит забрать с собой:</p>
+        </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
+    <section class="slide slide-stretch slide-clickable closing-slide" data-slide="69" id="closing-word-2">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-2">Заключительное слово</p>
+        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>1. Игры — это часть жизни, а не приговор</h2>
+        <div class="closing-card reveal" data-reveal>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-1">Не стоит демонизировать роли «Ребенка» или «Родителя». <strong class="text-amber-400/90">Ребенок</strong> — источник творчества, радости, интуиции и жизненной энергии. <strong class="text-amber-400/90">Родитель</strong> — умение заботиться, защищать, устанавливать границы. Ключ — не позволять им управлять вами в ситуациях, требующих логики. Включайте «Взрослого» там, где нужны решения, и «Ребенка» там, где нужна страсть.</p>
+        </div>
+        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>2. Манипуляция — это всегда комплекс</h2>
+        <div class="closing-card reveal" data-reveal>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-0">Не пытайтесь поймать собеседника на одной фразе. <strong class="text-amber-400/90">Ваше тело — чуткий прибор:</strong> интонация (сарказм, «детские» нотки), язык тела (напряженные плечи, закрытые позы), контекст и свои чувства (беспричинная вина, стыд, страх — вас втягивают в игру). Развивайте «психологическую зоркость».</p>
+        </div>
+        <p class="slide-hint">Нажмите на экран для продолжения</p>
+      </div>
+    </section>
+    <section class="slide slide-stretch slide-clickable closing-slide" data-slide="70" id="closing-word-3">
+      <div class="slide-inner">
+        <p class="text-slate-500 text-xs mb-1">Заключительное слово</p>
+        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>3. Люди манипулируют не от «зла», а от «незнания»</h2>
+        <div class="closing-card reveal" data-reveal>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Зачастую те, кто втягивает вас в игру (Виктор, Алиса, Артур Борисович), делают это неосознанно — повторяют сценарии, усвоенные в детстве. Понимание этого — путь к состраданию. Вместо игры «Попался, сукин сын!» или «Жертва» вы можете просто не играть. Оставаясь во «Взрослом», вы помогаете другим выйти из детских ролей.</p>
+        </div>
+        <div class="closing-card closing-card-final reveal" data-reveal>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-0">Теперь у вас есть суперсила. Вы прошли отличный путь. <span class="text-amber-400 font-display font-bold">Удачи в применении новых знаний.</span> <span class="text-accent font-display font-bold">Ваше пространство развития — SpaceGrowth!</span></p>
+        </div>
+        <div id="closing-boss-btn-wrap" class="text-center mt-4 flex-shrink-0 hidden">
+          <button type="button" id="btn-closing-boss" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-amber-500 hover:bg-amber-400 transition-colors text-sm">Узнать решение Босса</button>
+        </div>
+        <p class="slide-hint">Нажмите на экран или кнопку выше для продолжения</p>
+      </div>
+    </section>
     <!-- Сертификат выдается после окончания игры (после начисления баллов, если достоин) -->
-    <div class="slide slide-stretch" data-slide="72" id="slide-cert">
-      <div class="slide-inner text-center">
-        <p class="text-white font-display text-xl font-bold mb-2" id="cert-block-title">Поздравляем! 🏆</p>
-        <p class="text-slate-300 text-sm mb-6" id="cert-block-desc">Ты готов не дать себя «заиграть».</p>
-        <button type="button" id="btn-complete" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-accent uppercase tracking-wider text-sm">Сформировать сертификат «Анти-манипулятор»</button>
+    <div class="slide slide-stretch" data-slide="71" id="slide-cert">
+      <div id="victory-bg" aria-hidden="true"></div>
+      <div id="victory-fireworks" aria-hidden="true"></div>
+      <div class="slide-inner flex flex-col justify-center items-center min-h-0 p-6 overflow-y-auto" style="background: rgba(15, 23, 42, 0.5);">
+        <div id="cert-simple-block" class="text-center">
+          <p class="text-white font-display text-xl font-bold mb-2" id="cert-block-title">Поздравляем! 🏆</p>
+          <p class="text-slate-300 text-sm mb-6" id="cert-block-desc">Ты готов не дать себя «заиграть».</p>
+        </div>
+        <div id="cert-promoted-block" class="hidden w-full max-w-lg text-center">
+          <h1 class="font-display text-2xl sm:text-3xl font-bold text-amber-400 mb-4">Поздравляем! 🏆</h1>
+          <p class="text-slate-300 text-sm mb-2">Артур Борисович:</p>
+          <p class="text-slate-200 text-base leading-relaxed">«<span id="cert-promoted-name">Коллега</span>, я впечатлен вашей работой! Вы блестяще управляли процессом переговоров. Предлагаю вам должность моего заместителя по стратегическим вопросам!»</p>
+        </div>
+        <button type="button" id="btn-complete" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-accent uppercase tracking-wider text-sm mt-6">Сформировать сертификат «Анти-манипулятор»</button>
       </div>
     </div>
     <div id="exam-page" style="display:none">
@@ -3188,9 +3580,12 @@
       <div class="final-screen-content">
         <div class="certificate-wrap">
           <div class="cert-placeholder" aria-hidden="true"></div>
-          <div class="cert-overlay-name-date" id="cert-overlay-name-date">
-            <span class="cert-overlay-name" id="cert-overlay-name"></span>
-            <span class="cert-overlay-date" id="cert-overlay-date"></span>
+          <!-- Значения в графах сертификата: Ф.И.О. участника и Дата -->
+          <div class="cert-overlay-fio" id="cert-overlay-name-date" aria-hidden="true">
+            <span id="cert-overlay-name" class="cert-overlay-value"></span>
+          </div>
+          <div class="cert-overlay-date-field" aria-hidden="true">
+            <span id="cert-overlay-date" class="cert-overlay-value"></span>
           </div>
         </div>
         <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-4" id="final-screen-title">Поздравляем!</h2>
@@ -3203,19 +3598,22 @@
     (function() {
       gsap.registerPlugin(ScrollTrigger);
 
-      var TOTAL_SLIDES = 73;
+      var TOTAL_SLIDES = 72;
       var currentSlide = 0;
 
       var lastNovellaChoice = -1;
       var lastChapter2Choice = -1;
       var ch1PointsAwarded = false;
       var ch2PointsAwarded = false;
+      var ch3PointsAwarded = false;
+      var ch4PointsAwarded = false;
+      var ch5PointsAwarded = false;
       var ch3Win = false;
       var ch3Branch = '';
-      var ch3PointsAwarded = false;
       var ch2LosePenaltyApplied = false;
+      var ch2CorrectCount = 0;
+      var ch3CorrectCount = 0;
       var ch5CorrectCount = 0;
-      var ch5PointsAwarded = false;
       var ch2PendingResourcePenalty = 0;
       var ch2PendingInfluencePenalty = 0;
       var ch2WrongCount = 0;
@@ -3225,20 +3623,62 @@
       var hintUseCount = 0;
       var hintUseCountCh2 = 0;
       var hintUseCountCh3 = 0;
+      var hintUseCountCh4 = 0;
+      var hintUseCountCh5 = 0;
+      var hintUsedCh1 = false;
+      var hintUsedCh2 = false;
+      var hintUsedCh3 = false;
+      var hintUsedCh4 = false;
+      var hintUsedCh5 = false;
+      var wrongCh1 = 0;
+      var wrongCh2 = 0;
+      var wrongCh3 = 0;
+      var wrongCh4 = 0;
+      var wrongCh5 = 0;
+
+      /* Пороги концовок (max 180): уволили < 45 (~25%), наградили других 45–99 (25–55%), повысили >= 100 (56%+) */
+      var ENDING_FIRED_THRESHOLD = 45;
+      var ENDING_OTHERS_REWARDED_THRESHOLD = 100;
+
+      function applyAnswerScore(isCorrect, chapter) {
+        if (isCorrect) {
+          /* +10 начисляется при открытии итогового слайда главы */
+        } else {
+          if (chapter === 1) wrongCh1++;
+          else if (chapter === 2) wrongCh2++;
+          else if (chapter === 3) wrongCh3++;
+          else if (chapter === 4) wrongCh4++;
+          else if (chapter === 5) wrongCh5++;
+        }
+        if (chapter === 4) {
+          ch4AwarenessDelta += isCorrect ? 10 : -10;
+        }
+        if (chapter === 2 && isCorrect) {
+          ch2CorrectCount++;
+        }
+        if (chapter === 3 && isCorrect) {
+          ch3CorrectCount++;
+        }
+        if (chapter === 5 && isCorrect) {
+          ch5CorrectCount++;
+        }
+      }
 
       function updateChapterHighlight() {
         var i = currentSlide;
         var idx = 0;
         if (i <= 10) idx = 0;
         else if (i <= 21) idx = 1;
-        else if (i <= 35) idx = 2;
-        else if (i <= 55) idx = 3;
+        else if (i <= 36) idx = 2;
+        else if (i <= 53) idx = 3;
         else idx = 4;
         var btns = document.querySelectorAll('.course-nav-chapter-btn');
         btns.forEach(function(b, k) { b.classList.toggle('active', k === idx); });
       }
 
       var outcomesIntervals = [];
+      var victoryFireworksInterval = null;
+      var victoryApplauseInterval = null;
       function stopOutcomesSlide() {
         outcomesIntervals.forEach(function(id) { clearInterval(id); });
         outcomesIntervals = [];
@@ -3413,6 +3853,16 @@
         var counter = document.getElementById('slide-counter');
         if (counter) counter.textContent = (i + 1) + ' / ' + TOTAL_SLIDES;
         updateChapterHighlight();
+        var hintBtn = document.getElementById('toolbar-hint-btn');
+        if (hintBtn) {
+          var hintAvailable =
+            (!hintUsedCh1 && i === 6)  ||
+            (!hintUsedCh2 && i === 17) ||
+            ((!hintUsedCh3) && (i === 28 || i === 33)) ||
+            (!hintUsedCh4 && i === 40) ||
+            (!hintUsedCh5 && i === 57);
+          hintBtn.classList.toggle('hint-available', !!hintAvailable);
+        }
         if (i === 2) initOutcomesSlide();
         else stopOutcomesSlide();
         if (i === 5) {
@@ -3436,45 +3886,33 @@
           }
         }
         if (i === 10) {
+          if (!ch1PointsAwarded) {
+            var ch1Net = (lastNovellaChoice === 2 ? 10 : 0) - hintUseCount * 10 - wrongCh1 * 10;
+            awarenessPoints += ch1Net;
+            ch1PointsAwarded = true;
+            updateToolbarPoints();
+          }
           var block = document.getElementById('chapter-outcome-explanation');
           if (block) {
             block.classList.remove('outcome-lose');
+            var grossCh1 = awarenessPoints + (hintUseCount > 0 ? hintUseCount * 10 : 0) + (wrongCh1 > 0 ? wrongCh1 * 10 : 0);
+            var hintCommentCh1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
+            var wrongCommentCh1 = wrongCh1 > 0 ? '<p class="wrong-penalty-comment hidden">Неправильных ответов по главе: ' + wrongCh1 + '. Списывается 10 баллов за каждый.</p>' : '';
             if (lastNovellaChoice === 2) {
-              if (!ch1PointsAwarded) {
-                awarenessPoints += 20;
-                influencePoints += 10;
-                resourcePoints += 15;
-                ch1PointsAwarded = true;
-                updateToolbarPoints();
-              }
-              var grossCh1 = awarenessPoints + (hintUseCount > 0 ? hintUseCount * 10 : 0);
-              var hintCommentCh1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
-              block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 3 — позиция Взрослого.</strong></p><p>По Берну это ответ из эго-состояния Взрослый: вы перевели общение в переговоры и получили отгул и бонус.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh1 + '"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + hintCommentCh1;
+              block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 3 — позиция Взрослого.</strong></p><p>По Берну это ответ из эго-состояния Взрослый: вы перевели общение в переговоры и получили отгул и бонус.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh1 + '"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + (wrongCh1 > 0 ? ' data-wrong-penalty="' + (wrongCh1 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + hintCommentCh1 + wrongCommentCh1;
               runConfetti();
               runPointsAnimation(block);
-              if (hintUseCount > 0) setTimeout(function() { runHintPenaltyDeduction(block); }, 2600);
+              if (hintUseCount > 0 || wrongCh1 > 0) setTimeout(function() { runPenaltyDeductionsSequence(block); }, 2600);
+            } else if (lastNovellaChoice === 0 || lastNovellaChoice === 1) {
+              var wrongLabel = lastNovellaChoice === 0
+                ? 'Ваш выбор: вариант 1 — позиция Послушного Ребёнка.'
+                : 'Ваш выбор: вариант 2 — позиция Бунтующего Ребёнка.';
+              block.innerHTML = '<p class="outcome-choice-line"><strong>' + wrongLabel + '</strong></p><p>По Берну это реакция из Ребёнка. Для таких ситуаций эффективнее ответ из позиции Взрослого (вариант 3): перевести разговор в переговоры.</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh1 + '"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + (wrongCh1 > 0 ? ' data-wrong-penalty="' + (wrongCh1 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentCh1 + wrongCommentCh1;
+              runPointsAnimation(block);
+              if (hintUseCount > 0 || wrongCh1 > 0) setTimeout(function() { runPenaltyDeductionsSequence(block); }, 2600);
+              runLoseAnimation(block);
             } else {
-              if (lastNovellaChoice === 0 || lastNovellaChoice === 1) {
-                if (!ch1PointsAwarded) {
-                  awarenessPoints -= 20;
-                  ch1PointsAwarded = true;
-                  updateToolbarPoints();
-                }
-              }
-              if (lastNovellaChoice === 0) {
-                var hintCommentL0 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
-                block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 1 — позиция Послушного Ребёнка.</strong></p><p>По Берну это уход в подчинение. Для таких ситуаций эффективнее ответ из позиции Взрослого (вариант 3): перевести разговор в переговоры.</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL0;
-              } else if (lastNovellaChoice === 1) {
-                var hintCommentL1 = hintUseCount > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCount + '. Списывается 10 баллов за каждую.</p>' : '';
-                block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант 2 — позиция Бунтующего Ребёнка.</strong></p><p>По Берну это реакция из Ребёнка. Для таких ситуаций эффективнее позиция Взрослого (вариант 3).</p><p class="text-slate-300 mt-2"><strong>Итог по главе:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="-20"' + (hintUseCount > 0 ? ' data-hint-penalty="' + (hintUseCount * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + hintCommentL1;
-              } else {
-                block.innerHTML = '<p class="text-slate-400">Выберите вариант на слайде выбора.</p>';
-              }
-              if (lastNovellaChoice === 0 || lastNovellaChoice === 1) {
-                runPointsAnimation(block);
-                if (hintUseCount > 0) setTimeout(function() { runHintPenaltyDeduction(block); }, 2600);
-                runLoseAnimation(block);
-              }
+              block.innerHTML = '<p class="text-slate-400">Выберите вариант на слайде выбора.</p>';
             }
           }
         }
@@ -3494,146 +3932,219 @@
           }
         }
         if (i === 36) {
+          if (!ch3PointsAwarded) {
+            var ch3Net = ch3CorrectCount * 10 - hintUseCountCh3 * 10 - wrongCh3 * 10;
+            awarenessPoints += ch3Net;
+            ch3PointsAwarded = true;
+            updateToolbarPoints();
+          }
           var ch3Block = document.getElementById('chapter3-outcome-explanation');
           if (ch3Block) {
             ch3Block.classList.remove('outcome-lose');
+            var grossCh3 = awarenessPoints + (hintUseCountCh3 > 0 ? hintUseCountCh3 * 10 : 0) + (wrongCh3 > 0 ? wrongCh3 * 10 : 0);
+            var ch3HintComment = hintUseCountCh3 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh3 + '. Списывается 10 баллов за каждую.</p>' : '';
+            var ch3WrongComment = wrongCh3 > 0 ? '<p class="wrong-penalty-comment hidden">Неправильных ответов по главе: ' + wrongCh3 + '. Списывается 10 баллов за каждый.</p>' : '';
             if (ch3Win) {
-              if (!ch3PointsAwarded) {
-                awarenessPoints += 35;
-                ch3PointsAwarded = true;
-                updateToolbarPoints();
-              }
-              var grossCh3 = awarenessPoints;
-              var ch3HintComment = hintUseCountCh3 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh3 + '. Списывается 10 баллов за каждую.</p>' : '';
-              ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант «Гроссмейстер» — вы разделили личность и процесс, не сняли ответственность.</strong></p><p class="text-slate-300">По теории игры «Попался, сукин сын!» вы не вошли ни в Преследователя, ни в Спасателя — манипуляция не сработала.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh3 + '"' + (hintUseCountCh3 > 0 ? ' data-hint-penalty="' + (hintUseCountCh3 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch3HintComment;
+              ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: вариант «Гроссмейстер» — вы разделили личность и процесс, не сняли ответственность.</strong></p><p class="text-slate-300">По теории игры «Попался, сукин сын!» вы не вошли ни в Преследователя, ни в Спасателя — манипуляция не сработала.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh3 + '"' + (hintUseCountCh3 > 0 ? ' data-hint-penalty=\"' + (hintUseCountCh3 * 10) + '\"' : '') + (wrongCh3 > 0 ? ' data-wrong-penalty=\"' + (wrongCh3 * 10) + '\"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch3HintComment + ch3WrongComment;
               runConfetti();
               runPointsAnimation(ch3Block);
-              if (hintUseCountCh3 > 0) setTimeout(function() { runHintPenaltyDeduction(ch3Block); }, 2600);
+              if (hintUseCountCh3 > 0 || wrongCh3 > 0) setTimeout(function() { runPenaltyDeductionsSequence(ch3Block); }, 2600);
             } else {
               var failLine = ch3Branch === 'anger' ? 'Ваш выбор: реакция из позиции Преследователя (гнев).' : ch3Branch === 'save' ? 'Ваш выбор: вы взяли на себя его работу (Спасатель).' : ch3Branch === 'delegate' ? 'Ваш выбор: передача стажёру без чётких границ.' : 'Выберите вариант на слайде.';
               var failExplain = ch3Branch === 'anger' ? 'Виктор получает роль «мученика» — игра выиграна им.' : ch3Branch === 'save' ? 'Ответственность размыта, манипуляция сработала.' : ch3Branch === 'delegate' ? 'Виктору осталось пространство для оправданий.' : '';
-              ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>' + failLine + '</strong></p><p class="text-slate-300">' + failExplain + '</p><p class="text-slate-400 mt-2">Правильный ход: разделить личность (усталость) и процесс (ошибка), подтвердить вклад, но не снимать ответственность.</p>';
+              ch3Block.innerHTML = '<p class="outcome-choice-line"><strong>' + failLine + '</strong></p><p class="text-slate-300">' + failExplain + '</p><p class="text-slate-400 mt-2">Правильный ход: разделить личность (усталость) и процесс (ошибка), подтвердить вклад, но не снимать ответственность.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class=\"points-row points-negative\" data-value=\"' + grossCh3 + '\"' + (hintUseCountCh3 > 0 ? ' data-hint-penalty=\"' + (hintUseCountCh3 * 10) + '\"' : '') + (wrongCh3 > 0 ? ' data-wrong-penalty=\"' + (wrongCh3 * 10) + '\"' : '') + '><span class=\"points-icon\">💎</span> Осознанность: <span class=\"points-num\">0</span></div></div>' + ch3HintComment + ch3WrongComment;
+              runPointsAnimation(ch3Block);
+              if (hintUseCountCh3 > 0 || wrongCh3 > 0) setTimeout(function() { runPenaltyDeductionsSequence(ch3Block); }, 2600);
               runLoseAnimation(ch3Block);
             }
           }
         }
-        if (i === 51) {
+        if (i === 50) {
           var smoothTextEl = document.getElementById('ch4-smooth-text');
           if (smoothTextEl && ch4SmoothText) smoothTextEl.textContent = ch4SmoothText;
         }
         if (i === 37) ch4AwarenessDelta = 0;
-        if (i === 52) {
-          var ch4Block = document.getElementById('chapter4-outcome-explanation');
-          if (ch4Block && typeof ch4Branch !== 'undefined') {
-            ch4Block.classList.remove('outcome-lose');
-            var ch4Titles = {
-              rescuer: '«Смело, но рискованно. Давай я сам выберу 3 главных цифры»',
-              trap_shame: '«Да, возвращаем. Результат важнее твоего "стыда"»',
-              trap_compromise: '«Давай оставим цифры только на одном слайде»',
-              trap_guarantee: '«Конечно. Я всегда беру ответственность на себя»',
-              trap_weakness: '«Алиса, мы в одной лодке. К чему эти формальности?»',
-              fail_worker: '«Ох, сочувствую. Иди домой, я сам докручу»',
-              fail_tyrant: '«Утром будет поздно. Выпей таблетку и доделай»'
-            };
-            var ch4Explain = {
-              rescuer: 'Вы вошли в роль Спасателя — взяли решение на себя. Алиса получает индульгенцию и право саботировать.',
-              trap_shame: 'Реакция из Родителя (давление на «стыд»). Алиса закрепляет образ «жертвы ваших требований».',
-              trap_compromise: 'Компромисс без чёткой цели. Алиса сохраняет контроль над форматом.',
-              trap_guarantee: 'Пообещав «взять вину на себя», вы дали Алисе гарантию саботировать результат.',
-              trap_weakness: 'Отказ от фиксации — слабость переговорной позиции. Алиса использует это.',
-              fail_worker: 'Вы взяли работу на себя (Спасатель). Ответственность снова переложена на вас.',
-              fail_tyrant: 'Реакция из Преследователя. Алиса получает роль «мученика».'
-            };
-            var title = ch4Titles[ch4Branch] || 'Ваш выбор';
-            var explain = ch4Explain[ch4Branch] || 'Игра «Посмотри, что ты со мной сделал» — злонамеренное послушание.';
-            ch4Block.innerHTML = '<p class="outcome-choice-line"><strong>' + title + '</strong></p><p class="text-slate-300">' + explain + '</p><p class="text-slate-400 mt-2">Правильный ход: возвращать к цели бизнеса (данные, ROI), а не к чувствам. Не давать гарантий «взять вину», не делать работу за неё.</p>';
-            runLoseAnimation(ch4Block);
+        if (i === 53) {
+          if (!ch4PointsAwarded) {
+            var ch4IsLose = ch4AwarenessDelta < 0;
+            if (ch4IsLose) {
+              var ch4NetLose = ch4AwarenessDelta - hintUseCountCh4 * 10 - wrongCh4 * 10;
+              awarenessPoints += ch4NetLose;
+            } else {
+              var ch4NetWin = ch4AwarenessDelta - hintUseCountCh4 * 10;
+              awarenessPoints += ch4NetWin;
+            }
+            ch4PointsAwarded = true;
+            updateToolbarPoints();
           }
-        }
-        if (i === 55) {
           var ch4PointsBlock = document.getElementById('chapter4-points-explanation');
           if (ch4PointsBlock) {
             ch4PointsBlock.classList.remove('outcome-lose');
+            var ch4WinHintComment = hintUseCountCh4 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh4 + '. Списывается 10 баллов за каждую.</p>' : '';
             if (ch4AwarenessDelta >= 0) {
-              var line = '<p class="outcome-choice-line"><strong>Гроссмейстер:</strong> вы вернули Алису к цели бизнеса и не вошли в роли Преследователя или Спасателя.</p><p class="text-slate-300 mt-2"><strong>За главу 4 начислено:</strong></p><div class="points-rows"><div class="points-row" data-value="' + (ch4AwarenessDelta) + '"><span class="points-icon">💎</span> Осознанность: +<span class="points-num">' + ch4AwarenessDelta + '</span></div></div>';
+              var grossCh4Win = awarenessPoints + (hintUseCountCh4 > 0 ? hintUseCountCh4 * 10 : 0);
+              var line = '<p class="outcome-choice-line"><strong>Гроссмейстер:</strong> вы вернули Алису к цели бизнеса и не вошли в роли Преследователя или Спасателя.</p><p class="text-slate-300 mt-2"><strong>За главу 4: +' + ch4AwarenessDelta + (hintUseCountCh4 > 0 ? ' (подсказки −' + (hintUseCountCh4 * 10) + ')' : '') + '. Итого по курсу:</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh4Win + '"' + (hintUseCountCh4 > 0 ? ' data-hint-penalty="' + (hintUseCountCh4 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + ch4WinHintComment;
               ch4PointsBlock.innerHTML = line;
               runConfetti();
               runPointsAnimation(ch4PointsBlock);
+              if (hintUseCountCh4 > 0) setTimeout(function() { runPenaltyDeductionsSequence(ch4PointsBlock); }, 2600);
             } else {
-              var negLine = '<p class="outcome-choice-line">Вы вступили в игру или подпитали манипуляцию. За неправильные ответы списываются баллы.</p><p class="text-slate-300 mt-2"><strong>За главу 4 начислено:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + ch4AwarenessDelta + '"><span class="points-icon">💎</span> Осознанность: <span class="points-num">' + ch4AwarenessDelta + '</span></div></div>';
+              var ch4Titles = {
+                rescuer: '«Смело, но рискованно. Давай я сам выберу 3 главных цифры»',
+                trap_shame: '«Да, возвращаем. Результат важнее твоего "стыда"»',
+                trap_compromise: '«Давай оставим цифры только на одном слайде»',
+                trap_guarantee: '«Конечно. Я всегда беру ответственность на себя»',
+                trap_weakness: '«Алиса, мы в одной лодке. К чему эти формальности?»',
+                fail_worker: '«Ох, сочувствую. Иди домой, я сам докручу»',
+                fail_tyrant: '«Утром будет поздно. Выпей таблетку и доделай»'
+              };
+              var ch4Explain = {
+                rescuer: 'Вы вошли в роль Спасателя — взяли решение на себя. Алиса получает индульгенцию и право саботировать.',
+                trap_shame: 'Реакция из Родителя (давление на «стыд»). Алиса закрепляет образ «жертвы ваших требований».',
+                trap_compromise: 'Компромисс без чёткой цели. Алиса сохраняет контроль над форматом.',
+                trap_guarantee: 'Пообещав «взять вину на себя», вы дали Алисе гарантию саботировать результат.',
+                trap_weakness: 'Отказ от фиксации — слабость переговорной позиции. Алиса использует это.',
+                fail_worker: 'Вы взяли работу на себя (Спасатель). Ответственность снова переложена на вас.',
+                fail_tyrant: 'Реакция из Преследователя. Алиса получает роль «мученика».'
+              };
+              var title = ch4Titles[ch4Branch] || 'Ваш выбор';
+              var explain = ch4Explain[ch4Branch] || 'Игра «Посмотри, что ты со мной сделал» — злонамеренное послушание.';
+              var grossCh4 = awarenessPoints + (hintUseCountCh4 > 0 ? hintUseCountCh4 * 10 : 0) + (wrongCh4 > 0 ? wrongCh4 * 10 : 0);
+              var wrongCommentCh4 = wrongCh4 > 0 ? '<p class="wrong-penalty-comment hidden">Неправильных ответов по главе: ' + wrongCh4 + '. Списывается 10 баллов за каждый.</p>' : '';
+              var negLine = '<p class="outcome-choice-line"><strong>' + title + '</strong></p><p class="text-slate-300">' + explain + '</p><p class="text-slate-400 mt-2">Правильный ход: возвращать к цели бизнеса (данные, ROI), а не к чувствам. Не давать гарантий «взять вину», не делать работу за неё.</p><p class="text-slate-300 mt-2"><strong>За главу 4: ' + ch4AwarenessDelta + (hintUseCountCh4 > 0 ? ' (подсказки −' + (hintUseCountCh4 * 10) + ')' : '') + (wrongCh4 > 0 ? ' (ошибки −' + (wrongCh4 * 10) + ')' : '') + '. Итого по курсу:</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh4 + '"' + (hintUseCountCh4 > 0 ? ' data-hint-penalty="' + (hintUseCountCh4 * 10) + '"' : '') + (wrongCh4 > 0 ? ' data-wrong-penalty="' + (wrongCh4 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + ch4WinHintComment + wrongCommentCh4;
               ch4PointsBlock.innerHTML = negLine;
               runPointsAnimation(ch4PointsBlock);
+              if (hintUseCountCh4 > 0 || wrongCh4 > 0) setTimeout(function() { runPenaltyDeductionsSequence(ch4PointsBlock); }, 2600);
               runLoseAnimation(ch4PointsBlock);
             }
           }
         }
-        if (i === 56) {
+        if (i === 54) {
           ch5CorrectCount = 0;
         }
-        if (i === 71) {
+        if (i === 67) {
+          if (!ch5PointsAwarded) {
+            var ch5Net = ch5CorrectCount * 10 - wrongCh5 * 10 - hintUseCountCh5 * 10;
+            awarenessPoints += ch5Net;
+            ch5PointsAwarded = true;
+            updateToolbarPoints();
+          }
           var ch5PointsBlock = document.getElementById('chapter5-points-explanation');
           if (ch5PointsBlock) {
             ch5PointsBlock.classList.remove('outcome-lose');
-            var totalCh5 = 8;
-            var ch5Award = ch5CorrectCount * 10;
-            if (!ch5PointsAwarded) {
-              awarenessPoints += ch5Award;
-              ch5PointsAwarded = true;
-              updateToolbarPoints();
-            }
+            var totalCh5 = 7;
+            var grossCh5 = awarenessPoints + (hintUseCountCh5 > 0 ? hintUseCountCh5 * 10 : 0) + (wrongCh5 > 0 ? wrongCh5 * 10 : 0);
+            var ch5HintComment = hintUseCountCh5 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh5 + '. Списывается 10 баллов за каждую.</p>' : '';
+            var ch5WrongComment = wrongCh5 > 0 ? '<p class="wrong-penalty-comment hidden">Неправильных ответов по главе: ' + wrongCh5 + '. Списывается 10 баллов за каждый.</p>' : '';
+            var ch5DataAttrs = (hintUseCountCh5 > 0 ? ' data-hint-penalty="' + (hintUseCountCh5 * 10) + '"' : '') + (wrongCh5 > 0 ? ' data-wrong-penalty="' + (wrongCh5 * 10) + '"' : '');
             if (ch5CorrectCount >= totalCh5 - 2) {
-              var line = '<p class="outcome-choice-line"><strong>Глава 5. Презентация руководству.</strong></p><p class="text-slate-300">Правильных ответов: ' + ch5CorrectCount + ' из ' + totalCh5 + '.</p><p class="text-slate-300 mt-2"><strong>За главу 5 начислено:</strong></p><div class="points-rows"><div class="points-row" data-value="' + ch5Award + '"><span class="points-icon">💎</span> Осознанность: +<span class="points-num">' + ch5Award + '</span></div></div>';
+              var line = '<p class="outcome-choice-line"><strong>Глава 5. Презентация руководству.</strong></p><p class="text-slate-300">Правильных ответов: ' + ch5CorrectCount + ' из ' + totalCh5 + '.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh5 + '"' + ch5DataAttrs + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch5HintComment + ch5WrongComment;
               ch5PointsBlock.innerHTML = line;
               runConfetti();
               runPointsAnimation(ch5PointsBlock);
+              if (hintUseCountCh5 > 0 || wrongCh5 > 0) setTimeout(function() { runPenaltyDeductionsSequence(ch5PointsBlock); }, 2600);
             } else {
-              var negLine = '<p class="outcome-choice-line"><strong>Глава 5. Презентация руководству.</strong></p><p class="text-slate-300">Правильных ответов: ' + ch5CorrectCount + ' из ' + totalCh5 + '.</p><p class="text-slate-300 mt-2"><strong>За главу 5 начислено:</strong></p><div class="points-rows"><div class="points-row" data-value="' + ch5Award + '"><span class="points-icon">💎</span> Осознанность: +<span class="points-num">' + ch5Award + '</span></div></div>';
+              var negLine = '<p class="outcome-choice-line"><strong>Глава 5. Презентация руководству.</strong></p><p class="text-slate-300">Правильных ответов: ' + ch5CorrectCount + ' из ' + totalCh5 + '.</p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh5 + '"' + ch5DataAttrs + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + ch5HintComment + ch5WrongComment;
               ch5PointsBlock.innerHTML = negLine;
               runPointsAnimation(ch5PointsBlock);
+              if (hintUseCountCh5 > 0 || wrongCh5 > 0) setTimeout(function() { runPenaltyDeductionsSequence(ch5PointsBlock); }, 2600);
               if (ch5CorrectCount <= 2) runLoseAnimation(ch5PointsBlock);
             }
           }
+          var ch5Pts = Math.max(0, awarenessPoints);
+          var isPromotedPath = ch5Pts >= ENDING_OTHERS_REWARDED_THRESHOLD;
+          var ptsWrap = document.getElementById('ch5-points-btn-wrap');
+          var closingWrap = document.getElementById('closing-boss-btn-wrap');
+          if (ptsWrap) ptsWrap.classList.toggle('hidden', isPromotedPath);
+          if (closingWrap) closingWrap.classList.toggle('hidden', !isPromotedPath);
         }
+        if (i === 71) {
+          var certSlide = document.getElementById('slide-cert');
+          var simpleBlock = document.getElementById('cert-simple-block');
+          var promotedBlock = document.getElementById('cert-promoted-block');
+          var titEl = document.getElementById('cert-block-title');
+          var descEl = document.getElementById('cert-block-desc');
+          var btnEl = document.getElementById('btn-complete');
+          var pts = Math.max(0, awarenessPoints);
+          if (certSlide) {
+            certSlide.classList.remove('slide-cert-fired', 'slide-cert-rewarded', 'slide-cert-promoted');
+            var rOverlay = document.getElementById('rewarded-overlay');
+            var rRain = document.getElementById('rewarded-rain');
+            var fwEl = document.getElementById('victory-fireworks');
+            if (rOverlay) rOverlay.classList.remove('rain-active');
+            if (rRain) rRain.classList.remove('rain-active');
+            if (rRain) rRain.innerHTML = '';
+            if (fwEl) fwEl.innerHTML = '';
+            stopVictoryEffects();
+            if (pts < ENDING_FIRED_THRESHOLD) {
+              certSlide.classList.add('slide-cert-fired');
+              setTimeout(runFiredEffects, 80);
+            } else if (pts < ENDING_OTHERS_REWARDED_THRESHOLD) {
+              certSlide.classList.add('slide-cert-rewarded');
+              setTimeout(runRewardedEffects, 80);
+            } else {
+              certSlide.classList.add('slide-cert-promoted');
+              setTimeout(runVictoryFireworks, 200);
+            }
+          }
+          var isPromoted = pts >= ENDING_OTHERS_REWARDED_THRESHOLD;
+          if (simpleBlock) simpleBlock.classList.toggle('hidden', isPromoted);
+          if (promotedBlock) {
+            promotedBlock.classList.toggle('hidden', !isPromoted);
+            if (isPromoted) {
+              var nameEl = document.getElementById('cert-promoted-name');
+              if (nameEl) nameEl.textContent = (typeof courseUserName !== 'undefined' && courseUserName && courseUserName.trim()) ? courseUserName.trim() : 'Коллега';
+            }
+          }
+          if (titEl && descEl) {
+            if (pts < ENDING_FIRED_THRESHOLD) {
+              titEl.textContent = 'Вы уволены';
+              titEl.classList.remove('text-emerald-400', 'text-amber-400');
+              titEl.classList.add('text-red-400');
+              descEl.textContent = 'Артур Борисович решил, что осознанности вашей оказалось недостаточно. Предложил пройти курс ещё раз — с новым взглядом.';
+              if (btnEl) { btnEl.textContent = 'Попробовать снова'; btnEl.removeAttribute('data-cert-eligible'); }
+            } else if (pts < ENDING_OTHERS_REWARDED_THRESHOLD) {
+              titEl.textContent = 'Наградили премией коллег';
+              titEl.classList.remove('text-emerald-400', 'text-red-400');
+              titEl.classList.add('text-amber-400');
+              descEl.textContent = 'Вы прошли испытание, но премию и повышение получили Алиса и Виктор — коллеги показали более стабильный результат. Артур: «Есть над чем поработать».';
+              // При среднем результате предлагаем пройти курс заново, без сертификата
+              if (btnEl) { btnEl.textContent = 'Пройти курс заново'; btnEl.removeAttribute('data-cert-eligible'); }
+            } else {
+              if (btnEl) { btnEl.textContent = 'Сформировать сертификат «Анти-манипулятор»'; btnEl.setAttribute('data-cert-eligible', '1'); }
+            }
+          }
+        }
+        if (i !== 71) stopVictoryEffects();
         if (i === 21) {
+          if (!ch2PointsAwarded) {
+            var ch2Net = ch2CorrectCount * 10 - hintUseCountCh2 * 10 - wrongCh2 * 10;
+            awarenessPoints += ch2Net;
+            ch2PointsAwarded = true;
+            updateToolbarPoints();
+          }
           var pointsBlock = document.getElementById('chapter2-points-explanation');
           if (pointsBlock) {
             pointsBlock.classList.remove('outcome-lose');
+            var grossCh2All = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0) + (wrongCh2 > 0 ? wrongCh2 * 10 : 0);
+            var ch2HintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
+            var ch2WrongComment = wrongCh2 > 0 ? '<p class="wrong-penalty-comment hidden">Неправильных ответов по главе: ' + wrongCh2 + '. Списывается 10 баллов за каждый.</p>' : '';
             if (lastChapter2Choice === 2) {
-              if (!ch2PointsAwarded) {
-                awarenessPoints += (20 - 5 * ch2WrongCount);
-                influencePoints += 15;
-                resourcePoints += 10;
-                ch2PointsAwarded = true;
-                updateToolbarPoints();
-              }
-              var grossCh2 = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0);
-              var ch2HintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
-              pointsBlock.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: Вариант 3 — Возврат ответственности.</strong></p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh2 + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch2HintComment;
+              pointsBlock.innerHTML = '<p class="outcome-choice-line"><strong>Ваш выбор: Вариант 3 — Возврат ответственности.</strong></p><p class="text-slate-300 mt-2"><strong>Всего начислено (сумма по главам):</strong></p><div class="points-rows"><div class="points-row" data-value="' + grossCh2All + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + (wrongCh2 > 0 ? ' data-wrong-penalty="' + (wrongCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: +<span class="points-num">0</span></div></div>' + ch2HintComment + ch2WrongComment;
               runConfetti();
               runPointsAnimation(pointsBlock);
-              if (hintUseCountCh2 > 0) setTimeout(function() { runHintPenaltyDeduction(pointsBlock); }, 2600);
+              if (hintUseCountCh2 > 0 || wrongCh2 > 0) setTimeout(function() { runPenaltyDeductionsSequence(pointsBlock); }, 2600);
             } else {
-              var oldA = awarenessPoints, oldI = influencePoints, oldR = resourcePoints;
-              if (!ch2LosePenaltyApplied) {
-                awarenessPoints -= 20;
-                influencePoints = Math.max(0, influencePoints - ch2PendingInfluencePenalty);
-                resourcePoints = Math.max(0, resourcePoints - ch2PendingResourcePenalty);
-                ch2LosePenaltyApplied = true;
-                ch2PendingInfluencePenalty = 0;
-                ch2PendingResourcePenalty = 0;
-                updateToolbarPoints();
-              }
-              var grossCh2Lose = awarenessPoints + (hintUseCountCh2 > 0 ? hintUseCountCh2 * 10 : 0);
-              var ch2LoseHintComment = hintUseCountCh2 > 0 ? '<p class="hint-penalty-comment hidden">Использовано подсказок: ' + hintUseCountCh2 + '. Списывается 10 баллов за каждую.</p>' : '';
-              pointsBlock.innerHTML = '<p class="outcome-choice-line"><strong>Вы вступили в игру «Да, но...».</strong></p><p class="text-slate-300">За время разговора вы потратили Ресурс, Влияние и Осознанность на советы.</p><p class="text-slate-300 mt-2"><strong>Итого баллов (сумма по всем главам):</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh2Lose + '" data-from="' + oldA + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">' + oldA + '</span></div></div>' + ch2LoseHintComment;
+              pointsBlock.innerHTML = '<p class="outcome-choice-line"><strong>Вы вступили в игру «Да, но...».</strong></p><p class="text-slate-300">За время разговора вы потратили Ресурс, Влияние и Осознанность на советы.</p><p class="text-slate-300 mt-2"><strong>Итого баллов (сумма по всем главам):</strong></p><div class="points-rows"><div class="points-row points-negative" data-value="' + grossCh2All + '"' + (hintUseCountCh2 > 0 ? ' data-hint-penalty="' + (hintUseCountCh2 * 10) + '"' : '') + (wrongCh2 > 0 ? ' data-wrong-penalty="' + (wrongCh2 * 10) + '"' : '') + '><span class="points-icon">💎</span> Осознанность: <span class="points-num">0</span></div></div>' + ch2HintComment + ch2WrongComment;
               runPointsAnimation(pointsBlock);
-              if (hintUseCountCh2 > 0) setTimeout(function() { runHintPenaltyDeduction(pointsBlock); }, 2600);
+              if (hintUseCountCh2 > 0 || wrongCh2 > 0) setTimeout(function() { runPenaltyDeductionsSequence(pointsBlock); }, 2600);
               runLoseAnimation(pointsBlock);
             }
           }
         }
-        if (i === 25) updateCh3UserName();
+        if (i === 25) { ch3CorrectCount = 0; updateCh3UserName(); }
         if (i === 12) {
+          ch2CorrectCount = 0;
           document.querySelectorAll('.scene-kitchen .character-sprite.enter-right').forEach(function(img) { img.classList.remove('enter-right'); });
           var charEl = document.getElementById('ch2-char-12');
           if (charEl) { charEl.offsetHeight; charEl.classList.add('enter-right'); }
@@ -3649,6 +4160,14 @@
         if (i !== 33) {
           var ch3Box2 = document.getElementById('ch3-psychologist-hint-box-2');
           if (ch3Box2) { ch3Box2.classList.add('hidden'); ch3Box2.setAttribute('aria-hidden', 'true'); }
+        }
+        if (i !== 40) {
+          var ch4Box = document.getElementById('ch4-psychologist-hint-box');
+          if (ch4Box) { ch4Box.classList.add('hidden'); ch4Box.setAttribute('aria-hidden', 'true'); }
+        }
+        if (i !== 57) {
+          var ch5Box = document.getElementById('ch5-psychologist-hint-box');
+          if (ch5Box) { ch5Box.classList.add('hidden'); ch5Box.setAttribute('aria-hidden', 'true'); }
         }
       }
 
@@ -3668,6 +4187,271 @@
           container.appendChild(p);
         }
         setTimeout(function() { container.innerHTML = ''; }, 4000);
+      }
+
+      function stopVictoryEffects() {
+        if (victoryFireworksInterval) {
+          clearInterval(victoryFireworksInterval);
+          victoryFireworksInterval = null;
+        }
+        if (victoryApplauseInterval) {
+          clearInterval(victoryApplauseInterval);
+          victoryApplauseInterval = null;
+        }
+        var applause = document.getElementById('victory-applause');
+        if (applause) {
+          try { applause.pause(); applause.currentTime = 0; } catch (e) {}
+        }
+        var fw = document.getElementById('victory-fireworks');
+        if (fw) fw.innerHTML = '';
+      }
+
+      function playApplauseClap(ctx) {
+        try {
+          var bufferSize = ctx.sampleRate * 0.08;
+          var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          var data = buffer.getChannelData(0);
+          for (var s = 0; s < bufferSize; s++) {
+            var t = s / ctx.sampleRate;
+            data[s] = (Math.random() * 2 - 1) * Math.exp(-t * 25) * 0.35;
+          }
+          var src = ctx.createBufferSource();
+          src.buffer = buffer;
+          src.connect(ctx.destination);
+          src.start(0);
+        } catch (e) {}
+      }
+
+      function startVictoryApplause() {
+        if (typeof soundEnabled !== 'undefined' && !soundEnabled) return;
+        var applause = document.getElementById('victory-applause');
+        if (applause) {
+          try {
+            applause.currentTime = 0;
+            var p = applause.play();
+            if (p && typeof p.then === 'function') {
+              p.catch(function() { runProceduralApplause(); });
+            }
+          } catch (e) {
+            runProceduralApplause();
+          }
+        } else {
+          runProceduralApplause();
+        }
+      }
+
+      function runProceduralApplause() {
+        try {
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return;
+          var ctx = new Ctx();
+          var certSlide = document.getElementById('slide-cert');
+          function tick() {
+            if (!certSlide || !certSlide.classList.contains('slide-cert-promoted')) return;
+            playApplauseClap(ctx);
+          }
+          tick();
+          victoryApplauseInterval = setInterval(tick, 120);
+        } catch (e) {}
+      }
+
+      function spawnOneFireworkBurst(container) {
+        if (!container || !container.parentElement) return;
+        var certSlide = document.getElementById('slide-cert');
+        if (!certSlide || !certSlide.classList.contains('slide-cert-promoted')) return;
+        var colors = ['#fbbf24', '#f59e0b', '#fcd34d', '#ec4899', '#38bdf8', '#a78bfa'];
+        var left = (10 + Math.random() * 80) + '%';
+        var top = (20 + Math.random() * 45) + '%';
+        var particlesPerBurst = 18;
+        var radius = Math.min(180, window.innerWidth * 0.15);
+        for (var i = 0; i < particlesPerBurst; i++) {
+          var angle = (i / particlesPerBurst) * Math.PI * 2 + Math.random() * 0.5;
+          var r = radius * (0.7 + Math.random() * 0.6);
+          var tx = Math.cos(angle) * r;
+          var ty = Math.sin(angle) * r - 20;
+          var p = document.createElement('div');
+          p.className = 'firework-burst';
+          p.style.left = left;
+          p.style.top = top;
+          p.style.background = colors[Math.floor(Math.random() * colors.length)];
+          p.style.setProperty('--tx', tx + 'px');
+          p.style.setProperty('--ty', ty + 'px');
+          p.style.animationDelay = (Math.random() * 0.15) + 's';
+          p.style.boxShadow = '0 0 6px 2px currentColor';
+          container.appendChild(p);
+          setTimeout(function(el, c) {
+            if (el && el.parentNode === c) el.parentNode.removeChild(el);
+          }, 2300, p, container);
+        }
+      }
+
+      function runVictoryFireworks() {
+        var container = document.getElementById('victory-fireworks');
+        var courseMusic = document.getElementById('course-bg-music');
+        if (!container) return;
+        stopVictoryEffects();
+        container.innerHTML = '';
+        if (courseMusic) {
+          try { courseMusic.pause(); courseMusic.currentTime = 0; } catch (e) {}
+        }
+        startVictoryApplause();
+        spawnOneFireworkBurst(container);
+        victoryFireworksInterval = setInterval(function() { spawnOneFireworkBurst(container); }, 950);
+      }
+
+      function runFiredEffects() {
+        var overlay = document.getElementById('fired-flash-overlay');
+        var lightning = document.getElementById('fired-lightning');
+        var slideContainer = document.getElementById('slide-container');
+        var courseMusic = document.getElementById('course-bg-music');
+        if (!overlay || !slideContainer) return;
+
+        /* Музыка обрывается */
+        if (courseMusic) {
+          try {
+            courseMusic.pause();
+            courseMusic.currentTime = 0;
+          } catch (e) {}
+        }
+
+        overlay.style.visibility = 'visible';
+        overlay.style.background = '#fff';
+        gsap.set(overlay, { opacity: 0 });
+        gsap.set(slideContainer, { x: 0, y: 0, rotation: 0 });
+        if (lightning) { lightning.style.visibility = 'visible'; gsap.set(lightning, { opacity: 0 }); }
+
+        /* Гром: простой низкочастотный грохот через Web Audio */
+        try {
+          var AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            var ctx = new AudioContext();
+            var bufferSize = ctx.sampleRate * 1.2;
+            var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            var data = buffer.getChannelData(0);
+            for (var s = 0; s < bufferSize; s++) {
+              var t = s / ctx.sampleRate;
+              data[s] = (Math.random() * 2 - 1) * Math.exp(-t * 4) * 0.6;
+            }
+            var src = ctx.createBufferSource();
+            src.buffer = buffer;
+            src.connect(ctx.destination);
+            src.start(0);
+          }
+        } catch (ea) {}
+
+        /* Тряска экрана — сильная, с лёгким наклоном */
+        var shakeKeys = [
+          { x: -18, y: 10, rotation: -0.6 },
+          { x: 22, y: -12, rotation: 0.7 },
+          { x: -15, y: -8, rotation: -0.4 },
+          { x: 20, y: 8, rotation: 0.5 },
+          { x: -12, y: 6, rotation: -0.3 },
+          { x: 16, y: -10, rotation: 0.4 },
+          { x: -10, y: -6, rotation: -0.2 },
+          { x: 14, y: 6, rotation: 0.3 },
+          { x: -8, y: 4, rotation: -0.15 },
+          { x: 10, y: -5, rotation: 0.2 },
+          { x: -5, y: 2, rotation: -0.1 },
+          { x: 6, y: -3, rotation: 0.1 },
+          { x: 0, y: 0, rotation: 0 }
+        ];
+        var shakeTween = gsap.to(slideContainer, {
+          keyframes: shakeKeys.map(function(k) { return { x: k.x, y: k.y, rotation: k.rotation, duration: 0.04 }; }),
+          duration: 0.04 * shakeKeys.length,
+          ease: 'power1.inOut'
+        });
+
+        /* Молния + мерцающий свет: резкая вспышка, серия миганий */
+        var tl = gsap.timeline({ onComplete: function() {
+          shakeTween.kill();
+          overlay.style.visibility = 'hidden';
+          if (lightning) lightning.style.visibility = 'hidden';
+          gsap.set(slideContainer, { x: 0, y: 0, rotation: 0, clearProps: 'all' });
+        }});
+        /* Первый удар — молния + белая вспышка */
+        tl.set(lightning, { opacity: 0.9 })
+          .to(overlay, { opacity: 1, duration: 0.015, ease: 'power2.in' })
+          .to(overlay, { opacity: 0.2, duration: 0.1 })
+          .set(lightning, { opacity: 0 });
+        /* Серия мерцаний */
+        tl.to(overlay, { opacity: 0.85, duration: 0.012 }, '-=0.02')
+          .to(overlay, { opacity: 0.1, duration: 0.07 })
+          .to(overlay, { opacity: 0.7, duration: 0.01 }, '-=0.04')
+          .set(lightning, { opacity: 0.7 })
+          .to(overlay, { opacity: 0.12, duration: 0.05 })
+          .set(lightning, { opacity: 0 })
+          .to(overlay, { opacity: 0.5, duration: 0.008 }, '-=0.03')
+          .to(overlay, { opacity: 0.06, duration: 0.04 })
+          .to(overlay, { opacity: 0.35, duration: 0.01 }, '-=0.02')
+          .to(overlay, { opacity: 0, duration: 0.12 });
+      }
+
+      var rewardedRainInterval = null;
+      var rewardedRainGain = null;
+      function runRewardedEffects() {
+        var overlay = document.getElementById('rewarded-overlay');
+        var rainContainer = document.getElementById('rewarded-rain');
+        var courseMusic = document.getElementById('course-bg-music');
+        if (!overlay || !rainContainer) return;
+
+        /* Музыка прекращается */
+        if (courseMusic) {
+          try {
+            courseMusic.pause();
+            courseMusic.currentTime = 0;
+          } catch (e) {}
+        }
+
+        overlay.classList.add('rain-active');
+        rainContainer.classList.add('rain-active');
+        gsap.set(overlay, { opacity: 0 });
+
+        /* Тучи сгущаются — плавное затемнение */
+        gsap.to(overlay, { opacity: 0.85, duration: 2, ease: 'power2.in' });
+
+        /* Звук дождя через Web Audio (отфильтрованный шум) */
+        try {
+          var AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            var ctx = new AudioContext();
+            var bufferSize = ctx.sampleRate * 4;
+            var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            var data = buffer.getChannelData(0);
+            for (var s = 0; s < bufferSize; s++) {
+              data[s] = (Math.random() * 2 - 1) * 0.15;
+            }
+            var src = ctx.createBufferSource();
+            src.buffer = buffer;
+            src.loop = true;
+            var filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 1200;
+            filter.Q.value = 0.5;
+            rewardedRainGain = ctx.createGain();
+            rewardedRainGain.gain.value = 0.12;
+            src.connect(filter);
+            filter.connect(rewardedRainGain);
+            rewardedRainGain.connect(ctx.destination);
+            src.start(0);
+          }
+        } catch (ea) {}
+
+        /* Дождь — капли падают */
+        function spawnRain() {
+          if (!rainContainer.classList.contains('rain-active')) return;
+          var drop = document.createElement('div');
+          drop.className = Math.random() > 0.3 ? 'rain-drop' : 'rain-drop rain-far';
+          drop.style.left = (Math.random() * 100) + '%';
+          drop.style.animationDuration = (0.9 + Math.random() * 0.5) + 's';
+          drop.style.animationDelay = (Math.random() * 0.3) + 's';
+          rainContainer.appendChild(drop);
+          setTimeout(function() {
+            if (drop.parentNode) drop.parentNode.removeChild(drop);
+          }, 1600);
+        }
+        var i = 0;
+        for (i = 0; i < 80; i++) setTimeout(spawnRain, i * 25);
+        rewardedRainInterval = setInterval(spawnRain, 80);
       }
 
       function runLoseAnimation(block) {
@@ -3710,52 +4494,101 @@
         });
       }
 
-      /** Показать комментарий про подсказки и анимировать уменьшение Осознанности в той же строке (без новой строки). */
-      function runHintPenaltyDeduction(block) {
-        var row = block && block.querySelector('.points-row[data-hint-penalty]');
-        var comment = block && block.querySelector('.hint-penalty-comment');
-        if (!row || !comment) return;
-        var penalty = parseInt(row.getAttribute('data-hint-penalty'), 10) || 0;
-        var fromVal = parseInt(row.getAttribute('data-value'), 10) || 0;
-        var toVal = fromVal - penalty;
+      /** Последовательность: въезд подсказки → спад баллов → въезд ошибок → спад. Финальное значение = awarenessPoints. */
+      function runPenaltyDeductionsSequence(block) {
+        var row = block && block.querySelector('.points-row');
+        if (!row) return;
         var numSpan = row.querySelector('.points-num');
-        var isNegative = row.classList.contains('points-negative');
-        gsap.set(comment, { opacity: 0 });
-        comment.classList.remove('hidden');
-        gsap.to(comment, { opacity: 1, duration: 0.4, ease: 'power2.out' });
-        row.classList.add('points-hint-deduction');
-        var obj = { n: fromVal };
-        gsap.to(obj, {
-          n: toVal,
-          duration: 1,
-          delay: 0.3,
-          ease: 'power2.inOut',
-          snap: { n: 1 },
-          onUpdate: function() {
-            if (numSpan) numSpan.textContent = Math.round(obj.n);
-          },
-          onComplete: function() {
-            row.classList.remove('points-hint-deduction');
-          }
-        });
+        var hintComment = block && block.querySelector('.hint-penalty-comment');
+        var wrongComment = block && block.querySelector('.wrong-penalty-comment');
+        var hintPenalty = parseInt(row.getAttribute('data-hint-penalty'), 10) || 0;
+        var wrongPenalty = parseInt(row.getAttribute('data-wrong-penalty'), 10) || 0;
+        var grossVal = parseInt(row.getAttribute('data-value'), 10) || 0;
+        var finalVal = awarenessPoints;
+
+        function doHint(cb) {
+          if (!hintComment || !hintPenalty) { if (cb) cb(); return; }
+          hintComment.classList.remove('hidden');
+          gsap.set(hintComment, { opacity: 0, y: 8 });
+          gsap.to(hintComment, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', onComplete: function() {
+            row.classList.add('points-hint-deduction');
+            var fromVal = grossVal;
+            var toVal = fromVal - hintPenalty;
+            var obj = { n: fromVal };
+            gsap.to(obj, {
+              n: toVal,
+              duration: 1,
+              ease: 'power2.inOut',
+              snap: { n: 1 },
+              onUpdate: function() { if (numSpan) numSpan.textContent = Math.round(obj.n); },
+              onComplete: function() {
+                row.classList.remove('points-hint-deduction');
+                row.setAttribute('data-value', toVal);
+                grossVal = toVal;
+                if (cb) cb();
+              }
+            });
+          }});
+        }
+        function doWrong(cb) {
+          if (!wrongComment || !wrongPenalty) { if (cb) cb(); return; }
+          wrongComment.classList.remove('hidden');
+          gsap.set(wrongComment, { opacity: 0, y: 8 });
+          gsap.to(wrongComment, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', onComplete: function() {
+            row.classList.add('points-hint-deduction');
+            var fromVal = grossVal;
+            var obj = { n: fromVal };
+            gsap.to(obj, {
+              n: finalVal,
+              duration: 1,
+              ease: 'power2.inOut',
+              snap: { n: 1 },
+              onUpdate: function() { if (numSpan) numSpan.textContent = Math.round(obj.n); },
+              onComplete: function() {
+                row.classList.remove('points-hint-deduction');
+                row.setAttribute('data-value', finalVal);
+                if (numSpan) numSpan.textContent = finalVal;
+                if (cb) cb();
+              }
+            });
+          }});
+        }
+        doHint(function() { doWrong(function() {
+          if (numSpan) numSpan.textContent = finalVal;
+        }); });
       }
 
+      function runHintPenaltyDeduction(block) { runPenaltyDeductionsSequence(block); }
+      function runWrongPenaltyDeduction(block) { runPenaltyDeductionsSequence(block); }
+
       function goNext() {
+        if (currentSlide === 67) {
+          var pts = Math.max(0, awarenessPoints);
+          if (pts >= ENDING_OTHERS_REWARDED_THRESHOLD) {
+            goToSlide(68);
+          } else {
+            goToSlide(71);
+          }
+          return;
+        }
         if (currentSlide < TOTAL_SLIDES - 1) goToSlide(currentSlide + 1);
       }
 
       var courseMusic = document.getElementById('course-bg-music');
       var musicBtn = document.getElementById('toolbar-music-btn');
+      var soundEnabled = true;
       if (courseMusic && musicBtn) {
+        courseMusic.volume = 0.3;
         try { courseMusic.play().catch(function() {}); } catch (e) {}
         musicBtn.addEventListener('click', function() {
           courseMusic.muted = !courseMusic.muted;
+          soundEnabled = !courseMusic.muted;
           musicBtn.textContent = courseMusic.muted ? '🔇' : '🎵';
           musicBtn.title = courseMusic.muted ? 'Включить музыку' : 'Выключить музыку';
         });
       }
       document.getElementById('slide-container').addEventListener('click', function(e) {
-        if (e.target.closest('.slide-next') || e.target.closest('input') || e.target.closest('#btn-go-hero') || e.target.closest('.novella-choice') || e.target.closest('.quiz-final-option') || e.target.closest('#btn-complete') || e.target.closest('#pg-exit-link') || e.target.closest('.ch4-theory-goto-test')) return;
+        if (e.target.closest('.slide-next') || e.target.closest('input') || e.target.closest('#btn-go-hero') || e.target.closest('.novella-choice') || e.target.closest('.quiz-final-option') || e.target.closest('#btn-complete') || e.target.closest('#pg-exit-link') || e.target.closest('.ch4-goto-battle') || e.target.closest('#btn-ch5-finish-theory') || e.target.closest('#btn-closing-boss')) return;
         if (e.target.closest('.slide-clickable')) {
           e.preventDefault();
           goNext();
@@ -3773,9 +4606,10 @@
           if (!isNaN(n)) goToSlide(n);
         });
       });
-      document.querySelectorAll('.ch4-theory-goto-test').forEach(function(btn) {
+      document.querySelectorAll('.ch4-goto-battle').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
+          e.stopPropagation();
           var n = parseInt(this.getAttribute('data-goto-slide'), 10);
           if (!isNaN(n)) goToSlide(n);
         });
@@ -3797,7 +4631,7 @@
         if (el) el.textContent = (typeof courseUserName !== 'undefined' && courseUserName && courseUserName.trim()) ? courseUserName.trim() : 'Коллега';
       }
       function updateCh3UserName() {
-        var name = (typeof courseUserName !== 'undefined' && courseUserName && courseUserName.trim()) ? courseUserName.trim() : 'Вы';
+        var name = 'Вы';
         var el = document.getElementById('ch3-user-name');
         if (el) el.textContent = name;
         var elChoice = document.getElementById('ch3-user-name-choice');
@@ -3811,6 +4645,7 @@
         lastNovellaChoice = val;
         if (val === 0 || val === 1) choiceChildCount++;
         else if (val === 2) choiceAdultCount++;
+        applyAnswerScore(val === 2, 1);
         document.querySelectorAll('#novella-choices .novella-choice').forEach(function(b) { b.classList.remove('chosen-correct'); b.disabled = true; });
         goToSlide(7);
       });
@@ -3820,9 +4655,8 @@
         var val = btn.getAttribute('data-ch2-choice');
         document.querySelectorAll('#ch2-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
         if (val === '1') {
-          lastChapter2Choice = 2;
           choiceAdultCount++;
-          goToSlide(18);
+          goToSlide(14);
         } else {
           choiceParentCount++;
           ch2WrongCount++;
@@ -3838,12 +4672,14 @@
         if (val === '1') {
           lastChapter2Choice = 2;
           choiceAdultCount++;
+          applyAnswerScore(true, 2);
           goToSlide(18);
         } else {
           choiceParentCount++;
           ch2WrongCount++;
           ch2PendingInfluencePenalty += 5;
           ch2PendingResourcePenalty += 10;
+          applyAnswerScore(false, 2);
           goToSlide(16);
         }
       });
@@ -3856,11 +4692,13 @@
           lastChapter2Choice = 2;
           choiceAdultCount++;
           btn.classList.add('chosen-correct');
+          applyAnswerScore(true, 2);
           goToSlide(18);
         } else {
           lastChapter2Choice = parseInt(val, 10);
           choiceParentCount++;
           ch2WrongCount++;
+          applyAnswerScore(false, 2);
           goToSlide(18);
         }
       });
@@ -3870,10 +4708,12 @@
         var val = btn.getAttribute('data-ch3-choice');
         document.querySelectorAll('#ch3-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
         if (val === '2') {
+          applyAnswerScore(true, 3);
           goToSlide(29);
         } else {
           ch3Win = false;
           ch3Branch = (val === '0') ? 'anger' : 'save';
+          applyAnswerScore(false, 3);
           goToSlide(34);
         }
       });
@@ -3886,9 +4726,11 @@
           ch3Win = true;
           var winBtn = document.querySelector('#ch3-choices-2 .novella-choice[data-ch3-choice="1"]');
           if (winBtn) winBtn.classList.add('chosen-correct');
+          applyAnswerScore(true, 3);
         } else {
           ch3Win = false;
           ch3Branch = 'delegate';
+          applyAnswerScore(false, 3);
         }
         goToSlide(34);
       });
@@ -3897,7 +4739,7 @@
       var ch4SmoothGoto = 43;
       var ch4SmoothText = '';
       var ch4AwarenessDelta = 0;
-      function shuffleCh4Choices(containerId) {
+      function shuffleChoices(containerId) {
         var container = document.getElementById(containerId);
         if (!container) return;
         var buttons = Array.from(container.querySelectorAll('.novella-choice'));
@@ -3908,16 +4750,24 @@
         }
         buttons.forEach(function(btn) { container.appendChild(btn); });
       }
-      ['ch4-choices-1', 'ch4-choices-adult1', 'ch4-choices-adult2', 'ch4-choices-adult3'].forEach(shuffleCh4Choices);
+      ['novella-choices', 'ch2-choices-1', 'ch2-choices-2', 'ch2-choices-3', 'ch3-choices-1', 'ch3-choices-2', 'ch4-choices-1', 'ch4-choices-adult1', 'ch4-choices-adult2', 'ch4-choices-adult3', 'ch5-choices-1', 'ch5-choices-2', 'ch5-choices-3', 'ch5-choices-4', 'ch5-choices-5', 'ch5-choices-6', 'ch5-choices-7'].forEach(shuffleChoices);
       document.getElementById('ch4-choices-1') && document.getElementById('ch4-choices-1').addEventListener('click', function(e) {
         var btn = e.target.closest('.ch4-choice');
         if (!btn) return;
         var branch = btn.getAttribute('data-ch4-branch');
         document.querySelectorAll('#ch4-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
         ch4Branch = branch || '';
-        if (branch === 'parent') goToSlide(41);
-        else if (branch === 'rescuer') { ch4SmoothText = 'Алиса согласно кивает и записывает ваши слова. Разговор продолжается.'; ch4SmoothGoto = 43; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
-        else if (branch === 'adult_1') goToSlide(43);
+        if (branch === 'parent') {
+          applyAnswerScore(false, 4);
+          goToSlide(41);
+        } else if (branch === 'rescuer') {
+          ch4SmoothText = 'Алиса согласно кивает и записывает ваши слова. Разговор продолжается.'; ch4SmoothGoto = 43;
+          applyAnswerScore(false, 4);
+          goToSlide(50);
+        } else if (branch === 'adult_1') {
+          applyAnswerScore(true, 4);
+          goToSlide(43);
+        }
       });
       document.getElementById('ch4-choices-parent') && document.getElementById('ch4-choices-parent').addEventListener('click', function(e) {
         var btn = e.target.closest('.ch4-choice');
@@ -3931,8 +4781,14 @@
         var branch = btn.getAttribute('data-ch4-branch');
         document.querySelectorAll('#ch4-choices-adult1 .novella-choice').forEach(function(b) { b.disabled = true; });
         ch4Branch = branch || '';
-        if (branch === 'adult_2') goToSlide(45);
-        else { ch4SmoothText = 'Алиса замечает вашу реакцию и возвращается к теме презентации.'; ch4SmoothGoto = 45; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+        if (branch === 'adult_2') {
+          applyAnswerScore(true, 4);
+          goToSlide(45);
+        } else {
+          ch4SmoothText = 'Алиса замечает вашу реакцию и возвращается к теме презентации.'; ch4SmoothGoto = 45;
+          applyAnswerScore(false, 4);
+          goToSlide(50);
+        }
       });
       document.getElementById('ch4-choices-adult2') && document.getElementById('ch4-choices-adult2').addEventListener('click', function(e) {
         var btn = e.target.closest('.ch4-choice');
@@ -3940,8 +4796,14 @@
         var branch = btn.getAttribute('data-ch4-branch');
         document.querySelectorAll('#ch4-choices-adult2 .novella-choice').forEach(function(b) { b.disabled = true; });
         ch4Branch = branch || '';
-        if (branch === 'adult_3') goToSlide(47);
-        else { ch4SmoothText = 'Алиса делает пометку. Разговор переходит к срокам и условиям.'; ch4SmoothGoto = 47; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+        if (branch === 'adult_3') {
+          applyAnswerScore(true, 4);
+          goToSlide(47);
+        } else {
+          ch4SmoothText = 'Алиса делает пометку. Разговор переходит к срокам и условиям.'; ch4SmoothGoto = 47;
+          applyAnswerScore(false, 4);
+          goToSlide(50);
+        }
       });
       document.getElementById('ch4-choices-adult3') && document.getElementById('ch4-choices-adult3').addEventListener('click', function(e) {
         var btn = e.target.closest('.ch4-choice');
@@ -3949,21 +4811,40 @@
         var branch = btn.getAttribute('data-ch4-branch');
         document.querySelectorAll('#ch4-choices-adult3 .novella-choice').forEach(function(b) { b.disabled = true; });
         ch4Branch = branch || '';
-        if (branch === 'win_final') goToSlide(49);
-        else { ch4SmoothText = 'Тон разговора задан. Переходим к итогам главы.'; ch4SmoothGoto = 52; awarenessPoints -= 10; ch4AwarenessDelta -= 10; updateToolbarPoints(); goToSlide(51); }
+        if (branch === 'win_final') {
+          applyAnswerScore(true, 4);
+          goToSlide(49);
+        } else {
+          ch4SmoothText = 'Тон разговора задан. Переходим к итогам главы.'; ch4SmoothGoto = 51;
+          applyAnswerScore(false, 4);
+          goToSlide(50);
+        }
       });
-      document.getElementById('ch4-choices-win') && document.getElementById('ch4-choices-win').addEventListener('click', function(e) {
-        var btn = e.target.closest('.ch4-choice');
-        if (!btn) return;
-        document.querySelectorAll('#ch4-choices-win .novella-choice').forEach(function(b) { b.disabled = true; });
-        awarenessPoints += 40;
-        ch4AwarenessDelta += 40;
-        updateToolbarPoints();
-        goToSlide(53);
-      });
+      var ch4WinFinalSlide = document.getElementById('ch4-win-final');
+      if (ch4WinFinalSlide) {
+        ch4WinFinalSlide.addEventListener('click', function(e) {
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+          if (ch4WinFinalSlide.classList.contains('ch4-win-complete')) return;
+          e.preventDefault();
+          e.stopPropagation();
+          ch4WinFinalSlide.classList.add('ch4-win-complete');
+          goToSlide(51);
+        });
+      }
       document.getElementById('ch4-smooth') && document.getElementById('ch4-smooth').addEventListener('click', function(e) {
         if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
         goToSlide(ch4SmoothGoto);
+      });
+      ['ch5-viktor-choice', 'ch5-alisa-choice', 'ch5-stress-choice', 'ch5-ceo-who-choice', 'ch5-alisa-drama-choice', 'ch5-lenochka-choice', 'ch5-control-choice'].forEach(function(id) {
+        var slide = document.getElementById(id);
+        if (!slide) return;
+        slide.addEventListener('click', function(e) {
+          if (e.target.closest('.ch5-choice') || e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+          var choices = slide.querySelector('.novella-choices');
+          if (!choices || !choices.classList.contains('hidden')) return;
+          choices.classList.remove('hidden');
+          choices.setAttribute('aria-hidden', 'false');
+        });
       });
       [].forEach.call(document.querySelectorAll('[id^="ch5-choices-"]'), function(container) {
         if (!container) return;
@@ -3972,7 +4853,7 @@
           if (!btn || btn.disabled) return;
           var goto = parseInt(btn.getAttribute('data-ch5-goto'), 10);
           var correct = btn.getAttribute('data-ch5-correct') === '1';
-          if (correct) ch5CorrectCount++;
+          applyAnswerScore(correct, 5);
           container.querySelectorAll('.novella-choice').forEach(function(b) { b.disabled = true; });
           if (correct) btn.classList.add('chosen-correct');
           if (!isNaN(goto)) goToSlide(goto);
@@ -3980,48 +4861,104 @@
       });
       document.getElementById('btn-ch5-finish-theory') && document.getElementById('btn-ch5-finish-theory').addEventListener('click', function(e) {
         e.stopPropagation();
+        var pts = Math.max(0, awarenessPoints);
+        if (pts >= ENDING_OTHERS_REWARDED_THRESHOLD) {
+          goToSlide(68);
+        } else {
+          goToSlide(71);
+        }
+      });
+      document.getElementById('btn-closing-boss') && document.getElementById('btn-closing-boss').addEventListener('click', function(e) {
+        e.stopPropagation();
         goToSlide(71);
       });
       function applyHintPenalty() {
-        awarenessPoints -= 10;
-        hintUseCount++;
-        updateToolbarPoints();
+        /* −10 применяется при открытии итогового слайда главы */
+      }
+      function showBerneHintWithAnimation(box) {
+        if (!box) return;
+        box.classList.remove('hidden');
+        box.setAttribute('aria-hidden', 'false');
+        gsap.set(box, { y: -140, opacity: 0, scale: 0.85 });
+        gsap.to(box, {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.55,
+          ease: 'power2.out',
+          overwrite: true
+        });
       }
       function showPsychologistHint() {
         applyHintPenalty();
+        hintUseCount++;
         var box = document.getElementById('psychologist-hint-box');
         var btn = document.getElementById('btn-show-hint');
-        if (box) { box.classList.remove('hidden'); box.setAttribute('aria-hidden', 'false'); }
+        if (box) showBerneHintWithAnimation(box);
         if (btn) { btn.classList.add('hidden'); btn.setAttribute('aria-hidden', 'true'); }
       }
       document.getElementById('btn-show-hint') && document.getElementById('btn-show-hint').addEventListener('click', showPsychologistHint);
       document.getElementById('toolbar-hint-btn') && document.getElementById('toolbar-hint-btn').addEventListener('click', function() {
-        if (currentSlide === 6) showPsychologistHint();
-        if (currentSlide === 17) {
+        // Глава 1: основной выбор
+        if (currentSlide === 6 && !hintUsedCh1) {
+          showPsychologistHint();
+          hintUsedCh1 = true;
+          return;
+        }
+        // Глава 2: главный выбор (слайд 17)
+        if (currentSlide === 17 && !hintUsedCh2) {
           var box = document.getElementById('ch2-psychologist-hint-box');
           if (box && box.classList.contains('hidden')) {
             applyHintPenalty();
             hintUseCountCh2++;
           }
-          if (box) { box.classList.remove('hidden'); box.setAttribute('aria-hidden', 'false'); }
+          if (box) showBerneHintWithAnimation(box);
+          hintUsedCh2 = true;
+          return;
         }
-        if (currentSlide === 27) {
+        // Глава 3: основной выбор (слайд 28 — первый выбор)
+        if (currentSlide === 28 && !hintUsedCh3) {
           var box1 = document.getElementById('ch3-psychologist-hint-box-1');
           if (box1 && box1.classList.contains('hidden')) {
-            awarenessPoints -= 10;
+            applyHintPenalty();
             hintUseCountCh3++;
-            updateToolbarPoints();
           }
-          if (box1) { box1.classList.remove('hidden'); box1.setAttribute('aria-hidden', 'false'); }
+          if (box1) showBerneHintWithAnimation(box1);
+          hintUsedCh3 = true;
+          return;
         }
-        if (currentSlide === 31) {
+        // Глава 3: второй главный выбор (слайд 33)
+        if (currentSlide === 33 && !hintUsedCh3) {
           var box2 = document.getElementById('ch3-psychologist-hint-box-2');
           if (box2 && box2.classList.contains('hidden')) {
-            awarenessPoints -= 10;
+            applyHintPenalty();
             hintUseCountCh3++;
-            updateToolbarPoints();
           }
-          if (box2) { box2.classList.remove('hidden'); box2.setAttribute('aria-hidden', 'false'); }
+          if (box2) showBerneHintWithAnimation(box2);
+          hintUsedCh3 = true;
+          return;
+        }
+        // Глава 4: главный выбор (слайд 40)
+        if (currentSlide === 40 && !hintUsedCh4) {
+          var ch4Box = document.getElementById('ch4-psychologist-hint-box');
+          if (ch4Box && ch4Box.classList.contains('hidden')) {
+            applyHintPenalty();
+            hintUseCountCh4++;
+          }
+          if (ch4Box) showBerneHintWithAnimation(ch4Box);
+          hintUsedCh4 = true;
+          return;
+        }
+        // Глава 5: главный выбор (слайд 59)
+        if (currentSlide === 57 && !hintUsedCh5) {
+          var ch5Box = document.getElementById('ch5-psychologist-hint-box');
+          if (ch5Box && ch5Box.classList.contains('hidden')) {
+            applyHintPenalty();
+            hintUseCountCh5++;
+          }
+          if (ch5Box) showBerneHintWithAnimation(ch5Box);
+          hintUsedCh5 = true;
+          return;
         }
       });
 
@@ -4035,18 +4972,23 @@
       } catch (e) { courseUserName = DEFAULT_USER_NAME; }
 
       function formatRussianDate(date) {
-        var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-        return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+        var d = date.getDate();
+        var m = date.getMonth() + 1;
+        var y = date.getFullYear();
+        return (d < 10 ? '0' + d : d) + '.' + (m < 10 ? '0' + m : m) + '.' + y;
       }
 
       function applyPersonalization(name) {
         var displayName = (name && name.trim()) ? name.trim() : 'Вы';
         var titleEl = document.getElementById('final-screen-title');
-        if (titleEl) titleEl.textContent = (displayName !== 'Вы' ? 'Поздравляем, ' + displayName + '!' : 'Поздравляем!');
+        var phrase = (displayName !== 'Вы'
+          ? 'Поздравляем, ' + displayName + '! Твой психолог будет тобой гордиться!'
+          : 'Поздравляем! Твой психолог будет тобой гордиться!');
+        if (titleEl) titleEl.textContent = phrase;
         var subEl = document.getElementById('final-screen-subtitle');
-        if (subEl) subEl.textContent = (displayName !== 'Вы' ? displayName + ', твой психолог будет тобой гордиться!' : 'Твой психолог будет тобой гордиться!');
+        if (subEl) subEl.textContent = '';
         var certNameEl = document.getElementById('cert-overlay-name');
-        if (certNameEl) certNameEl.textContent = displayName !== 'Вы' ? displayName.toUpperCase() : '';
+        if (certNameEl) certNameEl.textContent = (name && name.trim()) ? name.trim() : 'Участник';
         var certDateEl = document.getElementById('cert-overlay-date');
         if (certDateEl) certDateEl.textContent = formatRussianDate(new Date());
         var certBlockTitle = document.getElementById('cert-block-title');
@@ -4139,6 +5081,11 @@
       var finalScreen = document.getElementById('final-screen');
       if (btnComplete) {
         btnComplete.addEventListener('click', function() {
+          if (!this.hasAttribute('data-cert-eligible')) {
+            // Для сценария «Уволены» полностью перезагружаем курс
+            window.location.reload();
+            return;
+          }
           var scorePercent = (typeof finalQuizCorrectCount !== 'undefined' ? finalQuizCorrectCount : 0) / 3 * 100;
           if (typeof SCORM_API !== 'undefined' && SCORM_API.initialized) {
             SCORM_API.setScore(scorePercent);
