@@ -26,7 +26,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const activeCrystalTest = toolId === 'ikigai' ? 'ikigai' : toolId === 'onboarding' ? 'onboarding' : null
   const [isDarkMode, setIsDarkMode] = useState(false) // Для свечи - черный фон
   const [userQuestion, setUserQuestion] = useState('')
-  const [numberInput, setNumberInput] = useState('')
   const [tarotCard, setTarotCard] = useState(null)
   const [selectedCardIndex, setSelectedCardIndex] = useState(null) // Индекс выбранной карты (0, 1, 2)
   const [flippedCards, setFlippedCards] = useState([false, false, false]) // Состояние переворота для каждой карты
@@ -498,40 +497,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     setTarotCard(interpretation)
     logEvent('content', 'card_draw', { page: '/alchemy', metadata: { card_id: card.id, card_name: card.name } })
     logEvent('alchemy', 'alchemy_item_select', { page: '/alchemy', metadata: { type: 'card', name: card.name, meaning: card.message || card.motive || '' } })
-  }
-
-  const handleAccelerateTime = () => {
-    if (!numberInput) {
-      alert('Пожалуйста, введите число минут')
-      return
-    }
-    alert(`Время ускорено на ${numberInput} минут! Вы чувствуете, как энергия течет быстрее.`)
-    setNumberInput('')
-  }
-
-  const handleDrinkElixir = () => {
-    const knowledge = [
-      'Знание: Истинная мудрость приходит через опыт, а не через знание фактов.',
-      'Знание: Каждый человек - учитель в вашей жизни, даже если урок болезненный.',
-      'Знание: Прошлое нельзя изменить, но будущее зависит от ваших действий сегодня.',
-      'Знание: Внутренний покой - это не отсутствие шторма, а умение танцевать под дождем.',
-      'Знание: Ваши мысли создают вашу реальность - выбирайте их мудро.'
-    ]
-    const randomKnowledge = knowledge[Math.floor(Math.random() * knowledge.length)]
-    alert(randomKnowledge)
-  }
-
-  const handleSelectAmulet = (amuletType) => {
-    const amulets = {
-      protection: { name: 'Амулет Защиты', meaning: 'Амулет Защиты активирован! Вы чувствуете невидимый щит вокруг себя.' },
-      power: { name: 'Руна Силы', meaning: 'Руна Силы пробуждена! Ваша внутренняя энергия возрастает.' },
-      health: { name: 'Оберег Здоровья', meaning: 'Оберег Здоровья активирован! Вы чувствуете прилив жизненных сил.' }
-    }
-    const item = amulets[amuletType]
-    if (item) {
-      logEvent('alchemy', 'alchemy_item_select', { page: '/alchemy', metadata: { type: amuletType === 'power' ? 'rune' : 'card', name: item.name, meaning: item.meaning } })
-      alert(item.meaning)
-    }
   }
 
   // Эффект параллакса при прокрутке
@@ -1215,70 +1180,31 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
       case 'hourglass':
         return (
-          <div className="action-zone-content">
-            <h2 className="action-zone-title">Ускоритель Времени</h2>
-            <p className="action-zone-text">
-              Песочные часы позволяют управлять потоком времени. Введите число минут, чтобы ускорить ожидание или медитацию.
+          <div className="action-zone-content action-zone-placeholder">
+            <h2 className="action-zone-title">Механика в разработке</h2>
+            <p className="action-zone-text action-zone-placeholder-text">
+              Песочные часы пока в создании. Если у вас есть идея, какую магическую механику времени здесь реализовать, расскажите нам — и мы обязательно оживим её.
             </p>
-            <div className="action-zone-input-group">
-              <input
-                type="number"
-                className="action-zone-input"
-                placeholder="Число минут"
-                value={numberInput}
-                onChange={(e) => setNumberInput(e.target.value)}
-                onFocus={() => {
-                  const actionZone = document.getElementById('action-zone')
-                  if (actionZone) {
-                    actionZone.classList.add('input-focused')
-                  }
-                }}
-                onBlur={() => {
-                  const actionZone = document.getElementById('action-zone')
-                  if (actionZone) {
-                    actionZone.classList.remove('input-focused')
-                  }
-                }}
-                min="1"
-              />
-              <button className="action-zone-button" onClick={handleAccelerateTime}>
-                Ускорить Время
-              </button>
-            </div>
           </div>
         )
 
       case 'chalice':
         return (
-          <div className="action-zone-content">
-            <h2 className="action-zone-title">Эликсир Озарения</h2>
-            <p className="action-zone-text">
-              Изумрудный эликсир открывает скрытые знания. Нажмите, чтобы "выпить" глоток и получить тайное знание.
+          <div className="action-zone-content action-zone-placeholder">
+            <h2 className="action-zone-title">Механика в разработке</h2>
+            <p className="action-zone-text action-zone-placeholder-text">
+              Чаша алхимика готовится к своему первому ритуалу. Подумайте, какой эликсир здесь было бы интересно "сварить" — и поделитесь с нами, мы превратим эту идею в живую механику.
             </p>
-            <button className="action-zone-button" onClick={handleDrinkElixir}>
-              Выпить Эликсир
-            </button>
           </div>
         )
 
       case 'amulets':
         return (
-          <div className="action-zone-content">
-            <h2 className="action-zone-title">Обереги и Заклинания</h2>
-            <p className="action-zone-text">
-              Амулеты даруют защиту, а руны открывают древние заклинания. Выберите оберег или руну, чтобы узнать её силу.
+          <div className="action-zone-content action-zone-placeholder">
+            <h2 className="action-zone-title">Механика в разработке</h2>
+            <p className="action-zone-text action-zone-placeholder-text">
+              Амулеты и руны ждут своей истории. Напишите, какие обереги, прокачки или заклинания вы хотели бы здесь видеть — и мы соберём из этого полноценную игровую систему.
             </p>
-            <div className="amulets-container">
-              <button className="amulet-button" onClick={() => handleSelectAmulet('protection')}>
-                Амулет Защиты
-              </button>
-              <button className="amulet-button" onClick={() => handleSelectAmulet('power')}>
-                Руна Силы
-              </button>
-              <button className="amulet-button" onClick={() => handleSelectAmulet('health')}>
-                Оберег Здоровья
-              </button>
-            </div>
           </div>
         )
 

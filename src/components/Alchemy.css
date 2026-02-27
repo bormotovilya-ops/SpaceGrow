@@ -467,8 +467,8 @@
   transform: translateX(-50%);
   padding: 6px 14px;
   background: rgba(15, 15, 25, 0.45); /* Полупрозрачный фон для размытия */
-  backdrop-filter: blur(14px) saturate(120%);
-  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
   color: #FFD700;
   font-size: 13px;
   font-weight: 600;
@@ -480,6 +480,14 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   transition: all 0.3s ease;
   z-index: 10;
+}
+
+/* Лёгкий сдвиг подписей "Снитч" и "Чаша" от правого края */
+.artifact-snitch::after,
+.artifact-chalice::after {
+  left: auto;
+  right: 2%;
+  transform: translateX(0);
 }
 
 /* Зоны остаются невидимыми даже при наведении */
@@ -1479,8 +1487,8 @@
     opacity: 0.95; /* Хорошо видимая на мобильных */
     visibility: visible; /* Явно делаем видимой */
     background: rgba(15, 15, 25, 0.45);
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
     border: 1px solid rgba(255, 215, 0, 0.6);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4);
   }
@@ -1696,6 +1704,29 @@
   .back-to-table-button {
     bottom: 12px;
     padding: 12px 30px;
+    font-size: 14px;
+  }
+}
+
+/* Плейсхолдер для ещё не реализованных механик (часы, чаша, руны) */
+.action-zone-placeholder {
+  text-align: center;
+}
+
+.action-zone-placeholder-text {
+  font-family: 'HarryPotter', 'Cinzel', 'Cormorant Garamond', serif;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+  .action-zone-placeholder-text {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-zone-placeholder-text {
     font-size: 14px;
   }
 }

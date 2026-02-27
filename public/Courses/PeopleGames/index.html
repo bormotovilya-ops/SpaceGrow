@@ -272,6 +272,8 @@
       max-width: 220px;
       box-sizing: border-box;
       transition: border-color 0.2s, box-shadow 0.2s;
+      margin-left: auto;
+      margin-right: auto;
     }
     .slide-intro .intro-name-wrap input::placeholder {
       color: rgba(148, 163, 184, 0.7);
@@ -475,35 +477,37 @@
       border-radius: 0.5rem;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
-    /* Графа «Ф.И.О. участника» — по центру, на 2 строки ниже */
+    /* Графа «Ф.И.О. участника» — по центру сертификата */
     .cert-overlay-fio {
       position: absolute;
       left: 14%;
       right: 14%;
-      top: 40%;
+      top: 38%;
       font-family: 'Montserrat', system-ui, sans-serif;
-      font-weight: 700;
-      font-size: clamp(0.85rem, 4vw, 1.35rem);
-      color: #1e3a5f;
+      font-weight: 600;
+      font-size: clamp(0.78rem, 3.6vw, 1.2rem);
+      color: #e0f2fe;
       text-align: center;
       letter-spacing: 0.02em;
       line-height: 1.3;
+      text-shadow: 0 0 6px rgba(56, 189, 248, 0.7), 0 0 14px rgba(15, 23, 42, 0.9);
       pointer-events: none;
     }
     .cert-overlay-fio .cert-overlay-value { display: block; }
-    /* Графа «Дата» — смещена вправо на 8 символов */
+    /* Графа «Дата» — правый нижний угол, чуть влево от прежней позиции */
     .cert-overlay-date-field {
       position: absolute;
-      left: 20%;
-      right: 42%;
+      left: 16%;
+      right: 46%;
       bottom: 23%;
-      padding-left: 8ch;
+      padding-left: 0;
       font-family: 'Montserrat', system-ui, sans-serif;
       font-weight: 600;
-      font-size: clamp(0.65rem, 2.5vw, 0.95rem);
-      color: #1e3a5f;
+      font-size: clamp(0.6rem, 2.2vw, 0.9rem);
+      color: #e0f2fe;
       text-align: left;
       line-height: 1.3;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.6), 0 0 10px rgba(15, 23, 42, 0.9);
       pointer-events: none;
     }
     .cert-overlay-date-field .cert-overlay-value { display: block; }
@@ -1129,7 +1133,13 @@
       background-image: url('FinalFon.png');
     }
     #chapter5-title .novella-scene.scene-boardroom { background-image: url('FinalFon.png'); }
-    .novella-scene.scene-boardroom-dialogue { background-image: url('bossalisevictor.png'); }
+    .novella-scene.scene-boardroom-dialogue {
+      background-image: url('bossalisevictor.png');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #0f172a;
+    }
     .novella-scene.scene-boardroom-boss {
       background-image: url('boss_bad..png');
       background-size: contain;
@@ -1681,9 +1691,9 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      /* Глава 4 (офис Алисы): та же сетка */
+      /* Глава 4 (офис Алисы): колонка выборов 20% шире, прижата к левому краю */
       .novella-scene.scene-alisa-office.has-character {
-        grid-template-columns: 1fr minmax(140px, 45%);
+        grid-template-columns: 1fr minmax(100px, 34%);
         grid-template-rows: 55vh auto;
         align-content: stretch;
       }
@@ -1691,7 +1701,10 @@
         grid-column: 1;
         grid-row: 1;
         flex-direction: column;
-        padding: 0.4rem 0.5rem;
+        padding: 0.4rem 0.5rem 0.4rem 0;
+        margin-left: -0.25rem;
+        justify-content: flex-start;
+        align-items: stretch;
       }
       .novella-scene.scene-alisa-office .novella-choices .novella-choice {
         width: 100%;
@@ -1708,6 +1721,10 @@
         min-height: 0;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
+      }
+      .novella-scene.scene-alisa-office .dialog-box {
+        padding: 0.44rem 0.66rem;
+        line-height: 1.55;
       }
       /* Единые размер и вертикаль для всех персонажей на мобильной; по горизонтали различаются (сетка) */
       .novella-scene {
@@ -1742,9 +1759,9 @@
       }
       .novella-scene.scene-alisa-office .character-sprite {
         object-fit: contain !important;
-        object-position: top center !important;
-        transform: translateY(0) scale(var(--chapter-character-scale));
-        transform-origin: top center;
+        object-position: bottom center !important;
+        transform: translateY(8%) scale(var(--chapter-character-scale));
+        transform-origin: bottom center;
         justify-self: end;
         align-self: end;
         margin-top: 0 !important;
@@ -1774,10 +1791,12 @@
       .novella-scene.has-character:not(.scene-kitchen) { grid-template-rows: 48vh auto; }
       .novella-scene.scene-kitchen.has-character { grid-template-rows: 48vh auto; }
       .novella-scene.scene-office-night.has-character { grid-template-rows: 48vh auto; }
-      .novella-scene.scene-alisa-office.has-character { grid-template-rows: 48vh auto; }
+      .novella-scene.scene-alisa-office.has-character { grid-template-rows: 48vh auto; grid-template-columns: 1fr minmax(90px, 34%); }
       .novella-scene.has-character .scene-text-zone { padding: 0.3rem 0.4rem 0.4rem; }
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
       .dialog-box { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
+      .novella-scene.scene-alisa-office .dialog-box { padding: 0.385rem 0.55rem; line-height: 1.5; }
+      .novella-scene.scene-alisa-office .novella-choices { padding-left: 0; margin-left: -0.2rem; }
       .novella-choice { min-height: 36px; padding: 0.3rem 0.45rem; font-size: 0.75rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 48px)); max-height: calc(0.8 * (100vh - 48px)); }
     }
