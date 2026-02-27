@@ -482,12 +482,17 @@
   z-index: 10;
 }
 
-/* Лёгкий сдвиг подписей "Снитч" и "Чаша" от правого края */
+/* Лёгкий сдвиг и отдельное оформление подписей "Снитч" и "Чаша" */
 .artifact-snitch::after,
 .artifact-chalice::after {
   left: auto;
-  right: 2%;
+  right: 2%;               /* Отступ от правого края картинки */
   transform: translateX(0);
+  max-width: 40%;          /* Чтобы подпись гарантированно влезала в экран */
+  text-align: right;
+  background: rgba(10, 10, 20, 0.7);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
 
 /* Зоны остаются невидимыми даже при наведении */
@@ -1491,6 +1496,20 @@
     -webkit-backdrop-filter: blur(16px) saturate(120%);
     border: 1px solid rgba(255, 215, 0, 0.6);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.4);
+  }
+
+  /* Специально переопределяем подписи "Снитч" и "Чаша" на мобильных,
+     чтобы они тоже смещались внутрь и гарантированно влезали в экран */
+  .artifact-snitch::after,
+  .artifact-chalice::after {
+    left: auto;
+    right: 2%;
+    transform: translateX(0);
+    max-width: 60%;
+    text-align: right;
+    background: rgba(10, 10, 20, 0.75);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
   }
 
   /* Позиции artifact-zone универсальны для всех устройств (используются проценты с соотношением 9:16) */

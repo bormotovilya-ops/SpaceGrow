@@ -1691,7 +1691,7 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      /* Глава 4 (офис Алисы): колонка выборов 20% шире, прижата к левому краю */
+      /* Глава 4 (офис Алисы): варианты выбора слева, шире на мобильных */
       .novella-scene.scene-alisa-office.has-character {
         grid-template-columns: 1fr minmax(100px, 34%);
         grid-template-rows: 55vh auto;
@@ -1701,13 +1701,14 @@
         grid-column: 1;
         grid-row: 1;
         flex-direction: column;
-        padding: 0.4rem 0.5rem 0.4rem 0;
-        margin-left: -0.25rem;
+        padding: 0.4rem 0 0.4rem 0;
+        margin-left: 0;
         justify-content: flex-start;
-        align-items: stretch;
+        align-items: flex-start;
       }
       .novella-scene.scene-alisa-office .novella-choices .novella-choice {
-        width: 100%;
+        width: 120%;
+        max-width: 120%;
         flex: none;
         min-width: 0;
       }
@@ -1796,7 +1797,13 @@
       .scene-text-zone { padding: 0 0.25rem 0.45rem; }
       .dialog-box { padding: 0.35rem 0.5rem; font-size: 0.75rem; }
       .novella-scene.scene-alisa-office .dialog-box { padding: 0.385rem 0.55rem; line-height: 1.5; }
-      .novella-scene.scene-alisa-office .novella-choices { padding-left: 0; margin-left: -0.2rem; }
+      .novella-scene.scene-alisa-office .novella-choices { padding-left: 0; margin-left: 0; }
+      .novella-scene.scene-alisa-office .novella-choices .novella-choice {
+        width: 120%;
+        max-width: 120%;
+        font-size: 0.73rem;
+        line-height: 1.3;
+      }
       .novella-choice { min-height: 36px; padding: 0.3rem 0.45rem; font-size: 0.75rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 48px)); max-height: calc(0.8 * (100vh - 48px)); }
     }
