@@ -703,7 +703,7 @@ function Cabinet() {
     while ((match = markdownRegex.exec(text)) !== null) {
       if (match.index > lastIndex) elements.push(text.slice(lastIndex, match.index))
       elements.push(
-        <a key={`link-${elements.length}`} href={match[2]} target="_blank" rel="noopener noreferrer" className="cabinet-expert-link">
+        <a key={`link-${elements.length}`} href={match[2]} className="cabinet-expert-link">
           {match[1]}
         </a>
       )
@@ -718,7 +718,7 @@ function Cabinet() {
         const start = m.index
         if (start > i) elements.push(tail.slice(i, start))
         elements.push(
-          <a key={`url-${idx}`} href={m[0]} target="_blank" rel="noopener noreferrer" className="cabinet-expert-link">
+          <a key={`url-${idx}`} href={m[0]} className="cabinet-expert-link">
             Перейти по ссылке
           </a>
         )

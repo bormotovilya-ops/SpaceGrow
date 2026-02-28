@@ -13,11 +13,11 @@
     "buttonText": "Начать знакомство"
   },
   "stages": [
-    { "id": "niche", "name": "Ниша", "subtitle": "Ваша сфера", "image": "/images/onboarding/niche.png" },
-    { "id": "hunt", "name": "Осознанность", "subtitle": "Лестница Ханта", "image": "/images/onboarding/hunt.png" },
-    { "id": "scale", "name": "Масштаб", "subtitle": "Ваше дело", "image": "/images/onboarding/scale.png" },
-    { "id": "temp", "name": "Срочность", "subtitle": "Темп работы", "image": "/images/onboarding/temp.png" },
-    { "id": "result", "name": "Результат", "subtitle": "Ваша цель", "image": "/images/onboarding/result.png" }
+    { "id": "niche", "name": "Ниша", "subtitle": "Ваша сфера", "image": "/images/onboarding/niche.jpg" },
+    { "id": "hunt", "name": "Осознанность", "subtitle": "Лестница Ханта", "image": "/images/onboarding/hunt.jpg" },
+    { "id": "scale", "name": "Масштаб", "subtitle": "Ваше дело", "image": "/images/onboarding/scale.jpg" },
+    { "id": "temp", "name": "Срочность", "subtitle": "Темп работы", "image": "/images/onboarding/temp.jpg" },
+    { "id": "result", "name": "Результат", "subtitle": "Ваша цель", "image": "/images/onboarding/result.jpg" }
   ],
   "questions": [
     {

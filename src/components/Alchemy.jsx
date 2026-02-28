@@ -693,8 +693,17 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
     }
   }, [isDarkMode])
 
-  // Управление фоновой музыкой
+  // Управление фоновой музыкой (тест «Знакомство» — без музыки)
   useEffect(() => {
+    if (toolId === 'onboarding') {
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current.volume = 0
+      }
+      return
+    }
+
     // Создаем аудио объект
     if (!audioRef.current) {
       audioRef.current = new Audio('/musik/fon.mp3')
@@ -783,11 +792,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
       }, stepDuration)
     }
 
-    // Если не muted, пытаемся запустить музыку сразу при монтировании
-    // (но это может не сработать из-за политики браузера)
+    // Если не muted и не на странице «Знакомство», пытаемся запустить музыку при монтировании
     if (!isMuted && !userInteractedRef.current) {
-      // Не устанавливаем userInteractedRef здесь - дождемся реального взаимодействия
-      // Просто пытаемся запустить, если получится
       startMusic(0.5, 3000)
     }
 
@@ -856,7 +862,7 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         audioRef.current.volume = 0
       }
     }
-  }, [isMuted])
+  }, [isMuted, toolId])
 
   // Сохранение состояния mute в localStorage
   useEffect(() => {
