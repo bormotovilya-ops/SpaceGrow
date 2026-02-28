@@ -7,15 +7,22 @@ function PeopleGamesModule() {
   const { logEvent } = useLogEvent()
   const completedRef = useRef(false)
   const courseUserNameRef = useRef('')
+  const resultRef = useRef(null)
+  const pointsRef = useRef(null)
   const [displayName, setDisplayName] = useState('')
   const loggedOnUnmount = useRef(false)
 
-  const logSiteEvent = (status) => {
+  const loggedResultRef = useRef(false)
+  const logSiteEvent = async (status) => {
+    if (loggedResultRef.current) return
+    loggedResultRef.current = true
     const name = courseUserNameRef.current || displayName
     const date = new Date().toISOString()
-    logEvent('Site_events', 'peoplegames_course_result', {
+    const result = resultRef.current
+    const points = pointsRef.current
+    await logEvent('training', 'peoplegames_result', {
       page: '/people-games-module',
-      metadata: { name, date, status }
+      metadata: { name, date, status, result, points }
     })
   }
 
@@ -29,16 +36,27 @@ function PeopleGamesModule() {
   }, [])
 
   useEffect(() => {
-    const handler = (event) => {
+    const handler = async (event) => {
+      if (event?.data?.type === 'PEOPLE_GAMES_RESULT') {
+        if (event.data.result != null) resultRef.current = event.data.result
+        if (typeof event.data.points === 'number') pointsRef.current = event.data.points
+        if (event.data.userName) courseUserNameRef.current = event.data.userName
+      }
       if (event?.data?.type === 'PEOPLE_GAMES_COURSE_COMPLETED') {
         completedRef.current = true
         if (event.data.userName) courseUserNameRef.current = event.data.userName
+        if (event.data.result != null) resultRef.current = event.data.result
+        if (typeof event.data.points === 'number') pointsRef.current = event.data.points
+        await logSiteEvent('прошел')
       }
       if (event?.data?.type === 'PEOPLE_GAMES_EXIT') {
         if (loggedOnUnmount.current) return
         loggedOnUnmount.current = true
-        logSiteEvent(completedRef.current ? 'прошел' : 'не до конца')
-        navigate('/alchemy', { replace: true })
+        if (event.data.result != null) resultRef.current = event.data.result
+        if (typeof event.data.points === 'number') pointsRef.current = event.data.points
+        if (event.data.userName) courseUserNameRef.current = event.data.userName
+        await logSiteEvent(completedRef.current ? 'прошел' : 'не до конца')
+        navigate('/cabinet', { replace: true })
       }
     }
     window.addEventListener('message', handler)
@@ -49,13 +67,7 @@ function PeopleGamesModule() {
     return () => {
       if (loggedOnUnmount.current) return
       loggedOnUnmount.current = true
-      const name = courseUserNameRef.current || displayName
-      const date = new Date().toISOString()
-      const status = completedRef.current ? 'прошел' : 'не до конца'
-      logEvent('Site_events', 'peoplegames_course_result', {
-        page: '/people-games-module',
-        metadata: { name, date, status }
-      })
+      logSiteEvent(completedRef.current ? 'прошел' : 'не до конца').catch((e) => console.warn('[PeopleGames] logSiteEvent on unmount:', e))
     }
   }, [displayName, logEvent])
 

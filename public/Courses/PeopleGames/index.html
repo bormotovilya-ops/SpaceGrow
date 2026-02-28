@@ -482,7 +482,7 @@
       position: absolute;
       left: 14%;
       right: 14%;
-      top: 38%;
+      top: calc(38% + 1.2em);
       font-family: 'Montserrat', system-ui, sans-serif;
       font-weight: 600;
       font-size: clamp(0.78rem, 3.6vw, 1.2rem);
@@ -494,11 +494,11 @@
       pointer-events: none;
     }
     .cert-overlay-fio .cert-overlay-value { display: block; }
-    /* Графа «Дата» — правый нижний угол, чуть влево от прежней позиции */
+    /* Графа «Дата» — правый нижний угол */
     .cert-overlay-date-field {
       position: absolute;
-      left: 16%;
-      right: 46%;
+      left: calc(16% + 10ch);
+      right: calc(46% - 10ch);
       bottom: 23%;
       padding-left: 0;
       font-family: 'Montserrat', system-ui, sans-serif;
@@ -511,6 +511,12 @@
       pointer-events: none;
     }
     .cert-overlay-date-field .cert-overlay-value { display: block; }
+    @media (max-width: 768px) {
+      .cert-overlay-date-field {
+        left: calc(16% + 6ch);
+        right: calc(46% - 6ch);
+      }
+    }
 
     .course-topbar {
       position: fixed;
@@ -1118,6 +1124,11 @@
     }
     .novella-scene.scene-alisa-office .novella-choices { grid-column: 1; grid-row: 1; }
     .novella-scene.scene-alisa-office.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
+    /* Слайды 49–50 без выбора: персонаж выше, как на слайде 48 */
+    #ch4-win-final .novella-scene .character-sprite,
+    #ch4-smooth .novella-scene .character-sprite {
+      align-self: center;
+    }
     /* Глава 5: зал совета — фоны по контексту, без отдельного слоя справа (картинка = фон) */
     .novella-scene.scene-boardroom,
     .novella-scene.scene-boardroom-dialogue,
@@ -1663,24 +1674,24 @@
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
-      /* Глава 3 (офис ночью): та же сетка, что кухня — персонаж справа, колонка шире для единого размера */
+      /* Глава 3 (офис ночью): как в главах 2 и 4 — выборы слева, персонаж справа */
       .novella-scene.scene-office-night.has-character {
         grid-template-columns: 1fr minmax(140px, 45%);
         grid-template-rows: 55vh auto;
         align-content: stretch;
       }
-      .novella-scene.scene-office-night .novella-choices {
+      .novella-scene.scene-office-night.has-character .novella-choices {
         grid-column: 1;
         grid-row: 1;
         flex-direction: column;
         padding: 0.4rem 0.5rem;
       }
-      .novella-scene.scene-office-night .novella-choices .novella-choice {
+      .novella-scene.scene-office-night.has-character .novella-choices .novella-choice {
         width: 100%;
         flex: none;
         min-width: 0;
       }
-      .novella-scene.scene-office-night .character-sprite {
+      .novella-scene.scene-office-night.has-character .character-sprite {
         grid-column: 2;
         grid-row: 1;
       }
@@ -1762,6 +1773,11 @@
         justify-self: end;
         align-self: end;
         margin-top: 0 !important;
+      }
+      #ch4-win-final .novella-scene .character-sprite,
+      #ch4-smooth .novella-scene .character-sprite {
+        align-self: center;
+        transform: translateY(-4%) scale(var(--chapter-character-scale));
       }
       @keyframes boss-slide-in-mobile {
         from { transform: translateY(8%) scale(1.22) translateX(-120%); }
@@ -2132,7 +2148,7 @@
     <div class="toolbar-points toolbar-influence hidden" title="Влияние" aria-hidden="true">🔥 <span class="label">Влияние</span> <span id="toolbar-influence">0</span></div>
     <div class="toolbar-points toolbar-resource hidden" title="Ресурс" aria-hidden="true">🔋 <span class="label">Ресурс</span> <span id="toolbar-resource">0</span></div>
   </div>
-  <a href="/alchemy" class="course-nav-exit" id="pg-exit-link" title="Выйти в Алхимию" aria-label="Выйти">×</a>
+  <a href="/cabinet" class="course-nav-exit" id="pg-exit-link" title="Выйти в Кабинет" aria-label="Выйти">×</a>
 </div>
   <audio id="course-bg-music" loop preload="auto">
     <source src="mfon2.mp3" type="audio/mpeg">
@@ -4129,6 +4145,13 @@
               if (btnEl) { btnEl.textContent = 'Сформировать сертификат «Анти-манипулятор»'; btnEl.setAttribute('data-cert-eligible', '1'); }
             }
           }
+          peopleGamesCourseResult = pts < ENDING_FIRED_THRESHOLD ? 'fired' : (pts < ENDING_OTHERS_REWARDED_THRESHOLD ? 'rewarded' : 'promoted');
+          peopleGamesCoursePoints = pts;
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'PEOPLE_GAMES_RESULT', result: peopleGamesCourseResult, points: peopleGamesCoursePoints, userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+            }
+          } catch (e) {}
         }
         if (i !== 71) stopVictoryEffects();
         if (i === 21) {
@@ -4633,6 +4656,8 @@
       var awarenessPoints = 0;
       var influencePoints = 0;
       var resourcePoints = 0;
+      var peopleGamesCourseResult = null;
+      var peopleGamesCoursePoints = 0;
       function updateToolbarPoints() {
         var elA = document.getElementById('toolbar-awareness');
         var elI = document.getElementById('toolbar-influence');
@@ -5029,12 +5054,12 @@
       function goToAlchemy() {
         try {
           var topWin = window.top || window.parent;
-          var alchemyUrl = (topWin.location.origin || window.location.origin) + '/alchemy';
+          var cabinetUrl = (topWin.location.origin || window.location.origin) + '/cabinet';
           if (topWin !== window) {
-            topWin.postMessage({ type: 'PEOPLE_GAMES_EXIT' }, '*');
-            topWin.location.href = alchemyUrl;
+            topWin.postMessage({ type: 'PEOPLE_GAMES_EXIT', result: peopleGamesCourseResult, points: peopleGamesCoursePoints, userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+            setTimeout(function() { topWin.location.href = cabinetUrl; }, 400);
           } else {
-            window.location.href = alchemyUrl;
+            window.location.href = cabinetUrl;
           }
         } catch (err) { console.warn('PEOPLE_GAMES_EXIT:', err); }
       }
@@ -5044,6 +5069,8 @@
         var exitBtn = e.target && e.target.closest ? e.target.closest('#final-screen-exit-btn') : null;
         if (exitBtn) { e.preventDefault(); e.stopPropagation(); goToAlchemy(); }
       }, true);
+      var finalScreenExitBtn = document.getElementById('final-screen-exit-btn');
+      if (finalScreenExitBtn) finalScreenExitBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); goToAlchemy(); });
 
       var userNameInput = document.getElementById('userNameInput');
       var btnGoHeroWrap = document.getElementById('btn-go-hero-wrap');
@@ -5112,7 +5139,7 @@
           if (finalScreen) finalScreen.classList.add('final-screen--show');
           try {
             if (window.parent && window.parent !== window) {
-              window.parent.postMessage({ type: 'PEOPLE_GAMES_COURSE_COMPLETED', userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+              window.parent.postMessage({ type: 'PEOPLE_GAMES_COURSE_COMPLETED', result: peopleGamesCourseResult, points: peopleGamesCoursePoints, userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
             }
           } catch (e) {}
         });

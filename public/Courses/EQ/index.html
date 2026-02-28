@@ -644,7 +644,7 @@
     <a href="#module3">Модуль 3</a>
     <a href="#module4">Модуль 4</a>
     <a href="#m4-final-exam">Экзамен</a>
-    <a href="/alchemy" class="course-nav-exit" id="eq-exit-link" title="Выйти в Алхимию" aria-label="Выйти">×</a>
+    <a href="/cabinet" class="course-nav-exit" id="eq-exit-link" title="Выйти в Кабинет" aria-label="Выйти">×</a>
     <div class="progress-bar-track" aria-hidden="true">
       <div class="progress-bar-top w-full" id="course-progress-bar" style="transform: scaleX(0)"></div>
     </div>
@@ -1222,12 +1222,12 @@
       function goToAlchemy() {
         try {
           var topWin = window.top || window.parent;
-          var alchemyUrl = (topWin.location.origin || window.location.origin) + '/alchemy';
+          var cabinetUrl = (topWin.location.origin || window.location.origin) + '/cabinet';
           if (topWin !== window) {
-            topWin.postMessage({ type: 'EQ_EXIT' }, '*');
-            topWin.location.href = alchemyUrl;
+            topWin.postMessage({ type: 'EQ_EXIT', result: eqCourseResult, points: eqCoursePoints, userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+            setTimeout(function() { topWin.location.href = cabinetUrl; }, 400);
           } else {
-            window.location.href = alchemyUrl;
+            window.location.href = cabinetUrl;
           }
         } catch (err) {
           console.warn('EQ_EXIT:', err);
@@ -1248,6 +1248,8 @@
           goToAlchemy();
         }
       }, true);
+      var finalScreenExitBtn = document.getElementById('final-screen-exit-btn');
+      if (finalScreenExitBtn) finalScreenExitBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); goToAlchemy(); });
 
       var userNameInput = document.getElementById('userNameInput');
       var btnGoHeroWrap = document.getElementById('btn-go-hero-wrap');
@@ -1498,6 +1500,8 @@
       var finalQuizCorrect = [1, 2, 1, 1, 1];
       var finalQuizAnswered = [false, false, false, false, false];
       var finalQuizCorrectCount = 0;
+      var eqCourseResult = null;
+      var eqCoursePoints = 0;
       var finalQuizContainer = document.getElementById('final-quiz');
       if (finalQuizContainer) {
         finalQuizContainer.addEventListener('click', function(e) {
@@ -1522,6 +1526,13 @@
                 certBlock.classList.remove('hidden');
                 certBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }
+              eqCoursePoints = finalQuizCorrectCount;
+              eqCourseResult = finalQuizCorrectCount <= 2 ? 'low' : (finalQuizCorrectCount <= 4 ? 'medium' : 'high');
+              try {
+                if (window.parent && window.parent !== window) {
+                  window.parent.postMessage({ type: 'EQ_RESULT', result: eqCourseResult, points: eqCoursePoints, userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+                }
+              } catch (e) {}
             }
           } else {
             opt.classList.add('quiz-wrong');
@@ -1545,7 +1556,7 @@
           if (finalScreen) finalScreen.classList.add('final-screen--show');
           try {
             if (window.parent && window.parent !== window) {
-              window.parent.postMessage({ type: 'EQ_COURSE_COMPLETED', userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
+              window.parent.postMessage({ type: 'EQ_COURSE_COMPLETED', result: eqCourseResult, points: eqCoursePoints, userName: (typeof courseUserName !== 'undefined' ? courseUserName : '') }, '*');
             }
           } catch (e) {}
         });

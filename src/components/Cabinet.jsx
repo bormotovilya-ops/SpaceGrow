@@ -1,9 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Cabinet.css'
 import Header from './Header'
 import { getSupabase } from '../utils/supabaseClient'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { userUtils } from '../utils/logging'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 
 const APP_CONFIG_KEY = 'cabinet-zones'
@@ -13,6 +15,58 @@ const IMAGE_ASPECT = 1 // 1:1
 const STORAGE_KEY = 'cabinet-zones'
 
 const MIN_POINTS = 3
+
+/** Озвучивает текст женским русским голосом (Web Speech API) */
+async function speakExpertText(text) {
+  if (typeof window === 'undefined' || !text || typeof text !== 'string') return
+  const clean = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim()
+  if (!clean) return
+  const synth = window.speechSynthesis
+  if (!synth) return
+  synth.cancel()
+  const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
+    synth.onvoiceschanged = () => resolve(synth.getVoices())
+    setTimeout(() => resolve(synth.getVoices()), 500)
+  })
+  const ruVoices = voices.filter((v) => v.lang.startsWith('ru'))
+  const ruFemale = ruVoices[2] ?? ruVoices[1] ?? ruVoices[0]
+  const u = new SpeechSynthesisUtterance(clean)
+  u.lang = 'ru-RU'
+  u.rate = 0.9
+  u.pitch = 1.1
+  if (ruFemale) u.voice = ruFemale
+  synth.speak(u)
+}
+
+/** Озвучивает цитату чая и вызывает onEnd по завершении */
+async function speakTeaQuote(text, author, onEnd) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    onEnd?.()
+    return
+  }
+  const full = [text, author].filter(Boolean).join('. ')
+  if (!full.trim()) {
+    onEnd?.()
+    return
+  }
+  const synth = window.speechSynthesis
+  synth.cancel()
+  const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
+    synth.onvoiceschanged = () => resolve(synth.getVoices())
+    setTimeout(() => resolve(synth.getVoices()), 500)
+  })
+  const ruVoices = voices.filter((v) => v.lang.startsWith('ru'))
+  const ruVoice = ruVoices[2] ?? ruVoices[1] ?? ruVoices[0]
+  const u = new SpeechSynthesisUtterance(full)
+  u.lang = 'ru-RU'
+  u.rate = 0.85
+  u.pitch = 1.05
+  if (ruVoice) u.voice = ruVoice
+  u.onend = () => onEnd?.()
+  u.onerror = () => onEnd?.()
+  synth.speak(u)
+}
+
 const MAX_POINTS = 8
 
 function isPolygonPoints(z, minLen = MIN_POINTS) {
@@ -156,7 +210,8 @@ const TEA_QUOTES = [
   { author: 'Китайская пословица', text: '«Лучше три дня без пищи, чем один день без чая».' },
   { author: 'Чань-буддийская формула', text: '«Чай и дзен — одного вкуса».' },
   { author: 'Русская поговорка', text: '«Чай пить — не дрова рубить».' },
-  { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' }
+  { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' },
+  { author: 'Нативная реклама!', text: 'Недавно была в Сочи. Там есть прекрасный чайный клуб, называется Мэр-Пуэр.' }
 ]
 
 const DEFAULT_EXPERT = {
@@ -170,7 +225,7 @@ const DEFAULT_EXPERT = {
 }
 
 function Cabinet() {
-  const { logContentView, trackSectionView } = useLogEvent()
+  const { logContentView, trackSectionView, logEvent } = useLogEvent()
   const navigate = useNavigate()
   const containerRef = useRef(null)
   const [zoneStyles, setZoneStyles] = useState({ yinyang: null, book: null, laptop: null, leftCabinet: null, rightCabinet: null, tea: null, expert: null })
@@ -212,11 +267,34 @@ function Cabinet() {
     (window.location.hash === '#cabinet-debug' || localStorage.getItem('app_debug_mode') === 'true')
   )
   const [showTeaOverlay, setShowTeaOverlay] = useState(false)
+  const [showLaughBackground, setShowLaughBackground] = useState(false)
   const [teaQuoteIndex, setTeaQuoteIndex] = useState(0)
+  const laughTimerRef = useRef(null)
+  const [showExpertOverlay, setShowExpertOverlay] = useState(false)
+  const [expertMessages, setExpertMessages] = useState([])
+  const [expertInput, setExpertInput] = useState('')
+  const [isLoadingExpert, setIsLoadingExpert] = useState(false)
+  const [showFullExpertHistory, setShowFullExpertHistory] = useState(false)
   const [saveToast, setSaveToast] = useState(null)
   const [now, setNow] = useState(() => new Date())
-  const teaOverlayTimerRef = useRef(null)
+  const [showLabelsAndGlow, setShowLabelsAndGlow] = useState(false)
   const saveToastRef = useRef(null)
+
+  useEffect(() => {
+    const img = new Image()
+    let timeoutId = null
+    const onDone = () => {
+      timeoutId = setTimeout(() => setShowLabelsAndGlow(true), 2000)
+    }
+    img.onload = onDone
+    img.onerror = onDone
+    img.src = '/images/kabexp.png'
+    return () => {
+      img.onload = null
+      img.onerror = null
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [])
 
   useEffect(() => {
     const tick = () => setNow(new Date())
@@ -225,8 +303,9 @@ function Cabinet() {
   }, [])
 
   useEffect(() => () => {
-    if (teaOverlayTimerRef.current) clearTimeout(teaOverlayTimerRef.current)
     if (saveToastRef.current) clearTimeout(saveToastRef.current)
+    if (laughTimerRef.current) clearTimeout(laughTimerRef.current)
+    if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
   }, [])
 
   // Загрузка зон из Supabase при монтировании (сохраняется после публикации)
@@ -398,13 +477,25 @@ function Cabinet() {
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
     if (!pointInPolygon(x, y, coordsTea.points)) return
-    if (teaOverlayTimerRef.current) clearTimeout(teaOverlayTimerRef.current)
-    setTeaQuoteIndex(Math.floor(Math.random() * TEA_QUOTES.length))
+    if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+    const nativeIndex = TEA_QUOTES.findIndex((q) => q.author === 'Нативная реклама!')
+    const quoteIndex = Math.random() < 0.4
+      ? nativeIndex >= 0 ? nativeIndex : 0
+      : Math.floor(Math.random() * TEA_QUOTES.length)
+    setTeaQuoteIndex(quoteIndex)
     setShowTeaOverlay(true)
-    teaOverlayTimerRef.current = setTimeout(() => {
+    const quote = TEA_QUOTES[quoteIndex]
+    speakTeaQuote(quote.text, quote.author, () => {
       setShowTeaOverlay(false)
-      teaOverlayTimerRef.current = null
-    }, 10000)
+      if (quote.author === 'Нативная реклама!') {
+        setShowLaughBackground(true)
+        if (laughTimerRef.current) clearTimeout(laughTimerRef.current)
+        laughTimerRef.current = setTimeout(() => {
+          setShowLaughBackground(false)
+          laughTimerRef.current = null
+        }, 5000)
+      }
+    })
   }
 
   const handleExpertClick = (e) => {
@@ -412,7 +503,156 @@ function Cabinet() {
     const rect = el.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
-    if (pointInPolygon(x, y, coordsExpert.points)) navigate('/diagnostics')
+    if (!pointInPolygon(x, y, coordsExpert.points)) return
+    setShowExpertOverlay(true)
+  }
+
+  const getTgUserId = () => {
+    if (typeof window === 'undefined') return null
+    const u = window.Telegram?.WebApp?.initDataUnsafe?.user ?? window.TelegramWebApp?.initDataUnsafe?.user
+    return u?.id != null ? String(u.id) : null
+  }
+
+  const expertInitDoneRef = useRef(false)
+
+  const saveExpertMessage = useCallback(async (direction, text) => {
+    const supabase = await getSupabase()
+    if (!supabase) return
+    const tgUserId = getTgUserId()
+    const cookieId = userUtils.getCookieId()
+    if (!tgUserId && !cookieId) return
+    await supabase.from('cabinet_expert_chat_messages').insert({
+      tg_user_id: tgUserId ? Number(tgUserId) : null,
+      cookie_id: cookieId || null,
+      direction,
+      message_text: text
+    })
+  }, [])
+
+  const initExpertDialogue = useCallback(async () => {
+    setIsLoadingExpert(true)
+    try {
+      const response = await fetchWithTimeout('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: '[Пользователь открыл диалог. Инициируй разговор: поприветствуй и задай направляющий вопрос о том, что привело его в кабинет.]',
+          promptType: 'cabinet_expert',
+          messageCount: 0,
+          history: []
+        })
+      })
+      const data = await response.json().catch(() => ({}))
+      const aiResponse = data.response || 'Чувствуете глубину? Что привело вас в этот кабинет?'
+      setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
+      await saveExpertMessage('outbound', aiResponse)
+      speakExpertText(aiResponse)
+    } catch (_) {
+      const fallback = 'Чувствуете глубину? Что привело вас в этот кабинет?'
+      setExpertMessages((prev) => [...prev, { role: 'assistant', content: fallback }])
+      await saveExpertMessage('outbound', fallback)
+      speakExpertText(fallback)
+    } finally {
+      setIsLoadingExpert(false)
+    }
+  }, [saveExpertMessage])
+
+  const loadExpertHistory = useCallback(async () => {
+    const supabase = await getSupabase()
+    if (!supabase) return
+    const tgUserId = getTgUserId()
+    const cookieId = userUtils.getCookieId()
+    let rows = []
+    if (tgUserId) {
+      const { data } = await supabase
+        .from('cabinet_expert_chat_messages')
+        .select('direction, message_text, created_at')
+        .eq('tg_user_id', Number(tgUserId))
+        .order('created_at', { ascending: true })
+      rows = data || []
+    } else if (cookieId) {
+      const { data } = await supabase
+        .from('cabinet_expert_chat_messages')
+        .select('direction, message_text, created_at')
+        .eq('cookie_id', cookieId)
+        .order('created_at', { ascending: true })
+      rows = data || []
+    }
+    const msgs = rows.map((r) => ({
+      role: r.direction === 'inbound' ? 'user' : 'assistant',
+      content: r.message_text || ''
+    }))
+    setExpertMessages(msgs)
+    if (msgs.length === 0 && !expertInitDoneRef.current) {
+      expertInitDoneRef.current = true
+      initExpertDialogue()
+    }
+  }, [initExpertDialogue])
+
+  useEffect(() => {
+    if (showExpertOverlay) {
+      loadExpertHistory()
+    } else {
+      expertInitDoneRef.current = false
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+    }
+  }, [showExpertOverlay, loadExpertHistory])
+
+  const renderExpertMessage = (text) => {
+    if (!text) return null
+    const elements = []
+    const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
+    let lastIndex = 0
+    let match
+    while ((match = markdownRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) elements.push(text.slice(lastIndex, match.index))
+      elements.push(
+        <a key={`link-${elements.length}`} href={match[2]} target="_blank" rel="noopener noreferrer">
+          {match[1]}
+        </a>
+      )
+      lastIndex = match.lastIndex
+    }
+    if (lastIndex < text.length) elements.push(text.slice(lastIndex))
+    return elements.length ? elements : text
+  }
+
+  const handleExpertSend = async () => {
+    if (!expertInput.trim() || isLoadingExpert) return
+    const userQuestion = expertInput.trim()
+    setExpertInput('')
+    setExpertMessages((prev) => [...prev, { role: 'user', content: userQuestion }])
+    setIsLoadingExpert(true)
+    await saveExpertMessage('inbound', userQuestion)
+    const history = [...expertMessages, { role: 'user', content: userQuestion }].map((m) => ({ role: m.role, content: m.content }))
+    try {
+      const response = await fetchWithTimeout('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userQuestion,
+          promptType: 'cabinet_expert',
+          messageCount: history.filter((m) => m.role === 'user').length + 1,
+          history
+        })
+      })
+      const data = await response.json().catch(() => ({}))
+      const aiResponse = data.response || 'Не удалось получить ответ. Попробуйте ещё раз.'
+      setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
+      await saveExpertMessage('outbound', aiResponse)
+      speakExpertText(aiResponse)
+      logEvent('ai', 'ai_chat_message', {
+        page: '/cabinet',
+        metadata: { context: 'cabinet_expert', user_message: userQuestion, ai_response: aiResponse }
+      })
+    } catch (err) {
+      const errMsg = err?.name === 'AbortError' ? 'Запрос занял слишком много времени.' : (err?.message || 'Ошибка сети.')
+      setExpertMessages((prev) => [...prev, { role: 'assistant', content: errMsg }])
+      await saveExpertMessage('outbound', errMsg)
+      speakExpertText(errMsg)
+    } finally {
+      setIsLoadingExpert(false)
+    }
   }
 
   const saveCoords = () => {
@@ -496,13 +736,86 @@ function Cabinet() {
         onHomeClick={() => navigate('/home')}
         activeMenuId="cabinet"
       />
-      <div className={`cabinet-page${showTeaOverlay ? ' cabinet-page--tea' : ''}`} ref={containerRef}>
-        <div className={`cabinet-background${showTeaOverlay ? ' cabinet-background--tea' : ''}`} aria-label="Кабинет" />
+      <div className={`cabinet-page${showTeaOverlay ? ' cabinet-page--tea' : ''}${showExpertOverlay ? ' cabinet-page--expert' : ''}${showLabelsAndGlow ? ' cabinet-zones-ready' : ''}`} ref={containerRef}>
+        <div className={`cabinet-background${showLaughBackground ? ' cabinet-background--laugh' : showTeaOverlay ? ' cabinet-background--tea' : ''}`} aria-label="Кабинет" />
         {showTeaOverlay && (
           <div className="cabinet-tea-overlay" aria-live="polite">
             <div className="cabinet-tea-quote">
               <p className="cabinet-tea-quote-text">{TEA_QUOTES[teaQuoteIndex].text}</p>
               <p className="cabinet-tea-quote-author">— {TEA_QUOTES[teaQuoteIndex].author}</p>
+            </div>
+          </div>
+        )}
+        {showExpertOverlay && (
+          <div className="cabinet-expert-overlay" aria-live="polite">
+            <div className="cabinet-expert-panel">
+              <div className="cabinet-expert-header">
+                <span className="cabinet-expert-title">Эксперт</span>
+                <button
+                  type="button"
+                  className="cabinet-expert-close"
+                  onClick={() => setShowExpertOverlay(false)}
+                  aria-label="Закрыть"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="cabinet-expert-messages">
+                {showFullExpertHistory ? (
+                  expertMessages.map((msg, i) => (
+                    <div key={i} className={`cabinet-expert-msg ${msg.role === 'user' ? 'cabinet-expert-msg-user' : 'cabinet-expert-msg-assistant'}`}>
+                      <p>{msg.role === 'assistant' ? renderExpertMessage(msg.content) : msg.content}</p>
+                    </div>
+                  ))
+                ) : (
+                  expertMessages.length > 0 && (
+                    <div className={`cabinet-expert-msg ${expertMessages[expertMessages.length - 1].role === 'user' ? 'cabinet-expert-msg-user' : 'cabinet-expert-msg-assistant'}`}>
+                      <p>{expertMessages[expertMessages.length - 1].role === 'assistant' ? renderExpertMessage(expertMessages[expertMessages.length - 1].content) : expertMessages[expertMessages.length - 1].content}</p>
+                    </div>
+                  )
+                )}
+                {isLoadingExpert && (
+                  <div className="cabinet-expert-msg cabinet-expert-msg-assistant">
+                    <p className="cabinet-expert-typing">
+                      <span className="typing-dot">.</span>
+                      <span className="typing-dot">.</span>
+                      <span className="typing-dot">.</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+              {expertMessages.length > 1 && (
+                <button
+                  type="button"
+                  className="cabinet-expert-expand"
+                  onClick={() => setShowFullExpertHistory((v) => !v)}
+                >
+                  {showFullExpertHistory ? 'Свернуть' : 'Вся переписка'}
+                </button>
+              )}
+              <div className="cabinet-expert-input-wrap">
+                <input
+                  type="text"
+                  className="cabinet-expert-input"
+                  placeholder="Задайте вопрос..."
+                  value={expertInput}
+                  onChange={(e) => setExpertInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleExpertSend())}
+                  disabled={isLoadingExpert}
+                />
+                <button
+                  type="button"
+                  className="cabinet-expert-send"
+                  onClick={handleExpertSend}
+                  disabled={!expertInput.trim() || isLoadingExpert}
+                  aria-label="Отправить"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}

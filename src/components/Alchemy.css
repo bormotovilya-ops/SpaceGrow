@@ -187,7 +187,7 @@
   gap: 8px !important;
 }
 
-/* Hero Section */
+/* Hero Section - фоновая картинка начинается от верха (под панелью) */
 .alchemy-hero {
   position: relative;
   width: 100vw;
@@ -198,7 +198,7 @@
   align-items: center;
   justify-content: flex-start;
   overflow: hidden;
-  padding-top: 60px; /* Отступ для уменьшенного Header без подписей */
+  padding-top: 0; /* Картинка начинается под панелью, без отступа */
 }
 
 /* Контейнер для фонового изображения и интерактивных зон */
@@ -1256,7 +1256,7 @@
   }
 
   .alchemy-hero {
-    padding-top: 60px; /* Уменьшенный отступ для планшетов */
+    padding-top: 0; /* Картинка начинается под панелью */
   }
 
   .alchemy-music-toggle {
@@ -1342,7 +1342,7 @@
 
   .alchemy-hero {
     height: 100vh;
-    padding-top: 55px; /* Уменьшенный отступ для мобильных */
+    padding-top: 0; /* Картинка начинается под панелью */
     /* Адаптация под вертикальное соотношение 9:16 */
     aspect-ratio: 9 / 16;
   }
@@ -1758,7 +1758,7 @@
   }
 
   .alchemy-hero {
-    padding-top: 50px; /* Еще меньший отступ для очень маленьких экранов */
+    padding-top: 0; /* Картинка начинается под панелью */
   }
 
   .action-zone {

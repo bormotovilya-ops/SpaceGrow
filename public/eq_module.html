@@ -30,5 +30,12 @@
       <iframe src="/Courses/EQ/index.html" title="Курс: Эмоциональный интеллект" allow="fullscreen"></iframe>
     </div>
   </div>
+  <script>
+    window.addEventListener('message', function(e) {
+      if (e?.data?.type === 'EQ_EXIT') {
+        window.location.href = '/cabinet';
+      }
+    });
+  </script>
 </body>
 </html>

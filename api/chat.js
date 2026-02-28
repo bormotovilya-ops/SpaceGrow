@@ -202,6 +202,23 @@ async function loadBotPrompt() {
   }
 }
 
+// Функция для загрузки промпта Мастера Кабинета
+async function loadMasterPrompt() {
+  try {
+    const masterPrompt = await readFile(join(process.cwd(), 'MasterAIprompt.md'), 'utf-8').catch(() => null)
+    if (!masterPrompt) return 'Файл MasterAIprompt.md не найден'
+    const bio48 = await readFile(join(process.cwd(), 'DOP', '48.txt'), 'utf-8').catch(() => null)
+    const siteKnowledge = await readFile(join(process.cwd(), 'site_knowledge.md'), 'utf-8').catch(() => null)
+    let full = masterPrompt
+    if (bio48) full += '\n\n# @48.txt — биография Ильи:\n' + bio48
+    if (siteKnowledge) full += '\n\n# @site_knowledge.md:\n' + siteKnowledge
+    return full
+  } catch (error) {
+    console.error('❌ Ошибка при загрузке MasterAIprompt:', error)
+    return 'Ошибка загрузки MasterAIprompt.md'
+  }
+}
+
 // Функция для загрузки промпта зеркала
 async function loadMirrorPrompt(userName = 'Путник') {
   try {
@@ -260,6 +277,12 @@ async function buildSystemContext(shouldAddCTA = false, promptType = 'profile', 
   if (promptType === 'bot_ai') {
     const botPrompt = await loadBotPrompt()
     return botPrompt
+  }
+
+  // Промпт Мастера Кабинета (эксперт)
+  if (promptType === 'cabinet_expert') {
+    const masterPrompt = await loadMasterPrompt()
+    return masterPrompt
   }
 
   // Стандартный промпт для профиля
@@ -410,7 +433,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'POST')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  const { message, messageCount = 0, promptType = 'profile', userName = 'Путник' } = req.body
+  const { message, messageCount = 0, promptType = 'profile', userName = 'Путник', history = [] } = req.body
 
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
@@ -460,20 +483,18 @@ export default async function handler(req, res) {
     // Используем Groq API (быстрый и бесплатный)
     // Endpoint: https://api.groq.com/openai/v1/chat/completions
     // Формат: OpenAI-совместимый
+    const historyMessages = Array.isArray(history) && history.length > 0
+      ? history.slice(-20).map((m) => ({ role: m.role, content: String(m.content || '').slice(0, 2000) })).filter((m) => m.content)
+      : []
     const requestBody = {
       model: 'llama-3.1-8b-instant', // Актуальная быстрая модель Groq
       messages: [
-        {
-          role: 'system',
-          content: systemContext
-        },
-        {
-          role: 'user',
-          content: message
-        }
+        { role: 'system', content: systemContext },
+        ...historyMessages,
+        { role: 'user', content: message }
       ],
-      temperature: promptType === 'mirror' ? 0.8 : 0.7, // Для зеркала немного выше температура для более творческих ответов
-      max_tokens: promptType === 'mirror' ? 200 : 150 // Для зеркала больше токенов, так как ответы могут быть длиннее
+      temperature: promptType === 'mirror' ? 0.8 : promptType === 'cabinet_expert' ? 0.75 : 0.7,
+      max_tokens: promptType === 'mirror' ? 200 : promptType === 'cabinet_expert' ? 180 : 150
     }
 
     console.log('📡 Sending request to Groq API...')
@@ -523,9 +544,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ response: cleanedMockResponse })
     }
 
-    // Очищаем ответ от markdown-символов и форматируем (только для профиля, для зеркала не форматируем)
-    const cleanedResponse = promptType === 'mirror' 
-      ? cleanResponse(assistantMessage) 
+    // Очищаем ответ: зеркало и cabinet_expert — только cleanResponse, профиль — formatFinalResponse с CTA
+    const cleanedResponse = promptType === 'mirror' || promptType === 'cabinet_expert'
+      ? cleanResponse(assistantMessage)
       : formatFinalResponse(assistantMessage, shouldAddCTA)
 
     // Логируем переписку (не блокируем ответ)

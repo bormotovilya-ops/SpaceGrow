@@ -236,6 +236,24 @@ async function loadKnowledgeFiles() {
   }
 }
 
+async function loadMasterPrompt() {
+  try {
+    const rootDir = join(__dirname, '..')
+    const masterPath = join(rootDir, 'MasterAIprompt.md')
+    const masterPrompt = await fs.readFile(masterPath, 'utf-8').catch(() => null)
+    if (!masterPrompt) return 'Файл MasterAIprompt.md не найден'
+    const bio48 = await fs.readFile(join(rootDir, 'DOP', '48.txt'), 'utf-8').catch(() => null)
+    const siteKnowledge = await fs.readFile(join(rootDir, 'site_knowledge.md'), 'utf-8').catch(() => null)
+    let full = masterPrompt
+    if (bio48) full += '\n\n# @48.txt — биография Ильи:\n' + bio48
+    if (siteKnowledge) full += '\n\n# @site_knowledge.md:\n' + siteKnowledge
+    return full
+  } catch (error) {
+    console.error('❌ Ошибка при загрузке MasterAIprompt:', error)
+    return 'Ошибка загрузки MasterAIprompt.md'
+  }
+}
+
 const app = express()
 const PORT = 5001
 
@@ -948,7 +966,10 @@ function truncateText(text, maxChars = 5000) {
 }
 
 // Функция для формирования полного промпта с файлами знаний
-async function buildSystemContext(shouldAddCTA = false) {
+async function buildSystemContext(shouldAddCTA = false, promptType = 'profile') {
+  if (promptType === 'cabinet_expert') {
+    return loadMasterPrompt()
+  }
   const knowledge = await loadKnowledgeFiles()
   
   // Файл теперь короткий (около 4000 символов), используем полностью без обрезки
@@ -1007,15 +1028,15 @@ app.post('/api/chat', async (req, res) => {
   console.log('📝 Сообщение:', req.body.message?.substring(0, 100) + (req.body.message?.length > 100 ? '...' : ''))
   console.log('📊 Message count:', req.body.messageCount || 0)
   
-  const { message, messageCount = 0 } = req.body
+  const { message, messageCount = 0, promptType = 'profile', history = [] } = req.body
 
   if (!message || !message.trim()) {
     console.error('❌ Пустое сообщение!')
     return res.status(400).json({ error: 'Сообщение не может быть пустым' })
   }
 
-  // Определяем, нужно ли добавлять CTA (каждое 3-е сообщение)
-  const shouldAddCTA = messageCount > 0 && messageCount % 3 === 0
+  // Определяем, нужно ли добавлять CTA (каждое 3-е сообщение, только для профиля)
+  const shouldAddCTA = promptType === 'profile' && messageCount > 0 && messageCount % 3 === 0
 
   // Проверяем токен Groq
   const GROQ_API_KEY = process.env.GROQ_API_KEY
@@ -1044,8 +1065,8 @@ app.post('/api/chat', async (req, res) => {
   }
 
   // Загружаем файлы знаний и формируем полный промпт
-  console.log('\n📚 Загрузка файлов знаний...')
-  const systemContext = await buildSystemContext(shouldAddCTA)
+  console.log('\n📚 Загрузка файлов знаний...', { promptType })
+  const systemContext = await buildSystemContext(shouldAddCTA, promptType)
   console.log('✅ Файлы знаний загружены, промпт сформирован')
   console.log('   - Длина промпта:', systemContext.length, 'символов')
   console.log('   - Should add CTA:', shouldAddCTA)
@@ -1059,20 +1080,18 @@ app.post('/api/chat', async (req, res) => {
     console.log('📡 Отправляю запрос к api.groq.com/openai/v1/chat/completions...')
     console.log('🔑 Токен (первые 15):', GROQ_API_KEY.substring(0, 15) + '...')
     
+    const historyMessages = Array.isArray(history) && history.length > 0
+      ? history.slice(-20).map((m) => ({ role: m.role, content: String(m.content || '').slice(0, 2000) })).filter((m) => m.content)
+      : []
     const requestBody = {
-      model: 'llama-3.1-8b-instant', // Актуальная быстрая модель Groq
+      model: 'llama-3.1-8b-instant',
       messages: [
-        {
-          role: 'system',
-          content: systemContext
-        },
-        {
-          role: 'user',
-          content: message
-        }
+        { role: 'system', content: systemContext },
+        ...historyMessages,
+        { role: 'user', content: message }
       ],
-      temperature: 0.7,
-      max_tokens: 300 // Увеличил до 300, так как Groq быстрый
+      temperature: promptType === 'cabinet_expert' ? 0.75 : 0.7,
+      max_tokens: promptType === 'cabinet_expert' ? 180 : 300
     }
     
     console.log('📦 Тело запроса (preview):', JSON.stringify(requestBody).substring(0, 300))
@@ -1113,8 +1132,10 @@ app.post('/api/chat', async (req, res) => {
       return handleMockResponse(message, systemContext, res, messageCount, req)
     }
 
-    // Очищаем ответ от markdown-символов, применяем лимит и CTA-политику
-    const cleanedResponse = formatFinalResponse(assistantMessage, shouldAddCTA)
+    // Очищаем ответ: cabinet_expert — только cleanResponse, иначе formatFinalResponse с CTA
+    const cleanedResponse = promptType === 'cabinet_expert'
+      ? cleanResponse(assistantMessage)
+      : formatFinalResponse(assistantMessage, shouldAddCTA)
 
     console.log('✅ Получен ответ от Groq API')
     
