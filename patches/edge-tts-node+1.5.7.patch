@@ -1,0 +1,23 @@
+diff --git a/node_modules/edge-tts-node/dist/MsEdgeTTS.js b/node_modules/edge-tts-node/dist/MsEdgeTTS.js
+index a443e92..7c18ab3 100644
+--- a/node_modules/edge-tts-node/dist/MsEdgeTTS.js
++++ b/node_modules/edge-tts-node/dist/MsEdgeTTS.js
+@@ -211,6 +211,18 @@ class MsEdgeTTS {
+             };
+             this._ws.onerror = (error) => {
+                 this._log(error);
++                if (error != null) {
++                    const detail = { type: error.constructor?.name, message: error.message, code: error.code, errno: error.errno };
++                    if (typeof error === "object") {
++                        try {
++                            Object.getOwnPropertyNames(error).forEach(function (k) {
++                                try { detail[k] = error[k]; } catch (_) {}
++                            });
++                            if (error.target && error.target !== error) detail.targetError = error.target.error || error.target.message;
++                        } catch (e) { detail.stringifyError = String(e); }
++                    }
++                    console.error("[edge-tts-node] WebSocket error detail:", JSON.stringify(detail, null, 2));
++                }
+                 let errorMessage;
+                 if (typeof error === "object" && error !== null) {
+                     try {
