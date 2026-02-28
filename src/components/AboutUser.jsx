@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from './Header'
+import BackToCabinet from './BackToCabinet'
 import { getSupabase } from '../utils/supabaseClient'
 import './AboutUser.css'
 
@@ -128,6 +129,9 @@ function AboutUser() {
         onHomeClick={() => navigate('/home')}
         activeMenuId="cabinet"
       />
+      <div className="back-to-cabinet-wrap">
+        <BackToCabinet />
+      </div>
       <div className={`about-user-book ${bookOpen ? 'about-user-book--open' : ''}`}>
         <div className="about-user-book-frame">
           <div className="about-user-book-spine" aria-hidden="true" />

@@ -1,0 +1,45 @@
+.back-to-cabinet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(210, 170, 100, 0.25);
+  border: 1px solid rgba(210, 170, 100, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.15);
+}
+
+.back-to-cabinet:hover {
+  background: rgba(210, 170, 100, 0.4);
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.25);
+}
+
+.back-to-cabinet:focus-visible {
+  outline: 2px solid rgba(255, 215, 0, 0.8);
+  outline-offset: 2px;
+}
+
+.back-to-cabinet-icon {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.back-to-cabinet-label {
+  white-space: nowrap;
+}
+
+/* Блок-обёртка: кнопка сразу под фиксированной шапкой, всегда видна */
+.back-to-cabinet-wrap {
+  position: relative;
+  z-index: 15;
+  margin-top: var(--app-header-height, 120px);
+  padding: 10px 16px 10px;
+  display: flex;
+  justify-content: flex-start;
+}

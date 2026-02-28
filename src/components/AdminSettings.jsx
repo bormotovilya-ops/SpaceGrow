@@ -167,9 +167,9 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
 
       {!loading && !error && (
         <div className="admin-settings-list">
-          {settings.length === 0 ? (
-            <p className="admin-settings-empty">Нет настроек</p>
-          ) : (
+            {settings.length === 0 ? (
+              <p className="admin-settings-empty">Нет настроек</p>
+            ) : (
             settings.map((setting) => (
               <div key={setting.key} className="admin-settings-card">
                 <div className="admin-settings-card-left">

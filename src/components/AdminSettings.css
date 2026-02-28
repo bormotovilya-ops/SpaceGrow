@@ -1,6 +1,6 @@
 .admin-settings-page {
   min-height: 100vh;
-  padding: calc(var(--app-header-height, 120px) + 1rem) 1.5rem 2rem 1.5rem;
+  padding: calc(var(--app-header-height, 120px) + 2rem) 1.5rem 2rem 1.5rem;
   max-width: 56rem;
   margin: 0 auto;
   box-sizing: border-box;
@@ -12,6 +12,7 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  padding-top: 0.25rem; /* дополнительный зазор под верхней панелью */
 }
 
 .admin-settings-back,
@@ -50,10 +51,32 @@
   border-radius: 0.5rem;
 }
 
+.admin-settings-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.admin-settings-local-section {
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  padding-top: 0;
+  min-height: 1px; /* гарантирует видимость блока */
+}
+
+.admin-settings-local-section .admin-settings-section-title {
+  margin-top: 0;
+}
+
 .admin-settings-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.admin-settings-local {
+  margin-bottom: 0;
 }
 
 .admin-settings-empty {
@@ -150,7 +173,7 @@
 /* ——— Планшет и мобильный ——— */
 @media (max-width: 768px) {
   .admin-settings-page {
-    padding: calc(var(--app-header-height, 120px) + 0.75rem) 1rem 1.5rem 1rem;
+    padding: calc(var(--app-header-height, 120px) + 1.5rem) 1rem 1.5rem 1rem;
     max-width: 100%;
     box-sizing: border-box;
   }
@@ -229,7 +252,7 @@
 /* ——— Узкий мобильный ——— */
 @media (max-width: 480px) {
   .admin-settings-page {
-    padding: calc(var(--app-header-height, 120px) + 0.5rem) 0.75rem 1rem 0.75rem;
+    padding: calc(var(--app-header-height, 120px) + 1.25rem) 0.75rem 1rem 0.75rem;
   }
 
   .admin-settings-header {

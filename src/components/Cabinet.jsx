@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Cabinet.css'
 import Header from './Header'
+import { getSupabase } from '../utils/supabaseClient'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+
+const APP_CONFIG_KEY = 'cabinet-zones'
 
 const IMAGE_ASPECT = 1 // 1:1
 
@@ -40,6 +43,14 @@ function rectToPoints(x, y, width, height) {
   ]
 }
 
+/** Центроид многоугольника (среднее X и Y в %) — чтобы подпись попадала внутрь clip-path */
+function polygonCentroid(points) {
+  if (!points?.length) return { x: 50, y: 50 }
+  const sumX = points.reduce((s, p) => s + p.x, 0)
+  const sumY = points.reduce((s, p) => s + p.y, 0)
+  return { x: sumX / points.length, y: sumY / points.length }
+}
+
 /** Проверка: точка (x, y) в % внутри многоугольника (массив {x, y} в %) */
 function pointInPolygon(x, y, points) {
   let inside = false
@@ -54,41 +65,36 @@ function pointInPolygon(x, y, points) {
   return inside
 }
 
+/** Валидация и нормализация объекта зон (из localStorage или Supabase) */
+function parseZonesPayload(v) {
+  if (!v || typeof v !== 'object') return null
+  if (!v.yinyang || typeof v.yinyang.x !== 'number' || typeof v.yinyang.y !== 'number' || typeof v.yinyang.size !== 'number') return null
+  let book = v.book
+  if (!isPolygonPoints(book)) {
+    if (book && typeof book.x === 'number' && typeof book.y === 'number' && typeof book.width === 'number' && typeof book.height === 'number') {
+      book = { points: rectToPoints(book.x, book.y, book.width, book.height) }
+    } else {
+      book = { points: DEFAULT_BOOK.points.map((p) => ({ ...p })) }
+    }
+  }
+  let laptop = v.laptop
+  if (!isPolygonPoints(laptop)) laptop = { points: DEFAULT_LAPTOP.points.map((p) => ({ ...p })) }
+  let leftCabinet = v.leftCabinet
+  if (!isPolygonPoints(leftCabinet)) leftCabinet = { points: DEFAULT_LEFT_CABINET.points.map((p) => ({ ...p })) }
+  let rightCabinet = v.rightCabinet
+  if (!isPolygonPoints(rightCabinet)) rightCabinet = { points: DEFAULT_RIGHT_CABINET.points.map((p) => ({ ...p })) }
+  let tea = v.tea
+  if (!isPolygonPoints(tea)) tea = { points: DEFAULT_TEA.points.map((p) => ({ ...p })) }
+  let expert = v.expert
+  if (!isPolygonPoints(expert)) expert = { points: DEFAULT_EXPERT.points.map((p) => ({ ...p })) }
+  return { yinyang: v.yinyang, book, laptop, leftCabinet, rightCabinet, tea, expert }
+}
+
 function loadZones() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    const v = JSON.parse(raw)
-    if (!v.yinyang || typeof v.yinyang.x !== 'number' || typeof v.yinyang.y !== 'number' || typeof v.yinyang.size !== 'number') return null
-    let book = v.book
-    if (!isPolygonPoints(book)) {
-      if (book && typeof book.x === 'number' && typeof book.y === 'number' && typeof book.width === 'number' && typeof book.height === 'number') {
-        book = { points: rectToPoints(book.x, book.y, book.width, book.height) }
-      } else {
-        book = { points: DEFAULT_BOOK.points.map((p) => ({ ...p })) }
-      }
-    }
-    let laptop = v.laptop
-    if (!isPolygonPoints(laptop)) {
-      laptop = { points: DEFAULT_LAPTOP.points.map((p) => ({ ...p })) }
-    }
-    let leftCabinet = v.leftCabinet
-    if (!isPolygonPoints(leftCabinet)) {
-      leftCabinet = { points: DEFAULT_LEFT_CABINET.points.map((p) => ({ ...p })) }
-    }
-    let rightCabinet = v.rightCabinet
-    if (!isPolygonPoints(rightCabinet)) {
-      rightCabinet = { points: DEFAULT_RIGHT_CABINET.points.map((p) => ({ ...p })) }
-    }
-    let tea = v.tea
-    if (!isPolygonPoints(tea)) {
-      tea = { points: DEFAULT_TEA.points.map((p) => ({ ...p })) }
-    }
-    let expert = v.expert
-    if (!isPolygonPoints(expert)) {
-      expert = { points: DEFAULT_EXPERT.points.map((p) => ({ ...p })) }
-    }
-    return { yinyang: v.yinyang, book, laptop, leftCabinet, rightCabinet, tea, expert }
+    return parseZonesPayload(JSON.parse(raw))
   } catch (_) {}
   return null
 }
@@ -202,14 +208,61 @@ function Cabinet() {
   })
   const [selectedZone, setSelectedZone] = useState('yinyang')
   const [showDebug, setShowDebug] = useState(() =>
-    typeof window !== 'undefined' && window.location.hash === '#cabinet-debug'
+    typeof window !== 'undefined' &&
+    (window.location.hash === '#cabinet-debug' || localStorage.getItem('app_debug_mode') === 'true')
   )
   const [showTeaOverlay, setShowTeaOverlay] = useState(false)
   const [teaQuoteIndex, setTeaQuoteIndex] = useState(0)
+  const [saveToast, setSaveToast] = useState(null)
+  const [now, setNow] = useState(() => new Date())
   const teaOverlayTimerRef = useRef(null)
+  const saveToastRef = useRef(null)
+
+  useEffect(() => {
+    const tick = () => setNow(new Date())
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => () => {
     if (teaOverlayTimerRef.current) clearTimeout(teaOverlayTimerRef.current)
+    if (saveToastRef.current) clearTimeout(saveToastRef.current)
+  }, [])
+
+  // Загрузка зон из Supabase при монтировании (сохраняется после публикации)
+  useEffect(() => {
+    let cancelled = false
+    getSupabase()
+      .then((supabase) => {
+        if (!supabase || cancelled) return
+        return supabase.from('app_config').select('value').eq('key', APP_CONFIG_KEY).single()
+      })
+      .then((res) => {
+        if (cancelled || !res?.data?.value) return
+        const parsed = parseZonesPayload(res.data.value)
+        if (!parsed) return
+        setCoordsYinyang({ ...parsed.yinyang })
+        setCoordsBook({ points: parsed.book.points.map((p) => ({ ...p })) })
+        setCoordsLaptop({ points: parsed.laptop.points.map((p) => ({ ...p })) })
+        setCoordsLeftCabinet({ points: parsed.leftCabinet.points.map((p) => ({ ...p })) })
+        setCoordsRightCabinet({ points: parsed.rightCabinet.points.map((p) => ({ ...p })) })
+        setCoordsTea({ points: parsed.tea.points.map((p) => ({ ...p })) })
+        setCoordsExpert({ points: parsed.expert.points.map((p) => ({ ...p })) })
+        const payload = {
+          yinyang: parsed.yinyang,
+          book: parsed.book,
+          laptop: parsed.laptop,
+          leftCabinet: parsed.leftCabinet,
+          rightCabinet: parsed.rightCabinet,
+          tea: parsed.tea,
+          expert: parsed.expert
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+        } catch (_) {}
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
   }, [])
 
   useEffect(() => {
@@ -228,25 +281,18 @@ function Cabinet() {
       const rect = el.getBoundingClientRect()
       const w = rect.width
       const h = rect.height
-      const useContain = w >= 768
+      /* Квадратная картинка везде вписывается целиком (contain): зоны считаем в этих границах */
       let imgLeft, imgTop, imgW, imgH
-      if (useContain) {
-        if (w >= h) {
-          imgH = h
-          imgW = h * IMAGE_ASPECT
-          imgLeft = (w - imgW) / 2
-          imgTop = 0
-        } else {
-          imgW = w
-          imgH = w / IMAGE_ASPECT
-          imgLeft = 0
-          imgTop = (h - imgH) / 2
-        }
-      } else {
-        imgLeft = 0
-        imgTop = 0
-        imgW = w
+      if (w >= h) {
         imgH = h
+        imgW = h * IMAGE_ASPECT
+        imgLeft = (w - imgW) / 2
+        imgTop = 0
+      } else {
+        imgW = w
+        imgH = w / IMAGE_ASPECT
+        imgLeft = 0
+        imgTop = (h - imgH) / 2
       }
       const baseW = Math.min(imgW, imgH)
       const yinyangSize = baseW * (coordsYinyang.size / 100)
@@ -370,7 +416,7 @@ function Cabinet() {
   }
 
   const saveCoords = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    const payload = {
       yinyang: coordsYinyang,
       book: coordsBook,
       laptop: coordsLaptop,
@@ -378,8 +424,32 @@ function Cabinet() {
       rightCabinet: coordsRightCabinet,
       tea: coordsTea,
       expert: coordsExpert
-    }))
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
     setShowDebug(false)
+    getSupabase().then((supabase) => {
+      if (!supabase) {
+        setSaveToast({ text: 'Supabase не настроен — настройки только в этом браузере', isError: true })
+        if (saveToastRef.current) clearTimeout(saveToastRef.current)
+        saveToastRef.current = setTimeout(() => { setSaveToast(null); saveToastRef.current = null }, 4000)
+        return
+      }
+      supabase.from('app_config').upsert({ key: APP_CONFIG_KEY, value: payload, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .then(({ error }) => {
+          if (error) {
+            setSaveToast({ text: 'Не удалось сохранить в облако: ' + (error.message || 'ошибка'), isError: true })
+          } else {
+            setSaveToast({ text: 'Сохранено в облако — настройки будут одинаковы во всех браузерах и после публикации', isError: false })
+          }
+          if (saveToastRef.current) clearTimeout(saveToastRef.current)
+          saveToastRef.current = setTimeout(() => { setSaveToast(null); saveToastRef.current = null }, 5000)
+        })
+        .catch(() => {
+          setSaveToast({ text: 'Ошибка сохранения в облако', isError: true })
+          if (saveToastRef.current) clearTimeout(saveToastRef.current)
+          saveToastRef.current = setTimeout(() => { setSaveToast(null); saveToastRef.current = null }, 4000)
+        })
+    })
   }
 
   const resetCurrentZone = () => {
@@ -411,6 +481,11 @@ function Cabinet() {
   const coordsT = coordsTea
   const coordsE = coordsExpert
 
+  const labelAtCentroid = (points) => {
+    const c = polygonCentroid(points)
+    return { position: 'absolute', left: `${c.x}%`, top: `${c.y}%`, transform: 'translate(-50%, -50%)' }
+  }
+
   return (
     <div className="cabinet-root">
       <Header
@@ -439,7 +514,19 @@ function Cabinet() {
             onClick={handleAlchemyClick}
             aria-label="Открыть Цифровую Алхимию"
             title="Цифровая Алхимия"
-          />
+          >
+            <div className="cabinet-yinyang-clock" aria-hidden="true">
+              <div
+                className="cabinet-yinyang-hand cabinet-yinyang-hand-hour"
+                style={{ transform: `rotate(${(now.getHours() % 12) * 30 + now.getMinutes() * 0.5}deg)` }}
+              />
+              <div
+                className="cabinet-yinyang-hand cabinet-yinyang-hand-minute"
+                style={{ transform: `rotate(${now.getMinutes() * 6}deg)` }}
+              />
+            </div>
+            <span className="cabinet-yinyang-al">AL</span>
+          </button>
         )}
         {zoneStyles.book && (
           <button
@@ -449,7 +536,9 @@ function Cabinet() {
             onClick={handleBookClick}
             aria-label="Обо мне"
             title="Обо мне"
-          />
+          >
+            <span className="cabinet-zone-label" style={labelAtCentroid(coordsB.points)}>Обо мне</span>
+          </button>
         )}
         {zoneStyles.laptop && (
           <button
@@ -459,7 +548,9 @@ function Cabinet() {
             onClick={handleLaptopClick}
             aria-label="Администрирование"
             title="Администрирование"
-          />
+          >
+            <span className="cabinet-zone-label" style={labelAtCentroid(coordsL.points)}>Админка</span>
+          </button>
         )}
         {zoneStyles.leftCabinet && (
           <button
@@ -469,7 +560,9 @@ function Cabinet() {
             onClick={handleLeftCabinetClick}
             aria-label="Левый шкаф"
             title="Левый шкаф"
-          />
+          >
+            <span className="cabinet-zone-label" style={labelAtCentroid(coordsLCab.points)}>Левый шкаф</span>
+          </button>
         )}
         {zoneStyles.rightCabinet && (
           <button
@@ -479,7 +572,8 @@ function Cabinet() {
             onClick={handleRightCabinetClick}
             aria-label="Правый шкаф"
             title="Правый шкаф"
-          />
+          >
+          </button>
         )}
         {zoneStyles.tea && (
           <button
@@ -489,7 +583,9 @@ function Cabinet() {
             onClick={handleTeaClick}
             aria-label="Чай"
             title="Чай"
-          />
+          >
+            <span className="cabinet-zone-label" style={labelAtCentroid(coordsT.points)}>Чай</span>
+          </button>
         )}
         {zoneStyles.expert && (
           <button
@@ -499,7 +595,9 @@ function Cabinet() {
             onClick={handleExpertClick}
             aria-label="Эксперт"
             title="Эксперт"
-          />
+          >
+            <span className="cabinet-zone-label" style={labelAtCentroid(coordsE.points)}>Эксперт</span>
+          </button>
         )}
       </div>
 
@@ -508,6 +606,7 @@ function Cabinet() {
           <div className="cabinet-debug-panel">
             <div className="cabinet-debug-panel-header">
               <h3>Настройка зон</h3>
+              <p className="cabinet-debug-sync-hint">После «Сохранить и закрыть» настройки сохраняются в облако (Supabase) и подхватываются во всех браузерах и после публикации.</p>
               <div className="cabinet-debug-tabs">
                 <button
                   type="button"
@@ -777,6 +876,12 @@ function Cabinet() {
               <button type="button" onClick={() => setShowDebug(false)}>Закрыть без сохранения</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {saveToast && (
+        <div className={`cabinet-save-toast ${saveToast.isError ? 'cabinet-save-toast-error' : ''}`} role="status">
+          {saveToast.text}
         </div>
       )}
 

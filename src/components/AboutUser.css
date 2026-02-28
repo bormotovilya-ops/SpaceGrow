@@ -5,8 +5,8 @@
 }
 
 .about-user-book {
-  margin-top: var(--app-header-height, 120px);
-  min-height: calc(100vh - var(--app-header-height, 120px));
+  margin-top: 12px;
+  min-height: calc(100vh - var(--app-header-height, 120px) - 80px);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from './Header'
+import BackToCabinet from './BackToCabinet'
 import './CabinetShelf.css'
 
 // Тренинги
@@ -47,6 +48,9 @@ function CabinetShelf() {
         onHomeClick={() => navigate('/home')}
         activeMenuId="cabinet"
       />
+      <div className="back-to-cabinet-wrap">
+        <BackToCabinet />
+      </div>
       <div className={`cabinet-shelf-view ${approachDone ? 'cabinet-shelf-approached' : ''}`}>
         <div className="cabinet-shelf-backdrop" aria-hidden="true" />
         <div className="cabinet-shelf-content">

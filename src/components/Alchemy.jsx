@@ -38,7 +38,10 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   const [isLoadingMirror, setIsLoadingMirror] = useState(false) // Загрузка ответа зеркала
   const [mirrorUserName, setMirrorUserName] = useState('Путник') // Имя для зеркала (только first name)
   const [isMuted, setIsMuted] = useState(() => {
-    // Загружаем состояние из localStorage
+    // Глобальная настройка «Включить звук» из настроек приложения
+    if (typeof window !== 'undefined' && localStorage.getItem('app_sound_enabled') === 'false') {
+      return true
+    }
     const saved = localStorage.getItem('alchemy-music-muted')
     return saved === 'true'
   })
@@ -1265,7 +1268,6 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
         onHomeClick={handleHeaderHomeClick}
         activeMenuId="alchemy"
       />
-      
       {/* Кнопка управления музыкой */}
       <button 
         className="alchemy-music-toggle"

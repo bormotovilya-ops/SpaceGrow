@@ -35,12 +35,22 @@
   background-image: url('/images/kabexp.png');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: cover;
+  /* contain — вся картинка видна целиком, без обрезки на мобильных */
+  background-size: contain;
   transition: background-image 0.3s ease;
 }
 
 .cabinet-background--tea {
   background-image: url('/images/kabexptea.png');
+}
+
+/* Мобильные: фон и зоны не обрезаются — картинка целиком (contain) */
+@media (max-width: 768px) {
+  .cabinet-background,
+  .cabinet-background--tea {
+    background-size: contain;
+    background-position: center center;
+  }
 }
 
 /* Блок пословиц при нажатии на чай: внизу экрана, на всю ширину, в виде чат-бабла */
@@ -95,6 +105,23 @@
   cursor: pointer;
   background: transparent;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cabinet-zone-label {
+  position: relative;
+  font-size: clamp(8px, 1.8vw, 12px);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  pointer-events: none;
+  max-width: 90%;
+  line-height: 1.2;
+  padding: 0 4px;
 }
 
 .cabinet-zone:focus-visible {
@@ -104,6 +131,7 @@
 
 /* Зона Инь-ян: круг, мистическое сияние, клик → Алхимия */
 .cabinet-zone-yinyang {
+  position: relative;
   border-radius: 50%;
   box-shadow:
     0 0 20px rgba(255, 215, 0, 0.5),
@@ -111,6 +139,73 @@
     0 0 60px rgba(138, 43, 226, 0.3),
     inset 0 0 25px rgba(255, 215, 0, 0.15);
   animation: cabinet-yinyang-glow 3s ease-in-out infinite;
+  overflow: visible;
+}
+
+/* Часы: контейнер поверх центра, стрелки всегда видны */
+.cabinet-yinyang-clock {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 70%;
+  height: 70%;
+  margin-left: -35%;
+  margin-top: -35%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Стрелки — простые полоски, без clip-path (фигурность убирает видимость) */
+.cabinet-yinyang-hand {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: 50% 100%;
+  transition: transform 0.05s linear;
+  border-radius: 3px;
+}
+
+.cabinet-yinyang-hand-hour {
+  width: 8px;
+  min-width: 8px;
+  height: 24px;
+  min-height: 24px;
+  margin-left: -4px;
+  margin-bottom: 0;
+  background: #0d0d0d;
+  border: 1px solid #ffd700;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.9), 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.cabinet-yinyang-hand-minute {
+  width: 6px;
+  min-width: 6px;
+  height: 36px;
+  min-height: 36px;
+  margin-left: -3px;
+  margin-bottom: 0;
+  background: #0d0d0d;
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Подпись AL внизу зоны Алхимии — золотыми буквами, фигурный шрифт */
+.cabinet-yinyang-al {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  transform: translateX(-50%);
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  font-style: italic;
+  font-size: clamp(7px, 1.4vw, 12px);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #ffd700;
+  text-shadow:
+    0 0 6px rgba(255, 215, 0, 0.8),
+    0 0 12px rgba(255, 200, 100, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
 
 .cabinet-zone-yinyang:hover {
@@ -138,20 +233,23 @@
   }
 }
 
-/* Зона книги «Обо мне»: четырёхугольник по 4 точкам, тёплое свечение, клик → Профиль */
+/* Зона книги «Обо мне» — обычный режим: тёплое свечение и контур, клик → Профиль */
 .cabinet-zone-book {
   border-radius: 0;
+  border: 2px solid rgba(210, 170, 100, 0.5);
   box-shadow:
-    0 0 16px rgba(180, 140, 80, 0.4),
-    0 0 32px rgba(210, 170, 100, 0.25),
-    inset 0 0 20px rgba(255, 215, 0, 0.08);
+    0 0 20px rgba(180, 140, 80, 0.55),
+    0 0 40px rgba(210, 170, 100, 0.35),
+    0 0 60px rgba(255, 200, 100, 0.2),
+    inset 0 0 24px rgba(255, 215, 0, 0.12);
 }
 
 .cabinet-zone-book:hover {
   box-shadow:
-    0 0 24px rgba(180, 140, 80, 0.55),
-    0 0 48px rgba(210, 170, 100, 0.35),
-    inset 0 0 28px rgba(255, 215, 0, 0.12);
+    0 0 28px rgba(180, 140, 80, 0.7),
+    0 0 56px rgba(210, 170, 100, 0.45),
+    0 0 80px rgba(255, 200, 100, 0.3),
+    inset 0 0 32px rgba(255, 215, 0, 0.18);
 }
 
 /* В режиме отладки зоны ярко выделены для удобной настройки */
@@ -175,20 +273,23 @@
     inset 0 0 24px rgba(255, 215, 0, 0.25);
 }
 
-/* Зона ноутбука: четырёхугольник по 4 точкам, клик → Диагностика */
+/* Зона ноутбука — обычный режим: голубое свечение и контур, клик → Админка */
 .cabinet-zone-laptop {
   border-radius: 0;
+  border: 2px solid rgba(120, 180, 240, 0.5);
   box-shadow:
-    0 0 16px rgba(100, 160, 220, 0.35),
-    0 0 32px rgba(120, 180, 240, 0.2),
-    inset 0 0 20px rgba(200, 220, 255, 0.06);
+    0 0 20px rgba(100, 160, 220, 0.5),
+    0 0 40px rgba(120, 180, 240, 0.3),
+    0 0 60px rgba(140, 200, 255, 0.18),
+    inset 0 0 24px rgba(200, 220, 255, 0.1);
 }
 
 .cabinet-zone-laptop:hover {
   box-shadow:
-    0 0 24px rgba(100, 160, 220, 0.5),
-    0 0 48px rgba(120, 180, 240, 0.3),
-    inset 0 0 28px rgba(200, 220, 255, 0.1);
+    0 0 28px rgba(100, 160, 220, 0.65),
+    0 0 56px rgba(120, 180, 240, 0.4),
+    0 0 80px rgba(140, 200, 255, 0.25),
+    inset 0 0 32px rgba(200, 220, 255, 0.15);
 }
 
 .cabinet-zone-laptop.cabinet-zone-debug {
@@ -201,20 +302,23 @@
     inset 0 0 24px rgba(150, 200, 255, 0.25);
 }
 
-/* Зона левого шкафа: четырёхугольник по 4 точкам */
+/* Зона левого шкафа — обычный режим */
 .cabinet-zone-left-cabinet {
   border-radius: 0;
+  border: 2px solid rgba(100, 180, 120, 0.5);
   box-shadow:
-    0 0 16px rgba(120, 180, 120, 0.35),
-    0 0 32px rgba(100, 160, 100, 0.2),
-    inset 0 0 20px rgba(180, 220, 180, 0.06);
+    0 0 20px rgba(120, 180, 120, 0.5),
+    0 0 40px rgba(100, 160, 100, 0.3),
+    0 0 60px rgba(80, 200, 120, 0.18),
+    inset 0 0 24px rgba(180, 220, 180, 0.1);
 }
 
 .cabinet-zone-left-cabinet:hover {
   box-shadow:
-    0 0 24px rgba(120, 180, 120, 0.5),
-    0 0 48px rgba(100, 160, 100, 0.3),
-    inset 0 0 28px rgba(180, 220, 180, 0.1);
+    0 0 28px rgba(120, 180, 120, 0.65),
+    0 0 56px rgba(100, 160, 100, 0.4),
+    0 0 80px rgba(80, 200, 120, 0.25),
+    inset 0 0 32px rgba(180, 220, 180, 0.15);
 }
 
 .cabinet-zone-left-cabinet.cabinet-zone-debug {
@@ -227,20 +331,23 @@
     inset 0 0 24px rgba(120, 200, 140, 0.25);
 }
 
-/* Зона правого шкафа */
+/* Зона правого шкафа — обычный режим */
 .cabinet-zone-right-cabinet {
   border-radius: 0;
+  border: 2px solid rgba(120, 180, 110, 0.5);
   box-shadow:
-    0 0 16px rgba(140, 160, 120, 0.35),
-    0 0 32px rgba(120, 150, 100, 0.2),
-    inset 0 0 20px rgba(200, 220, 180, 0.06);
+    0 0 20px rgba(140, 160, 120, 0.5),
+    0 0 40px rgba(120, 150, 100, 0.3),
+    0 0 60px rgba(100, 180, 110, 0.18),
+    inset 0 0 24px rgba(200, 220, 180, 0.1);
 }
 
 .cabinet-zone-right-cabinet:hover {
   box-shadow:
-    0 0 24px rgba(140, 160, 120, 0.5),
-    0 0 48px rgba(120, 150, 100, 0.3),
-    inset 0 0 28px rgba(200, 220, 180, 0.1);
+    0 0 28px rgba(140, 160, 120, 0.65),
+    0 0 56px rgba(120, 150, 100, 0.4),
+    0 0 80px rgba(100, 180, 110, 0.25),
+    inset 0 0 32px rgba(200, 220, 180, 0.15);
 }
 
 .cabinet-zone-right-cabinet.cabinet-zone-debug {
@@ -253,20 +360,23 @@
     inset 0 0 24px rgba(140, 180, 120, 0.25);
 }
 
-/* Зона чая */
+/* Зона чая — обычный режим */
 .cabinet-zone-tea {
   border-radius: 0;
+  border: 2px solid rgba(200, 140, 80, 0.5);
   box-shadow:
-    0 0 16px rgba(180, 120, 80, 0.35),
-    0 0 32px rgba(160, 100, 60, 0.2),
-    inset 0 0 20px rgba(255, 220, 180, 0.06);
+    0 0 20px rgba(180, 120, 80, 0.5),
+    0 0 40px rgba(160, 100, 60, 0.3),
+    0 0 60px rgba(220, 160, 100, 0.18),
+    inset 0 0 24px rgba(255, 220, 180, 0.1);
 }
 
 .cabinet-zone-tea:hover {
   box-shadow:
-    0 0 24px rgba(180, 120, 80, 0.5),
-    0 0 48px rgba(160, 100, 60, 0.3),
-    inset 0 0 28px rgba(255, 220, 180, 0.1);
+    0 0 28px rgba(180, 120, 80, 0.65),
+    0 0 56px rgba(160, 100, 60, 0.4),
+    0 0 80px rgba(220, 160, 100, 0.25),
+    inset 0 0 32px rgba(255, 220, 180, 0.15);
 }
 
 .cabinet-zone-tea.cabinet-zone-debug {
@@ -279,20 +389,23 @@
     inset 0 0 24px rgba(220, 180, 120, 0.25);
 }
 
-/* Зона эксперта */
+/* Зона эксперта — обычный режим */
 .cabinet-zone-expert {
   border-radius: 0;
+  border: 2px solid rgba(160, 120, 200, 0.5);
   box-shadow:
-    0 0 16px rgba(160, 120, 200, 0.35),
-    0 0 32px rgba(140, 100, 180, 0.2),
-    inset 0 0 20px rgba(220, 200, 255, 0.06);
+    0 0 20px rgba(160, 120, 200, 0.5),
+    0 0 40px rgba(140, 100, 180, 0.3),
+    0 0 60px rgba(180, 140, 220, 0.18),
+    inset 0 0 24px rgba(220, 200, 255, 0.1);
 }
 
 .cabinet-zone-expert:hover {
   box-shadow:
-    0 0 24px rgba(160, 120, 200, 0.5),
-    0 0 48px rgba(140, 100, 180, 0.3),
-    inset 0 0 28px rgba(220, 200, 255, 0.1);
+    0 0 28px rgba(160, 120, 200, 0.65),
+    0 0 56px rgba(140, 100, 180, 0.4),
+    0 0 80px rgba(180, 140, 220, 0.25),
+    inset 0 0 32px rgba(220, 200, 255, 0.15);
 }
 
 .cabinet-zone-expert.cabinet-zone-debug {
@@ -381,6 +494,13 @@
   margin: 0 0 8px;
   color: #ffd700;
   font-size: 16px;
+}
+
+.cabinet-debug-sync-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .cabinet-debug-hint {
@@ -491,10 +611,28 @@
   background: rgba(255, 215, 0, 0.15);
 }
 
-@media (min-width: 768px) {
-  .cabinet-background {
-    /* На десктопе показываем квадрат целиком, без обрезки */
-    background-size: contain;
-  }
+.cabinet-save-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90vw, 420px);
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  z-index: 150;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
+
+.cabinet-save-toast-error {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+}
+
+/* Квадратный фон везде показываем целиком (contain), без обрезки */
 

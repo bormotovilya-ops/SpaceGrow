@@ -2,7 +2,22 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import Header from './Header'
+import BackToCabinet from './BackToCabinet'
+import Switch from './ui/Switch'
 import './AdminDashboard.css'
+
+const LOCAL_SOUND_KEY = 'app_sound_enabled'
+const LOCAL_DEBUG_KEY = 'app_debug_mode'
+
+function getLocalSoundEnabled() {
+  if (typeof window === 'undefined') return true
+  return localStorage.getItem(LOCAL_SOUND_KEY) !== 'false'
+}
+
+function getLocalDebugMode() {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem(LOCAL_DEBUG_KEY) === 'true'
+}
 
 const ADMIN_SECTIONS = [
   {
@@ -53,15 +68,21 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
   const navigate = useNavigate()
   const [chartData, setChartData] = useState(null)
   const [chartLoading, setChartLoading] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(getLocalSoundEnabled)
+  const [debugMode, setDebugMode] = useState(getLocalDebugMode)
 
   const apiBase = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL
     ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
     : ''
 
+  const analyticsUrl = apiBase
+    ? (apiBase.endsWith('/api') ? `${apiBase}/analytics/site` : `${apiBase}/api/analytics/site`)
+    : ''
+
   useEffect(() => {
     let cancelled = false
-    if (apiBase) {
-      fetch(`${apiBase}/api/analytics/site`)
+    if (analyticsUrl) {
+      fetch(analyticsUrl)
         .then((res) => res.ok ? res.json() : null)
         .then((json) => {
           if (cancelled) return
@@ -86,7 +107,7 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
       setChartLoading(false)
     }
     return () => { cancelled = true }
-  }, [apiBase])
+  }, [analyticsUrl])
 
   const chartDisplayData = useMemo(() => chartData || [], [chartData])
 
@@ -100,12 +121,47 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
         onHomeClick={onHomeClick || (() => navigate('/home'))}
         activeMenuId={null}
       />
-
+      <div className="back-to-cabinet-wrap">
+        <BackToCabinet />
+      </div>
       <header className="admin-dashboard-header">
         <h1 className="admin-dashboard-title">Администрирование</h1>
       </header>
 
-      <p className="admin-dashboard-subtitle">Выберите раздел</p>
+      <section className="admin-dashboard-settings-section" aria-label="Настройки администратора">
+        <div className="admin-dashboard-settings-list">
+          <div className="admin-dashboard-settings-card">
+            <div className="admin-dashboard-settings-card-left">
+              <span className="admin-dashboard-settings-name">Включить звук</span>
+              <span className="admin-dashboard-settings-desc">Фоновая музыка и звуки в приложении (например, в Цифровой Алхимии)</span>
+            </div>
+            <div className="admin-dashboard-settings-card-right">
+              <Switch
+                checked={soundEnabled}
+                onCheckedChange={(checked) => {
+                  setSoundEnabled(checked)
+                  localStorage.setItem(LOCAL_SOUND_KEY, String(checked))
+                }}
+              />
+            </div>
+          </div>
+          <div className="admin-dashboard-settings-card">
+            <div className="admin-dashboard-settings-card-left">
+              <span className="admin-dashboard-settings-name">Режим отладки</span>
+              <span className="admin-dashboard-settings-desc">Панель настройки зон в Кабинете и отладочная информация</span>
+            </div>
+            <div className="admin-dashboard-settings-card-right">
+              <Switch
+                checked={debugMode}
+                onCheckedChange={(checked) => {
+                  setDebugMode(checked)
+                  localStorage.setItem(LOCAL_DEBUG_KEY, String(checked))
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="admin-dashboard-chart-section" aria-label="Посещения за месяц">
         <h2 className="admin-dashboard-chart-title">Посещения за последний месяц</h2>
@@ -133,20 +189,21 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
         )}
       </section>
 
-      <div className="admin-dashboard-grid">
+      <ul className="admin-dashboard-list" aria-label="Разделы администрирования">
         {ADMIN_SECTIONS.map((section) => (
-          <button
-            key={section.id}
-            type="button"
-            className="admin-dashboard-card"
-            onClick={() => navigate(section.path)}
-          >
-            <span className="admin-dashboard-card-icon">{section.icon}</span>
-            <h2 className="admin-dashboard-card-title">{section.title}</h2>
-            <p className="admin-dashboard-card-desc">{section.description}</p>
-          </button>
+          <li key={section.id}>
+            <button
+              type="button"
+              className="admin-dashboard-row"
+              onClick={() => navigate(section.path)}
+            >
+              <span className="admin-dashboard-row-icon" aria-hidden="true">{section.icon}</span>
+              <span className="admin-dashboard-row-title">{section.title}</span>
+              <span className="admin-dashboard-row-desc">{section.description}</span>
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   )
 }
