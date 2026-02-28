@@ -1,23 +1,21 @@
 diff --git a/node_modules/edge-tts-node/dist/MsEdgeTTS.js b/node_modules/edge-tts-node/dist/MsEdgeTTS.js
-index a443e92..7c18ab3 100644
+index a443e92..91404b6 100644
 --- a/node_modules/edge-tts-node/dist/MsEdgeTTS.js
 +++ b/node_modules/edge-tts-node/dist/MsEdgeTTS.js
-@@ -211,6 +211,18 @@ class MsEdgeTTS {
+@@ -211,6 +211,16 @@ class MsEdgeTTS {
              };
              this._ws.onerror = (error) => {
                  this._log(error);
-+                if (error != null) {
-+                    const detail = { type: error.constructor?.name, message: error.message, code: error.code, errno: error.errno };
-+                    if (typeof error === "object") {
-+                        try {
-+                            Object.getOwnPropertyNames(error).forEach(function (k) {
-+                                try { detail[k] = error[k]; } catch (_) {}
-+                            });
-+                            if (error.target && error.target !== error) detail.targetError = error.target.error || error.target.message;
-+                        } catch (e) { detail.stringifyError = String(e); }
-+                    }
-+                    console.error("[edge-tts-node] WebSocket error detail:", JSON.stringify(detail, null, 2));
++                var e = error && error.error ? error.error : error;
++                var detail = { eventType: error && error.constructor?.name, message: e?.message, code: e?.code, errno: e?.errno };
++                if (e && typeof e === "object") {
++                    try {
++                        Object.getOwnPropertyNames(e).forEach(function (k) {
++                            try { detail[k] = k === "stack" ? String(e[k]).split("\n").slice(0, 6) : e[k]; } catch (_) {}
++                        });
++                    } catch (x) { detail._err = String(x); }
 +                }
++                console.error("[edge-tts-node] WebSocket error detail:", JSON.stringify(detail, null, 2));
                  let errorMessage;
                  if (typeof error === "object" && error !== null) {
                      try {
