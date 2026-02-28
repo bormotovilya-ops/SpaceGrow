@@ -109,35 +109,55 @@ async function speakExpertText(text) {
   synth.speak(u)
 }
 
-/** Озвучивает цитату чая (Edge TTS Svetlana, иначе Web Speech API), по завершении вызывает onEnd */
+/** Озвучивает цитату чая (Edge TTS Svetlana, иначе Web Speech API), с паузой ~2 с между текстом и подписью */
 async function speakTeaQuote(text, author, onEnd) {
-  const full = [text, author].filter(Boolean).join('. ')
-  if (!full.trim()) {
+  const PAUSE_MS = 2000
+  const parts = [text, author].filter(Boolean)
+  if (parts.length === 0) {
     onEnd?.()
     return
   }
-  const usedEdge = await playWithEdgeTTS(full, onEnd)
-  if (usedEdge) return
-  const synth = window.speechSynthesis
-  if (!synth) {
-    onEnd?.()
-    return
+
+  const playPart = async (index) => {
+    if (index >= parts.length) {
+      onEnd?.()
+      return
+    }
+    const part = parts[index]
+    const whenPartEnds = () => {
+      if (index + 1 < parts.length) {
+        setTimeout(() => playPart(index + 1), PAUSE_MS)
+      } else {
+        onEnd?.()
+      }
+    }
+
+    const usedEdge = await playWithEdgeTTS(part, whenPartEnds)
+    if (usedEdge) return
+
+    const synth = window.speechSynthesis
+    if (!synth) {
+      whenPartEnds()
+      return
+    }
+    synth.cancel()
+    const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
+      synth.onvoiceschanged = () => resolve(synth.getVoices())
+      setTimeout(() => resolve(synth.getVoices()), 500)
+    })
+    const ruVoices = voices.filter((v) => v.lang.startsWith('ru'))
+    const ruVoice = ruVoices[2] ?? ruVoices[1] ?? ruVoices[0]
+    const u = new SpeechSynthesisUtterance(part)
+    u.lang = 'ru-RU'
+    u.rate = 0.85
+    u.pitch = 1.05
+    if (ruVoice) u.voice = ruVoice
+    u.onend = () => whenPartEnds()
+    u.onerror = () => whenPartEnds()
+    synth.speak(u)
   }
-  synth.cancel()
-  const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
-    synth.onvoiceschanged = () => resolve(synth.getVoices())
-    setTimeout(() => resolve(synth.getVoices()), 500)
-  })
-  const ruVoices = voices.filter((v) => v.lang.startsWith('ru'))
-  const ruVoice = ruVoices[2] ?? ruVoices[1] ?? ruVoices[0]
-  const u = new SpeechSynthesisUtterance(full)
-  u.lang = 'ru-RU'
-  u.rate = 0.85
-  u.pitch = 1.05
-  if (ruVoice) u.voice = ruVoice
-  u.onend = () => onEnd?.()
-  u.onerror = () => onEnd?.()
-  synth.speak(u)
+
+  await playPart(0)
 }
 
 const MAX_POINTS = 8
@@ -285,7 +305,7 @@ const TEA_QUOTES = [
   { author: 'Русская поговорка', text: '«Чай пить — не дрова рубить».' },
   { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' },
   { author: 'Нативная реклама!', text: 'Недавно была в Сочи. Там есть прекрасный чайный клуб, называется Мэр-Пуэр.' },
-  { author: '❤️Нативная реклама', text: 'В Перми лучший чай можно найти в доме чая и шёлка Красота востока.' }
+  { author: 'Нативная реклама', text: 'В Перми лучший чай можно найти в доме чая и шёлка Красота востока.' }
 ]
 
 const DEFAULT_EXPERT = {

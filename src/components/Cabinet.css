@@ -399,7 +399,7 @@
   animation: cabinet-yinyang-glow 3s ease-in-out infinite;
 }
 
-/* Часы: контейнер поверх центра, стрелки всегда видны */
+/* Часы: контейнер поверх центра, стрелки появляются последними (после фона и зон) */
 .cabinet-yinyang-clock {
   position: absolute;
   left: 50%;
@@ -410,6 +410,12 @@
   margin-top: -35%;
   pointer-events: none;
   z-index: 2;
+  opacity: 0;
+}
+
+.cabinet-zones-ready .cabinet-yinyang-clock {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.5s;
 }
 
 /* Стрелки — простые полоски, без clip-path (фигурность убирает видимость) */
@@ -565,23 +571,15 @@
     inset 0 0 24px rgba(150, 200, 255, 0.25);
 }
 
-/* Зона левого шкафа — обычный режим */
+/* Зона левого шкафа — обычный режим: невидима (без контура и свечения) */
 .cabinet-zone-left-cabinet {
   border-radius: 0;
-  border: 2px solid rgba(100, 180, 120, 0.5);
-  box-shadow:
-    0 0 20px rgba(120, 180, 120, 0.5),
-    0 0 40px rgba(100, 160, 100, 0.3),
-    0 0 60px rgba(80, 200, 120, 0.18),
-    inset 0 0 24px rgba(180, 220, 180, 0.1);
+  border: none;
+  box-shadow: none;
 }
 
 .cabinet-zone-left-cabinet:hover {
-  box-shadow:
-    0 0 28px rgba(120, 180, 120, 0.65),
-    0 0 56px rgba(100, 160, 100, 0.4),
-    0 0 80px rgba(80, 200, 120, 0.25),
-    inset 0 0 32px rgba(180, 220, 180, 0.15);
+  box-shadow: none;
 }
 
 .cabinet-zone-left-cabinet.cabinet-zone-debug {
