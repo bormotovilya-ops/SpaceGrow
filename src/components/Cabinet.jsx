@@ -36,7 +36,14 @@ async function playWithEdgeTTS(text, onEnd) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: text.trim() })
     })
-    if (!res.ok) throw new Error(res.statusText)
+    if (!res.ok) {
+      let msg = res.statusText
+      try {
+        const j = await res.json()
+        if (j?.message) msg = j.message
+      } catch (_) {}
+      throw new Error(msg)
+    }
     const blob = await res.blob()
     const url = URL.createObjectURL(blob)
     if (currentTTSAudio) {
@@ -57,7 +64,10 @@ async function playWithEdgeTTS(text, onEnd) {
     }
     await audio.play()
     return true
-  } catch (_) {
+  } catch (err) {
+    if (import.meta.env?.DEV) {
+      console.warn('[Cabinet TTS] Озвучка Светланы недоступна (запустите npm run dev:server для локальной разработки). Используется голос браузера.', err?.message || err)
+    }
     return false
   }
 }
@@ -592,7 +602,7 @@ function Cabinet() {
       }
     }
     if (isSoundMuted) {
-      onQuoteEnd()
+      setTimeout(onQuoteEnd, 4000)
     } else {
       speakTeaQuote(quote.text, quote.author, onQuoteEnd)
     }

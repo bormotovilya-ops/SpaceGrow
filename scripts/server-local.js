@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFile, appendFile, mkdir, existsSync } from 'fs'
 import { promises as fs } from 'fs'
+import { spawn } from 'child_process'
 import { google } from 'googleapis'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -1035,23 +1036,69 @@ function streamToBuffer(stream) {
   })
 }
 
+const TTS_VOICE = 'ru-RU-SvetlanaNeural'
+// В примерах edge-tts-node используется WEBM; при 500 на MP3 пробуем WEBM
+const TTS_FORMAT = OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS
+const TTS_CONTENT_TYPE = 'audio/webm'
+
+/** Озвучка через Python edge-tts (fallback при ошибке WebSocket в edge-tts-node) */
+function ttsViaPythonEdgeTTS(text) {
+  const args = ['--voice', TTS_VOICE, '--write-media', '-', '--text', text]
+  function run(cmd, cmdArgs) {
+    return new Promise((resolve, reject) => {
+      const proc = spawn(cmd, cmdArgs, { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
+      const chunks = []
+      proc.stdout.on('data', (chunk) => chunks.push(chunk))
+      proc.stdout.on('end', () => resolve(Buffer.concat(chunks)))
+      proc.stdout.on('error', reject)
+      proc.stderr.on('data', (d) => console.error('edge-tts stderr:', d.toString()))
+      proc.on('error', (e) => reject(e))
+      proc.on('close', (code) => { if (code !== 0) reject(new Error(`exit ${code}`)) })
+    })
+  }
+  return run('edge-tts', args).catch((e) => {
+    if (e?.code === 'ENOENT') return run('python', ['-m', 'edge_tts', ...args])
+    throw e
+  }).catch((e) => {
+    if (e?.code === 'ENOENT') return run('py', ['-m', 'edge_tts', ...args])
+    throw e
+  })
+}
+
 app.post('/api/tts', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   const text = typeof req.body?.text === 'string' ? req.body.text.trim() : ''
   if (!text) return res.status(400).json({ error: 'Missing or empty text' })
   if (text.length > 5000) return res.status(400).json({ error: 'Text too long' })
+  let tts
+  // 1) Пробуем edge-tts-node
   try {
-    const tts = new MsEdgeTTS()
-    await tts.setMetadata('ru-RU-SvetlanaNeural', OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3)
+    tts = new MsEdgeTTS({})
+    await tts.setMetadata(TTS_VOICE, TTS_FORMAT)
     const stream = tts.toStream(text)
     const buffer = await streamToBuffer(stream)
     tts.close()
-    res.setHeader('Content-Type', 'audio/mpeg')
-    res.send(buffer)
+    res.setHeader('Content-Type', TTS_CONTENT_TYPE)
+    return res.send(buffer)
   } catch (err) {
-    console.error('TTS error:', err)
-    res.status(500).json({ error: 'TTS failed', message: err?.message })
+    if (tts && typeof tts.close === 'function') try { tts.close() } catch (_) {}
+    const msg = err?.message || String(err)
+    console.warn('TTS (edge-tts-node) failed:', msg)
   }
+  // 2) Fallback: Python edge-tts (часто стабильнее при блокировке WebSocket)
+  try {
+    const buffer = await ttsViaPythonEdgeTTS(text)
+    if (buffer && buffer.length > 0) {
+      res.setHeader('Content-Type', 'audio/mpeg')
+      return res.send(buffer)
+    }
+  } catch (pyErr) {
+    console.error('TTS (Python edge-tts) failed:', pyErr?.message || pyErr)
+  }
+  res.status(500).json({
+    error: 'TTS failed',
+    message: 'Озвучка недоступна. Установите Python и выполните: pip install edge-tts'
+  })
 })
 
 // Endpoint для чата (эмулирует api/chat.js)
@@ -1191,7 +1238,8 @@ app.post('/api/chat', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`\n🚀 Локальный сервер запущен на http://localhost:${PORT}`)
-  console.log(`📡 API endpoint: http://localhost:${PORT}/api/chat`)
+  console.log(`📡 API: http://localhost:${PORT}/api/chat`)
+  console.log(`🔊 TTS (Светлана): http://localhost:${PORT}/api/tts`)
   
   // Проверяем загрузку .env
   console.log(`\n🔍 Проверка переменных окружения:`)
