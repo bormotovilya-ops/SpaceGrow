@@ -4,7 +4,8 @@ const require = createRequire(import.meta.url)
 const { MsEdgeTTS, OUTPUT_FORMAT } = require('edge-tts-node')
 
 const VOICE = 'ru-RU-SvetlanaNeural'
-const FORMAT = OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3
+// WEBM стабильнее в edge-tts-node; при необходимости можно вернуть MP3
+const FORMAT = OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS
 const MAX_TEXT_LENGTH = 5000
 
 function streamToBuffer(stream) {
@@ -41,15 +42,17 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Text too long (max ${MAX_TEXT_LENGTH} chars)` })
   }
 
+  let tts
   try {
-    const tts = new MsEdgeTTS()
+    tts = new MsEdgeTTS({})
     await tts.setMetadata(VOICE, FORMAT)
     const stream = tts.toStream(text)
     const buffer = await streamToBuffer(stream)
     tts.close()
-    res.setHeader('Content-Type', 'audio/mpeg')
+    res.setHeader('Content-Type', FORMAT === OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3 ? 'audio/mpeg' : 'audio/webm')
     res.send(buffer)
   } catch (err) {
+    if (tts && typeof tts.close === 'function') try { tts.close() } catch (_) {}
     console.error('TTS error:', err)
     res.status(500).json({ error: 'TTS failed', message: err?.message || 'Unknown error' })
   }

@@ -1124,6 +1124,11 @@
     }
     .novella-scene.scene-alisa-office .novella-choices { grid-column: 1; grid-row: 1; }
     .novella-scene.scene-alisa-office.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
+    /* Слайды 48–49/72 (Алиса2.png в кресле): поднять персонажа */
+    #ch4-adult3-text .novella-scene .character-sprite,
+    #ch4-adult3 .novella-scene .character-sprite {
+      align-self: center;
+    }
     /* Глава 5: зал совета — фоны по контексту, без отдельного слоя справа (картинка = фон) */
     .novella-scene.scene-boardroom,
     .novella-scene.scene-boardroom-dialogue,
@@ -1785,6 +1790,11 @@
         align-self: end;
         margin-top: 0 !important;
       }
+      #ch4-adult3-text .novella-scene .character-sprite,
+      #ch4-adult3 .novella-scene .character-sprite {
+        align-self: center;
+        transform: translateY(0) scale(var(--chapter-character-scale));
+      }
       @keyframes boss-slide-in-mobile {
         from { transform: translateY(8%) scale(1.22) translateX(-120%); }
         to { transform: translateY(8%) scale(1.22) translateX(0); }
@@ -2135,7 +2145,7 @@
 <body class="antialiased min-h-screen">
   <div class="course-topbar">
   <nav class="course-nav" aria-label="Навигация по курсу">
-    <span class="text-slate-500 text-xs mr-2" id="slide-counter">1 / 50</span>
+    <span class="text-slate-500 text-xs mr-2" id="slide-counter">1 / 72</span>
     <div class="course-nav-chapters" aria-label="Переход к главам">
       <button type="button" class="course-nav-chapter-btn" data-goto="0" title="Глава 1">1</button>
       <button type="button" class="course-nav-chapter-btn" data-goto="11" title="Глава 2">2</button>
@@ -3637,6 +3647,7 @@
 
       var TOTAL_SLIDES = 72;
       var currentSlide = 0;
+      var maxSlideReached = 0;
 
       var lastNovellaChoice = -1;
       var lastChapter2Choice = -1;
@@ -3882,13 +3893,14 @@
       function goToSlide(i) {
         i = Math.max(0, Math.min(TOTAL_SLIDES - 1, i));
         currentSlide = i;
+        maxSlideReached = Math.max(maxSlideReached, i + 1);
         document.querySelectorAll('.slide').forEach(function(s) { s.classList.remove('active'); });
         var el = document.querySelector('.slide[data-slide="' + i + '"]');
         if (el) el.classList.add('active');
         var prog = document.getElementById('course-progress-bar');
-        if (prog) prog.style.transform = 'scaleX(' + ((i + 1) / TOTAL_SLIDES) + ')';
+        if (prog) prog.style.transform = 'scaleX(' + (maxSlideReached / TOTAL_SLIDES) + ')';
         var counter = document.getElementById('slide-counter');
-        if (counter) counter.textContent = (i + 1) + ' / ' + TOTAL_SLIDES;
+        if (counter) counter.textContent = maxSlideReached + ' / ' + TOTAL_SLIDES;
         updateChapterHighlight();
         var hintBtn = document.getElementById('toolbar-hint-btn');
         if (hintBtn) {

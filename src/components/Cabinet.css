@@ -425,8 +425,8 @@
 .cabinet-yinyang-hand-hour {
   width: 4px;
   min-width: 4px;
-  height: 32px;
-  min-height: 32px;
+  height: 22px;
+  min-height: 22px;
   margin-left: -2px;
   margin-bottom: 0;
   background: #0d0d0d;
@@ -437,8 +437,8 @@
 .cabinet-yinyang-hand-minute {
   width: 3px;
   min-width: 3px;
-  height: 44px;
-  min-height: 44px;
+  height: 30px;
+  min-height: 30px;
   margin-left: -1.5px;
   margin-bottom: 0;
   background: #0d0d0d;
