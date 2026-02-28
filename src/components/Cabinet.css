@@ -257,6 +257,17 @@
   margin: 0;
 }
 
+/* Ссылки в ответах эксперта: подчёркивание, адрес не показываем (текст/«Перейти по ссылке») */
+.cabinet-expert-msg-assistant p a.cabinet-expert-link {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+}
+
+.cabinet-expert-msg-assistant p a.cabinet-expert-link:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
 .cabinet-expert-msg-user p {
   text-align: right;
 }

@@ -703,30 +703,28 @@ function Cabinet() {
     while ((match = markdownRegex.exec(text)) !== null) {
       if (match.index > lastIndex) elements.push(text.slice(lastIndex, match.index))
       elements.push(
-        <a key={`link-${elements.length}`} href={match[2]} target="_blank" rel="noopener noreferrer">
+        <a key={`link-${elements.length}`} href={match[2]} target="_blank" rel="noopener noreferrer" className="cabinet-expert-link">
           {match[1]}
         </a>
       )
       lastIndex = match.lastIndex
     }
     let tail = lastIndex < text.length ? text.slice(lastIndex) : ''
-    const plainUrlRegex = /(https?:\/\/[^\s\]\)]+)/g
-    if (plainUrlRegex.test(tail)) {
-      const parts = []
+    const urlRegex = /https?:\/\/[^\s\]\)]+/g
+    const urlMatches = [...tail.matchAll(urlRegex)]
+    if (urlMatches.length > 0) {
       let i = 0
-      tail.replace(plainUrlRegex, (url) => {
-        const idx = tail.indexOf(url, i)
-        if (idx > i) parts.push(tail.slice(i, idx))
-        parts.push(
-          <a key={`url-${parts.length}`} href={url} target="_blank" rel="noopener noreferrer">
-            Перейти
+      urlMatches.forEach((m, idx) => {
+        const start = m.index
+        if (start > i) elements.push(tail.slice(i, start))
+        elements.push(
+          <a key={`url-${idx}`} href={m[0]} target="_blank" rel="noopener noreferrer" className="cabinet-expert-link">
+            Перейти по ссылке
           </a>
         )
-        i = idx + url.length
-        return url
+        i = start + m[0].length
       })
-      if (i < tail.length) parts.push(tail.slice(i))
-      elements.push(...parts)
+      if (i < tail.length) elements.push(tail.slice(i))
     } else if (tail) {
       elements.push(tail)
     }
