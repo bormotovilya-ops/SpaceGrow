@@ -36,7 +36,7 @@ function App() {
         <Route path="/scorm" element={<Scorm />} />
         <Route path="/eq-module" element={<SessionInitializer><EqModule /></SessionInitializer>} />
         <Route path="/people-games-module" element={<SessionInitializer><PeopleGamesModule /></SessionInitializer>} />
-        <Route path="/cabinet" element={<Cabinet />} />
+        <Route path="/cabinet" element={<AppContainer><Cabinet /></AppContainer>} />
         <Route path="/cabinet/shelf" element={<AppContainer><CabinetShelf /></AppContainer>} />
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<AppContainer><HomeRoute /></AppContainer>} />

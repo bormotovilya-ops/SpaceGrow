@@ -232,7 +232,7 @@ export const apiUtils = {
     }
   },
 
-  /** Upsert user_identities by cookie_id: set UTM for anonymous; optionally set tg_user_id when stitching. */
+  /** Upsert user_identities by cookie_id: set UTM (для любой записи по cookie_id — и анонимной, и с tg_user_id). */
   async upsertUserIdentity(cookieId, utmParams = {}, tgUserId = null) {
     const supabase = await getSupabase();
     if (!supabase) return { ok: false };
@@ -243,21 +243,16 @@ export const apiUtils = {
         .from('user_identities')
         .select('id')
         .eq('cookie_id', cookieId)
-        .is('tg_user_id', null)
         .limit(1)
         .maybeSingle();
-      if (existing?.id) {
-        const payload = {};
-        if (hasUtm) {
-          payload.utm_source = utmParams.utm_source ?? null;
-          payload.utm_medium = utmParams.utm_medium ?? null;
-          payload.utm_campaign = utmParams.utm_campaign ?? null;
-        }
-        if (Object.keys(payload).length) {
-          const { error } = await supabase.from('user_identities').update(payload).eq('id', existing.id);
-          if (error) throw error;
-        }
-      } else if (hasUtm) {
+      if (existing?.id && hasUtm) {
+        const { error } = await supabase.from('user_identities').update({
+          utm_source: utmParams.utm_source ?? null,
+          utm_medium: utmParams.utm_medium ?? null,
+          utm_campaign: utmParams.utm_campaign ?? null
+        }).eq('id', existing.id);
+        if (error) throw error;
+      } else if (!existing?.id && hasUtm) {
         const { error } = await supabase.from('user_identities').insert({
           cookie_id: cookieId,
           tg_user_id: null,
