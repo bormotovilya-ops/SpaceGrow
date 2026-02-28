@@ -1036,6 +1036,26 @@ function streamToBuffer(stream) {
   })
 }
 
+/** Лог ошибки TTS с полными деталями (message, code, stack, прочие поля) */
+function logTtsError(label, err) {
+  if (err == null) { console.error(`[TTS] ${label}:`, err); return }
+  if (typeof err === 'string') { console.error(`[TTS] ${label}:`, err); return }
+  const e = err
+  const out = {
+    name: e?.name,
+    message: e?.message,
+    code: e?.code,
+    errno: e?.errno,
+    stack: e?.stack,
+    cause: e?.cause ? { message: e.cause?.message, code: e.cause?.code } : undefined
+  }
+  for (const key of Object.keys(e)) {
+    if (!(key in out) && typeof e[key] !== 'function') out[key] = e[key]
+  }
+  console.error(`[TTS] ${label}:`, JSON.stringify(out, null, 2))
+  if (e?.stack) console.error(e.stack)
+}
+
 const TTS_VOICE = 'ru-RU-SvetlanaNeural'
 // В примерах edge-tts-node используется WEBM; при 500 на MP3 пробуем WEBM
 const TTS_FORMAT = OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS
@@ -1082,8 +1102,7 @@ app.post('/api/tts', async (req, res) => {
     return res.send(buffer)
   } catch (err) {
     if (tts && typeof tts.close === 'function') try { tts.close() } catch (_) {}
-    const msg = err?.message || String(err)
-    console.warn('TTS (edge-tts-node) failed:', msg)
+    logTtsError('edge-tts-node failed', err)
   }
   // 2) Fallback: Python edge-tts (часто стабильнее при блокировке WebSocket)
   try {
@@ -1093,7 +1112,7 @@ app.post('/api/tts', async (req, res) => {
       return res.send(buffer)
     }
   } catch (pyErr) {
-    console.error('TTS (Python edge-tts) failed:', pyErr?.message || pyErr)
+    logTtsError('Python edge-tts failed', pyErr)
   }
   res.status(500).json({
     error: 'TTS failed',

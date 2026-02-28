@@ -17,6 +17,32 @@ function streamToBuffer(stream) {
   })
 }
 
+/** Лог ошибки с полными деталями (message/code/stack и прочие поля) */
+function logTtsError(label, err) {
+  if (err == null) {
+    console.error(`[TTS] ${label}:`, err)
+    return
+  }
+  if (typeof err === 'string') {
+    console.error(`[TTS] ${label}:`, err)
+    return
+  }
+  const e = err
+  const out = {
+    name: e?.name,
+    message: e?.message,
+    code: e?.code,
+    errno: e?.errno,
+    stack: e?.stack,
+    cause: e?.cause ? { message: e.cause?.message, code: e.cause?.code } : undefined
+  }
+  for (const key of Object.keys(e)) {
+    if (!(key in out) && typeof e[key] !== 'function') out[key] = e[key]
+  }
+  console.error(`[TTS] ${label}:`, JSON.stringify(out, null, 2))
+  if (e?.stack) console.error(e.stack)
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
@@ -53,7 +79,14 @@ export default async function handler(req, res) {
     res.send(buffer)
   } catch (err) {
     if (tts && typeof tts.close === 'function') try { tts.close() } catch (_) {}
-    console.error('TTS error:', err)
-    res.status(500).json({ error: 'TTS failed', message: err?.message || 'Unknown error' })
+    logTtsError('error', err)
+    const msg = err?.message || String(err)
+    const code = err?.code
+    res.status(500).json({
+      error: 'TTS failed',
+      message: msg,
+      code: code || undefined,
+      hint: msg.includes('Connect') ? 'WebSocket к speech.platform.bing.com недоступен (сеть/файрвол/сервер)' : undefined
+    })
   }
 }

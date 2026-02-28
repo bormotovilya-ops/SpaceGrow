@@ -38,10 +38,17 @@ async function playWithEdgeTTS(text, onEnd) {
     })
     if (!res.ok) {
       let msg = res.statusText
+      let code
+      let hint
       try {
         const j = await res.json()
         if (j?.message) msg = j.message
+        if (j?.code) code = j.code
+        if (j?.hint) hint = j.hint
       } catch (_) {}
+      if (import.meta.env?.DEV && (code || hint)) {
+        console.warn('[Cabinet TTS]', msg, code ? `code: ${code}` : '', hint || '')
+      }
       throw new Error(msg)
     }
     const blob = await res.blob()
