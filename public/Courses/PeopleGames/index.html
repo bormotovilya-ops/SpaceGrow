@@ -1124,11 +1124,6 @@
     }
     .novella-scene.scene-alisa-office .novella-choices { grid-column: 1; grid-row: 1; }
     .novella-scene.scene-alisa-office.has-character .scene-text-zone { grid-column: 1; grid-row: 2; }
-    /* Слайды 49–50 без выбора: персонаж выше, как на слайде 48 */
-    #ch4-win-final .novella-scene .character-sprite,
-    #ch4-smooth .novella-scene .character-sprite {
-      align-self: center;
-    }
     /* Глава 5: зал совета — фоны по контексту, без отдельного слоя справа (картинка = фон) */
     .novella-scene.scene-boardroom,
     .novella-scene.scene-boardroom-dialogue,
@@ -1619,6 +1614,18 @@
     .berne-hint-box .berne-hint-title { font-weight: 700; color: #fbbf24; font-size: 0.9375rem; margin-bottom: 0.35rem; }
     .berne-hint-box .berne-hint-body { font-size: 0.875rem; color: #e2e8f0; line-height: 1.5; margin: 0; }
     @media (max-width: 640px) {
+      .scene-text-zone .scene-content {
+        max-height: min(42vh, 320px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .berne-hint-box {
+        max-height: min(36vh, 260px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-top: 0.5rem;
+      }
+      .berne-hint-box .berne-hint-body { font-size: 0.8125rem; }
       .slide:has(.novella-scene) .slide-inner { max-width: 100%; padding: 0 0.35rem; }
       .novella-chapter-scene { height: calc(0.8 * (100vh - 52px)); min-height: 240px; max-height: calc(0.8 * (100vh - 52px)); flex: 0 0 auto; }
       /* Единая высота ряда с персонажем — без доп. обёрток оба спрайта прямые дети .novella-scene, одна и та же базовая линия */
@@ -1643,6 +1650,7 @@
         grid-column: 1 / -1;
         grid-row: 2;
         min-height: 0;
+        max-height: 48vh;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
@@ -1671,6 +1679,7 @@
         grid-column: 1 / -1;
         grid-row: 2;
         min-height: 0;
+        max-height: 48vh;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
@@ -1699,6 +1708,7 @@
         grid-column: 1 / -1;
         grid-row: 2;
         min-height: 0;
+        max-height: 48vh;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
@@ -1727,6 +1737,7 @@
         grid-column: 1 / -1;
         grid-row: 2;
         min-height: 0;
+        max-height: 48vh;
         justify-content: flex-start;
         padding: 0.4rem 0.5rem 0.5rem;
       }
@@ -1773,11 +1784,6 @@
         justify-self: end;
         align-self: end;
         margin-top: 0 !important;
-      }
-      #ch4-win-final .novella-scene .character-sprite,
-      #ch4-smooth .novella-scene .character-sprite {
-        align-self: center;
-        transform: translateY(-4%) scale(var(--chapter-character-scale));
       }
       @keyframes boss-slide-in-mobile {
         from { transform: translateY(8%) scale(1.22) translateX(-120%); }
