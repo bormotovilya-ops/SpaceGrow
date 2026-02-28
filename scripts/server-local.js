@@ -1057,9 +1057,111 @@ function logTtsError(label, err) {
 }
 
 const TTS_VOICE = 'ru-RU-SvetlanaNeural'
-// В примерах edge-tts-node используется WEBM; при 500 на MP3 пробуем WEBM
 const TTS_FORMAT = OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS
 const TTS_CONTENT_TYPE = 'audio/webm'
+const GOOGLE_TTS_VOICE = 'ru-RU-Wavenet-A'
+const AZURE_VOICE = 'ru-RU-SvetlanaNeural'
+
+function escapeXml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
+/** Azure Speech TTS (Светлана, 500k символов/мес бесплатно F0) */
+async function ttsViaAzure(text) {
+  const key = getEnv('AZURE_SPEECH_KEY') || getEnv('AZURE_TTS_KEY')
+  const region = getEnv('AZURE_SPEECH_REGION') || getEnv('AZURE_TTS_REGION') || 'westeurope'
+  if (!key) return null
+  const url = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`
+  const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='ru-RU'><voice name='${AZURE_VOICE}'>${escapeXml(text)}</voice></speak>`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Ocp-Apim-Subscription-Key': key,
+      'Content-Type': 'application/ssml+xml',
+      'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+      'User-Agent': 'MYMiniapp-TTS/1.0'
+    },
+    body: ssml
+  })
+  if (!res.ok) throw new Error(`Azure TTS ${res.status}: ${await res.text()}`)
+  return Buffer.from(await res.arrayBuffer())
+}
+
+/** Yandex SpeechKit TTS v3 (1 млн символов/мес бесплатно, Алена) */
+async function ttsViaYandex(text) {
+  const apiKey = getEnv('YANDEX_SPEECHKIT_API_KEY') || getEnv('YANDEX_TTS_API_KEY')
+  const folderId = getEnv('YANDEX_SPEECHKIT_FOLDER_ID') || getEnv('YANDEX_TTS_FOLDER_ID')
+  if (!apiKey || !folderId) return null
+  const url = 'https://tts.api.cloud.yandex.net/tts/v3/utteranceSynthesis'
+  const body = {
+    text,
+    hints: [{ voice: 'alena' }],
+    output_audio_spec: { container_audio: { container_audio_type: 'MP3' } },
+    unsafe_mode: true
+  }
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Api-Key ${apiKey}`,
+      'x-folder-id': folderId,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+  if (!res.ok) throw new Error(`Yandex TTS ${res.status}: ${await res.text()}`)
+  const chunks = []
+  const reader = res.body.getReader()
+  let buf = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += new TextDecoder().decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop() || ''
+    for (const line of lines) {
+      if (!line.trim()) continue
+      try {
+        const obj = JSON.parse(line)
+        const b64 = obj?.audioChunk?.data ?? obj?.result?.audioChunk?.data ?? obj?.audio_chunk?.data
+        if (b64) chunks.push(Buffer.from(b64, 'base64'))
+      } catch (_) {}
+    }
+  }
+  if (buf.trim()) {
+    try {
+      const obj = JSON.parse(buf)
+      const b64 = obj?.audioChunk?.data ?? obj?.result?.audioChunk?.data ?? obj?.audio_chunk?.data
+      if (b64) chunks.push(Buffer.from(b64, 'base64'))
+    } catch (_) {}
+  }
+  if (chunks.length === 0) throw new Error('Yandex TTS: no audio in response')
+  return Buffer.concat(chunks)
+}
+
+/** Google Cloud TTS через REST API */
+async function ttsViaGoogleCloud(text) {
+  const apiKey = getEnv('GOOGLE_TTS_API_KEY') || getEnv('GOOGLE_CLOUD_API_KEY')
+  if (!apiKey) return null
+  const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${encodeURIComponent(apiKey)}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      input: { text },
+      voice: { languageCode: 'ru-RU', name: GOOGLE_TTS_VOICE },
+      audioConfig: { audioEncoding: 'MP3', sampleRateHertz: 24000 }
+    })
+  })
+  if (!res.ok) throw new Error(`Google TTS ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  if (!json.audioContent) throw new Error('Google TTS: no audioContent')
+  return Buffer.from(json.audioContent, 'base64')
+}
 
 /** Озвучка через Python edge-tts (fallback при ошибке WebSocket в edge-tts-node) */
 function ttsViaPythonEdgeTTS(text) {
@@ -1090,8 +1192,38 @@ app.post('/api/tts', async (req, res) => {
   const text = typeof req.body?.text === 'string' ? req.body.text.trim() : ''
   if (!text) return res.status(400).json({ error: 'Missing or empty text' })
   if (text.length > 5000) return res.status(400).json({ error: 'Text too long' })
+  // 1) Azure Speech (Светлана, 500k символов/мес бесплатно F0)
+  try {
+    const buffer = await ttsViaAzure(text)
+    if (buffer && buffer.length > 0) {
+      res.setHeader('Content-Type', 'audio/mpeg')
+      return res.send(buffer)
+    }
+  } catch (err) {
+    logTtsError('Azure TTS failed', err)
+  }
+  // 2) Yandex SpeechKit (Алена, 1 млн символов/мес бесплатно)
+  try {
+    const buffer = await ttsViaYandex(text)
+    if (buffer && buffer.length > 0) {
+      res.setHeader('Content-Type', 'audio/mpeg')
+      return res.send(buffer)
+    }
+  } catch (err) {
+    logTtsError('Yandex TTS failed', err)
+  }
+  // 3) Google Cloud TTS
+  try {
+    const buffer = await ttsViaGoogleCloud(text)
+    if (buffer && buffer.length > 0) {
+      res.setHeader('Content-Type', 'audio/mpeg')
+      return res.send(buffer)
+    }
+  } catch (err) {
+    logTtsError('Google TTS failed', err)
+  }
+  // 4) edge-tts-node (WebSocket)
   let tts
-  // 1) Пробуем edge-tts-node
   try {
     tts = new MsEdgeTTS({})
     await tts.setMetadata(TTS_VOICE, TTS_FORMAT)
@@ -1104,19 +1236,20 @@ app.post('/api/tts', async (req, res) => {
     if (tts && typeof tts.close === 'function') try { tts.close() } catch (_) {}
     logTtsError('edge-tts-node failed', err)
   }
-  // 2) Fallback: Python edge-tts (часто стабильнее при блокировке WebSocket)
+  // 5) Python edge-tts (webm)
   try {
     const buffer = await ttsViaPythonEdgeTTS(text)
     if (buffer && buffer.length > 0) {
-      res.setHeader('Content-Type', 'audio/mpeg')
+      res.setHeader('Content-Type', TTS_CONTENT_TYPE)
       return res.send(buffer)
     }
   } catch (pyErr) {
     logTtsError('Python edge-tts failed', pyErr)
   }
+  const hasKey = getEnv('AZURE_SPEECH_KEY') || getEnv('AZURE_TTS_KEY') || (getEnv('YANDEX_SPEECHKIT_API_KEY') && getEnv('YANDEX_SPEECHKIT_FOLDER_ID')) || getEnv('GOOGLE_TTS_API_KEY') || getEnv('GOOGLE_CLOUD_API_KEY')
   res.status(500).json({
     error: 'TTS failed',
-    message: 'Озвучка недоступна. Установите Python и выполните: pip install edge-tts'
+    message: hasKey ? 'TTS провайдеры недоступны' : 'Добавьте AZURE_SPEECH_KEY, YANDEX_SPEECHKIT_API_KEY или GOOGLE_TTS_API_KEY в .env (или pip install edge-tts)'
   })
 })
 

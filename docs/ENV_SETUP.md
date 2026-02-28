@@ -58,3 +58,52 @@ Project → Settings → Environment Variables:
 
 После добавления переменной сделайте Redeploy.
 
+## TTS (озвучка в Кабинете)
+
+Озвучка текста голосом (цитаты чая, ответы эксперта). Приоритет: **Azure Speech** → **Yandex SpeechKit** → Google Cloud TTS → Edge TTS.
+
+### Azure Speech (Светлана, F0 без карты)
+
+1. [Azure Portal](https://portal.azure.com) → Create resource → **Speech**
+2. Выберите Free tier (F0): 500 000 символов/месяц бесплатно, карта не обязательна
+3. Keys and Endpoint → скопируйте Key 1 и Region (например `westeurope`)
+4. Добавьте в `.env` или Vercel → Settings → Environment Variables:
+
+```env
+AZURE_SPEECH_KEY=ваш_ключ
+AZURE_SPEECH_REGION=westeurope
+```
+
+Голос: `ru-RU-SvetlanaNeural` (женский русский).
+
+### Yandex SpeechKit (Алена, 1 млн символов/мес бесплатно)
+
+1. [Yandex Cloud](https://console.cloud.yandex.ru) → Создать каталог (folder)
+2. Включить сервис **SpeechKit** в каталоге
+3. Создать API-ключ: IAM → Сервисные аккаунты → Создать → Выдать роль `ai.speechkit-stt.user` и `ai.speechkit-tts.user`
+4. Скопировать ID каталога (folder) и API-ключ
+5. Добавьте в `.env` или Vercel:
+
+```env
+YANDEX_SPEECHKIT_API_KEY=ваш_api_ключ
+YANDEX_SPEECHKIT_FOLDER_ID=ваш_id_каталога
+```
+
+Голос: `alena` (женский русский).
+
+### Google Cloud TTS (fallback)
+
+1. [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Enable **Cloud Text-to-Speech API**
+2. Credentials → Create credentials → API key
+3. Добавьте в `.env` или Vercel:
+
+```env
+GOOGLE_TTS_API_KEY=ваш_api_ключ
+```
+
+Бесплатно: 4 млн символов/месяц (WaveNet). Голос: `ru-RU-Wavenet-A`.
+
+Без ключей используется Edge TTS (может не работать на Vercel из‑за WebSocket).
+
+**Примечание:** Для Yandex SpeechKit нужны оба параметра — API-ключ и ID каталога.
+
