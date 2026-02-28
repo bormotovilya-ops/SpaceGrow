@@ -1,0 +1,33 @@
+.sitemap-page {
+  padding-top: calc(var(--app-header-height, 120px) + 2rem);
+  box-sizing: border-box;
+}
+
+.sitemap-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.sitemap-header h1 {
+  flex: 1;
+  margin: 0;
+  margin-bottom: 0;
+}
+
+.sitemap-back-to-admin {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #e4e4e7;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.sitemap-back-to-admin:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+}

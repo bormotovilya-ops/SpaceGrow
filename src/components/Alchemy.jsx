@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import Header from './Header'
 import MatrixCalculator from './MatrixCalculator'
 import Diagnostics from './Diagnostics'
@@ -18,6 +18,7 @@ const ROUTED_TOOLS = ['tarot', 'astrolabe', 'tests', 'ikigai', 'onboarding', 'mi
 function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClick }) {
   const { toolId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { logContentView, logEvent, logCTAClick, trackSectionView } = useLogEvent()
   const [localArtifact, setLocalArtifact] = useState(null)
   const selectedArtifact = toolId
@@ -62,6 +63,14 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
   useEffect(() => {
     trackSectionView(toolId ? `alchemy-${toolId}` : 'alchemy')
   }, [toolId, trackSectionView])
+
+  // Открытие с полки шкафа: state.openNovella или state.selectedArtifact
+  useEffect(() => {
+    const state = location.state
+    if (!state) return
+    if (state.selectedArtifact) setLocalArtifact(state.selectedArtifact)
+    if (state.openNovella) setShowNovella(true)
+  }, [location.state])
 
   useEffect(() => {
     if (toolId && !ROUTED_TOOLS.includes(toolId)) {

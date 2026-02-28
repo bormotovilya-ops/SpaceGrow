@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, ChevronDown, Folder, FileText } from 'lucide-react'
 import { getSupabase } from '../utils/supabaseClient'
 import { sitemapTree, SEGMENTS } from '../config/sitemapData'
+import Header from './Header'
+import './Sitemap.css'
 
 /** Нормализация id для сравнения: убираем / и #, приводим к нижнему регистру */
 function normalizeId(s) {
@@ -185,6 +187,7 @@ function Row({ node, depth, isOpen, onToggle, countMap, top20Threshold, openIds 
 }
 
 function Sitemap() {
+  const navigate = useNavigate()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [openIds, setOpenIds] = useState(new Set())
@@ -260,9 +263,26 @@ function Sitemap() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-6">
+    <div className="sitemap-page min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-6">
+      <Header
+        onAvatarClick={() => navigate('/profile')}
+        onConsultation={() => navigate('/diagnostics')}
+        onBack={() => navigate('/funnel')}
+        onAlchemyClick={() => navigate('/alchemy')}
+        onHomeClick={() => navigate('/home')}
+        activeMenuId={null}
+      />
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-semibold text-zinc-100 mb-2">Карта сайта</h1>
+        <div className="sitemap-header">
+          <h1 className="sitemap-title text-2xl md:text-3xl font-semibold text-zinc-100">Карта сайта</h1>
+          <button
+            type="button"
+            className="sitemap-back-to-admin"
+            onClick={() => navigate('/admin')}
+          >
+            В админку
+          </button>
+        </div>
         <p className="text-zinc-400 text-sm mb-6">Древовидная структура и живая аналитика из БД (клики по разделам).</p>
 
         {loading ? (

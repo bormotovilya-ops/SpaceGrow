@@ -8,6 +8,7 @@ import PersonReport from './PersonReport'
 import BlockDetail from './BlockDetail'
 import AdminSettings from './AdminSettings'
 import AdminChats from './AdminChats'
+import AdminDashboard from './AdminDashboard'
 import { openTelegramLink } from '../utils/telegram'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
@@ -80,11 +81,27 @@ export function PersonReportRoute() {
   )
 }
 
+export function AdminDashboardRoute() {
+  const navigate = useNavigate()
+  return (
+    <AdminDashboard
+      onBack={() => navigate('/funnel')}
+      onAvatarClick={() => navigate('/profile')}
+      onConsultation={() => navigate('/diagnostics')}
+      onAlchemyClick={() => navigate('/alchemy')}
+      onHomeClick={() => navigate('/home')}
+    />
+  )
+}
+
 export function AdminSettingsRoute() {
   const navigate = useNavigate()
   return (
     <AdminSettings
-      onBack={() => navigate(-1)}
+      onBack={() => navigate('/admin')}
+      onAvatarClick={() => navigate('/profile')}
+      onConsultation={() => navigate('/diagnostics')}
+      onAlchemyClick={() => navigate('/alchemy')}
       onHomeClick={() => navigate('/home')}
     />
   )
@@ -94,7 +111,10 @@ export function AdminChatsRoute() {
   const navigate = useNavigate()
   return (
     <AdminChats
-      onBack={() => navigate(-1)}
+      onBack={() => navigate('/admin')}
+      onAvatarClick={() => navigate('/profile')}
+      onConsultation={() => navigate('/diagnostics')}
+      onAlchemyClick={() => navigate('/alchemy')}
       onHomeClick={() => navigate('/home')}
     />
   )

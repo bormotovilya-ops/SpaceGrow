@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Header from './Header'
 import ActivityTimeline from './ActivityTimeline'
 import EngagementChart from './EngagementChart'
@@ -38,6 +39,7 @@ function stripLeadingEmoji(str) {
 const HIDDEN_EVENT_NAMES = ['personal_path_view', 'astrolabe_pdf_action', 'card_draw']
 
 function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlchemyClick }) {
+  const navigate = useNavigate()
   const { logPersonalPathView, getSessionInfo, logContentView } = useLogEvent()
   const [selectedPeriod, setSelectedPeriod] = useState('24h')
   const [reportData, setReportData] = useState(null)
@@ -1669,6 +1671,13 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="person-report-back-to-admin"
+            onClick={() => navigate('/admin')}
+          >
+            В админку
+          </button>
         </div>
 
         {(refreshing && (

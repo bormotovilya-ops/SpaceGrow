@@ -15,7 +15,7 @@
   -ms-overflow-style: none;
   height: 100vh;
   padding-bottom: 40px;
-  padding-top: 180px;
+  padding-top: calc(var(--app-header-height, 120px) + 1rem);
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -81,6 +81,10 @@
   gap: 12px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+}
+
+.person-report-time-filter .person-report-back-to-admin {
+  margin-left: auto;
 }
 
 .time-filter-label {
@@ -160,6 +164,22 @@
   text-align: center;
   margin-bottom: 40px;
   color: white;
+}
+
+.person-report-back-to-admin {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.person-report-back-to-admin:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .person-report-header h1 {

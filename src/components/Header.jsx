@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './Header.css'
+import kabinetIcon from '../../DOP/Картинки/меню/kabinet.png'
 
 function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeClick, activeMenuId }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const pathname = location?.pathname ?? ''
 
-  // Подсветка по пути, если activeMenuId не передан (напр. Цифровая Алхимия, Диагностика)
+  // Подсветка по пути, если activeMenuId не передан
   const derivedActiveId = pathname.startsWith('/alchemy') ? 'alchemy'
     : pathname.startsWith('/diagnostics') ? 'diagnostics'
     : pathname === '/home' ? 'home'
     : pathname.startsWith('/profile') ? 'profile'
     : pathname.startsWith('/funnel') || pathname.startsWith('/block') ? 'portal'
+    : pathname.startsWith('/cabinet') ? 'cabinet'
     : null
   const resolvedActiveId = activeMenuId ?? derivedActiveId
 
@@ -40,7 +43,8 @@ function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeC
     { id: 'profile', icon: '/images/Ava.png', label: 'Илья Бормотов', onClick: onAvatarClick, isProfile: true },
     { id: 'diagnostics', icon: '/images/CTA.png', label: 'Диагностика в подарок', onClick: onConsultation, highlight: true },
     { id: 'portal', icon: '/images/AICP.png', label: 'Что под капотом', onClick: onBack },
-    { id: 'alchemy', icon: '/images/Portal.png', label: 'Цифровая Алхимия', onClick: onAlchemyClick }
+    // Новый пункт меню «Кабинет» с переходом на /cabinet
+    { id: 'cabinet', icon: kabinetIcon, label: 'Кабинет', onClick: () => navigate('/cabinet') }
   ]
 
   return (

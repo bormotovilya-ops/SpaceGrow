@@ -444,7 +444,7 @@ function Profile({ onBack, onAvatarClick, onDiagnostics, onAlchemyClick, onChatC
                     <button
                       type="button"
                       className="profile-admin-btn"
-                      onClick={() => navigate('/admin/settings')}
+                      onClick={() => navigate('/admin')}
                     >
                       ⚙️ Администрирование
                     </button>

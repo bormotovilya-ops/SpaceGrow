@@ -48,6 +48,14 @@ export const sitemapTree = [
     ]
   },
   {
+    id: 'cabinet',
+    label: 'Кабинет',
+    icon: '📚',
+    path: '/cabinet',
+    segment: 'soft',
+    matchId: 'cabinet_root'
+  },
+  {
     id: 'diagnostics',
     label: 'Диагностика',
     icon: '🧬',

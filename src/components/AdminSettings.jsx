@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSupabase } from '../utils/supabaseClient'
+import Header from './Header'
 import Switch from './ui/Switch'
 import './AdminSettings.css'
 
 /** Формат настройки от get_all_bot_settings: { key, value, value_type, description } */
 const VALUE_TYPES = { boolean: 'boolean', number: 'number', text: 'text' }
 
-function AdminSettings({ onBack, onHomeClick }) {
+function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onAlchemyClick }) {
   const navigate = useNavigate()
   const [settings, setSettings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -146,19 +147,19 @@ function AdminSettings({ onBack, onHomeClick }) {
 
   return (
     <div className="admin-settings-page">
+      <Header
+        onAvatarClick={onAvatarClick || (() => navigate('/profile'))}
+        onConsultation={onConsultation || (() => navigate('/diagnostics'))}
+        onBack={onBack || (() => navigate('/admin'))}
+        onAlchemyClick={onAlchemyClick || (() => navigate('/alchemy'))}
+        onHomeClick={onHomeClick || (() => navigate('/home'))}
+        activeMenuId={null}
+      />
       <header className="admin-settings-header">
-        <button type="button" className="admin-settings-back" onClick={() => (onBack ? onBack() : navigate('/home'))}>
-          ← Назад
+        <button type="button" className="admin-settings-back" onClick={() => (onBack ? onBack() : navigate('/admin'))}>
+          ← В админку
         </button>
         <h1 className="admin-settings-title">Настройки бота</h1>
-        <button type="button" className="admin-settings-home" onClick={() => navigate('/admin/chats')}>
-          Чаты
-        </button>
-        {onHomeClick && (
-          <button type="button" className="admin-settings-home" onClick={onHomeClick}>
-            Главная
-          </button>
-        )}
       </header>
 
       {loading && <div className="admin-settings-loading">Загрузка настроек…</div>}

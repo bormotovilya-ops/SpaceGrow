@@ -1,8 +1,9 @@
 .admin-settings-page {
   min-height: 100vh;
-  padding: 1rem 1.5rem 2rem;
+  padding: calc(var(--app-header-height, 120px) + 1rem) 1.5rem 2rem 1.5rem;
   max-width: 56rem;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .admin-settings-header {
@@ -149,7 +150,7 @@
 /* ——— Планшет и мобильный ——— */
 @media (max-width: 768px) {
   .admin-settings-page {
-    padding: 0.75rem 1rem 1.5rem;
+    padding: calc(var(--app-header-height, 120px) + 0.75rem) 1rem 1.5rem 1rem;
     max-width: 100%;
     box-sizing: border-box;
   }
@@ -228,7 +229,7 @@
 /* ——— Узкий мобильный ——— */
 @media (max-width: 480px) {
   .admin-settings-page {
-    padding: 0.5rem 0.75rem 1rem;
+    padding: calc(var(--app-header-height, 120px) + 0.5rem) 0.75rem 1rem 0.75rem;
   }
 
   .admin-settings-header {

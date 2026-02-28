@@ -1,0 +1,799 @@
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import './Cabinet.css'
+import Header from './Header'
+import { useLogEvent } from '../hooks/useLogEvent'
+import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+
+const IMAGE_ASPECT = 1 // 1:1
+
+const STORAGE_KEY = 'cabinet-zones'
+
+const MIN_POINTS = 3
+const MAX_POINTS = 8
+
+function isPolygonPoints(z, minLen = MIN_POINTS) {
+  return z && Array.isArray(z.points) && z.points.length >= minLen &&
+    z.points.every((p) => typeof p?.x === 'number' && typeof p?.y === 'number')
+}
+
+/** Изменить число вершин: при увеличении — добавляем точку (середина между последней и первой), при уменьшении — обрезаем */
+function resizePoints(points, newLen) {
+  const n = Math.max(MIN_POINTS, Math.min(MAX_POINTS, Math.round(newLen)))
+  const arr = points.slice(0, n).map((p) => ({ ...p }))
+  while (arr.length < n) {
+    const last = arr[arr.length - 1]
+    const first = arr[0]
+    arr.push({ x: (last.x + first.x) / 2, y: (last.y + first.y) / 2 })
+  }
+  return arr
+}
+
+function rectToPoints(x, y, width, height) {
+  const hw = width / 2
+  const hh = height / 2
+  return [
+    { x: x - hw, y: y - hh },
+    { x: x + hw, y: y - hh },
+    { x: x + hw, y: y + hh },
+    { x: x - hw, y: y + hh }
+  ]
+}
+
+/** Проверка: точка (x, y) в % внутри многоугольника (массив {x, y} в %) */
+function pointInPolygon(x, y, points) {
+  let inside = false
+  const n = points.length
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = points[i].x
+    const yi = points[i].y
+    const xj = points[j].x
+    const yj = points[j].y
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside
+  }
+  return inside
+}
+
+function loadZones() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const v = JSON.parse(raw)
+    if (!v.yinyang || typeof v.yinyang.x !== 'number' || typeof v.yinyang.y !== 'number' || typeof v.yinyang.size !== 'number') return null
+    let book = v.book
+    if (!isPolygonPoints(book)) {
+      if (book && typeof book.x === 'number' && typeof book.y === 'number' && typeof book.width === 'number' && typeof book.height === 'number') {
+        book = { points: rectToPoints(book.x, book.y, book.width, book.height) }
+      } else {
+        book = { points: DEFAULT_BOOK.points.map((p) => ({ ...p })) }
+      }
+    }
+    let laptop = v.laptop
+    if (!isPolygonPoints(laptop)) {
+      laptop = { points: DEFAULT_LAPTOP.points.map((p) => ({ ...p })) }
+    }
+    let leftCabinet = v.leftCabinet
+    if (!isPolygonPoints(leftCabinet)) {
+      leftCabinet = { points: DEFAULT_LEFT_CABINET.points.map((p) => ({ ...p })) }
+    }
+    let rightCabinet = v.rightCabinet
+    if (!isPolygonPoints(rightCabinet)) {
+      rightCabinet = { points: DEFAULT_RIGHT_CABINET.points.map((p) => ({ ...p })) }
+    }
+    let tea = v.tea
+    if (!isPolygonPoints(tea)) {
+      tea = { points: DEFAULT_TEA.points.map((p) => ({ ...p })) }
+    }
+    let expert = v.expert
+    if (!isPolygonPoints(expert)) {
+      expert = { points: DEFAULT_EXPERT.points.map((p) => ({ ...p })) }
+    }
+    return { yinyang: v.yinyang, book, laptop, leftCabinet, rightCabinet, tea, expert }
+  } catch (_) {}
+  return null
+}
+
+const DEFAULT_YINYANG = {
+  x: 50,
+  y: 35,
+  size: 18
+}
+
+// Четырёхугольник по 4 точкам (% от изображения): порядок — верх-лево, верх-право, низ-право, низ-лево
+const DEFAULT_BOOK = {
+  points: [
+    { x: 28, y: 53 },
+    { x: 42, y: 55 },
+    { x: 40, y: 72 },
+    { x: 30, y: 70 }
+  ]
+}
+
+const DEFAULT_LAPTOP = {
+  points: [
+    { x: 55, y: 45 },
+    { x: 75, y: 48 },
+    { x: 72, y: 68 },
+    { x: 58, y: 65 }
+  ]
+}
+
+const DEFAULT_LEFT_CABINET = {
+  points: [
+    { x: 10, y: 40 },
+    { x: 28, y: 42 },
+    { x: 26, y: 75 },
+    { x: 12, y: 73 }
+  ]
+}
+
+const DEFAULT_RIGHT_CABINET = {
+  points: [
+    { x: 72, y: 40 },
+    { x: 90, y: 42 },
+    { x: 88, y: 75 },
+    { x: 74, y: 73 }
+  ]
+}
+
+const DEFAULT_TEA = {
+  points: [
+    { x: 38, y: 48 },
+    { x: 52, y: 50 },
+    { x: 50, y: 65 },
+    { x: 40, y: 63 }
+  ]
+}
+
+const TEA_QUOTES = [
+  { author: 'Лу Юй', text: '«Чай особенно подходит людям чистого поведения и скромной добродетели».' },
+  { author: 'Китайская пословица', text: '«Лучше три дня без пищи, чем один день без чая».' },
+  { author: 'Чань-буддийская формула', text: '«Чай и дзен — одного вкуса».' },
+  { author: 'Русская поговорка', text: '«Чай пить — не дрова рубить».' },
+  { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' }
+]
+
+const DEFAULT_EXPERT = {
+  points: [
+    { x: 50, y: 25 },
+    { x: 65, y: 26 },
+    { x: 70, y: 35 },
+    { x: 62, y: 42 },
+    { x: 52, y: 38 }
+  ]
+}
+
+function Cabinet() {
+  const { logContentView, trackSectionView } = useLogEvent()
+  const navigate = useNavigate()
+  const containerRef = useRef(null)
+  const [zoneStyles, setZoneStyles] = useState({ yinyang: null, book: null, laptop: null, leftCabinet: null, rightCabinet: null, tea: null, expert: null })
+  const saved = loadZones()
+  const [coordsYinyang, setCoordsYinyang] = useState(() => saved?.yinyang ? { ...saved.yinyang } : { ...DEFAULT_YINYANG })
+  const [coordsBook, setCoordsBook] = useState(() => {
+    const b = saved?.book
+    if (b && isPolygonPoints(b)) return { points: b.points.map((p) => ({ ...p })) }
+    return { points: DEFAULT_BOOK.points.map((p) => ({ ...p })) }
+  })
+  const [coordsLaptop, setCoordsLaptop] = useState(() => {
+    const L = saved?.laptop
+    if (L && isPolygonPoints(L)) return { points: L.points.map((p) => ({ ...p })) }
+    return { points: DEFAULT_LAPTOP.points.map((p) => ({ ...p })) }
+  })
+  const [coordsLeftCabinet, setCoordsLeftCabinet] = useState(() => {
+    const L = saved?.leftCabinet
+    if (L && isPolygonPoints(L)) return { points: L.points.map((p) => ({ ...p })) }
+    return { points: DEFAULT_LEFT_CABINET.points.map((p) => ({ ...p })) }
+  })
+  const [coordsRightCabinet, setCoordsRightCabinet] = useState(() => {
+    const R = saved?.rightCabinet
+    if (R && isPolygonPoints(R)) return { points: R.points.map((p) => ({ ...p })) }
+    return { points: DEFAULT_RIGHT_CABINET.points.map((p) => ({ ...p })) }
+  })
+  const [coordsTea, setCoordsTea] = useState(() => {
+    const T = saved?.tea
+    if (T && isPolygonPoints(T)) return { points: T.points.map((p) => ({ ...p })) }
+    return { points: DEFAULT_TEA.points.map((p) => ({ ...p })) }
+  })
+  const [coordsExpert, setCoordsExpert] = useState(() => {
+    const E = saved?.expert
+    if (E && isPolygonPoints(E)) return { points: E.points.map((p) => ({ ...p })) }
+    return { points: DEFAULT_EXPERT.points.map((p) => ({ ...p })) }
+  })
+  const [selectedZone, setSelectedZone] = useState('yinyang')
+  const [showDebug, setShowDebug] = useState(() =>
+    typeof window !== 'undefined' && window.location.hash === '#cabinet-debug'
+  )
+  const [showTeaOverlay, setShowTeaOverlay] = useState(false)
+  const [teaQuoteIndex, setTeaQuoteIndex] = useState(0)
+  const teaOverlayTimerRef = useRef(null)
+
+  useEffect(() => () => {
+    if (teaOverlayTimerRef.current) clearTimeout(teaOverlayTimerRef.current)
+  }, [])
+
+  useEffect(() => {
+    logContentView('page', 'cabinet', {
+      contentTitle: 'Кабинет',
+      page: '/cabinet'
+    })
+    trackSectionView('cabinet')
+    yandexMetricaReachGoal(null, 'cabinet_page_view')
+  }, [logContentView, trackSectionView])
+
+  useEffect(() => {
+    const updateZones = () => {
+      const el = containerRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const w = rect.width
+      const h = rect.height
+      const useContain = w >= 768
+      let imgLeft, imgTop, imgW, imgH
+      if (useContain) {
+        if (w >= h) {
+          imgH = h
+          imgW = h * IMAGE_ASPECT
+          imgLeft = (w - imgW) / 2
+          imgTop = 0
+        } else {
+          imgW = w
+          imgH = w / IMAGE_ASPECT
+          imgLeft = 0
+          imgTop = (h - imgH) / 2
+        }
+      } else {
+        imgLeft = 0
+        imgTop = 0
+        imgW = w
+        imgH = h
+      }
+      const baseW = Math.min(imgW, imgH)
+      const yinyangSize = baseW * (coordsYinyang.size / 100)
+      const bookClip = coordsBook.points.map((p) => `${p.x}% ${p.y}%`).join(', ')
+      const laptopClip = coordsLaptop.points.map((p) => `${p.x}% ${p.y}%`).join(', ')
+      const leftCabinetClip = coordsLeftCabinet.points.map((p) => `${p.x}% ${p.y}%`).join(', ')
+      const rightCabinetClip = coordsRightCabinet.points.map((p) => `${p.x}% ${p.y}%`).join(', ')
+      const teaClip = coordsTea.points.map((p) => `${p.x}% ${p.y}%`).join(', ')
+      const expertClip = coordsExpert.points.map((p) => `${p.x}% ${p.y}%`).join(', ')
+      setZoneStyles({
+        yinyang: {
+          left: imgLeft + imgW * (coordsYinyang.x / 100) - yinyangSize / 2,
+          top: imgTop + imgH * (coordsYinyang.y / 100) - yinyangSize / 2,
+          width: yinyangSize,
+          height: yinyangSize
+        },
+        book: {
+          left: imgLeft,
+          top: imgTop,
+          width: imgW,
+          height: imgH,
+          clipPath: `polygon(${bookClip})`
+        },
+        laptop: {
+          left: imgLeft,
+          top: imgTop,
+          width: imgW,
+          height: imgH,
+          clipPath: `polygon(${laptopClip})`
+        },
+        leftCabinet: {
+          left: imgLeft,
+          top: imgTop,
+          width: imgW,
+          height: imgH,
+          clipPath: `polygon(${leftCabinetClip})`
+        },
+        rightCabinet: {
+          left: imgLeft,
+          top: imgTop,
+          width: imgW,
+          height: imgH,
+          clipPath: `polygon(${rightCabinetClip})`
+        },
+        tea: {
+          left: imgLeft,
+          top: imgTop,
+          width: imgW,
+          height: imgH,
+          clipPath: `polygon(${teaClip})`
+        },
+        expert: {
+          left: imgLeft,
+          top: imgTop,
+          width: imgW,
+          height: imgH,
+          clipPath: `polygon(${expertClip})`
+        }
+      })
+    }
+    updateZones()
+    window.addEventListener('resize', updateZones)
+    return () => window.removeEventListener('resize', updateZones)
+  }, [coordsYinyang, coordsBook, coordsLaptop, coordsLeftCabinet, coordsRightCabinet, coordsTea, coordsExpert])
+
+  const handleAlchemyClick = () => navigate('/alchemy')
+
+  const handleBookClick = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    if (pointInPolygon(x, y, coordsBook.points)) navigate('/profile/about')
+  }
+
+  const handleLaptopClick = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    if (pointInPolygon(x, y, coordsLaptop.points)) navigate('/admin')
+  }
+
+  const handleLeftCabinetClick = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    if (pointInPolygon(x, y, coordsLeftCabinet.points)) navigate('/cabinet/shelf')
+  }
+
+  const handleRightCabinetClick = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    if (pointInPolygon(x, y, coordsRightCabinet.points)) navigate('/cabinet/shelf')
+  }
+
+  const handleTeaClick = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    if (!pointInPolygon(x, y, coordsTea.points)) return
+    if (teaOverlayTimerRef.current) clearTimeout(teaOverlayTimerRef.current)
+    setTeaQuoteIndex(Math.floor(Math.random() * TEA_QUOTES.length))
+    setShowTeaOverlay(true)
+    teaOverlayTimerRef.current = setTimeout(() => {
+      setShowTeaOverlay(false)
+      teaOverlayTimerRef.current = null
+    }, 10000)
+  }
+
+  const handleExpertClick = (e) => {
+    const el = e.currentTarget
+    const rect = el.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    if (pointInPolygon(x, y, coordsExpert.points)) navigate('/diagnostics')
+  }
+
+  const saveCoords = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      yinyang: coordsYinyang,
+      book: coordsBook,
+      laptop: coordsLaptop,
+      leftCabinet: coordsLeftCabinet,
+      rightCabinet: coordsRightCabinet,
+      tea: coordsTea,
+      expert: coordsExpert
+    }))
+    setShowDebug(false)
+  }
+
+  const resetCurrentZone = () => {
+    if (selectedZone === 'yinyang') setCoordsYinyang({ ...DEFAULT_YINYANG })
+    else if (selectedZone === 'book') setCoordsBook({ points: DEFAULT_BOOK.points.map((p) => ({ ...p })) })
+    else if (selectedZone === 'laptop') setCoordsLaptop({ points: DEFAULT_LAPTOP.points.map((p) => ({ ...p })) })
+    else if (selectedZone === 'leftCabinet') setCoordsLeftCabinet({ points: DEFAULT_LEFT_CABINET.points.map((p) => ({ ...p })) })
+    else if (selectedZone === 'rightCabinet') setCoordsRightCabinet({ points: DEFAULT_RIGHT_CABINET.points.map((p) => ({ ...p })) })
+    else if (selectedZone === 'tea') setCoordsTea({ points: DEFAULT_TEA.points.map((p) => ({ ...p })) })
+    else setCoordsExpert({ points: DEFAULT_EXPERT.points.map((p) => ({ ...p })) })
+  }
+
+  const resetAllZones = () => {
+    setCoordsYinyang({ ...DEFAULT_YINYANG })
+    setCoordsBook({ points: DEFAULT_BOOK.points.map((p) => ({ ...p })) })
+    setCoordsLaptop({ points: DEFAULT_LAPTOP.points.map((p) => ({ ...p })) })
+    setCoordsLeftCabinet({ points: DEFAULT_LEFT_CABINET.points.map((p) => ({ ...p })) })
+    setCoordsRightCabinet({ points: DEFAULT_RIGHT_CABINET.points.map((p) => ({ ...p })) })
+    setCoordsTea({ points: DEFAULT_TEA.points.map((p) => ({ ...p })) })
+    setCoordsExpert({ points: DEFAULT_EXPERT.points.map((p) => ({ ...p })) })
+    localStorage.removeItem(STORAGE_KEY)
+  }
+
+  const coordsY = coordsYinyang
+  const coordsB = coordsBook
+  const coordsL = coordsLaptop
+  const coordsLCab = coordsLeftCabinet
+  const coordsRCab = coordsRightCabinet
+  const coordsT = coordsTea
+  const coordsE = coordsExpert
+
+  return (
+    <div className="cabinet-root">
+      <Header
+        onAvatarClick={() => navigate('/profile')}
+        onConsultation={() => navigate('/diagnostics')}
+        onBack={() => navigate('/funnel')}
+        onAlchemyClick={() => navigate('/alchemy')}
+        onHomeClick={() => navigate('/home')}
+        activeMenuId="cabinet"
+      />
+      <div className={`cabinet-page${showTeaOverlay ? ' cabinet-page--tea' : ''}`} ref={containerRef}>
+        <div className={`cabinet-background${showTeaOverlay ? ' cabinet-background--tea' : ''}`} aria-label="Кабинет" />
+        {showTeaOverlay && (
+          <div className="cabinet-tea-overlay" aria-live="polite">
+            <div className="cabinet-tea-quote">
+              <p className="cabinet-tea-quote-text">{TEA_QUOTES[teaQuoteIndex].text}</p>
+              <p className="cabinet-tea-quote-author">— {TEA_QUOTES[teaQuoteIndex].author}</p>
+            </div>
+          </div>
+        )}
+        {zoneStyles.yinyang && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-yinyang ${showDebug && selectedZone === 'yinyang' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.yinyang}
+            onClick={handleAlchemyClick}
+            aria-label="Открыть Цифровую Алхимию"
+            title="Цифровая Алхимия"
+          />
+        )}
+        {zoneStyles.book && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-book ${showDebug && selectedZone === 'book' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.book}
+            onClick={handleBookClick}
+            aria-label="Обо мне"
+            title="Обо мне"
+          />
+        )}
+        {zoneStyles.laptop && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-laptop ${showDebug && selectedZone === 'laptop' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.laptop}
+            onClick={handleLaptopClick}
+            aria-label="Администрирование"
+            title="Администрирование"
+          />
+        )}
+        {zoneStyles.leftCabinet && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-left-cabinet ${showDebug && selectedZone === 'leftCabinet' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.leftCabinet}
+            onClick={handleLeftCabinetClick}
+            aria-label="Левый шкаф"
+            title="Левый шкаф"
+          />
+        )}
+        {zoneStyles.rightCabinet && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-right-cabinet ${showDebug && selectedZone === 'rightCabinet' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.rightCabinet}
+            onClick={handleRightCabinetClick}
+            aria-label="Правый шкаф"
+            title="Правый шкаф"
+          />
+        )}
+        {zoneStyles.tea && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-tea ${showDebug && selectedZone === 'tea' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.tea}
+            onClick={handleTeaClick}
+            aria-label="Чай"
+            title="Чай"
+          />
+        )}
+        {zoneStyles.expert && (
+          <button
+            type="button"
+            className={`cabinet-zone cabinet-zone-expert ${showDebug && selectedZone === 'expert' ? 'cabinet-zone-debug' : ''}`}
+            style={zoneStyles.expert}
+            onClick={handleExpertClick}
+            aria-label="Эксперт"
+            title="Эксперт"
+          />
+        )}
+      </div>
+
+      {showDebug && (
+        <div className="cabinet-debug">
+          <div className="cabinet-debug-panel">
+            <div className="cabinet-debug-panel-header">
+              <h3>Настройка зон</h3>
+              <div className="cabinet-debug-tabs">
+                <button
+                  type="button"
+                  className={selectedZone === 'yinyang' ? 'active' : ''}
+                  onClick={() => setSelectedZone('yinyang')}
+                >
+                  Инь-ян
+                </button>
+                <button
+                  type="button"
+                  className={selectedZone === 'book' ? 'active' : ''}
+                  onClick={() => setSelectedZone('book')}
+                >
+                  Книга «Обо мне»
+                </button>
+                <button
+                  type="button"
+                  className={selectedZone === 'laptop' ? 'active' : ''}
+                  onClick={() => setSelectedZone('laptop')}
+                >
+                  Ноутбук
+                </button>
+                <button
+                  type="button"
+                  className={selectedZone === 'leftCabinet' ? 'active' : ''}
+                  onClick={() => setSelectedZone('leftCabinet')}
+                >
+                  Левый шкаф
+                </button>
+                <button
+                  type="button"
+                  className={selectedZone === 'rightCabinet' ? 'active' : ''}
+                  onClick={() => setSelectedZone('rightCabinet')}
+                >
+                  Правый шкаф
+                </button>
+                <button
+                  type="button"
+                  className={selectedZone === 'tea' ? 'active' : ''}
+                  onClick={() => setSelectedZone('tea')}
+                >
+                  Чай
+                </button>
+                <button
+                  type="button"
+                  className={selectedZone === 'expert' ? 'active' : ''}
+                  onClick={() => setSelectedZone('expert')}
+                >
+                  Эксперт
+                </button>
+              </div>
+            </div>
+            <div className="cabinet-debug-panel-body">
+            <p className="cabinet-debug-hint">
+              {selectedZone === 'yinyang'
+                ? 'Круг: центр X, Y и диаметр (%).'
+                : 'Многоугольник: от 3 до 8 точек (X, Y в % от изображения).'}
+            </p>
+
+            {selectedZone === 'yinyang' ? (
+              <>
+                <label>
+                  X (центр, %): <strong>{coordsY.x}</strong>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={coordsY.x}
+                    onChange={(e) => setCoordsYinyang((c) => ({ ...c, x: Number(e.target.value) }))}
+                  />
+                </label>
+                <label>
+                  Y (центр, %): <strong>{coordsY.y}</strong>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={coordsY.y}
+                    onChange={(e) => setCoordsYinyang((c) => ({ ...c, y: Number(e.target.value) }))}
+                  />
+                </label>
+                <label>
+                  Размер — диаметр (%): <strong>{coordsY.size}</strong>
+                  <input
+                    type="range"
+                    min={5}
+                    max={40}
+                    value={coordsY.size}
+                    onChange={(e) => setCoordsYinyang((c) => ({ ...c, size: Number(e.target.value) }))}
+                  />
+                </label>
+              </>
+            ) : selectedZone === 'book' ? (
+              <>
+                <div className="cabinet-debug-point-count">
+                  <label>Количество точек:</label>
+                  <select value={coordsB.points.length} onChange={(e) => setCoordsBook((c) => ({ ...c, points: resizePoints(c.points, Number(e.target.value)) }))}>
+                    {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {coordsB.points.map((p, i) => (
+                <div key={i} className="cabinet-debug-point">
+                  <span>Точка {i + 1}</span>
+                  <label>
+                    X (%): <strong>{p.x}</strong>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={p.x}
+                      onChange={(e) => setCoordsBook((c) => ({
+                        ...c,
+                        points: c.points.map((pt, j) => j === i ? { ...pt, x: Number(e.target.value) } : pt)
+                      }))}
+                    />
+                  </label>
+                  <label>
+                    Y (%): <strong>{p.y}</strong>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={p.y}
+                      onChange={(e) => setCoordsBook((c) => ({
+                        ...c,
+                        points: c.points.map((pt, j) => j === i ? { ...pt, y: Number(e.target.value) } : pt)
+                      }))}
+                    />
+                  </label>
+                </div>
+              ))}
+              </>
+            ) : selectedZone === 'laptop' ? (
+              <>
+                <div className="cabinet-debug-point-count">
+                  <label>Количество точек:</label>
+                  <select value={coordsL.points.length} onChange={(e) => setCoordsLaptop((c) => ({ ...c, points: resizePoints(c.points, Number(e.target.value)) }))}>
+                    {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {coordsL.points.map((p, i) => (
+                <div key={i} className="cabinet-debug-point">
+                  <span>Точка {i + 1}</span>
+                  <label>
+                    X (%): <strong>{p.x}</strong>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={p.x}
+                      onChange={(e) => setCoordsLaptop((c) => ({
+                        ...c,
+                        points: c.points.map((pt, j) => j === i ? { ...pt, x: Number(e.target.value) } : pt)
+                      }))}
+                    />
+                  </label>
+                  <label>
+                    Y (%): <strong>{p.y}</strong>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={p.y}
+                      onChange={(e) => setCoordsLaptop((c) => ({
+                        ...c,
+                        points: c.points.map((pt, j) => j === i ? { ...pt, y: Number(e.target.value) } : pt)
+                      }))}
+                    />
+                  </label>
+                </div>
+              ))}
+              </>
+            ) : selectedZone === 'leftCabinet' ? (
+              <>
+                <div className="cabinet-debug-point-count">
+                  <label>Количество точек:</label>
+                  <select value={coordsLCab.points.length} onChange={(e) => setCoordsLeftCabinet((c) => ({ ...c, points: resizePoints(c.points, Number(e.target.value)) }))}>
+                    {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {coordsLCab.points.map((p, i) => (
+                <div key={i} className="cabinet-debug-point">
+                  <span>Точка {i + 1}</span>
+                  <label>
+                    X (%): <strong>{p.x}</strong>
+                    <input type="range" min={0} max={100} value={p.x} onChange={(e) => setCoordsLeftCabinet((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, x: Number(e.target.value) } : pt) }))} />
+                  </label>
+                  <label>
+                    Y (%): <strong>{p.y}</strong>
+                    <input type="range" min={0} max={100} value={p.y} onChange={(e) => setCoordsLeftCabinet((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, y: Number(e.target.value) } : pt) }))} />
+                  </label>
+                </div>
+              ))}
+              </>
+            ) : selectedZone === 'rightCabinet' ? (
+              <>
+                <div className="cabinet-debug-point-count">
+                  <label>Количество точек:</label>
+                  <select value={coordsRCab.points.length} onChange={(e) => setCoordsRightCabinet((c) => ({ ...c, points: resizePoints(c.points, Number(e.target.value)) }))}>
+                    {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {coordsRCab.points.map((p, i) => (
+                <div key={i} className="cabinet-debug-point">
+                  <span>Точка {i + 1}</span>
+                  <label>
+                    X (%): <strong>{p.x}</strong>
+                    <input type="range" min={0} max={100} value={p.x} onChange={(e) => setCoordsRightCabinet((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, x: Number(e.target.value) } : pt) }))} />
+                  </label>
+                  <label>
+                    Y (%): <strong>{p.y}</strong>
+                    <input type="range" min={0} max={100} value={p.y} onChange={(e) => setCoordsRightCabinet((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, y: Number(e.target.value) } : pt) }))} />
+                  </label>
+                </div>
+              ))}
+              </>
+            ) : selectedZone === 'tea' ? (
+              <>
+                <div className="cabinet-debug-point-count">
+                  <label>Количество точек:</label>
+                  <select value={coordsT.points.length} onChange={(e) => setCoordsTea((c) => ({ ...c, points: resizePoints(c.points, Number(e.target.value)) }))}>
+                    {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {coordsT.points.map((p, i) => (
+                <div key={i} className="cabinet-debug-point">
+                  <span>Точка {i + 1}</span>
+                  <label>
+                    X (%): <strong>{p.x}</strong>
+                    <input type="range" min={0} max={100} value={p.x} onChange={(e) => setCoordsTea((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, x: Number(e.target.value) } : pt) }))} />
+                  </label>
+                  <label>
+                    Y (%): <strong>{p.y}</strong>
+                    <input type="range" min={0} max={100} value={p.y} onChange={(e) => setCoordsTea((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, y: Number(e.target.value) } : pt) }))} />
+                  </label>
+                </div>
+              ))}
+              </>
+            ) : (
+              <>
+                <div className="cabinet-debug-point-count">
+                  <label>Количество точек:</label>
+                  <select value={coordsE.points.length} onChange={(e) => setCoordsExpert((c) => ({ ...c, points: resizePoints(c.points, Number(e.target.value)) }))}>
+                    {[3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                {coordsE.points.map((p, i) => (
+                <div key={i} className="cabinet-debug-point">
+                  <span>Точка {i + 1}</span>
+                  <label>
+                    X (%): <strong>{p.x}</strong>
+                    <input type="range" min={0} max={100} value={p.x} onChange={(e) => setCoordsExpert((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, x: Number(e.target.value) } : pt) }))} />
+                  </label>
+                  <label>
+                    Y (%): <strong>{p.y}</strong>
+                    <input type="range" min={0} max={100} value={p.y} onChange={(e) => setCoordsExpert((c) => ({ ...c, points: c.points.map((pt, j) => j === i ? { ...pt, y: Number(e.target.value) } : pt) }))} />
+                  </label>
+                </div>
+              ))}
+              </>
+            )}
+            </div>
+            <div className="cabinet-debug-actions">
+              <button type="button" onClick={saveCoords}>Сохранить и закрыть</button>
+              <button type="button" onClick={resetCurrentZone}>Сбросить текущую зону</button>
+              <button type="button" onClick={resetAllZones}>Сбросить все</button>
+              <button type="button" onClick={() => setShowDebug(false)}>Закрыть без сохранения</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Кнопка настройки зон временно скрыта. Чтобы показать: раскомментировать и вернуть условие (import.meta.env?.DEV || window.location.hash === '#cabinet-debug') */}
+      {false && !showDebug && (
+        <button
+          type="button"
+          className="cabinet-debug-toggle"
+          onClick={() => setShowDebug(true)}
+          title="Настроить зоны"
+        >
+          Настроить зоны
+        </button>
+      )}
+    </div>
+  )
+}
+
+export default Cabinet
+

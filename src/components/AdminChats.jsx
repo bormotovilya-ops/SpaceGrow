@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSupabase } from '../utils/supabaseClient'
+import Header from './Header'
 import './AdminChats.css'
 
-function AdminChats({ onBack, onHomeClick }) {
+function AdminChats({ onBack, onHomeClick, onAvatarClick, onConsultation, onAlchemyClick }) {
   const navigate = useNavigate()
   const [chats, setChats] = useState([])           // { tg_user_id, lastMessage, lastAt }
   const [userProfiles, setUserProfiles] = useState({}) // tg_user_id -> { first_name, last_name, username }
@@ -277,16 +278,19 @@ function AdminChats({ onBack, onHomeClick }) {
 
   return (
     <div className="admin-chats-page">
+      <Header
+        onAvatarClick={onAvatarClick || (() => navigate('/profile'))}
+        onConsultation={onConsultation || (() => navigate('/diagnostics'))}
+        onBack={onBack || (() => navigate('/admin'))}
+        onAlchemyClick={onAlchemyClick || (() => navigate('/alchemy'))}
+        onHomeClick={onHomeClick || (() => navigate('/home'))}
+        activeMenuId={null}
+      />
       <header className="admin-chats-header">
-        <button type="button" className="admin-chats-back" onClick={() => (onBack ? onBack() : navigate('/home'))}>
-          ← Назад
+        <button type="button" className="admin-chats-back" onClick={() => (onBack ? onBack() : navigate('/admin'))}>
+          ← В админку
         </button>
         <h1 className="admin-chats-title">Чаты</h1>
-        {onHomeClick && (
-          <button type="button" className="admin-chats-home" onClick={onHomeClick}>
-            Главная
-          </button>
-        )}
       </header>
 
       <div className="admin-chats-layout">

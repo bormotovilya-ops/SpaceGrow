@@ -1,0 +1,176 @@
+/* Страница полки: анимация приближения к шкафу, полки с книгами */
+.cabinet-shelf-root {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0a0a0f 0%, #1a1520 50%, #0d0d12 100%);
+}
+
+.cabinet-shelf-view {
+  position: relative;
+  min-height: calc(100vh - var(--app-header-height, 120px));
+  margin-top: var(--app-header-height, 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              filter 1.2s ease,
+              opacity 1s ease;
+  transform: scale(0.85) translateZ(0);
+  filter: blur(3px);
+  opacity: 0.6;
+}
+
+.cabinet-shelf-view.cabinet-shelf-approached {
+  transform: scale(1) translateZ(0);
+  filter: blur(0);
+  opacity: 1;
+}
+
+.cabinet-shelf-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 69, 139, 0.06) 0%, transparent 45%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  pointer-events: none;
+}
+
+.cabinet-shelf-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 900px;
+  padding: 24px 20px 48px;
+  animation: cabinet-shelf-content-in 0.8s ease 0.4s both;
+}
+
+@keyframes cabinet-shelf-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cabinet-shelf-title {
+  margin: 0 0 4px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffd700;
+  text-align: center;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.cabinet-shelf-subtitle {
+  margin: 0 0 32px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
+}
+
+.cabinet-shelf-section {
+  margin-bottom: 32px;
+}
+
+.cabinet-shelf-section-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.25);
+}
+
+.cabinet-shelf-books {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.cabinet-shelf-book {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(30, 28, 40, 0.95), rgba(20, 18, 28, 0.98));
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-align: center;
+  position: relative;
+}
+
+.cabinet-shelf-book:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.45);
+}
+
+.cabinet-shelf-book:active:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.cabinet-shelf-book--soon {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.cabinet-shelf-book-cover {
+  width: 72px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  border-radius: 6px;
+  background: linear-gradient(145deg, rgba(255, 215, 0, 0.12), rgba(180, 140, 80, 0.08));
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.cabinet-shelf-book--soon .cabinet-shelf-book-cover {
+  background: linear-gradient(145deg, rgba(100, 100, 110, 0.2), rgba(60, 60, 70, 0.15));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cabinet-shelf-book-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cabinet-shelf-book-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 180, 0, 0.25);
+  color: #ffd700;
+  font-weight: 600;
+}
+
+@media (min-width: 600px) {
+  .cabinet-shelf-books {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  .cabinet-shelf-book-cover {
+    width: 80px;
+    height: 106px;
+    font-size: 40px;
+  }
+}
