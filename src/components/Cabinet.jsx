@@ -22,11 +22,59 @@ const CABINET_BG_URLS = {
   laugh: '/images/kabexpLaught.png'
 }
 
-/** Озвучивает текст женским русским голосом (Web Speech API) */
+let currentTTSAudio = null
+
+/** Озвучка через Edge TTS (женский голос Svetlana). При ошибке — fallback на Web Speech API. */
+async function playWithEdgeTTS(text, onEnd) {
+  if (typeof window === 'undefined' || !text || !text.trim()) {
+    onEnd?.()
+    return false
+  }
+  try {
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text.trim() })
+    })
+    if (!res.ok) throw new Error(res.statusText)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    if (currentTTSAudio) {
+      currentTTSAudio.pause()
+      currentTTSAudio = null
+    }
+    const audio = new window.Audio(url)
+    currentTTSAudio = audio
+    audio.onended = () => {
+      URL.revokeObjectURL(url)
+      currentTTSAudio = null
+      onEnd?.()
+    }
+    audio.onerror = () => {
+      URL.revokeObjectURL(url)
+      currentTTSAudio = null
+      onEnd?.()
+    }
+    await audio.play()
+    return true
+  } catch (_) {
+    return false
+  }
+}
+
+function stopTTSPlayback() {
+  if (currentTTSAudio) {
+    currentTTSAudio.pause()
+    currentTTSAudio = null
+  }
+}
+
+/** Озвучивает текст женским русским голосом (Edge TTS Svetlana, иначе Web Speech API) */
 async function speakExpertText(text) {
-  if (typeof window === 'undefined' || !text || typeof text !== 'string') return
   const clean = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim()
   if (!clean) return
+  const usedEdge = await playWithEdgeTTS(clean)
+  if (usedEdge) return
   const synth = window.speechSynthesis
   if (!synth) return
   synth.cancel()
@@ -44,18 +92,20 @@ async function speakExpertText(text) {
   synth.speak(u)
 }
 
-/** Озвучивает цитату чая и вызывает onEnd по завершении */
+/** Озвучивает цитату чая (Edge TTS Svetlana, иначе Web Speech API), по завершении вызывает onEnd */
 async function speakTeaQuote(text, author, onEnd) {
-  if (typeof window === 'undefined' || !window.speechSynthesis) {
-    onEnd?.()
-    return
-  }
   const full = [text, author].filter(Boolean).join('. ')
   if (!full.trim()) {
     onEnd?.()
     return
   }
+  const usedEdge = await playWithEdgeTTS(full, onEnd)
+  if (usedEdge) return
   const synth = window.speechSynthesis
+  if (!synth) {
+    onEnd?.()
+    return
+  }
   synth.cancel()
   const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
     synth.onvoiceschanged = () => resolve(synth.getVoices())
@@ -217,7 +267,8 @@ const TEA_QUOTES = [
   { author: 'Чань-буддийская формула', text: '«Чай и дзен — одного вкуса».' },
   { author: 'Русская поговорка', text: '«Чай пить — не дрова рубить».' },
   { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' },
-  { author: 'Нативная реклама!', text: 'Недавно была в Сочи. Там есть прекрасный чайный клуб, называется Мэр-Пуэр.' }
+  { author: 'Нативная реклама!', text: 'Недавно была в Сочи. Там есть прекрасный чайный клуб, называется Мэр-Пуэр.' },
+  { author: '❤️Нативная реклама', text: 'В Перми лучший чай можно найти в доме чая и шёлка Красота востока.' }
 ]
 
 const DEFAULT_EXPERT = {
@@ -287,6 +338,24 @@ function Cabinet() {
   const saveToastRef = useRef(null)
   const [bgFront, setBgFront] = useState('default')
   const [bgBack, setBgBack] = useState('default')
+  const [expertUserName, setExpertUserName] = useState('Путник')
+  const [isSoundMuted, setIsSoundMuted] = useState(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('app_sound_enabled') === 'false') return true
+    return localStorage.getItem('cabinet-sound-muted') === 'true'
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const user = window.Telegram?.WebApp?.initDataUnsafe?.user ?? window.TelegramWebApp?.initDataUnsafe?.user
+    const name = user ? (user.first_name || user.username || 'Путник') : 'Путник'
+    setExpertUserName(name)
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('cabinet-sound-muted', String(isSoundMuted))
+  }, [isSoundMuted])
+
+  const handleToggleSound = () => setIsSoundMuted((prev) => !prev)
 
   useEffect(() => {
     const next = showLaughBackground ? 'laugh' : showTeaOverlay ? 'tea' : 'default'
@@ -330,6 +399,7 @@ function Cabinet() {
     if (saveToastRef.current) clearTimeout(saveToastRef.current)
     if (laughTimerRef.current) clearTimeout(laughTimerRef.current)
     if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+    stopTTSPlayback()
   }, [])
 
   // Загрузка зон из Supabase при монтировании (сохраняется после публикации)
@@ -502,6 +572,7 @@ function Cabinet() {
     const y = ((e.clientY - rect.top) / rect.height) * 100
     if (!pointInPolygon(x, y, coordsTea.points)) return
     if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+    stopTTSPlayback()
     const nativeIndex = TEA_QUOTES.findIndex((q) => q.author === 'Нативная реклама!')
     const quoteIndex = Math.random() < 0.4
       ? nativeIndex >= 0 ? nativeIndex : 0
@@ -509,7 +580,7 @@ function Cabinet() {
     setTeaQuoteIndex(quoteIndex)
     setShowTeaOverlay(true)
     const quote = TEA_QUOTES[quoteIndex]
-    speakTeaQuote(quote.text, quote.author, () => {
+    const onQuoteEnd = () => {
       setShowTeaOverlay(false)
       if (quote.author === 'Нативная реклама!') {
         setShowLaughBackground(true)
@@ -519,7 +590,12 @@ function Cabinet() {
           laughTimerRef.current = null
         }, 5000)
       }
-    })
+    }
+    if (isSoundMuted) {
+      onQuoteEnd()
+    } else {
+      speakTeaQuote(quote.text, quote.author, onQuoteEnd)
+    }
   }
 
   const handleExpertClick = (e) => {
@@ -562,6 +638,7 @@ function Cabinet() {
         body: JSON.stringify({
           message: '[Пользователь открыл диалог. Инициируй разговор: поприветствуй и задай направляющий вопрос о том, что привело его в кабинет.]',
           promptType: 'cabinet_expert',
+          userName: expertUserName,
           messageCount: 0,
           history: []
         })
@@ -573,16 +650,16 @@ function Cabinet() {
       const aiResponse = data.response || 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
-      speakExpertText(aiResponse)
+      if (!isSoundMuted) speakExpertText(aiResponse)
     } catch (_) {
       const fallback = 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: fallback }])
       await saveExpertMessage('outbound', fallback)
-      speakExpertText(fallback)
+      if (!isSoundMuted) speakExpertText(fallback)
     } finally {
       setIsLoadingExpert(false)
     }
-  }, [saveExpertMessage])
+  }, [saveExpertMessage, expertUserName, isSoundMuted])
 
   const loadExpertHistory = useCallback(async () => {
     const supabase = await getSupabase()
@@ -622,6 +699,7 @@ function Cabinet() {
     } else {
       expertInitDoneRef.current = false
       if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+      stopTTSPlayback()
     }
   }, [showExpertOverlay, loadExpertHistory])
 
@@ -640,7 +718,27 @@ function Cabinet() {
       )
       lastIndex = match.lastIndex
     }
-    if (lastIndex < text.length) elements.push(text.slice(lastIndex))
+    let tail = lastIndex < text.length ? text.slice(lastIndex) : ''
+    const plainUrlRegex = /(https?:\/\/[^\s\]\)]+)/g
+    if (plainUrlRegex.test(tail)) {
+      const parts = []
+      let i = 0
+      tail.replace(plainUrlRegex, (url) => {
+        const idx = tail.indexOf(url, i)
+        if (idx > i) parts.push(tail.slice(i, idx))
+        parts.push(
+          <a key={`url-${parts.length}`} href={url} target="_blank" rel="noopener noreferrer">
+            Перейти
+          </a>
+        )
+        i = idx + url.length
+        return url
+      })
+      if (i < tail.length) parts.push(tail.slice(i))
+      elements.push(...parts)
+    } else if (tail) {
+      elements.push(tail)
+    }
     return elements.length ? elements : text
   }
 
@@ -659,6 +757,7 @@ function Cabinet() {
         body: JSON.stringify({
           message: userQuestion,
           promptType: 'cabinet_expert',
+          userName: expertUserName,
           messageCount: history.filter((m) => m.role === 'user').length + 1,
           history
         })
@@ -670,7 +769,7 @@ function Cabinet() {
       const aiResponse = data.response || 'Не удалось получить ответ. Попробуйте ещё раз.'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
-      speakExpertText(aiResponse)
+      if (!isSoundMuted) speakExpertText(aiResponse)
       logEvent('ai', 'ai_chat_message', {
         page: '/cabinet',
         metadata: { context: 'cabinet_expert', user_message: userQuestion, ai_response: aiResponse }
@@ -679,7 +778,7 @@ function Cabinet() {
       const errMsg = err?.name === 'AbortError' ? 'Запрос занял слишком много времени.' : (err?.message || 'Ошибка сети.')
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: errMsg }])
       await saveExpertMessage('outbound', errMsg)
-      speakExpertText(errMsg)
+      if (!isSoundMuted) speakExpertText(errMsg)
     } finally {
       setIsLoadingExpert(false)
     }
@@ -766,6 +865,24 @@ function Cabinet() {
         onHomeClick={() => navigate('/home')}
         activeMenuId="cabinet"
       />
+      <button
+        type="button"
+        className="cabinet-sound-toggle"
+        onClick={handleToggleSound}
+        title={isSoundMuted ? 'Включить озвучку' : 'Выключить озвучку'}
+        aria-label={isSoundMuted ? 'Включить озвучку' : 'Выключить озвучку'}
+      >
+        {isSoundMuted ? (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.5 12C16.5 10.23 15.48 8.71 14 7.97V10.18L16.45 12.63C16.48 12.43 16.5 12.22 16.5 12Z" fill="currentColor"/>
+            <path d="M19 12C19 12.94 18.8 13.82 18.46 14.64L19.97 16.15C20.63 14.91 21 13.5 21 12C21 7.72 18.01 4.14 14 3.23V5.29C16.89 6.15 19 8.83 19 12ZM4.27 3L3 4.27L7.73 9H3V15H7L12 20V13.27L16.25 17.53C15.58 18.04 14.83 18.46 14 18.7V20.77C15.38 20.45 16.63 19.82 17.68 18.96L19.73 21L21 19.73L12 10.73L4.27 3ZM12 4L9.91 6.09L12 8.18V4Z" fill="currentColor"/>
+          </svg>
+        ) : (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 9V15H7L12 20V4L7 9H3ZM16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12ZM14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z" fill="currentColor"/>
+          </svg>
+        )}
+      </button>
       <div className={`cabinet-page${showTeaOverlay ? ' cabinet-page--tea' : ''}${showExpertOverlay ? ' cabinet-page--expert' : ''}${showLabelsAndGlow ? ' cabinet-zones-ready' : ''}`} ref={containerRef}>
         <div className="cabinet-background cabinet-background--back" style={{ backgroundImage: `url(${CABINET_BG_URLS[bgBack]})` }} aria-hidden="true" />
         <div className="cabinet-background cabinet-background--front" style={{ backgroundImage: `url(${CABINET_BG_URLS[bgFront]})` }} aria-label="Кабинет" />

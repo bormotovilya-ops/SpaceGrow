@@ -45,11 +45,73 @@
   z-index: 1;
 }
 
+/* Кнопка отключения озвучки (как в Алхимии) */
+.cabinet-sound-toggle {
+  position: fixed;
+  top: 90px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 215, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.cabinet-sound-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(255, 215, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.cabinet-sound-toggle:active {
+  transform: scale(0.95);
+}
+
+.cabinet-sound-toggle svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+  transition: all 0.3s ease;
+}
+
+.cabinet-sound-toggle:hover svg {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
+}
+
 /* Мобильные: фон и зоны не обрезаются — картинка целиком (contain) */
 @media (max-width: 768px) {
   .cabinet-background {
     background-size: contain;
     background-position: center center;
+  }
+
+  .cabinet-sound-toggle {
+    top: 75px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .cabinet-sound-toggle svg {
+    width: 22px;
+    height: 22px;
   }
 }
 

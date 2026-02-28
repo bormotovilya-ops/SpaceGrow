@@ -7,6 +7,17 @@ import './AdminSettings.css'
 
 /** Формат настройки от get_all_bot_settings: { key, value, value_type, description } */
 const VALUE_TYPES = { boolean: 'boolean', number: 'number', text: 'text' }
+const SUPPORT_CONTACT_KEY = 'support_contact'
+
+function normalizeContact(s) {
+  if (s == null || typeof s !== 'string') return ''
+  return s
+    .replace(/[\s\u00A0\u200B\u200C\u200D\uFEFF]+/g, '')
+    .replace(/^["']|["']$/g, '')
+    .replace(/^@+/g, '')
+    .toLowerCase()
+    .trim()
+}
 
 function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onAlchemyClick }) {
   const navigate = useNavigate()
@@ -15,6 +26,7 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
   const [error, setError] = useState(null)
   const [toast, setToast] = useState(null)
   const [savingKey, setSavingKey] = useState(null)
+  const [canEdit, setCanEdit] = useState(false)
 
   const showToast = useCallback((message, isError = false) => {
     setToast({ message, isError })
@@ -36,9 +48,38 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
         setError(rpcError.message || 'Ошибка загрузки настроек')
         return
       }
-      setSettings(Array.isArray(data) ? data : [])
+      const list = Array.isArray(data) ? data : []
+      setSettings(list)
+
+      const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null
+      const tgUser = tg?.initDataUnsafe?.user
+      const currentId = tgUser?.id != null ? String(tgUser.id).trim() : null
+      const rawUsername = tgUser?.username != null ? String(tgUser.username) : ''
+      const currentUsername = normalizeContact(rawUsername)
+
+      if (!currentId && !currentUsername) {
+        setCanEdit(false)
+        return
+      }
+
+      const supportRow = list.find((s) => s && s.key === SUPPORT_CONTACT_KEY)
+      let raw = supportRow?.value
+      if (raw != null && typeof raw === 'object' && !Array.isArray(raw)) {
+        raw = raw.value ?? raw.v ?? raw.data ?? JSON.stringify(raw)
+      }
+      const supportValue = raw != null ? String(raw).trim() : ''
+      if (!supportValue) {
+        setCanEdit(false)
+        return
+      }
+      const supportNorm = normalizeContact(supportValue)
+      const match =
+        (currentId && (currentId === supportValue.trim() || currentId === supportNorm)) ||
+        (currentUsername && (currentUsername === supportNorm || supportNorm === currentUsername))
+      setCanEdit(!!match)
     } catch (e) {
       setError(e?.message || 'Ошибка загрузки')
+      setCanEdit(false)
     } finally {
       setLoading(false)
     }
@@ -49,6 +90,7 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
   }, [loadSettings])
 
   const updateSetting = useCallback(async (key, value) => {
+    if (!canEdit) return
     setSavingKey(key)
     try {
       const supabase = await getSupabase()
@@ -73,7 +115,7 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
     } finally {
       setSavingKey(null)
     }
-  }, [showToast])
+  }, [showToast, canEdit])
 
   /**
    * Рендер поля по value_type: boolean -> Switch, number -> Input number, text -> Input text.
@@ -84,13 +126,14 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
       const { key, value, value_type, description } = setting
       const isSaving = savingKey === key
 
+      const isDisabled = !canEdit || isSaving
       switch (value_type) {
         case VALUE_TYPES.boolean: {
           const checked = value === true || value === 'true' || value === 1
           return (
             <Switch
               checked={checked}
-              disabled={isSaving}
+              disabled={isDisabled}
               onCheckedChange={(checked) => updateSetting(key, checked)}
             />
           )
@@ -102,7 +145,7 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
               type="number"
               className="admin-settings-input"
               value={num}
-              disabled={isSaving}
+              disabled={isDisabled}
               onChange={(e) => {
                 const v = e.target.value
                 const parsed = v === '' ? null : (e.target.valueAsNumber ?? Number(v))
@@ -130,7 +173,7 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
               type="text"
               className="admin-settings-input"
               value={str}
-              disabled={isSaving}
+              disabled={isDisabled}
               onChange={(e) =>
                 setSettings((prev) =>
                   prev.map((s) => (s.key === key ? { ...s, value: e.target.value } : s))
@@ -142,7 +185,7 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
         }
       }
     },
-    [updateSetting, savingKey]
+    [updateSetting, savingKey, canEdit]
   )
 
   return (
@@ -164,6 +207,11 @@ function AdminSettings({ onBack, onHomeClick, onAvatarClick, onConsultation, onA
 
       {loading && <div className="admin-settings-loading">Загрузка настроек…</div>}
       {error && <div className="admin-settings-error">{error}</div>}
+      {!loading && !error && !canEdit && (
+        <div className="admin-settings-forbidden">
+          Изменение параметров доступно только пользователю, указанному в настройке support_contact.
+        </div>
+      )}
 
       {!loading && !error && (
         <div className="admin-settings-list">

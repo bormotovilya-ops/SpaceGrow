@@ -280,7 +280,9 @@ async function buildSystemContext(shouldAddCTA = false, promptType = 'profile', 
   // Промпт Мастера Кабинета (эксперт). Groq лимит 6000 TPM — обрезаем системный промпт (~3 chars/token)
   if (promptType === 'cabinet_expert') {
     const full = await loadMasterPrompt()
-    return truncateText(full, 10000)
+    const hasName = userName && String(userName).trim() && String(userName).trim() !== 'Путник'
+    const nameBlock = '\n\n# Имя гостя в этом диалоге\n' + (hasName ? `Обращайся к гостю по имени: «${String(userName).trim()}».` : 'Имя не указано — обращение без имени.')
+    return truncateText(full + nameBlock, 10000)
   }
 
   // Стандартный промпт для профиля

@@ -6,6 +6,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFile, appendFile, mkdir, existsSync } from 'fs'
@@ -964,9 +965,12 @@ function truncateText(text, maxChars = 5000) {
 }
 
 // Функция для формирования полного промпта с файлами знаний
-async function buildSystemContext(shouldAddCTA = false, promptType = 'profile') {
+async function buildSystemContext(shouldAddCTA = false, promptType = 'profile', userName = 'Путник') {
   if (promptType === 'cabinet_expert') {
-    return loadMasterPrompt()
+    const full = await loadMasterPrompt()
+    const hasName = userName && String(userName).trim() && String(userName).trim() !== 'Путник'
+    const nameBlock = '\n\n# Имя гостя в этом диалоге\n' + (hasName ? `Обращайся к гостю по имени: «${String(userName).trim()}».` : 'Имя не указано — обращение без имени.')
+    return truncateText(full + nameBlock, 10000)
   }
   const knowledge = await loadKnowledgeFiles()
   
@@ -1018,6 +1022,38 @@ ${siteKnowledge}
 - Будь живым экспертом, не роботом${ctaInstruction}`
 }
 
+// Endpoint для озвучки (Edge TTS, женский голос Svetlana)
+const require = createRequire(import.meta.url)
+const { MsEdgeTTS, OUTPUT_FORMAT } = require('edge-tts-node')
+
+function streamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const chunks = []
+    stream.on('data', (chunk) => chunks.push(chunk))
+    stream.on('end', () => resolve(Buffer.concat(chunks)))
+    stream.on('error', reject)
+  })
+}
+
+app.post('/api/tts', async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  const text = typeof req.body?.text === 'string' ? req.body.text.trim() : ''
+  if (!text) return res.status(400).json({ error: 'Missing or empty text' })
+  if (text.length > 5000) return res.status(400).json({ error: 'Text too long' })
+  try {
+    const tts = new MsEdgeTTS()
+    await tts.setMetadata('ru-RU-SvetlanaNeural', OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3)
+    const stream = tts.toStream(text)
+    const buffer = await streamToBuffer(stream)
+    tts.close()
+    res.setHeader('Content-Type', 'audio/mpeg')
+    res.send(buffer)
+  } catch (err) {
+    console.error('TTS error:', err)
+    res.status(500).json({ error: 'TTS failed', message: err?.message })
+  }
+})
+
 // Endpoint для чата (эмулирует api/chat.js)
 app.post('/api/chat', async (req, res) => {
   console.log('\n' + '='.repeat(60))
@@ -1026,7 +1062,7 @@ app.post('/api/chat', async (req, res) => {
   console.log('📝 Сообщение:', req.body.message?.substring(0, 100) + (req.body.message?.length > 100 ? '...' : ''))
   console.log('📊 Message count:', req.body.messageCount || 0)
   
-  const { message, messageCount = 0, promptType = 'profile', history = [] } = req.body
+  const { message, messageCount = 0, promptType = 'profile', userName = 'Путник', history = [] } = req.body
 
   if (!message || !message.trim()) {
     console.error('❌ Пустое сообщение!')
@@ -1051,20 +1087,20 @@ app.post('/api/chat', async (req, res) => {
   if (USE_MOCK_ENV) {
     console.log('\n⚠️ ВНИМАНИЕ: USE_MOCK_RESPONSES=true - принудительно используется заглушка!')
     console.log('💡 Чтобы использовать Groq API, удалите или установите USE_MOCK_RESPONSES=false в .env')
-    const systemContext = await buildSystemContext(shouldAddCTA)
+    const systemContext = await buildSystemContext(shouldAddCTA, promptType, userName)
     return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 
   if (!GROQ_API_KEY) {
     console.error('\n❌ GROQ_API_KEY НЕ НАЙДЕН!')
     console.error('💡 Добавьте GROQ_API_KEY в файл .env')
-    const systemContext = await buildSystemContext(shouldAddCTA)
+    const systemContext = await buildSystemContext(shouldAddCTA, promptType, userName)
     return handleMockResponse(message, systemContext, res, messageCount, req)
   }
 
   // Загружаем файлы знаний и формируем полный промпт
   console.log('\n📚 Загрузка файлов знаний...', { promptType })
-  const systemContext = await buildSystemContext(shouldAddCTA, promptType)
+  const systemContext = await buildSystemContext(shouldAddCTA, promptType, userName)
   console.log('✅ Файлы знаний загружены, промпт сформирован')
   console.log('   - Длина промпта:', systemContext.length, 'символов')
   console.log('   - Should add CTA:', shouldAddCTA)

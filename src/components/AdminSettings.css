@@ -51,6 +51,17 @@
   border-radius: 0.5rem;
 }
 
+.admin-settings-forbidden {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 0.5rem;
+  color: rgba(251, 191, 36, 0.95);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .admin-settings-section-title {
   margin: 0 0 0.75rem;
   font-size: 1.1rem;
