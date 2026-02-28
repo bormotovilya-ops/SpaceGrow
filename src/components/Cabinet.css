@@ -32,26 +32,22 @@
 .cabinet-background {
   position: absolute;
   inset: 0;
-  background-image: url('/images/kabexp.png');
   background-repeat: no-repeat;
   background-position: center center;
-  /* contain — вся картинка видна целиком, без обрезки на мобильных */
   background-size: contain;
-  transition: background-image 0.3s ease;
 }
 
-.cabinet-background--tea {
-  background-image: url('/images/kabexptea.png');
+.cabinet-background--back {
+  z-index: 0;
 }
 
-.cabinet-background--laugh {
-  background-image: url('/images/kabexpLaught.png');
+.cabinet-background--front {
+  z-index: 1;
 }
 
 /* Мобильные: фон и зоны не обрезаются — картинка целиком (contain) */
 @media (max-width: 768px) {
-  .cabinet-background,
-  .cabinet-background--tea {
+  .cabinet-background {
     background-size: contain;
     background-position: center center;
   }

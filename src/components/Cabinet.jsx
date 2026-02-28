@@ -16,6 +16,12 @@ const STORAGE_KEY = 'cabinet-zones'
 
 const MIN_POINTS = 3
 
+const CABINET_BG_URLS = {
+  default: '/images/kabexp.png',
+  tea: '/images/kabexptea.png',
+  laugh: '/images/kabexpLaught.png'
+}
+
 /** Озвучивает текст женским русским голосом (Web Speech API) */
 async function speakExpertText(text) {
   if (typeof window === 'undefined' || !text || typeof text !== 'string') return
@@ -279,6 +285,24 @@ function Cabinet() {
   const [now, setNow] = useState(() => new Date())
   const [showLabelsAndGlow, setShowLabelsAndGlow] = useState(false)
   const saveToastRef = useRef(null)
+  const [bgFront, setBgFront] = useState('default')
+  const [bgBack, setBgBack] = useState('default')
+
+  useEffect(() => {
+    const next = showLaughBackground ? 'laugh' : showTeaOverlay ? 'tea' : 'default'
+    setBgFront((prev) => {
+      if (prev === next) return prev
+      setBgBack(prev)
+      return next
+    })
+  }, [showTeaOverlay, showLaughBackground])
+
+  useEffect(() => {
+    Object.values(CABINET_BG_URLS).forEach((src) => {
+      const img = new Image()
+      img.src = src
+    })
+  }, [])
 
   useEffect(() => {
     const img = new Image()
@@ -743,7 +767,8 @@ function Cabinet() {
         activeMenuId="cabinet"
       />
       <div className={`cabinet-page${showTeaOverlay ? ' cabinet-page--tea' : ''}${showExpertOverlay ? ' cabinet-page--expert' : ''}${showLabelsAndGlow ? ' cabinet-zones-ready' : ''}`} ref={containerRef}>
-        <div className={`cabinet-background${showLaughBackground ? ' cabinet-background--laugh' : showTeaOverlay ? ' cabinet-background--tea' : ''}`} aria-label="Кабинет" />
+        <div className="cabinet-background cabinet-background--back" style={{ backgroundImage: `url(${CABINET_BG_URLS[bgBack]})` }} aria-hidden="true" />
+        <div className="cabinet-background cabinet-background--front" style={{ backgroundImage: `url(${CABINET_BG_URLS[bgFront]})` }} aria-label="Кабинет" />
         {showTeaOverlay && (
           <div className="cabinet-tea-overlay" aria-live="polite">
             <div className="cabinet-tea-quote">
