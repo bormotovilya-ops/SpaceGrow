@@ -1,18 +1,20 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, Suspense, lazy } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import Profile from './Profile'
-import Alchemy from './Alchemy'
-import Diagnostics from './Diagnostics'
-import Home from './Home'
-import PersonReport from './PersonReport'
-import BlockDetail from './BlockDetail'
-import AdminSettings from './AdminSettings'
-import AdminChats from './AdminChats'
-import AdminDashboard from './AdminDashboard'
 import { openTelegramLink } from '../utils/telegram'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
 import { useLogEvent } from '../hooks/useLogEvent'
 import { getBlockById, getNextBlockId } from '../data/funnelData'
+
+// Ленивая загрузка тяжёлых страниц — уменьшает начальный бандл и время до первого отображения на слабых устройствах
+const Profile = lazy(() => import('./Profile'))
+const Alchemy = lazy(() => import('./Alchemy'))
+const Diagnostics = lazy(() => import('./Diagnostics'))
+const Home = lazy(() => import('./Home'))
+const PersonReport = lazy(() => import('./PersonReport'))
+const BlockDetail = lazy(() => import('./BlockDetail'))
+const AdminSettings = lazy(() => import('./AdminSettings'))
+const AdminChats = lazy(() => import('./AdminChats'))
+const AdminDashboard = lazy(() => import('./AdminDashboard'))
 
 export function ProfileRoute() {
   const navigate = useNavigate()

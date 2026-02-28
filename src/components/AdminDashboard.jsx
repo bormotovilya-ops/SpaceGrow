@@ -4,6 +4,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import Header from './Header'
 import BackToCabinet from './BackToCabinet'
 import Switch from './ui/Switch'
+import { useLogEvent } from '../hooks/useLogEvent'
 import './AdminDashboard.css'
 
 const LOCAL_SOUND_KEY = 'app_sound_enabled'
@@ -66,10 +67,15 @@ function buildMockVisitorsByDay() {
 
 function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, onAlchemyClick }) {
   const navigate = useNavigate()
+  const { trackSectionView } = useLogEvent()
   const [chartData, setChartData] = useState(null)
   const [chartLoading, setChartLoading] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(getLocalSoundEnabled)
   const [debugMode, setDebugMode] = useState(getLocalDebugMode)
+
+  useEffect(() => {
+    trackSectionView('cabinet-admin')
+  }, [trackSectionView])
 
   const apiBase = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL
     ? import.meta.env.VITE_API_URL.replace(/\/$/, '')

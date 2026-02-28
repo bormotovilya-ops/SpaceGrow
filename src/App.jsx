@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
 import SalesFunnel from './components/SalesFunnel'
 import SessionInitializer from './components/SessionInitializer'
 import Sitemap from './components/Sitemap'
@@ -22,6 +23,19 @@ import {
 } from './components/RouteWrappers'
 import './App.css'
 
+const PageLoader = () => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: '18px'
+  }}>
+    Загрузка…
+  </div>
+)
+
 const AppContainer = ({ children }) => (
   <SessionInitializer>
     <div className="container">{children}</div>
@@ -30,8 +44,10 @@ const AppContainer = ({ children }) => (
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
+        <Routes>
         <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/scorm" element={<Scorm />} />
         <Route path="/eq-module" element={<SessionInitializer><EqModule /></SessionInitializer>} />
@@ -54,8 +70,10 @@ function App() {
         <Route path="/admin/chats" element={<AppContainer><AdminChatsRoute /></AppContainer>} />
         <Route path="/admin/settings" element={<Navigate to="/admin" replace />} />
         <Route path="*" element={<Navigate to="/home" replace />} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

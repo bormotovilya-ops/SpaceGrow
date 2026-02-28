@@ -261,7 +261,7 @@ const TEA_QUOTES = [
   { author: 'Русская поговорка', text: '«Чай пить — не дрова рубить».' },
   { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' },
   { author: 'Нативная реклама!', text: 'Недавно была в Сочи. Там есть прекрасный чайный клуб, называется Мэр-Пуэр.' },
-  { author: 'Нативная реклама', text: 'В Перми лучший чай можно найти в доме чая и шёлка Красота востока.' }
+  { author: 'Нативная реклама', text: 'В Перми лучший чай можно найти в Красоте востока.' }
 ]
 
 const DEFAULT_EXPERT = {
@@ -524,7 +524,10 @@ function Cabinet() {
     return () => window.removeEventListener('resize', updateZones)
   }, [coordsYinyang, coordsBook, coordsLaptop, coordsLeftCabinet, coordsRightCabinet, coordsTea, coordsExpert])
 
-  const handleAlchemyClick = () => navigate('/alchemy')
+  const handleAlchemyClick = () => {
+    trackSectionView('cabinet-alchemy')
+    navigate('/alchemy')
+  }
 
   const handleBookClick = (e) => {
     const el = e.currentTarget
@@ -572,6 +575,7 @@ function Cabinet() {
       : Math.floor(Math.random() * TEA_QUOTES.length)
     setTeaQuoteIndex(quoteIndex)
     setShowTeaOverlay(true)
+    trackSectionView('cabinet-tea')
     const quote = TEA_QUOTES[quoteIndex]
     const onQuoteEnd = () => {
       setShowTeaOverlay(false)
@@ -598,6 +602,7 @@ function Cabinet() {
     const y = ((e.clientY - rect.top) / rect.height) * 100
     if (!pointInPolygon(x, y, coordsExpert.points)) return
     setShowExpertOverlay(true)
+    trackSectionView('cabinet-expert')
   }
 
   const getTgUserId = () => {

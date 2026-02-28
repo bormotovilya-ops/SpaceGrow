@@ -40,7 +40,7 @@ const HIDDEN_EVENT_NAMES = ['personal_path_view', 'astrolabe_pdf_action', 'card_
 
 function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlchemyClick }) {
   const navigate = useNavigate()
-  const { logPersonalPathView, getSessionInfo, logContentView } = useLogEvent()
+  const { logPersonalPathView, getSessionInfo, logContentView, trackSectionView } = useLogEvent()
   const [selectedPeriod, setSelectedPeriod] = useState('24h')
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -63,6 +63,10 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     console.log('📍 Tracking page view:', '/report')
     logContentView('page', 'personreport', { content_title: 'Персональный отчёт' })
   }, [logContentView])
+
+  useEffect(() => {
+    trackSectionView('cabinet-personreport')
+  }, [trackSectionView])
 
   const handleHeaderConsultation = () => {
     yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'person_report' })

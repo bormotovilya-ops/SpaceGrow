@@ -761,9 +761,10 @@ function base64ToBlob(base64String) {
   return new Blob([byteArray], { type: 'application/pdf' })
 }
 
+const SPACEGROWTH_BOT_URL = 'https://t.me/SpaceGrowthBot'
+
 // Функция для показа PDF после генерации на сервере
-// Функция для показа PDF после генерации на сервере
-function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) {
+function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false, isMobile = false) {
   const modal = document.createElement('div')
   modal.style.cssText = `
     position: fixed;
@@ -807,7 +808,9 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) 
   
   const text = document.createElement('p')
   if (telegramSent) {
-    text.innerHTML = '✅ PDF успешно сгенерирован на сервере и отправлен вам в Telegram!<br><br>📱 Проверьте сообщения в боте.'
+    text.innerHTML = '✅ PDF успешно сгенерирован и отправлен вам в Telegram!<br><br>📱 Проверьте сообщения в боте.'
+  } else if (isMobile) {
+    text.innerHTML = 'Подпишитесь на бота — PDF придёт вам в Telegram. Нажмите кнопку ниже.'
   } else {
     text.innerHTML = '✅ PDF успешно сгенерирован на сервере!<br><br>💾 Используйте кнопки ниже для скачивания файла.'
   }
@@ -817,6 +820,117 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) 
     margin: 0 0 25px 0;
     line-height: 1.6;
   `
+  
+  const buttonsWrap = document.createElement('div')
+  buttonsWrap.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  `
+  
+  // Если PDF уже отправлен в Telegram — даём кнопку открыть бота
+  if (telegramSent) {
+    const openBotBtn = document.createElement('a')
+    openBotBtn.href = SPACEGROWTH_BOT_URL
+    openBotBtn.target = '_blank'
+    openBotBtn.rel = 'noopener noreferrer'
+    openBotBtn.textContent = '📱 Открыть бота'
+    openBotBtn.style.cssText = `
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    `
+    openBotBtn.onmouseover = () => {
+      openBotBtn.style.transform = 'translateY(-2px)'
+      openBotBtn.style.boxShadow = '0 6px 20px rgba(0, 136, 204, 0.5)'
+    }
+    openBotBtn.onmouseout = () => {
+      openBotBtn.style.transform = 'translateY(0)'
+      openBotBtn.style.boxShadow = '0 4px 15px rgba(0, 136, 204, 0.4)'
+    }
+    buttonsWrap.appendChild(openBotBtn)
+  }
+  
+  // На мобильной версии: главная CTA — подписаться на бота (если ещё не отправили в Telegram)
+  if (isMobile && !telegramSent) {
+    const botBtn = document.createElement('a')
+    botBtn.href = SPACEGROWTH_BOT_URL
+    botBtn.target = '_blank'
+    botBtn.rel = 'noopener noreferrer'
+    botBtn.textContent = '📱 Подписаться на бота — получить PDF в Telegram'
+    botBtn.style.cssText = `
+      display: block;
+      width: 100%;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #0088cc 0%, #006699 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    `
+    botBtn.onmouseover = () => {
+      botBtn.style.transform = 'translateY(-2px)'
+      botBtn.style.boxShadow = '0 6px 20px rgba(0, 136, 204, 0.5)'
+    }
+    botBtn.onmouseout = () => {
+      botBtn.style.transform = 'translateY(0)'
+      botBtn.style.boxShadow = '0 4px 15px rgba(0, 136, 204, 0.4)'
+    }
+    buttonsWrap.appendChild(botBtn)
+  }
+  
+  // Кнопка скачивания по ссылке (если есть pdfUrl)
+  if (pdfUrl) {
+    const downloadLink = document.createElement('a')
+    downloadLink.href = pdfUrl
+    downloadLink.download = fileName || 'result.pdf'
+    downloadLink.target = '_blank'
+    downloadLink.rel = 'noopener noreferrer'
+    downloadLink.textContent = isMobile ? '💾 Скачать PDF в браузере' : '💾 Скачать PDF'
+    downloadLink.style.cssText = `
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: #0a0a0f;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    `
+    downloadLink.onmouseover = () => {
+      downloadLink.style.transform = 'translateY(-2px)'
+      downloadLink.style.boxShadow = '0 6px 25px rgba(255, 215, 0, 0.6)'
+    }
+    downloadLink.onmouseout = () => {
+      downloadLink.style.transform = 'translateY(0)'
+      downloadLink.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)'
+    }
+    buttonsWrap.appendChild(downloadLink)
+  }
   
   const closeBtn = document.createElement('button')
   closeBtn.textContent = '✕'
@@ -867,6 +981,9 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false) 
   content.appendChild(closeBtn)
   content.appendChild(title)
   content.appendChild(text)
+  if (buttonsWrap.children.length > 0) {
+    content.appendChild(buttonsWrap)
+  }
   modal.appendChild(content)
   document.body.appendChild(modal)
   
@@ -2542,11 +2659,11 @@ function MatrixCalculator() {
         })
         
         if (data.success && data.pdfUrl) {
-          // Показываем модальное окно с информацией о PDF
+          // Показываем модальное окно с информацией о PDF (на мобильной — приоритет подписки на бота)
           console.log('✅ Показываем модальное окно серверной генерации')
           logEvent('content', 'astrolabe_action', { page: '/alchemy/astrolabe', section_id: 'alchemy-astrolabe', metadata: { action: 'pdf_download' } })
           logEvent('content', 'astrolabe_pdf_action', { page: '/alchemy/astrolabe', metadata: { type: 'download', status: 'success' } })
-          showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent)
+          showPDFServerModal(data.pdfUrl, data.fileName, methodName, data.telegramSent, isMobile)
         } else {
           throw new Error(data.error || 'Неизвестная ошибка')
         }

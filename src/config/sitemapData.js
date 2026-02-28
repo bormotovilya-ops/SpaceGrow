@@ -53,7 +53,15 @@ export const sitemapTree = [
     icon: '📚',
     path: '/cabinet',
     segment: 'soft',
-    matchId: 'cabinet_root'
+    matchId: 'cabinet_root',
+    children: [
+      { id: 'cabinet-shelf', label: 'Книжная полка', icon: '📚', path: '/cabinet/shelf', segment: 'soft', matchId: 'cabinet_shelf' },
+      { id: 'cabinet-tea', label: 'Чай', icon: '🍵', path: '/cabinet#tea', segment: 'soft', matchId: 'cabinet_tea' },
+      { id: 'cabinet-admin', label: 'Админка', icon: '⚙️', path: '/admin', segment: 'soft', matchId: 'cabinet_admin' },
+      { id: 'cabinet-expert', label: 'Диалог с экспертом', icon: '💬', path: '/cabinet#expert', segment: 'soft', matchId: 'cabinet_expert' },
+      { id: 'cabinet-alchemy', label: 'Алхимия', icon: '⚗️', path: '/alchemy', segment: 'soft', matchId: 'cabinet_alchemy' },
+      { id: 'cabinet-personreport', label: 'Личное дело', icon: '📋', path: '/personreport', segment: 'soft', matchId: 'cabinet_personreport' }
+    ]
   },
   {
     id: 'diagnostics',

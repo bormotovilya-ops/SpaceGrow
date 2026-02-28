@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from './Header'
 import BackToCabinet from './BackToCabinet'
+import { useLogEvent } from '../hooks/useLogEvent'
 import './CabinetShelf.css'
 
 // Тренинги
@@ -21,7 +22,12 @@ const SHELF_TESTS = [
 
 function CabinetShelf() {
   const navigate = useNavigate()
+  const { trackSectionView } = useLogEvent()
   const [approachDone, setApproachDone] = useState(false)
+
+  useEffect(() => {
+    trackSectionView('cabinet-shelf')
+  }, [trackSectionView])
 
   useEffect(() => {
     const t = setTimeout(() => setApproachDone(true), 100)
