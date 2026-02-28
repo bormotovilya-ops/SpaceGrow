@@ -543,6 +543,9 @@ function Cabinet() {
         })
       })
       const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        console.warn('[Cabinet Expert] API не 200:', response.status, data)
+      }
       const aiResponse = data.response || 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
@@ -637,6 +640,9 @@ function Cabinet() {
         })
       })
       const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        console.warn('[Cabinet Expert] API не 200:', response.status, data)
+      }
       const aiResponse = data.response || 'Не удалось получить ответ. Попробуйте ещё раз.'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)

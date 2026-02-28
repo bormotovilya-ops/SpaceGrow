@@ -1,5 +1,5 @@
 // Vercel Serverless Function для бесплатного чата
-// Поддерживает режим заглушки и Hugging Face API
+// Поддерживает режим заглушки и Groq API. В продакшене задайте GROQ_API_KEY в Vercel → Settings → Environment Variables, иначе чат (в т.ч. эксперт кабинета) будет отвечать заглушкой.
 
 import { readFile, appendFile, mkdir } from 'fs/promises'
 import { join } from 'path'
@@ -422,6 +422,21 @@ function handleMockResponse(message) {
 Также предлагаю бесплатную диагностику воронки или мини-аудит бизнес-процессов.`
 }
 
+/** Заглушка для эксперта кабинета (когда GROQ_API_KEY не задан или API недоступен) */
+function handleCabinetExpertMock(message) {
+  const lower = (message || '').toLowerCase()
+  if (lower.includes('пользователь открыл диалог') || lower.includes('инициируй разговор')) {
+    return 'Чувствуете глубину? Что привело вас в этот кабинет? О чём хотите поговорить?'
+  }
+  return 'Расскажите, что вас привело в кабинет. О чём хотите поговорить?'
+}
+
+/** Выбор ответа заглушки: для эксперта кабинета — свой текст, иначе — общий mock */
+function getMockResponse(message, promptType) {
+  if (promptType === 'cabinet_expert') return handleCabinetExpertMock(message)
+  return handleMockResponse(message)
+}
+
 export default async function handler(req, res) {
   // Разрешаем только POST запросы
   if (req.method !== 'POST') {
@@ -458,22 +473,32 @@ export default async function handler(req, res) {
     allEnvKeys: Object.keys(process.env).filter(k => k.includes('API') || k.includes('MOCK')).join(', ')
   })
 
-  // Загружаем файлы знаний и формируем полный промпт
-  const systemContext = await buildSystemContext(shouldAddCTA, promptType, userName)
+  // Загружаем файлы знаний и формируем полный промпт (для cabinet_expert при ошибке не отдаём 500)
+  let systemContext
+  try {
+    systemContext = await buildSystemContext(shouldAddCTA, promptType, userName)
+  } catch (err) {
+    console.error('❌ buildSystemContext failed:', err)
+    if (promptType === 'cabinet_expert') {
+      const fallback = getMockResponse(message, promptType)
+      return res.status(200).json({ response: cleanResponse(fallback) })
+    }
+    throw err
+  }
 
   if (USE_MOCK) {
     console.log('⚠️ Using mock response: USE_MOCK_RESPONSES=true')
-    const response = handleMockResponse(message)
-    const cleanedResponse = formatFinalResponse(response, shouldAddCTA)
+    const response = getMockResponse(message, promptType)
+    const cleanedResponse = promptType === 'cabinet_expert' ? cleanResponse(response) : formatFinalResponse(response, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
   }
 
   if (!GROQ_API_KEY) {
-    console.error('❌ GROQ_API_KEY missing! Available env vars:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
-    const response = handleMockResponse(message)
-    const cleanedResponse = formatFinalResponse(response, shouldAddCTA)
+    console.error('❌ GROQ_API_KEY missing! Add GROQ_API_KEY in Vercel → Project → Settings → Environment Variables. Available env vars:', Object.keys(process.env).filter(k => k.includes('API')).join(', '))
+    const response = getMockResponse(message, promptType)
+    const cleanedResponse = promptType === 'cabinet_expert' ? cleanResponse(response) : formatFinalResponse(response, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
     return res.status(200).json({ response: cleanedResponse })
@@ -522,8 +547,8 @@ export default async function handler(req, res) {
       // Если ошибка API, переключаемся на заглушку
       const errorText = await response.text().catch(() => 'Unknown error')
       console.error('❌ Groq API error:', response.status, errorText)
-      const mockResponse = handleMockResponse(message)
-      const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
+      const mockResponse = getMockResponse(message, promptType)
+      const cleanedMockResponse = promptType === 'cabinet_expert' ? cleanResponse(mockResponse) : formatFinalResponse(mockResponse, shouldAddCTA)
       // Логируем переписку (не блокируем ответ)
       logConversation(message, cleanedMockResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
@@ -537,8 +562,8 @@ export default async function handler(req, res) {
 
     if (!assistantMessage) {
       console.error('⚠️ No assistant message in response, using mock')
-      const mockResponse = handleMockResponse(message)
-      const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
+      const mockResponse = getMockResponse(message, promptType)
+      const cleanedMockResponse = promptType === 'cabinet_expert' ? cleanResponse(mockResponse) : formatFinalResponse(mockResponse, shouldAddCTA)
       // Логируем переписку (не блокируем ответ)
       logConversation(message, cleanedMockResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
       return res.status(200).json({ response: cleanedMockResponse })
@@ -560,8 +585,8 @@ export default async function handler(req, res) {
     console.error('❌ Exception in API handler:', error)
     console.error('Error stack:', error.stack)
     // При любой ошибке возвращаем заглушку вместо ошибки
-    const mockResponse = handleMockResponse(message)
-    const cleanedMockResponse = formatFinalResponse(mockResponse, shouldAddCTA)
+    const mockResponse = getMockResponse(message, promptType)
+    const cleanedMockResponse = promptType === 'cabinet_expert' ? cleanResponse(mockResponse) : formatFinalResponse(mockResponse, shouldAddCTA)
     // Логируем переписку (не блокируем ответ)
     logConversation(message, cleanedMockResponse, { messageCount, shouldAddCTA, source: 'mock' }, req).catch(() => {})
     return res.status(200).json({ response: cleanedMockResponse })
