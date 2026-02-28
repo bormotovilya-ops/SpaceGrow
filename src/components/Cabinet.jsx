@@ -86,32 +86,9 @@ function stopTTSPlayback() {
   }
 }
 
-/** Озвучивает текст женским русским голосом (Edge TTS Svetlana, иначе Web Speech API) */
-async function speakExpertText(text) {
-  const clean = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim()
-  if (!clean) return
-  const usedEdge = await playWithEdgeTTS(clean)
-  if (usedEdge) return
-  const synth = window.speechSynthesis
-  if (!synth) return
-  synth.cancel()
-  const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
-    synth.onvoiceschanged = () => resolve(synth.getVoices())
-    setTimeout(() => resolve(synth.getVoices()), 500)
-  })
-  const ruVoices = voices.filter((v) => v.lang.startsWith('ru'))
-  const ruFemale = ruVoices[2] ?? ruVoices[1] ?? ruVoices[0]
-  const u = new SpeechSynthesisUtterance(clean)
-  u.lang = 'ru-RU'
-  u.rate = 0.9
-  u.pitch = 1.1
-  if (ruFemale) u.voice = ruFemale
-  synth.speak(u)
-}
-
-/** Озвучивает цитату чая (Edge TTS Svetlana, иначе Web Speech API), с паузой ~2 с между текстом и подписью */
+/** Озвучивает цитату чая через gTTS (API), с паузой 1 с между текстом и подписью. Без fallback на Web Speech. */
 async function speakTeaQuote(text, author, onEnd) {
-  const PAUSE_MS = 2000
+  const PAUSE_MS = 1000
   const parts = [text, author].filter(Boolean)
   if (parts.length === 0) {
     onEnd?.()
@@ -132,29 +109,8 @@ async function speakTeaQuote(text, author, onEnd) {
       }
     }
 
-    const usedEdge = await playWithEdgeTTS(part, whenPartEnds)
-    if (usedEdge) return
-
-    const synth = window.speechSynthesis
-    if (!synth) {
-      whenPartEnds()
-      return
-    }
-    synth.cancel()
-    const voices = synth.getVoices().length ? synth.getVoices() : await new Promise((resolve) => {
-      synth.onvoiceschanged = () => resolve(synth.getVoices())
-      setTimeout(() => resolve(synth.getVoices()), 500)
-    })
-    const ruVoices = voices.filter((v) => v.lang.startsWith('ru'))
-    const ruVoice = ruVoices[2] ?? ruVoices[1] ?? ruVoices[0]
-    const u = new SpeechSynthesisUtterance(part)
-    u.lang = 'ru-RU'
-    u.rate = 0.85
-    u.pitch = 1.05
-    if (ruVoice) u.voice = ruVoice
-    u.onend = () => whenPartEnds()
-    u.onerror = () => whenPartEnds()
-    synth.speak(u)
+    const used = await playWithEdgeTTS(part, whenPartEnds)
+    if (!used) whenPartEnds()
   }
 
   await playPart(0)
@@ -687,16 +643,14 @@ function Cabinet() {
       const aiResponse = data.response || 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
-      if (!isSoundMuted) speakExpertText(aiResponse)
     } catch (_) {
       const fallback = 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: fallback }])
       await saveExpertMessage('outbound', fallback)
-      if (!isSoundMuted) speakExpertText(fallback)
     } finally {
       setIsLoadingExpert(false)
     }
-  }, [saveExpertMessage, expertUserName, isSoundMuted])
+  }, [saveExpertMessage, expertUserName])
 
   const loadExpertHistory = useCallback(async () => {
     const supabase = await getSupabase()
@@ -806,7 +760,6 @@ function Cabinet() {
       const aiResponse = data.response || 'Не удалось получить ответ. Попробуйте ещё раз.'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
-      if (!isSoundMuted) speakExpertText(aiResponse)
       logEvent('ai', 'ai_chat_message', {
         page: '/cabinet',
         metadata: { context: 'cabinet_expert', user_message: userQuestion, ai_response: aiResponse }
@@ -815,7 +768,6 @@ function Cabinet() {
       const errMsg = err?.name === 'AbortError' ? 'Запрос занял слишком много времени.' : (err?.message || 'Ошибка сети.')
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: errMsg }])
       await saveExpertMessage('outbound', errMsg)
-      if (!isSoundMuted) speakExpertText(errMsg)
     } finally {
       setIsLoadingExpert(false)
     }
