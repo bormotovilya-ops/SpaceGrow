@@ -47,6 +47,13 @@ function ensureYmScript() {
   s.async = true
   s.src = YM_SCRIPT_SRC
   s.dataset.ymTag = 'true'
+  // Блокировка скрипта (расширения, ad blocker) даёт net::ERR_BLOCKED_BY_CLIENT — обрабатываем тихо
+  s.onerror = () => {
+    if (import.meta?.env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.info('[YandexMetrica] Скрипт не загружен (часто из-за блокировщика рекламы). Счётчик отключён.')
+    }
+  }
   document.head.appendChild(s)
 }
 

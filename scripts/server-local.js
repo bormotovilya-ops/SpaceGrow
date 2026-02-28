@@ -242,10 +242,8 @@ async function loadMasterPrompt() {
     const masterPath = join(rootDir, 'MasterAIprompt.md')
     const masterPrompt = await fs.readFile(masterPath, 'utf-8').catch(() => null)
     if (!masterPrompt) return 'Файл MasterAIprompt.md не найден'
-    const bio48 = await fs.readFile(join(rootDir, 'DOP', '48.txt'), 'utf-8').catch(() => null)
     const siteKnowledge = await fs.readFile(join(rootDir, 'site_knowledge.md'), 'utf-8').catch(() => null)
     let full = masterPrompt
-    if (bio48) full += '\n\n# @48.txt — биография Ильи:\n' + bio48
     if (siteKnowledge) full += '\n\n# @site_knowledge.md:\n' + siteKnowledge
     return full
   } catch (error) {

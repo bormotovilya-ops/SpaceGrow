@@ -8,6 +8,8 @@
  */
 
 let _client = null
+/** Один общий промис создания клиента, чтобы не создавать несколько GoTrueClient при одновременных вызовах getSupabase() */
+let _clientPromise = null
 let _fetchPatched = false
 
 function stripProfileIdFromBody(body) {
@@ -71,10 +73,12 @@ function patchFetchForSupabase(supabaseUrl) {
 
 /**
  * Returns the shared Supabase client. Creates it once, then reuses.
+ * Uses a single promise so concurrent callers get the same instance (avoids "Multiple GoTrueClient instances").
  * @returns {Promise<import('@supabase/supabase-js').SupabaseClient | null>}
  */
 export async function getSupabase() {
   if (_client) return _client
+  if (_clientPromise) return _clientPromise
 
   const url = import.meta.env.VITE_SUPABASE_URL
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -82,11 +86,15 @@ export async function getSupabase() {
 
   patchFetchForSupabase(url)
 
-  try {
-    const { createClient } = await import(/* @vite-ignore */ '@supabase/supabase-js')
-    _client = createClient(url, key)
-    return _client
-  } catch (e) {
-    return null
-  }
+  _clientPromise = (async () => {
+    try {
+      const { createClient } = await import(/* @vite-ignore */ '@supabase/supabase-js')
+      _client = createClient(url, key)
+      return _client
+    } catch (e) {
+      _clientPromise = null
+      return null
+    }
+  })()
+  return _clientPromise
 }

@@ -207,10 +207,8 @@ async function loadMasterPrompt() {
   try {
     const masterPrompt = await readFile(join(process.cwd(), 'MasterAIprompt.md'), 'utf-8').catch(() => null)
     if (!masterPrompt) return 'Файл MasterAIprompt.md не найден'
-    const bio48 = await readFile(join(process.cwd(), 'DOP', '48.txt'), 'utf-8').catch(() => null)
     const siteKnowledge = await readFile(join(process.cwd(), 'site_knowledge.md'), 'utf-8').catch(() => null)
     let full = masterPrompt
-    if (bio48) full += '\n\n# @48.txt — биография Ильи:\n' + bio48
     if (siteKnowledge) full += '\n\n# @site_knowledge.md:\n' + siteKnowledge
     return full
   } catch (error) {
@@ -279,10 +277,10 @@ async function buildSystemContext(shouldAddCTA = false, promptType = 'profile', 
     return botPrompt
   }
 
-  // Промпт Мастера Кабинета (эксперт)
+  // Промпт Мастера Кабинета (эксперт). Groq лимит 6000 TPM — обрезаем системный промпт (~3 chars/token)
   if (promptType === 'cabinet_expert') {
-    const masterPrompt = await loadMasterPrompt()
-    return masterPrompt
+    const full = await loadMasterPrompt()
+    return truncateText(full, 10000)
   }
 
   // Стандартный промпт для профиля
