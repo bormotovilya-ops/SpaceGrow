@@ -172,13 +172,37 @@ export const userUtils = {
     if (fromLegacy != null) return fromLegacy;
     return null;
   },
+  /** UTM из URL с сохранением в localStorage: при повторных запусках без UTM в ссылке — не затираем, пустые не пишем. */
   getUTMParams() {
+    if (typeof window === 'undefined') return { utm_source: null, utm_medium: null, utm_campaign: null };
     const p = new URLSearchParams(window.location.search);
-    return {
-      utm_source: p.get('utm_source'),
-      utm_medium: p.get('utm_medium'),
-      utm_campaign: p.get('utm_campaign')
-    };
+    const STORAGE_KEY = 'sg_utm';
+    const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+    let stored = {};
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) stored = JSON.parse(raw);
+    } catch (_) {}
+    const result = {};
+    let hasNewFromUrl = false;
+    for (const k of keys) {
+      const urlVal = p.get(k);
+      const trimmedUrl = (urlVal && typeof urlVal === 'string') ? urlVal.trim() : '';
+      const storedVal = (stored[k] && typeof stored[k] === 'string') ? stored[k].trim() : '';
+      result[k] = trimmedUrl || storedVal || null;
+      if (trimmedUrl) hasNewFromUrl = true;
+    }
+    if (hasNewFromUrl) {
+      const toStore = { ...stored };
+      for (const k of keys) {
+        const v = p.get(k);
+        if (v && typeof v === 'string' && v.trim()) toStore[k] = v.trim();
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+      } catch (_) {}
+    }
+    return result;
   },
   getUserAgent() { return navigator.userAgent || ''; },
   getReferrer() { return document.referrer || ''; },
@@ -232,7 +256,7 @@ export const apiUtils = {
     }
   },
 
-  /** Upsert user_identities by cookie_id: set UTM (для любой записи по cookie_id — и анонимной, и с tg_user_id). */
+  /** Upsert user_identities by cookie_id: set UTM; пустые не затирают уже сохранённые. */
   async upsertUserIdentity(cookieId, utmParams = {}, tgUserId = null) {
     const supabase = await getSupabase();
     if (!supabase) return { ok: false };
@@ -241,25 +265,34 @@ export const apiUtils = {
     try {
       const { data: existing } = await supabase
         .from('user_identities')
-        .select('id')
+        .select('id, utm_source, utm_medium, utm_campaign')
         .eq('cookie_id', cookieId)
         .limit(1)
         .maybeSingle();
-      if (existing?.id && hasUtm) {
-        const { error } = await supabase.from('user_identities').update({
-          utm_source: utmParams.utm_source ?? null,
-          utm_medium: utmParams.utm_medium ?? null,
-          utm_campaign: utmParams.utm_campaign ?? null
-        }).eq('id', existing.id);
-        if (error) throw error;
-      } else if (!existing?.id && hasUtm) {
+      const v = (x) => (x && typeof x === 'string' && x.trim()) ? x.trim() : null;
+      const merge = (fromUrl, fromDb) => fromUrl || fromDb || null;
+      if (existing?.id) {
+        const merged = {
+          utm_source: merge(v(utmParams.utm_source), existing.utm_source),
+          utm_medium: merge(v(utmParams.utm_medium), existing.utm_medium),
+          utm_campaign: merge(v(utmParams.utm_campaign), existing.utm_campaign)
+        };
+        if (merged.utm_source || merged.utm_medium || merged.utm_campaign) {
+          const { error } = await supabase.from('user_identities').update({
+            utm_source: merged.utm_source,
+            utm_medium: merged.utm_medium,
+            utm_campaign: merged.utm_campaign
+          }).eq('id', existing.id);
+          if (error) throw error;
+        }
+      } else if (hasUtm) {
         const { error } = await supabase.from('user_identities').insert({
           cookie_id: cookieId,
           tg_user_id: null,
           source: 'site',
-          utm_source: utmParams.utm_source ?? null,
-          utm_medium: utmParams.utm_medium ?? null,
-          utm_campaign: utmParams.utm_campaign ?? null
+          utm_source: v(utmParams.utm_source) ?? null,
+          utm_medium: v(utmParams.utm_medium) ?? null,
+          utm_campaign: v(utmParams.utm_campaign) ?? null
         });
         if (error) throw error;
       }
