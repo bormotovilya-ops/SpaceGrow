@@ -5,6 +5,7 @@ import Header from './Header'
 import BackToCabinet from './BackToCabinet'
 import Switch from './ui/Switch'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { useIsSupportContact } from '../hooks/useIsSupportContact'
 import {
   LOCAL_SOUND_KEY,
   LOCAL_DEBUG_KEY,
@@ -90,6 +91,7 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
   const [expertTtsEnabled, setExpertTtsEnabled] = useState(getLocalExpertTtsEnabled)
   const [expertTtsVoice, setExpertTtsVoice] = useState(() => getExpertTtsVoice() || '')
   const [speechVoices, setSpeechVoices] = useState(loadSpeechVoices)
+  const { isSupportContact } = useIsSupportContact()
 
   useEffect(() => {
     trackSectionView('cabinet-admin')
@@ -178,21 +180,23 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
               />
             </div>
           </div>
-          <div className="admin-dashboard-settings-card">
-            <div className="admin-dashboard-settings-card-left">
-              <span className="admin-dashboard-settings-name">Режим отладки</span>
-              <span className="admin-dashboard-settings-desc">Панель настройки зон в Кабинете и отладочная информация</span>
+          {isSupportContact && (
+            <div className="admin-dashboard-settings-card">
+              <div className="admin-dashboard-settings-card-left">
+                <span className="admin-dashboard-settings-name">Режим отладки</span>
+                <span className="admin-dashboard-settings-desc">Панель настройки зон в Кабинете и отладочная информация (только в вашем браузере)</span>
+              </div>
+              <div className="admin-dashboard-settings-card-right">
+                <Switch
+                  checked={debugMode}
+                  onCheckedChange={(checked) => {
+                    setDebugMode(checked)
+                    localStorage.setItem(LOCAL_DEBUG_KEY, String(checked))
+                  }}
+                />
+              </div>
             </div>
-            <div className="admin-dashboard-settings-card-right">
-              <Switch
-                checked={debugMode}
-                onCheckedChange={(checked) => {
-                  setDebugMode(checked)
-                  localStorage.setItem(LOCAL_DEBUG_KEY, String(checked))
-                }}
-              />
-            </div>
-          </div>
+          )}
           <div className="admin-dashboard-settings-card">
             <div className="admin-dashboard-settings-card-left">
               <span className="admin-dashboard-settings-name">Озвучивать эксперта</span>

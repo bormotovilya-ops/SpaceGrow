@@ -4,10 +4,28 @@
   background: linear-gradient(180deg, #0a0a0f 0%, #1a1520 50%, #0d0d12 100%);
 }
 
+.cabinet-shelf-top {
+  margin-top: var(--app-header-height, 120px);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 900px;
+  padding: 8px 20px 4px;
+}
+
+.cabinet-shelf-top .back-to-cabinet-wrap {
+  margin-top: 0;
+  padding: 0;
+}
+
+.cabinet-shelf-heading {
+  text-align: center;
+}
+
 .cabinet-shelf-view {
   position: relative;
   min-height: calc(100vh - var(--app-header-height, 120px) - 80px);
-  margin-top: 12px;
+  margin-top: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,7 +59,7 @@
   z-index: 1;
   width: 100%;
   max-width: 900px;
-  padding: 24px 20px 48px;
+  padding: 12px 20px 32px;
   animation: cabinet-shelf-content-in 0.8s ease 0.4s both;
 }
 
@@ -66,22 +84,22 @@
 }
 
 .cabinet-shelf-subtitle {
-  margin: 0 0 32px;
+  margin: 0;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.65);
   text-align: center;
 }
 
 .cabinet-shelf-section {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .cabinet-shelf-section-title {
-  margin: 0 0 16px;
+  margin: 0 0 10px;
   font-size: 18px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid rgba(255, 215, 0, 0.25);
 }
 
@@ -165,8 +183,38 @@
 }
 
 @media (min-width: 600px) {
+  .cabinet-shelf-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 20px 2px;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+  .cabinet-shelf-heading {
+    flex: 1;
+    text-align: center;
+  }
+  .cabinet-shelf-view {
+    margin-top: 2px;
+  }
+  .cabinet-shelf-content {
+    padding: 8px 20px 24px;
+  }
+  .cabinet-shelf-section {
+    margin-bottom: 16px;
+  }
+  .cabinet-shelf-section-title {
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+  }
   .cabinet-shelf-books {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .cabinet-shelf-book {
+    padding: 12px 10px;
+    gap: 8px;
   }
   .cabinet-shelf-book-cover {
     width: 80px;

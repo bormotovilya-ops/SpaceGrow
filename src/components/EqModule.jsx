@@ -57,7 +57,9 @@ function EqModule() {
         if (event.data.result != null) resultRef.current = event.data.result
         if (typeof event.data.points === 'number') pointsRef.current = event.data.points
         if (event.data.userName) courseUserNameRef.current = event.data.userName
-        await logSiteEvent(completedRef.current ? 'прошел' : 'не до конца')
+        // Успех: либо нажали «Сертификат» (COURSE_COMPLETED), либо дошли до финала (есть result от курса)
+        const passed = completedRef.current || resultRef.current != null
+        await logSiteEvent(passed ? 'прошел' : 'не до конца')
         navigate('/cabinet', { replace: true })
       }
     }
@@ -69,7 +71,8 @@ function EqModule() {
     return () => {
       if (loggedOnUnmount.current) return
       loggedOnUnmount.current = true
-      logSiteEvent(completedRef.current ? 'прошел' : 'не до конца').catch((e) => console.warn('[EqModule] logSiteEvent on unmount:', e))
+      const passed = completedRef.current || resultRef.current != null
+      logSiteEvent(passed ? 'прошел' : 'не до конца').catch((e) => console.warn('[EqModule] logSiteEvent on unmount:', e))
     }
   }, [displayName, logEvent])
 

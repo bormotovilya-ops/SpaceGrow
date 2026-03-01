@@ -54,15 +54,18 @@ function CabinetShelf() {
         onHomeClick={() => navigate('/home')}
         activeMenuId="cabinet"
       />
-      <div className="back-to-cabinet-wrap">
-        <BackToCabinet />
+      <div className="cabinet-shelf-top">
+        <div className="back-to-cabinet-wrap">
+          <BackToCabinet />
+        </div>
+        <div className="cabinet-shelf-heading">
+          <h1 className="cabinet-shelf-title">Полка</h1>
+          <p className="cabinet-shelf-subtitle">Тренинги и тесты</p>
+        </div>
       </div>
       <div className={`cabinet-shelf-view ${approachDone ? 'cabinet-shelf-approached' : ''}`}>
         <div className="cabinet-shelf-backdrop" aria-hidden="true" />
         <div className="cabinet-shelf-content">
-          <h1 className="cabinet-shelf-title">Полка</h1>
-          <p className="cabinet-shelf-subtitle">Тренинги и тесты</p>
-
           <section className="cabinet-shelf-section">
             <h2 className="cabinet-shelf-section-title">Тренинги</h2>
             <div className="cabinet-shelf-books">

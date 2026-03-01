@@ -1829,12 +1829,234 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
           </AnimatePresence>
         </motion.section>
 
-        {/* Personal Journey Section */}
+        {/* Smart Segmentation Panel (fn_refresh_segments + user_segments) */}
+        <motion.section
+          className={`report-section ${expandedSections.segmentation ? 'expanded' : ''}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="section-header" onClick={() => toggleSection('segmentation')}>
+            <h2>🎯 Сегментация</h2>
+            <span className={`toggle-icon ${expandedSections.segmentation ? 'expanded' : ''}`}>▼</span>
+          </div>
+          <AnimatePresence>
+            {expandedSections.segmentation && (
+              <motion.div
+                className="section-content"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {(() => {
+                  const seg = reportData?.user_segments ?? null
+                  // Лестница Ханта: 1=Безразличие, 2=Осведомлённость, 3=Выбор решения, 4=Выбор подрядчика, 5=Покупка
+                  const HUNT_NAMES = ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка']
+                  const huntLevelRaw = seg?.segment_hunt_level != null ? Number(seg.segment_hunt_level) : null
+                  const huntLevel = huntLevelRaw != null && huntLevelRaw >= 1 && huntLevelRaw <= 5 ? Math.round(huntLevelRaw) : 0
+                  const huntName = seg ? (huntLevel >= 1 && huntLevel <= 5 ? HUNT_NAMES[huntLevel] : 'Не определен') : 'Нулевой этап'
+                  const motivation = seg?.segment_motivation ?? null
+                  const m = String(motivation || '').toLowerCase()
+                  const motivationLabelsFromOnboarding = { soft: 'Мягкие ниши', hard: 'Твердые ниши', creative: 'Творчество и хобби', other: 'Другое' }
+                  const motivationIcons = !motivation || !m.trim()
+                    ? ['🔍']
+                    : m.includes('смешан')
+                      ? ['🧱', '✨']
+                      : m.includes('тверд') || m === 'hard'
+                        ? ['🧱']
+                        : m.includes('мягк') || m === 'soft'
+                          ? ['✨']
+                          : m === 'creative'
+                            ? ['🎨']
+                            : ['🔍']
+                  const motivationLabel = ((motivation && motivationLabelsFromOnboarding[m]) || motivation) ?? 'Интерес не выражен'
+                  const temp = seg?.segment_temperature ?? 'Cold'
+                  const tempNorm = String(temp).toLowerCase().replace(/\s+/g, '-')
+                  const tempLower = String(temp ?? '').toLowerCase()
+                  const isReanimation = tempNorm.includes('reanimation')
+                  const isHot = tempLower.includes('hot')
+                  const isWarm = tempLower.includes('warm')
+                  const tempSlug = isHot ? 'hot' : isWarm ? 'warm' : isReanimation ? 'needs-reanimation' : 'cold'
+                  const tempEmoji = isHot ? '🔥' : isWarm ? '☀️' : isReanimation ? '⛑️' : '❄️'
+                  const tempLabel = isHot ? (temp || 'Hot') : isWarm ? 'Warm' : isReanimation ? 'Нужна реанимация' : temp === 'Ice' || tempLower.includes('ice') ? 'Cold' : temp || 'Cold'
+                  const totalTouches = seg?.total_events_count ?? 0
+                  const isHighEnergy = totalTouches > 100
+                  const engagementIcon = isHighEnergy ? '🏎️' : '⚡'
+                  return (
+                    <div className="seg-cards-grid">
+                      <div className="seg-card seg-card-hunt-bg">
+                        <h4 className="seg-card-title">Лестница Ханта (Hunt Level)</h4>
+                        <div className="seg-card-visual seg-card-hunt" role="progressbar" aria-valuenow={huntLevel} aria-valuemin={0} aria-valuemax={5} aria-label={`Уровень ${huntLevel}: ${huntName}`}>
+                          <div className="seg-card-hunt-track">
+                            <div className="seg-card-hunt-fill" style={{ width: huntLevel >= 1 && huntLevel <= 5 ? `${(huntLevel / 5) * 100}%` : '0%' }} />
+                          </div>
+                          <p className="seg-card-value seg-card-hunt-label">{huntLevel >= 1 ? `Уровень ${huntLevel}: ${huntName}` : huntName}</p>
+                        </div>
+                        <p className="seg-card-desc">Текущая ступень осведомлённости в воронке.</p>
+                      </div>
+                      <div className="seg-card seg-card-motivation-bg">
+                        <div className="seg-card-motivation-corner" aria-hidden>
+                          {motivationIcons.map((icon, i) => (
+                            <span key={i} className="seg-card-motivation-icon">{icon}</span>
+                          ))}
+                        </div>
+                        <h4 className="seg-card-title">Ниша / Мышление (Motivation)</h4>
+                        <div className="seg-card-visual seg-card-motivation">
+                          <p className="seg-card-value">{motivationLabel}</p>
+                        </div>
+                        <p className="seg-card-desc">Определено на основе действий пользователя на сайте.</p>
+                      </div>
+                      <div className={`seg-card seg-card-temp-bg seg-card-temp-bg-${tempSlug}`}>
+                        <h4 className="seg-card-title">Температура (Temperature)</h4>
+                        <div className="seg-card-visual seg-card-temp-visual">
+                          <span className="seg-card-temp-emoji" aria-hidden>{tempEmoji}</span>
+                          <p className={`seg-card-value seg-card-temp-value seg-card-temp-value-${tempSlug}`}>{tempLabel}</p>
+                        </div>
+                        <p className="seg-card-desc">Отражает свежесть действий и готовность к целевому действию.</p>
+                      </div>
+                      <div className="seg-card seg-card-scale-bg">
+                        <h4 className="seg-card-title">Масштаб проекта (Scale)</h4>
+                        <div className="seg-card-visual seg-card-scale">
+                          <p className="seg-card-value">{(() => {
+                            const scaleVal = seg?.segment_scale ?? ''
+                            const scaleLabels = { solo: 'Индивидуально (до 500к)', team: 'Команда (до 1.5 млн)', system: 'Системный проект (2 млн+)', start: 'Первый запуск' }
+                            return scaleLabels[scaleVal] || (scaleVal ? String(scaleVal) : '—')
+                          })()}</p>
+                        </div>
+                        <p className="seg-card-desc">Масштаб дела по результатам теста «Знакомство».</p>
+                      </div>
+                      <div className={`seg-card seg-card-engagement-bg ${isHighEnergy ? 'seg-card-high-energy' : ''}`}>
+                        <h4 className="seg-card-title">Активность (Engagement)</h4>
+                        <div className="seg-card-visual seg-card-touches">
+                          <span className="seg-card-touches-icon" aria-hidden>{engagementIcon}</span>
+                          <span className="seg-card-touches-num">{totalTouches}</span>
+                          {isHighEnergy && <span className="seg-card-high-energy-badge">High Energy</span>}
+                        </div>
+                        <p className="seg-card-value">Всего касаний с системой</p>
+                        <p className="seg-card-desc">Общее количество зафиксированных событий и взаимодействий с контентом.</p>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+
+        {/* Recommendations (marketing content from get_user_marketing_content) */}
+        <motion.section
+          className={`report-section ${expandedSections.recommendations ? 'expanded' : ''}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+        >
+          <div className="section-header" onClick={() => toggleSection('recommendations')}>
+            <h2>💡 Рекомендации</h2>
+            <span className={`toggle-icon ${expandedSections.recommendations ? 'expanded' : ''}`}>▼</span>
+          </div>
+          <AnimatePresence>
+            {expandedSections.recommendations && (
+              <motion.div
+                className="section-content"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="recommendations-grid">
+                  {(reportData?.recommendations?.marketing_message_text || (reportData?.recommendations?.marketing_buttons?.length > 0)) ? (
+                    <div className="recommendation-card recommendation-card-marketing">
+                      {reportData.recommendations.marketing_message_text && (
+                        <p className="recommendation-marketing-text">{reportData.recommendations.marketing_message_text}</p>
+                      )}
+                      {reportData.recommendations.marketing_buttons?.length > 0 && (
+                        <div className="recommendation-buttons">
+                          {reportData.recommendations.marketing_buttons.map((btn, idx) => {
+                            const path = btn.path ?? btn.url ?? '#'
+                            const isExternal = typeof path === 'string' && /^https?:\/\//i.test(path)
+                            return (
+                              <a
+                                key={idx}
+                                href={path}
+                                className="recommendation-button"
+                                {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                              >
+                                {btn.text ?? 'Перейти'}
+                              </a>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="recommendation-card">
+                      <h4 className="recommendation-card-title">Следующие шаги</h4>
+                      <ul>
+                        {(reportData?.recommendations?.next_steps ?? []).map((step, i) => (
+                          <li key={i}>{step}</li>
+                        ))}
+                      </ul>
+                      {reportData?.recommendations?.cta_suggestions?.length > 0 && (
+                        <>
+                          <h4 className="recommendation-card-title">Действия</h4>
+                          <ul>
+                            {reportData.recommendations.cta_suggestions.map((cta, i) => (
+                              <li key={i}>{cta}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+
+        {/* Visualization Section */}
+        <motion.section
+          className={`report-section ${expandedSections.visualization ? 'expanded' : ''}`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <div className="section-header" onClick={() => toggleSection('visualization')}>
+            <h2>📈 Визуализация пути</h2>
+            <span className={`toggle-icon ${expandedSections.visualization ? 'expanded' : ''}`}>▼</span>
+          </div>
+          <AnimatePresence>
+            {expandedSections.visualization && (
+              <motion.div
+                className="section-content"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="visualization-container">
+                  <ActivityTimeline
+                    reportData={reportData}
+                    isExpanded={expandedSections.visualization}
+                  />
+
+                  <EngagementChart
+                    reportData={reportData}
+                    isExpanded={expandedSections.visualization}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+
+        {/* Personal Journey Section — последний пункт отчёта */}
         <motion.section
           className={`report-section ${expandedSections.journey ? 'expanded' : ''}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           <div className="section-header" onClick={() => toggleSection('journey')}>
             <h2>🗺️ Персональный путь</h2>
@@ -2132,228 +2354,6 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                     </ul>
                   </div>
                 )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-
-        {/* Smart Segmentation Panel (fn_refresh_segments + user_segments) */}
-        <motion.section
-          className={`report-section ${expandedSections.segmentation ? 'expanded' : ''}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="section-header" onClick={() => toggleSection('segmentation')}>
-            <h2>🎯 Сегментация</h2>
-            <span className={`toggle-icon ${expandedSections.segmentation ? 'expanded' : ''}`}>▼</span>
-          </div>
-          <AnimatePresence>
-            {expandedSections.segmentation && (
-              <motion.div
-                className="section-content"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {(() => {
-                  const seg = reportData?.user_segments ?? null
-                  // Лестница Ханта: 1=Безразличие, 2=Осведомлённость, 3=Выбор решения, 4=Выбор подрядчика, 5=Покупка
-                  const HUNT_NAMES = ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка']
-                  const huntLevelRaw = seg?.segment_hunt_level != null ? Number(seg.segment_hunt_level) : null
-                  const huntLevel = huntLevelRaw != null && huntLevelRaw >= 1 && huntLevelRaw <= 5 ? Math.round(huntLevelRaw) : 0
-                  const huntName = seg ? (huntLevel >= 1 && huntLevel <= 5 ? HUNT_NAMES[huntLevel] : 'Не определен') : 'Нулевой этап'
-                  const motivation = seg?.segment_motivation ?? null
-                  const m = String(motivation || '').toLowerCase()
-                  const motivationLabelsFromOnboarding = { soft: 'Мягкие ниши', hard: 'Твердые ниши', creative: 'Творчество и хобби', other: 'Другое' }
-                  const motivationIcons = !motivation || !m.trim()
-                    ? ['🔍']
-                    : m.includes('смешан')
-                      ? ['🧱', '✨']
-                      : m.includes('тверд') || m === 'hard'
-                        ? ['🧱']
-                        : m.includes('мягк') || m === 'soft'
-                          ? ['✨']
-                          : m === 'creative'
-                            ? ['🎨']
-                            : ['🔍']
-                  const motivationLabel = ((motivation && motivationLabelsFromOnboarding[m]) || motivation) ?? 'Интерес не выражен'
-                  const temp = seg?.segment_temperature ?? 'Cold'
-                  const tempNorm = String(temp).toLowerCase().replace(/\s+/g, '-')
-                  const tempLower = String(temp ?? '').toLowerCase()
-                  const isReanimation = tempNorm.includes('reanimation')
-                  const isHot = tempLower.includes('hot')
-                  const isWarm = tempLower.includes('warm')
-                  const tempSlug = isHot ? 'hot' : isWarm ? 'warm' : isReanimation ? 'needs-reanimation' : 'cold'
-                  const tempEmoji = isHot ? '🔥' : isWarm ? '☀️' : isReanimation ? '⛑️' : '❄️'
-                  const tempLabel = isHot ? (temp || 'Hot') : isWarm ? 'Warm' : isReanimation ? 'Нужна реанимация' : temp === 'Ice' || tempLower.includes('ice') ? 'Cold' : temp || 'Cold'
-                  const totalTouches = seg?.total_events_count ?? 0
-                  const isHighEnergy = totalTouches > 100
-                  const engagementIcon = isHighEnergy ? '🏎️' : '⚡'
-                  return (
-                    <div className="seg-cards-grid">
-                      <div className="seg-card seg-card-hunt-bg">
-                        <h4 className="seg-card-title">Лестница Ханта (Hunt Level)</h4>
-                        <div className="seg-card-visual seg-card-hunt" role="progressbar" aria-valuenow={huntLevel} aria-valuemin={0} aria-valuemax={5} aria-label={`Уровень ${huntLevel}: ${huntName}`}>
-                          <div className="seg-card-hunt-track">
-                            <div className="seg-card-hunt-fill" style={{ width: huntLevel >= 1 && huntLevel <= 5 ? `${(huntLevel / 5) * 100}%` : '0%' }} />
-                          </div>
-                          <p className="seg-card-value seg-card-hunt-label">{huntLevel >= 1 ? `Уровень ${huntLevel}: ${huntName}` : huntName}</p>
-                        </div>
-                        <p className="seg-card-desc">Текущая ступень осведомлённости в воронке.</p>
-                      </div>
-                      <div className="seg-card seg-card-motivation-bg">
-                        <div className="seg-card-motivation-corner" aria-hidden>
-                          {motivationIcons.map((icon, i) => (
-                            <span key={i} className="seg-card-motivation-icon">{icon}</span>
-                          ))}
-                        </div>
-                        <h4 className="seg-card-title">Ниша / Мышление (Motivation)</h4>
-                        <div className="seg-card-visual seg-card-motivation">
-                          <p className="seg-card-value">{motivationLabel}</p>
-                        </div>
-                        <p className="seg-card-desc">Определено на основе действий пользователя на сайте.</p>
-                      </div>
-                      <div className={`seg-card seg-card-temp-bg seg-card-temp-bg-${tempSlug}`}>
-                        <h4 className="seg-card-title">Температура (Temperature)</h4>
-                        <div className="seg-card-visual seg-card-temp-visual">
-                          <span className="seg-card-temp-emoji" aria-hidden>{tempEmoji}</span>
-                          <p className={`seg-card-value seg-card-temp-value seg-card-temp-value-${tempSlug}`}>{tempLabel}</p>
-                        </div>
-                        <p className="seg-card-desc">Отражает свежесть действий и готовность к целевому действию.</p>
-                      </div>
-                      <div className="seg-card seg-card-scale-bg">
-                        <h4 className="seg-card-title">Масштаб проекта (Scale)</h4>
-                        <div className="seg-card-visual seg-card-scale">
-                          <p className="seg-card-value">{(() => {
-                            const scaleVal = seg?.segment_scale ?? ''
-                            const scaleLabels = { solo: 'Индивидуально (до 500к)', team: 'Команда (до 1.5 млн)', system: 'Системный проект (2 млн+)', start: 'Первый запуск' }
-                            return scaleLabels[scaleVal] || (scaleVal ? String(scaleVal) : '—')
-                          })()}</p>
-                        </div>
-                        <p className="seg-card-desc">Масштаб дела по результатам теста «Знакомство».</p>
-                      </div>
-                      <div className={`seg-card seg-card-engagement-bg ${isHighEnergy ? 'seg-card-high-energy' : ''}`}>
-                        <h4 className="seg-card-title">Активность (Engagement)</h4>
-                        <div className="seg-card-visual seg-card-touches">
-                          <span className="seg-card-touches-icon" aria-hidden>{engagementIcon}</span>
-                          <span className="seg-card-touches-num">{totalTouches}</span>
-                          {isHighEnergy && <span className="seg-card-high-energy-badge">High Energy</span>}
-                        </div>
-                        <p className="seg-card-value">Всего касаний с системой</p>
-                        <p className="seg-card-desc">Общее количество зафиксированных событий и взаимодействий с контентом.</p>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-
-        {/* Recommendations (marketing content from get_user_marketing_content) */}
-        <motion.section
-          className={`report-section ${expandedSections.recommendations ? 'expanded' : ''}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-        >
-          <div className="section-header" onClick={() => toggleSection('recommendations')}>
-            <h2>💡 Рекомендации</h2>
-            <span className={`toggle-icon ${expandedSections.recommendations ? 'expanded' : ''}`}>▼</span>
-          </div>
-          <AnimatePresence>
-            {expandedSections.recommendations && (
-              <motion.div
-                className="section-content"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="recommendations-grid">
-                  {(reportData?.recommendations?.marketing_message_text || (reportData?.recommendations?.marketing_buttons?.length > 0)) ? (
-                    <div className="recommendation-card recommendation-card-marketing">
-                      {reportData.recommendations.marketing_message_text && (
-                        <p className="recommendation-marketing-text">{reportData.recommendations.marketing_message_text}</p>
-                      )}
-                      {reportData.recommendations.marketing_buttons?.length > 0 && (
-                        <div className="recommendation-buttons">
-                          {reportData.recommendations.marketing_buttons.map((btn, idx) => {
-                            const path = btn.path ?? btn.url ?? '#'
-                            const isExternal = typeof path === 'string' && /^https?:\/\//i.test(path)
-                            return (
-                              <a
-                                key={idx}
-                                href={path}
-                                className="recommendation-button"
-                                {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                              >
-                                {btn.text ?? 'Перейти'}
-                              </a>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="recommendation-card">
-                      <h4 className="recommendation-card-title">Следующие шаги</h4>
-                      <ul>
-                        {(reportData?.recommendations?.next_steps ?? []).map((step, i) => (
-                          <li key={i}>{step}</li>
-                        ))}
-                      </ul>
-                      {reportData?.recommendations?.cta_suggestions?.length > 0 && (
-                        <>
-                          <h4 className="recommendation-card-title">Действия</h4>
-                          <ul>
-                            {reportData.recommendations.cta_suggestions.map((cta, i) => (
-                              <li key={i}>{cta}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-
-        {/* Visualization Section */}
-        <motion.section
-          className={`report-section ${expandedSections.visualization ? 'expanded' : ''}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <div className="section-header" onClick={() => toggleSection('visualization')}>
-            <h2>📈 Визуализация пути</h2>
-            <span className={`toggle-icon ${expandedSections.visualization ? 'expanded' : ''}`}>▼</span>
-          </div>
-          <AnimatePresence>
-            {expandedSections.visualization && (
-              <motion.div
-                className="section-content"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="visualization-container">
-                  <ActivityTimeline
-                    reportData={reportData}
-                    isExpanded={expandedSections.visualization}
-                  />
-
-                  <EngagementChart
-                    reportData={reportData}
-                    isExpanded={expandedSections.visualization}
-                  />
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

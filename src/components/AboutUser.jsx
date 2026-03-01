@@ -44,7 +44,7 @@ function buildTestSummary(events) {
   return byTest
 }
 
-/** Группирует training-события по тренингу: прохождения, успешные (status=прошел), баллы */
+/** Группирует training-события по тренингу: прохождения, успешные (только status=прошел), баллы показываем в любом случае */
 function buildTrainingSummary(events) {
   const byTraining = {}
   for (const r of events || []) {
@@ -296,7 +296,7 @@ function AboutUser() {
         onHomeClick={() => navigate('/home')}
         activeMenuId="cabinet"
       />
-      <div className="back-to-cabinet-wrap">
+      <div className="about-user-back-wrap">
         <BackToCabinet />
       </div>
       <div className={`about-user-book ${bookOpen ? 'about-user-book--open' : ''}`}>
@@ -304,7 +304,12 @@ function AboutUser() {
           <div className="about-user-book-spine" aria-hidden="true" />
           <div className="about-user-book-pages">
             <div className="about-user-page about-user-page--left">
-              <h2 className="about-user-page-title">Обо мне</h2>
+              <div className="about-user-page-header">
+                <div className="about-user-back-inline">
+                  <BackToCabinet />
+                </div>
+                <h2 className="about-user-page-title">Обо мне</h2>
+              </div>
               {loading ? (
                 <p className="about-user-loading">Загрузка…</p>
               ) : (
@@ -351,7 +356,10 @@ function AboutUser() {
               ) : (
                 <ul className="about-user-tests">
                   {testResults.map((item, i) => (
-                    <li key={i} className="about-user-test-item about-user-test-item--row">
+                    <li
+                      key={i}
+                      className={`about-user-test-item about-user-test-item--row ${item.passed ? 'about-user-test-item--passed' : ''}`}
+                    >
                       <span className={`about-user-test-status ${item.passed ? 'about-user-test-status--ok' : 'about-user-test-status--fail'}`} aria-hidden="true">
                         {item.passed ? '✓' : '✗'}
                       </span>

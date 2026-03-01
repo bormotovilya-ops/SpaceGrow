@@ -4,6 +4,7 @@ import './Cabinet.css'
 import Header from './Header'
 import { getSupabase } from '../utils/supabaseClient'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { useIsSupportContact } from '../hooks/useIsSupportContact'
 import { userUtils } from '../utils/logging'
 import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
@@ -338,7 +339,11 @@ const TEA_QUOTES = [
   { author: 'Русская поговорка', text: '«Чай пить — не дрова рубить».' },
   { author: 'Чжаочжоу', text: 'Монах спрашивает о пути. Мастер отвечает: «Пей чай».' },
   { author: 'Нативная реклама!', text: 'Недавно была в Сочи. Там есть прекрасный чайный клуб, называется Мэр-Пуэр.' },
-  { author: 'Нативная реклама', text: 'В Перми лучший чай можно найти в Красоте востока.' }
+  { author: 'Нативная реклама', text: 'В Перми лучший чай можно найти в Красоте востока.' },
+  { author: 'Тит Нат Хан', text: '«Пей свой чай медленно и с почтением, как будто это ось, вокруг которой вращается Земля».' },
+  { author: 'Артур Уинг Пинеро', text: '«Пока есть чай — есть надежда».' },
+  { author: 'Клайв Стейплз Льюис', text: '«Невозможно получить чашку чая слишком большой или книгу слишком длинной для меня».' },
+  { author: 'Редьярд Киплинг', text: '«Если тебе холодно — чай согреет; если жарко — охладит; если ты подавлен — подбодрит; если взволнован — успокоит».' }  
 ]
 
 const DEFAULT_EXPERT = {
@@ -413,6 +418,8 @@ function Cabinet() {
     if (typeof window !== 'undefined' && localStorage.getItem('app_sound_enabled') === 'false') return true
     return localStorage.getItem('cabinet-sound-muted') === 'true'
   })
+  const { isSupportContact } = useIsSupportContact()
+  const effectiveShowDebug = showDebug && isSupportContact
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -646,10 +653,7 @@ function Cabinet() {
     if (!pointInPolygon(x, y, coordsTea.points)) return
     if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
     stopTTSPlayback()
-    const nativeIndex = TEA_QUOTES.findIndex((q) => q.author === 'Нативная реклама!')
-    const quoteIndex = Math.random() < 0.4
-      ? nativeIndex >= 0 ? nativeIndex : 0
-      : Math.floor(Math.random() * TEA_QUOTES.length)
+    const quoteIndex = Math.floor(Math.random() * TEA_QUOTES.length)
     setTeaQuoteIndex(quoteIndex)
     setShowTeaOverlay(true)
     trackSectionView('cabinet-tea')
@@ -1044,7 +1048,7 @@ function Cabinet() {
         {zoneStyles.yinyang && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-yinyang ${showDebug && selectedZone === 'yinyang' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-yinyang ${effectiveShowDebug && selectedZone === 'yinyang' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.yinyang}
             onClick={handleAlchemyClick}
             aria-label="Открыть Цифровую Алхимию"
@@ -1066,7 +1070,7 @@ function Cabinet() {
         {zoneStyles.book && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-book ${showDebug && selectedZone === 'book' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-book ${effectiveShowDebug && selectedZone === 'book' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.book}
             onClick={handleBookClick}
             aria-label="Обо мне"
@@ -1078,7 +1082,7 @@ function Cabinet() {
         {zoneStyles.laptop && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-laptop ${showDebug && selectedZone === 'laptop' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-laptop ${effectiveShowDebug && selectedZone === 'laptop' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.laptop}
             onClick={handleLaptopClick}
             aria-label="Администрирование"
@@ -1090,7 +1094,7 @@ function Cabinet() {
         {zoneStyles.leftCabinet && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-left-cabinet ${showDebug && selectedZone === 'leftCabinet' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-left-cabinet ${effectiveShowDebug && selectedZone === 'leftCabinet' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.leftCabinet}
             onClick={handleLeftCabinetClick}
             aria-label="Левый шкаф"
@@ -1102,7 +1106,7 @@ function Cabinet() {
         {zoneStyles.rightCabinet && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-right-cabinet ${showDebug && selectedZone === 'rightCabinet' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-right-cabinet ${effectiveShowDebug && selectedZone === 'rightCabinet' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.rightCabinet}
             onClick={handleRightCabinetClick}
             aria-label="Правый шкаф"
@@ -1113,7 +1117,7 @@ function Cabinet() {
         {zoneStyles.tea && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-tea ${showDebug && selectedZone === 'tea' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-tea ${effectiveShowDebug && selectedZone === 'tea' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.tea}
             onClick={handleTeaClick}
             aria-label="Чай"
@@ -1125,7 +1129,7 @@ function Cabinet() {
         {zoneStyles.expert && (
           <button
             type="button"
-            className={`cabinet-zone cabinet-zone-expert ${showDebug && selectedZone === 'expert' ? 'cabinet-zone-debug' : ''}`}
+            className={`cabinet-zone cabinet-zone-expert ${effectiveShowDebug && selectedZone === 'expert' ? 'cabinet-zone-debug' : ''}`}
             style={zoneStyles.expert}
             onClick={handleExpertClick}
             aria-label="Эксперт"
@@ -1136,7 +1140,7 @@ function Cabinet() {
         )}
       </div>
 
-      {showDebug && (
+      {effectiveShowDebug && (
         <div className="cabinet-debug">
           <div className="cabinet-debug-panel">
             <div className="cabinet-debug-panel-header">
@@ -1421,7 +1425,7 @@ function Cabinet() {
       )}
 
       {/* Кнопка настройки зон временно скрыта. Чтобы показать: раскомментировать и вернуть условие (import.meta.env?.DEV || window.location.hash === '#cabinet-debug') */}
-      {false && !showDebug && (
+      {false && !effectiveShowDebug && (
         <button
           type="button"
           className="cabinet-debug-toggle"
