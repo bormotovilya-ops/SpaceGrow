@@ -762,6 +762,8 @@ function base64ToBlob(base64String) {
 }
 
 const SPACEGROWTH_BOT_URL = 'https://t.me/SpaceGrowthBot'
+// Параметр start нужен, чтобы пользователь нажал Start в боте — только после этого бот может отправить файл
+const SPACEGROWTH_BOT_START_PDF = 'https://t.me/SpaceGrowthBot?start=astrolabe_pdf'
 
 // Функция для показа PDF после генерации на сервере
 function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false, isMobile = false) {
@@ -810,7 +812,7 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false, 
   if (telegramSent) {
     text.innerHTML = '✅ PDF успешно сгенерирован и отправлен вам в Telegram!<br><br>📱 Проверьте сообщения в боте.'
   } else if (isMobile) {
-    text.innerHTML = 'Подпишитесь на бота — PDF придёт вам в Telegram. Нажмите кнопку ниже.'
+    text.innerHTML = 'В Telegram бот не может первым написать вам.<br><br>1) Нажмите кнопку ниже и откройте бота.<br>2) В боте нажмите <strong>Start</strong> (или «Запустить»).<br>3) Вернитесь сюда и снова нажмите «Скачать полную расшифровку (PDF)» — файл придёт в чат с ботом.'
   } else {
     text.innerHTML = '✅ PDF успешно сгенерирован на сервере!<br><br>💾 Используйте кнопки ниже для скачивания файла.'
   }
@@ -863,13 +865,13 @@ function showPDFServerModal(pdfUrl, fileName, methodName, telegramSent = false, 
     buttonsWrap.appendChild(openBotBtn)
   }
   
-  // На мобильной версии: главная CTA — подписаться на бота (если ещё не отправили в Telegram)
+  // На мобильной версии: главная CTA — открыть бота с start-параметром (чтобы пользователь нажал Start, тогда бот сможет отправить файл)
   if (isMobile && !telegramSent) {
     const botBtn = document.createElement('a')
-    botBtn.href = SPACEGROWTH_BOT_URL
+    botBtn.href = SPACEGROWTH_BOT_START_PDF
     botBtn.target = '_blank'
     botBtn.rel = 'noopener noreferrer'
-    botBtn.textContent = '📱 Подписаться на бота — получить PDF в Telegram'
+    botBtn.textContent = '📱 Открыть бота и нажать Start'
     botBtn.style.cssText = `
       display: block;
       width: 100%;

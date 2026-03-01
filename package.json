@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "generate-pdf": "node scripts/generate-pdf.cjs",
     "generate-screenshots": "node scripts/generate-screenshots.cjs",
+    "generate-tea-audio": "node scripts/generate-tea-audio.js",
     "postinstall": "patch-package"
   },
   "dependencies": {

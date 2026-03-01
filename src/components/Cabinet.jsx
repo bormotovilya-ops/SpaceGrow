@@ -7,6 +7,7 @@ import { useLogEvent } from '../hooks/useLogEvent'
 import { userUtils } from '../utils/logging'
 import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { yandexMetricaReachGoal } from '../analytics/yandexMetrica'
+import { getExpertTtsEnabled, getExpertTtsVoice } from '../constants/adminSettings'
 
 const APP_CONFIG_KEY = 'cabinet-zones'
 
@@ -84,6 +85,82 @@ function stopTTSPlayback() {
     currentTTSAudio.pause()
     currentTTSAudio = null
   }
+}
+
+/** Озвучка ответа эксперта через Web Speech API (голос браузера). Учитывает настройку «Озвучивать эксперта» и общий mute. */
+function speakExpertWithWebSpeech(text) {
+  if (typeof window === 'undefined' || !text || !window.speechSynthesis) return
+  if (!getExpertTtsEnabled()) return
+  if (localStorage.getItem('cabinet-sound-muted') === 'true') return
+  const plain = String(text)
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/https?:\/\/\S+/g, '')
+    .trim()
+  if (!plain) return
+  window.speechSynthesis.cancel()
+  stopTTSPlayback()
+  const u = new window.SpeechSynthesisUtterance(plain)
+  u.lang = 'ru-RU'
+  const voiceUri = getExpertTtsVoice()
+  if (voiceUri) {
+    const voices = window.speechSynthesis.getVoices()
+    const voice = voices.find((v) => v.voiceURI === voiceUri)
+    if (voice) u.voice = voice
+  }
+  window.speechSynthesis.speak(u)
+}
+
+/** URL озвучки цитаты чая: сначала WebM (запись Светланы), затем MP3. */
+function getTeaQuoteAudioUrls(index) {
+  return [`/audio/tea/tea-${index}.webm`, `/audio/tea/tea-${index}.mp3`]
+}
+
+/**
+ * Воспроизводит заранее записанный аудиофайл цитаты чая (голос Светланы).
+ * Пробует .mp3, затем .webm.
+ * @param {number} index — индекс в TEA_QUOTES (0..6)
+ * @param {() => void} onEnd — вызывается по окончании или при ошибке
+ * @returns {Promise<boolean>} true, если воспроизведение запущено; false — нужен fallback на TTS
+ */
+function playTeaRecordedAudio(index, onEnd) {
+  if (typeof window === 'undefined') {
+    onEnd?.()
+    return Promise.resolve(false)
+  }
+  const urls = getTeaQuoteAudioUrls(index)
+  if (currentTTSAudio) {
+    currentTTSAudio.pause()
+    currentTTSAudio = null
+  }
+  return new Promise((resolve) => {
+    let ended = false
+    const finish = (ran) => {
+      if (ended) return
+      ended = true
+      currentTTSAudio = null
+      onEnd?.()
+      resolve(ran)
+    }
+    let urlIndex = 0
+    const tryNext = () => {
+      if (urlIndex >= urls.length) {
+        finish(false)
+        return
+      }
+      const audio = new window.Audio(urls[urlIndex])
+      currentTTSAudio = audio
+      audio.onended = () => finish(true)
+      audio.onerror = () => {
+        urlIndex += 1
+        tryNext()
+      }
+      audio.play().then(() => {}).catch(() => {
+        urlIndex += 1
+        tryNext()
+      })
+    }
+    tryNext()
+  })
 }
 
 /** Озвучивает цитату чая через gTTS (API), с паузой 1 с между текстом и подписью. Без fallback на Web Speech. */
@@ -561,7 +638,7 @@ function Cabinet() {
     if (pointInPolygon(x, y, coordsRightCabinet.points)) navigate('/cabinet/shelf')
   }
 
-  const handleTeaClick = (e) => {
+  const handleTeaClick = async (e) => {
     const el = e.currentTarget
     const rect = el.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
@@ -591,7 +668,8 @@ function Cabinet() {
     if (isSoundMuted) {
       setTimeout(onQuoteEnd, 4000)
     } else {
-      speakTeaQuote(quote.text, quote.author, onQuoteEnd)
+      const played = await playTeaRecordedAudio(quoteIndex, onQuoteEnd)
+      if (!played) setTimeout(onQuoteEnd, 5000)
     }
   }
 
@@ -648,10 +726,12 @@ function Cabinet() {
       const aiResponse = data.response || 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
+      speakExpertWithWebSpeech(aiResponse)
     } catch (_) {
       const fallback = 'Чувствуете глубину? Что привело вас в этот кабинет?'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: fallback }])
       await saveExpertMessage('outbound', fallback)
+      speakExpertWithWebSpeech(fallback)
     } finally {
       setIsLoadingExpert(false)
     }
@@ -763,6 +843,7 @@ function Cabinet() {
       const aiResponse = data.response || 'Не удалось получить ответ. Попробуйте ещё раз.'
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }])
       await saveExpertMessage('outbound', aiResponse)
+      speakExpertWithWebSpeech(aiResponse)
       logEvent('ai', 'ai_chat_message', {
         page: '/cabinet',
         metadata: { context: 'cabinet_expert', user_message: userQuestion, ai_response: aiResponse }
@@ -771,6 +852,7 @@ function Cabinet() {
       const errMsg = err?.name === 'AbortError' ? 'Запрос занял слишком много времени.' : (err?.message || 'Ошибка сети.')
       setExpertMessages((prev) => [...prev, { role: 'assistant', content: errMsg }])
       await saveExpertMessage('outbound', errMsg)
+      speakExpertWithWebSpeech(errMsg)
     } finally {
       setIsLoadingExpert(false)
     }

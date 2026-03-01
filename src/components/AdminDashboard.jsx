@@ -5,10 +5,14 @@ import Header from './Header'
 import BackToCabinet from './BackToCabinet'
 import Switch from './ui/Switch'
 import { useLogEvent } from '../hooks/useLogEvent'
+import {
+  LOCAL_SOUND_KEY,
+  LOCAL_DEBUG_KEY,
+  LOCAL_EXPERT_TTS_KEY,
+  LOCAL_EXPERT_VOICE_KEY,
+  getExpertTtsVoice
+} from '../constants/adminSettings'
 import './AdminDashboard.css'
-
-const LOCAL_SOUND_KEY = 'app_sound_enabled'
-const LOCAL_DEBUG_KEY = 'app_debug_mode'
 
 function getLocalSoundEnabled() {
   if (typeof window === 'undefined') return true
@@ -18,6 +22,11 @@ function getLocalSoundEnabled() {
 function getLocalDebugMode() {
   if (typeof window === 'undefined') return false
   return localStorage.getItem(LOCAL_DEBUG_KEY) === 'true'
+}
+
+function getLocalExpertTtsEnabled() {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem(LOCAL_EXPERT_TTS_KEY) === 'true'
 }
 
 const ADMIN_SECTIONS = [
@@ -65,6 +74,12 @@ function buildMockVisitorsByDay() {
   return data
 }
 
+function loadSpeechVoices() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return []
+  const list = window.speechSynthesis.getVoices()
+  return list.length > 0 ? list : []
+}
+
 function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, onAlchemyClick }) {
   const navigate = useNavigate()
   const { trackSectionView } = useLogEvent()
@@ -72,10 +87,22 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
   const [chartLoading, setChartLoading] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(getLocalSoundEnabled)
   const [debugMode, setDebugMode] = useState(getLocalDebugMode)
+  const [expertTtsEnabled, setExpertTtsEnabled] = useState(getLocalExpertTtsEnabled)
+  const [expertTtsVoice, setExpertTtsVoice] = useState(() => getExpertTtsVoice() || '')
+  const [speechVoices, setSpeechVoices] = useState(loadSpeechVoices)
 
   useEffect(() => {
     trackSectionView('cabinet-admin')
   }, [trackSectionView])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    const onVoices = () => setSpeechVoices(window.speechSynthesis.getVoices())
+    window.speechSynthesis.getVoices()
+    window.speechSynthesis.onvoiceschanged = onVoices
+    onVoices()
+    return () => { window.speechSynthesis.onvoiceschanged = null }
+  }, [])
 
   const apiBase = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL
     ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
@@ -166,6 +193,56 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
               />
             </div>
           </div>
+          <div className="admin-dashboard-settings-card">
+            <div className="admin-dashboard-settings-card-left">
+              <span className="admin-dashboard-settings-name">Озвучивать эксперта</span>
+              <span className="admin-dashboard-settings-desc">Ответы эксперта в Кабинете озвучиваются веб-озвучкой (голос браузера)</span>
+            </div>
+            <div className="admin-dashboard-settings-card-right">
+              <Switch
+                checked={expertTtsEnabled}
+                onCheckedChange={(checked) => {
+                  setExpertTtsEnabled(checked)
+                  localStorage.setItem(LOCAL_EXPERT_TTS_KEY, String(checked))
+                }}
+              />
+            </div>
+          </div>
+          {expertTtsEnabled && (
+            <div className="admin-dashboard-settings-card admin-dashboard-settings-card-voice">
+              <div className="admin-dashboard-settings-card-left">
+                <span className="admin-dashboard-settings-name">Голос эксперта</span>
+                <span className="admin-dashboard-settings-desc">Выберите голос для озвучки ответов (Web Speech API)</span>
+              </div>
+              <div className="admin-dashboard-settings-card-right">
+                <select
+                  className="admin-dashboard-voice-select"
+                  value={expertTtsVoice}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setExpertTtsVoice(v)
+                    localStorage.setItem(LOCAL_EXPERT_VOICE_KEY, v)
+                  }}
+                  aria-label="Голос для озвучки эксперта"
+                >
+                  <option value="">По умолчанию (русский)</option>
+                  {speechVoices
+                    .filter((voice) => voice.lang.startsWith('ru'))
+                    .map((voice) => (
+                      <option key={voice.voiceURI} value={voice.voiceURI}>
+                        {voice.name} {voice.lang}
+                      </option>
+                    ))}
+                  {speechVoices.filter((v) => v.lang.startsWith('ru')).length === 0 &&
+                    speechVoices.map((voice) => (
+                      <option key={voice.voiceURI} value={voice.voiceURI}>
+                        {voice.name} ({voice.lang})
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
