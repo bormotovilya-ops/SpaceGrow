@@ -148,7 +148,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
               <div className="home-hero-value">
                 <div className="home-hero-subtitle">
                   <p className="subtitle-paragraph">
-                    Если ваш бизнес порой напоинает эскалатор идущий вниз, значит пора задуматься об эффективности используемых технологий              
+                    Если ваш бизнес порой напоминает эскалатор идущий вниз, значит пора задуматься об эффективности используемых технологий              
                   </p>
                   <p className="subtitle-paragraph">
                     и внедрить IT-решения нового поколения 
