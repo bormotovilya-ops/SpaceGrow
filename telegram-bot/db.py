@@ -141,6 +141,44 @@ class Database:
         self._check_response(r, "create_or_update_user register_user")
         logger.info("Пользователь %s зарегистрирован (RPC register_user)", user_id)
 
+    def update_telegram_identity_utm(self, tg_user_id: int, utm_source: str = None,
+                                     utm_medium: str = None, utm_campaign: str = None) -> None:
+        """Обновить UTM-метки в user_identities для записи source=telegram (start-параметр из ссылки на бота)."""
+        from datetime import datetime as dt
+        r = self._get("user_identities", params={
+            "tg_user_id": f"eq.{tg_user_id}",
+            "source": "eq.telegram",
+            "limit": "1",
+        })
+        self._check_response(r, "update_telegram_identity_utm select")
+        rows = r.json() if r.status_code in (200, 201) else []
+        linked_at = dt.utcnow().isoformat()
+        if rows:
+            row_id = rows[0].get("id")
+            patch_payload = {k: v for k, v in [
+                ("utm_source", utm_source),
+                ("utm_medium", utm_medium or "telegram"),
+                ("utm_campaign", utm_campaign),
+            ] if v is not None}
+            if not patch_payload:
+                return
+            r2 = self._patch("user_identities", params={"id": f"eq.{row_id}"}, payload=patch_payload)
+            self._check_response(r2, "update_telegram_identity_utm patch")
+            logger.info("user_identities id=%s: utm_source=%s", row_id, utm_source)
+        else:
+            insert_payload = {
+                "tg_user_id": tg_user_id,
+                "cookie_id": f"tg_{tg_user_id}",
+                "source": "telegram",
+                "linked_at": linked_at,
+                "utm_source": utm_source,
+                "utm_medium": utm_medium or "telegram",
+                "utm_campaign": utm_campaign,
+            }
+            r2 = self._post("user_identities", payload=insert_payload)
+            self._check_response(r2, "update_telegram_identity_utm insert")
+            logger.info("user_identities создана для tg_user_id=%s: utm_source=%s", tg_user_id, utm_source)
+
     def mark_diagnostics_started(self, user_id: int) -> None:
         """Отметить, что пользователь начал диагностику"""
         from datetime import datetime as dt

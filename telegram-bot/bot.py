@@ -9,6 +9,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from db import Database
 from notifications import NotificationService
 from settings_manager import SettingsManager, BotSettingKeys
+from yandex_metrika import send_bot_start as yandex_metrika_send_bot_start
 
 # Загружаем переменные окружения
 load_dotenv()
@@ -114,8 +115,14 @@ async def maintenance_check_handler(update: Update, context: ContextTypes.DEFAUL
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Обработчик команды /start"""
+    """Обработчик команды /start. Сохраняет start-параметр (например blog_launch) как utm_source в БД и отправляет в Яндекс.Метрику."""
     user = update.effective_user
+    message = update.message
+    start_param = None
+    if message and message.text and message.text.strip().lower().startswith("/start "):
+        parts = message.text.strip().split(None, 1)
+        if len(parts) >= 2 and parts[1]:
+            start_param = parts[1].strip()[:64]  # лимит Telegram — 64 символа
 
     # Создаем/обновляем пользователя в БД
     db.create_or_update_user(
@@ -124,7 +131,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         first_name=user.first_name,
         last_name=user.last_name
     )
-    logger.info(f"Пользователь {user.id} запустил /start. Таймер напоминания установлен на 1 минуту")
+
+    if start_param:
+        db.update_telegram_identity_utm(user.id, utm_source=start_param, utm_medium="telegram")
+        try:
+            yandex_metrika_send_bot_start(user.id, utm_source=start_param)
+        except Exception as e:
+            logger.warning("Отправка в Яндекс.Метрику не удалась: %s", e)
+
+    logger.info("Пользователь %s запустил /start (utm_source=%s)", user.id, start_param or "—")
     
     # Создаем кнопку с WebApp
     keyboard = [

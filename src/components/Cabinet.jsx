@@ -118,8 +118,8 @@ function getTeaQuoteAudioUrls(index) {
 
 /**
  * Воспроизводит заранее записанный аудиофайл цитаты чая (голос Светланы).
- * Пробует .mp3, затем .webm.
- * @param {number} index — индекс в TEA_QUOTES (0..6)
+ * Пробует .mp3, затем .webm. Для индексов без файла (например 7+) возвращает false — вызывающий сделает fallback на TTS.
+ * @param {number} index — индекс в TEA_QUOTES (0..length-1)
  * @param {() => void} onEnd — вызывается по окончании или при ошибке
  * @returns {Promise<boolean>} true, если воспроизведение запущено; false — нужен fallback на TTS
  */
@@ -521,8 +521,9 @@ function Cabinet() {
       page: '/cabinet'
     })
     trackSectionView('cabinet')
+    logEvent('visit', 'page_view', { page: '/cabinet' })
     yandexMetricaReachGoal(null, 'cabinet_page_view')
-  }, [logContentView, trackSectionView])
+  }, [logContentView, trackSectionView, logEvent])
 
   useEffect(() => {
     const updateZones = () => {
@@ -657,6 +658,7 @@ function Cabinet() {
     setTeaQuoteIndex(quoteIndex)
     setShowTeaOverlay(true)
     trackSectionView('cabinet-tea')
+    logEvent('visit', 'page_view', { page: '/cabinet#tea' })
     const quote = TEA_QUOTES[quoteIndex]
     const onQuoteEnd = () => {
       setShowTeaOverlay(false)
@@ -673,7 +675,10 @@ function Cabinet() {
       setTimeout(onQuoteEnd, 4000)
     } else {
       const played = await playTeaRecordedAudio(quoteIndex, onQuoteEnd)
-      if (!played) setTimeout(onQuoteEnd, 5000)
+      if (!played) {
+        // Для цитат без записи (например 7–10) — озвучка через Edge TTS, затем закрытие
+        await speakTeaQuote(quote.text, quote.author, onQuoteEnd)
+      }
     }
   }
 
@@ -685,6 +690,7 @@ function Cabinet() {
     if (!pointInPolygon(x, y, coordsExpert.points)) return
     setShowExpertOverlay(true)
     trackSectionView('cabinet-expert')
+    logEvent('visit', 'page_view', { page: '/cabinet#expert' })
   }
 
   const getTgUserId = () => {

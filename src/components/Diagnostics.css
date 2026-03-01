@@ -1568,7 +1568,9 @@
     padding-top: 0;
     padding-left: 12px;
     padding-right: 12px;
-    padding-bottom: 0;
+    /* Bottom padding so the last answer option is visible on mobile browser
+       (standalone mobile, not miniapp) when the list is scrollable. */
+    padding-bottom: 100px;
     height: 100%;
     flex: 1;
     min-height: 0;
@@ -1580,6 +1582,7 @@
     /* Reserve space for header + fixed progress bar; wrapper scrolls, options in flow below. */
     margin-top: calc(var(--app-header-height, 100px) + 64px);
     padding: 8px 0 16px 0;
+    padding-bottom: 100px; /* so last answer option is visible on mobile (browser, not miniapp) */
     gap: 12px;
     max-width: 100%;
     justify-content: flex-start;

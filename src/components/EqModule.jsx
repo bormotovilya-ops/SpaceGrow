@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLogEvent } from '../hooks/useLogEvent'
+import { getSupabase } from '../utils/supabaseClient'
 
 function EqModule() {
   const navigate = useNavigate()
-  const { logEvent } = useLogEvent()
+  const { logEvent, ensureSession, getSessionInfo } = useLogEvent()
   const completedRef = useRef(false)
   const courseUserNameRef = useRef('')
   const resultRef = useRef(null)
@@ -13,17 +14,48 @@ function EqModule() {
   const loggedOnUnmount = useRef(false)
   const loggedResultRef = useRef(false)
 
-  const logSiteEvent = async (status) => {
-    if (loggedResultRef.current) return
-    loggedResultRef.current = true
-    const name = courseUserNameRef.current || displayName
+  const logSiteEvent = async (status, explicitPayload = null) => {
+    // При EXIT с result всегда пишем, чтобы результат гарантированно попал в БД
+    const forceWrite = !!(explicitPayload && explicitPayload.result != null)
+    if (loggedResultRef.current && !forceWrite) return
+    if (!forceWrite) loggedResultRef.current = true
+    const name = (explicitPayload?.userName != null && explicitPayload.userName !== '')
+      ? explicitPayload.userName
+      : (courseUserNameRef.current || displayName)
     const date = new Date().toISOString()
-    const result = resultRef.current
-    const points = pointsRef.current
-    await logEvent('training', 'eq_result', {
-      page: '/eq-module',
-      metadata: { name, date, status, result, points }
-    })
+    const result = explicitPayload?.result ?? resultRef.current
+    const points = explicitPayload?.points ?? pointsRef.current
+    const metadata = { name, date, status, result, points }
+    const page = '/eq-module'
+
+    let res = await logEvent('training', 'eq_result', { page, metadata })
+    if (!res?.ok) {
+      loggedResultRef.current = false
+      try {
+        const sessionId = await ensureSession()
+        const supabase = await getSupabase()
+        const info = getSessionInfo()
+        const tgUserId = info.tgUserId != null && info.tgUserId !== '' ? Number(info.tgUserId) : null
+        if (sessionId && supabase) {
+          const { error } = await supabase.from('site_events').insert({
+            session_id: Number(sessionId) || 0,
+            tg_user_id: tgUserId,
+            event_type: 'training',
+            event_name: 'eq_result',
+            page,
+            metadata
+          })
+          if (!error) {
+            res = { ok: true }
+            loggedResultRef.current = true
+          }
+        }
+      } catch (e) {
+        console.warn('[EqModule] fallback insert failed:', e)
+      }
+    } else if (forceWrite) {
+      loggedResultRef.current = true
+    }
   }
 
   // Имя пользователя из Telegram или дефолт
@@ -36,13 +68,20 @@ function EqModule() {
     }
   }, [])
 
-  // Слушаем завершение курса и выход из iframe (кнопка «Выйти» → переход в Кабинет)
+  // Фиксация успеха — при появлении страницы с результатом (EQ_RESULT), а не при нажатии «Выйти»
   useEffect(() => {
     const handler = async (event) => {
       if (event?.data?.type === 'EQ_RESULT') {
         if (event.data.result != null) resultRef.current = event.data.result
         if (typeof event.data.points === 'number') pointsRef.current = event.data.points
         if (event.data.userName) courseUserNameRef.current = event.data.userName
+        if (event.data.result != null) {
+          await logSiteEvent('прошел', {
+            result: event.data.result,
+            points: typeof event.data.points === 'number' ? event.data.points : null,
+            userName: event.data.userName || ''
+          })
+        }
       }
       if (event?.data?.type === 'EQ_COURSE_COMPLETED') {
         completedRef.current = true
@@ -57,9 +96,14 @@ function EqModule() {
         if (event.data.result != null) resultRef.current = event.data.result
         if (typeof event.data.points === 'number') pointsRef.current = event.data.points
         if (event.data.userName) courseUserNameRef.current = event.data.userName
-        // Успех: либо нажали «Сертификат» (COURSE_COMPLETED), либо дошли до финала (есть result от курса)
-        const passed = completedRef.current || resultRef.current != null
-        await logSiteEvent(passed ? 'прошел' : 'не до конца')
+        const payload = {
+          result: event.data.result ?? null,
+          points: typeof event.data.points === 'number' ? event.data.points : null,
+          userName: event.data.userName || ''
+        }
+        const passed = event.data.result != null
+        if (passed) await logSiteEvent('прошел', payload)
+        else if (!loggedResultRef.current) await logSiteEvent('не до конца', payload)
         navigate('/cabinet', { replace: true })
       }
     }

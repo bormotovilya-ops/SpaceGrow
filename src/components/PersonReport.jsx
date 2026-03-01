@@ -40,7 +40,7 @@ const HIDDEN_EVENT_NAMES = ['personal_path_view', 'astrolabe_pdf_action', 'card_
 
 function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlchemyClick }) {
   const navigate = useNavigate()
-  const { logPersonalPathView, getSessionInfo, logContentView, trackSectionView } = useLogEvent()
+  const { logPersonalPathView, getSessionInfo, logContentView, trackSectionView, logEvent } = useLogEvent()
   const [selectedPeriod, setSelectedPeriod] = useState('24h')
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -66,7 +66,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
   useEffect(() => {
     trackSectionView('cabinet-personreport')
-  }, [trackSectionView])
+    logEvent('visit', 'page_view', { page: '/personreport' })
+  }, [trackSectionView, logEvent])
 
   const handleHeaderConsultation = () => {
     yandexMetricaReachGoal(null, 'open_diagnostics', { placement: 'header', page: 'person_report' })
@@ -665,14 +666,22 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
             }, 'cta_click')
 
             // page_view events (event_type 'visit', event_name 'page_view') — universal route tracking
-            journey.page_views = await fetchEvents('visit', (r) => ({
-              event_name: r.event_name,
-              metadata: r.metadata,
-              page: r.page ?? null,
-              timestamp: r.created_at
-            }), 'page_view')
+              journey.page_views = await fetchEvents('visit', (r) => ({
+                event_name: r.event_name,
+                metadata: r.metadata,
+                page: r.page ?? null,
+                timestamp: r.created_at
+              }), 'page_view')
 
-            // content_actions already set above from same 'content' fetch as content_views
+              // training: eq_result, peoplegames_result — тренинги для ленты и личного дела
+              journey.training_results = await fetchEvents('training', (r) => ({
+                event_name: r.event_name,
+                metadata: r.metadata,
+                page: r.page ?? null,
+                timestamp: r.created_at
+              }))
+
+              // content_actions already set above from same 'content' fetch as content_views
 
             // Compute simple metrics (respect time filter; use stitched sessions)
             const totalSessions = sessionsInPeriod.length
@@ -963,7 +972,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     '/alchemy': '🧪 Алхимия',
     '/report': '📊 Персональный отчёт',
     '/portfolio': '📁 Портфолио',
-    '/chat': '💬 Чат с ИИ-наставником'
+    '/chat': '💬 Чат с ИИ-наставником',
+    '/people-games-module': '🎭 Курс: Трансактный анализ'
   }), [])
 
   // section_view: section_id → Rich Label (зеркало, астролябия, диагностика, икигай, диалог — выделение + эмодзи)
@@ -993,6 +1003,8 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     alchemy_interaction: '✨ Алхимия: Артефакт',
     snitch_action: '⚡ Снитч: Запуск игры',
     crystal_action: '🔮 Кристалл: Выбор теста',
+    eq_result: '🎓 Тренинг: EQ (Эмоциональный интеллект)',
+    peoplegames_result: '🎭 Тренинг: Трансактный анализ (Люди, которые играют в игры)',
     page_view: '👁️ Просмотр страницы',
     content_view: '👁️ Просмотр контента',
     // event_type fallbacks
@@ -1141,6 +1153,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     j.diagnostics?.forEach(d => push('diagnostic', d.timestamp, d))
     j.game_actions?.forEach(g => push('game_action', g.timestamp, g))
     j.cta_clicks?.forEach(c => push('cta_click', c.timestamp, c))
+    j.training_results?.forEach(t => push(t.event_name, t.timestamp, t))
 
     // Sort newest first (chronological timeline: newest at top, oldest at bottom)
     items.sort((a, b) => b.ts - a.ts)
@@ -1183,7 +1196,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     }
 
     // Priority events: ALWAYS standalone, never collapsed (excluded from grouping)
-    const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    const PRIORITY_EVENT_NAMES = ['ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'eq_result', 'peoplegames_result']
     const SECTION_ACTION_IDS_SET = ['alchemy-mirror', 'alchemy-astrolabe', 'alchemy-ikigai', 'alchemy-tarot', 'alchemy-tests', 'diagnostics']
     const isPriorityEvent = (item) => {
       const name = item.raw?.event_name
@@ -1267,7 +1280,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     const raw = entry.raw || {}
     const eventName = raw.event_name
     // Action events (реальное использование): ярко, с иконкой и huntStage
-    const actionEventNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'mirror_usage']
+    const actionEventNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'mirror_usage', 'eq_result', 'peoplegames_result']
     if (eventName && actionEventNames.includes(eventName)) {
       if (eventName === 'astrolabe_action') {
         const meta = safeParseMeta(raw.metadata)
@@ -1444,7 +1457,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
   }, [activityPathTimeline, getEventDisplayTitle, getSemanticPlaceKey, getPageViewLabel, getCtaLabel])
 
   // 2. Collapsible: section_view и page_view — компактные строки без деталей; детали только у Interaction
-  const INTERACTION_EVENT_NAMES = useMemo(() => ['mirror_usage', 'ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'], [])
+  const INTERACTION_EVENT_NAMES = useMemo(() => ['mirror_usage', 'ai_chat_message', 'test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'eq_result', 'peoplegames_result'], [])
   const enrichedTimeline = useMemo(() => {
     return visibleTimeline.map((e) => {
       const isView = e.type === 'section_view' || e.type === 'page_view' || e.type === 'content_view'
@@ -1533,6 +1546,12 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
     if (eventName === 'alchemy_item_select') return meta.name ? `${meta.type || 'Предмет'}: ${meta.name}` : null
     if (eventName === 'alchemy_interaction') return meta.element ? `Элемент: ${meta.element}` : null
     if (eventName === 'astrolabe_action') return meta.action ? `Действие: ${meta.action}` : null
+    if (eventName === 'peoplegames_result' || eventName === 'eq_result') {
+      const status = meta.status === 'прошел' ? 'Прошёл' : (meta.status === 'не до конца' ? 'Не до конца' : meta.status ?? '—')
+      const pts = meta.points != null ? `${meta.points} баллов` : ''
+      const result = meta.result ? ` (${meta.result})` : ''
+      return [status, pts, result].filter(Boolean).join(' · ') || status
+    }
     // section_view для приоритетных инструментов (зеркало, астролябия, икигай, диагностика, таро, тесты)
     if (entry.type === 'section_view') {
       try {
@@ -1549,7 +1568,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
 
   const isActionEvent = useCallback((entry) => {
     const name = entry.raw?.event_name
-    const actionNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action']
+    const actionNames = ['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'ai_chat_message', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'eq_result', 'peoplegames_result']
     if (name && actionNames.includes(name)) return true
     if (entry.type === 'diagnostic' || entry.type === 'ai_interaction') return true
     if (entry.type === 'section_view') {
@@ -2329,6 +2348,19 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                                       </div>
                                     )
                                   })()}
+                                  {(entry.raw?.event_name === 'peoplegames_result' || entry.raw?.event_name === 'eq_result') && (() => {
+                                    const meta = safeParseMeta(entry.raw?.metadata)
+                                    const status = meta.status === 'прошел' ? 'Прошёл' : (meta.status === 'не до конца' ? 'Не до конца' : meta.status ?? '—')
+                                    const label = entry.raw?.event_name === 'peoplegames_result' ? 'Трансактный анализ' : 'EQ (Эмоциональный интеллект)'
+                                    return (
+                                      <div className="event-details-content event-details-training">
+                                        <h5 className="event-details-heading">Тренинг: {label}</h5>
+                                        <p className="event-details-metadata-text"><strong>Результат:</strong> {status}</p>
+                                        {meta.points != null && <p className="event-details-metadata-text"><strong>Баллы:</strong> {meta.points}</p>}
+                                        {meta.result && <p className="event-details-metadata-text"><strong>Итог:</strong> {meta.result}</p>}
+                                      </div>
+                                    )
+                                  })()}
                                   {entry.grouped && entry.grouped.length > 0 && (entry.type === 'page_view' || entry.type === 'content_view') && (
                                     <div className="event-details-content event-details-group">
                                       <h5 className="event-details-heading">Визиты в группе ({entry.grouped.length})</h5>
@@ -2341,7 +2373,7 @@ function PersonReport({ onBack, onAvatarClick, onHomeClick, onDiagnostics, onAlc
                                       </ul>
                                     </div>
                                   )}
-                                  {!chatPreview && !['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action'].includes(entry.raw?.event_name) && !entry.grouped?.length && contentDetails && (
+                                  {!chatPreview && !['test_complete', 'diagnostics_results_view', 'ikigai_results_view', 'onboarding_results_view', 'astrolabe_input', 'astrolabe_action', 'alchemy_item_select', 'alchemy_interaction', 'snitch_action', 'crystal_action', 'eq_result', 'peoplegames_result'].includes(entry.raw?.event_name) && !entry.grouped?.length && contentDetails && (
                                     <div className="event-details-content"><p className="journey-event-details">{contentDetails}</p></div>
                                   )}
                                 </>

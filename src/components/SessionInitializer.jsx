@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLogEvent } from '../hooks/useLogEvent';
 import { useSessionLifecycle } from '../hooks/useSessionLifecycle';
 import { userUtils } from '../utils/logging';
@@ -11,6 +12,8 @@ import SessionStaleOverlay from './SessionStaleOverlay';
 const SessionInitializer = ({ children }) => {
   const { logArrival, logMiniAppOpen, logEvent, ensureSession } = useLogEvent();
   const { sessionStale, dismissStale, reload, closeMiniApp } = useSessionLifecycle();
+  const location = useLocation();
+  const initialDoneRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,6 +53,7 @@ const SessionInitializer = ({ children }) => {
         if (typeof window !== 'undefined' && logEvent) {
           const path = window.location.pathname || (window.location.hash ? window.location.hash.replace(/^#/, '') : '') || '/';
           await logEvent('visit', 'page_view', { page: path || '/' });
+          initialDoneRef.current = true;
         }
 
         if (!cancelled) {
@@ -67,6 +71,14 @@ const SessionInitializer = ({ children }) => {
       clearTimeout(t);
     };
   }, [logArrival, logMiniAppOpen, logEvent, ensureSession]);
+
+  // Фиксация перехода на каждую страницу для Sitemap: Кабинет, Книжная полка, Чай, Админка, Алхимия, Личное дело и т.д.
+  useEffect(() => {
+    if (!logEvent || !initialDoneRef.current) return;
+    const page = location.pathname + (location.hash || '');
+    if (!page) return;
+    logEvent('visit', 'page_view', { page: page || '/' });
+  }, [location.pathname, location.hash, logEvent]);
 
   return (
     <>

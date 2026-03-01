@@ -22,12 +22,13 @@ const SHELF_TESTS = [
 
 function CabinetShelf() {
   const navigate = useNavigate()
-  const { trackSectionView } = useLogEvent()
+  const { trackSectionView, logEvent } = useLogEvent()
   const [approachDone, setApproachDone] = useState(false)
 
   useEffect(() => {
     trackSectionView('cabinet-shelf')
-  }, [trackSectionView])
+    logEvent('visit', 'page_view', { page: '/cabinet/shelf' })
+  }, [trackSectionView, logEvent])
 
   useEffect(() => {
     const t = setTimeout(() => setApproachDone(true), 100)

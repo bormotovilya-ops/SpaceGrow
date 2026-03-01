@@ -65,7 +65,8 @@ function Alchemy({ onBack, onAvatarClick, onChatClick, onDiagnostics, onHomeClic
 
   useEffect(() => {
     trackSectionView(toolId ? `alchemy-${toolId}` : 'alchemy')
-  }, [toolId, trackSectionView])
+    logEvent('visit', 'page_view', { page: location.pathname || '/alchemy' })
+  }, [toolId, trackSectionView, logEvent, location.pathname])
 
   // Открытие с полки шкафа: state.openNovella или state.selectedArtifact
   useEffect(() => {

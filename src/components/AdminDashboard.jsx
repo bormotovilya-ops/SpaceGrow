@@ -83,7 +83,7 @@ function loadSpeechVoices() {
 
 function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, onAlchemyClick }) {
   const navigate = useNavigate()
-  const { trackSectionView } = useLogEvent()
+  const { trackSectionView, logEvent } = useLogEvent()
   const [chartData, setChartData] = useState(null)
   const [chartLoading, setChartLoading] = useState(true)
   const [soundEnabled, setSoundEnabled] = useState(getLocalSoundEnabled)
@@ -95,7 +95,8 @@ function AdminDashboard({ onBack, onHomeClick, onAvatarClick, onConsultation, on
 
   useEffect(() => {
     trackSectionView('cabinet-admin')
-  }, [trackSectionView])
+    logEvent('visit', 'page_view', { page: '/admin' })
+  }, [trackSectionView, logEvent])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return

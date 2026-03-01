@@ -41,10 +41,26 @@ function buildPathToIdMap(nodes) {
   return map
 }
 
+/** Считаем только просмотры: section_view (content) и page_view (visit). Если event_type/event_name нет в ответе — считаем событие с section_id или page. */
+function isViewEvent(e) {
+  const type = e.event_type
+  const name = e.event_name
+  if (type === 'content' && name === 'section_view') return true
+  if (type === 'visit' && name === 'page_view') return true
+  return false
+}
+
+function shouldSkipEvent(e) {
+  if (e.event_type == null && e.event_name == null) return false
+  if (!isViewEvent(e)) return true
+  return false
+}
+
 /** Собирает из событий карту (нормализованный section_id) -> количество. custom_data.section_id приводится к строке. */
 function buildCountMap(events, pathToIdMap) {
   const map = {}
   for (const e of events) {
+    if (shouldSkipEvent(e)) continue
     let sectionId = null
     if (e.custom_data) {
       try {
@@ -53,18 +69,23 @@ function buildCountMap(events, pathToIdMap) {
         sectionId = raw != null ? String(raw) : null
       } catch (_) {}
     }
-    if (!sectionId && e.page != null) {
-      const fromPage = sectionIdFromPage(e.page, pathToIdMap) ?? pathToIdMap?.[normalizeId(String(e.page))]
+    const pageStr = e.page != null ? String(e.page).trim() : ''
+    if (!sectionId && pageStr) {
+      const fromPage = sectionIdFromPage(e.page, pathToIdMap) ?? pathToIdMap?.[normalizeId(pageStr)]
       if (fromPage) sectionId = fromPage
     }
-    const key = normalizeId(sectionId)
-    if (!key) continue
-    map[key] = (map[key] || 0) + 1
+    const key = sectionId ? normalizeId(sectionId) : null
+    if (key) map[key] = (map[key] || 0) + 1
+    // Для path вроде /cabinet#tea даём ключ cabinettea, чтобы лист «Чай» (pathKey) находил счёт
+    if (pageStr) {
+      const pageKey = normalizeId(pageStr)
+      if (pageKey && pageKey !== key) map[pageKey] = (map[pageKey] || 0) + 1
+    }
   }
   return map
 }
 
-/** Рекурсивно считает популярность: для листа — из countMap по node.id или node.matchId (нормализованным), для родителя — сумма детей */
+/** Рекурсивно считает популярность: для листа — из countMap по node.id, matchId или path (нормализованным), для родителя — сумма детей */
 function computePopularity(node, countMap) {
   if (node.children && node.children.length > 0) {
     let sum = 0
@@ -75,7 +96,8 @@ function computePopularity(node, countMap) {
   }
   const idKey = normalizeId(String(node.id))
   const matchKey = node.matchId ? normalizeId(String(node.matchId)) : null
-  return countMap[idKey] ?? (matchKey ? countMap[matchKey] ?? 0 : 0)
+  const pathKey = node.path ? normalizeId(String(node.path)) : null
+  return countMap[idKey] ?? (matchKey ? countMap[matchKey] : null) ?? (pathKey ? countMap[pathKey] : null) ?? 0
 }
 
 /** Добавляет поле popularity каждому узлу (мутирует дерево) */
@@ -203,7 +225,7 @@ function Sitemap() {
       try {
         const { data, error } = await supabase
           .from('site_events')
-          .select('id, custom_data, page')
+          .select('id, event_type, event_name, custom_data, page')
         if (cancelled) return
         if (error) {
           console.warn('[Sitemap] site_events error:', error.message)
