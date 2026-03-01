@@ -139,8 +139,8 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
           <div className="home-hero-content">
             <div className="home-hero-image">
               <img 
-                src="/images/main.png" 
-                alt="Знание → Технологии → Капитал" 
+                src="/images/Ракета.png" 
+                alt="Аудитория → Лидмагнит → Посадочная страница → Продукт" 
                 className="hero-main-image"
               />
             </div>
