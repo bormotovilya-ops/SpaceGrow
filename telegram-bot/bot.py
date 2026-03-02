@@ -76,7 +76,7 @@ async def _run_cron_server() -> None:
 
 
 # URL вашего сайта (MiniApp)
-MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrow.vercel.app/')
+MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrowth.ru/')
 
 # URL Python backend-а с эндпоинтом /api/chat (нейросеть, как на странице Профиля)
 # По умолчанию — локальный backend на 5000 порту, можно переопределить в переменных окружения.
@@ -144,14 +144,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Создаем кнопку с WebApp
     keyboard = [
         [InlineKeyboardButton(
-            "🚀 Открыть SpaceGrowth",
+            "🚀 Открыть Пространство развития",
             web_app=WebAppInfo(url=MINIAPP_URL)
         )]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     welcome_text = (
-        f"Добро пожаловать в <b>SpaceGrowth</b>.\n\n"
+        f"Добро пожаловать в <b>Пространство развития</b>.\n\n"
         "Здесь смыслы обретают структуру, а онлайн-школы — новый финансовый двигатель. "
         "Я помогаю найти «протечки» в ваших процессах и внедряю <b>ИИ-архитектуру</b> для роста прибыли до <b>1-2 млн ₽</b> и выше.\n\n"
         "<b>Внутри приложения:</b>\n"
@@ -291,7 +291,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "📋 Доступные команды:\n\n"
         "/start - Начать работу с ботом\n"
         "/help - Показать эту справку\n"
-        "/site - Открыть сайт SpaceGrowth\n"
+        "/site - Открыть сайт Пространство развития\n"
         "/diagnostics - Пройти диагностику воронки\n"
         "/stats - Показать статистику бота\n\n"
         "💬 Контакты:\n"
@@ -300,7 +300,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     keyboard = [
         [InlineKeyboardButton(
-            "🚀 Открыть SpaceGrowth",
+            "🚀 Открыть Пространство развития",
             web_app=WebAppInfo(url=MINIAPP_URL)
         )]
     ]
@@ -316,14 +316,14 @@ async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     """Открыть сайт"""
     keyboard = [
         [InlineKeyboardButton(
-            "🚀 Открыть SpaceGrowth",
+            "🚀 Открыть Пространство развития",
             web_app=WebAppInfo(url=MINIAPP_URL)
         )]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "Нажми на кнопку, чтобы открыть SpaceGrowth IT-Service:",
+        "Нажми на кнопку, чтобы открыть Пространство развития:",
         reply_markup=reply_markup
     )
 
@@ -346,7 +346,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if any(word in text_lower for word in ['привет', 'здравствуй', 'добрый день', 'добрый вечер']):
         keyboard = [
             [InlineKeyboardButton(
-                "🚀 Открыть SpaceGrowth",
+                "🚀 Открыть Пространство развития",
                 web_app=WebAppInfo(url=MINIAPP_URL)
             )]
         ]
@@ -359,7 +359,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif any(word in text_lower for word in ['услуги', 'что делаешь', 'чем занимаешься']):
         keyboard = [
             [InlineKeyboardButton(
-                "🚀 Открыть SpaceGrowth",
+                "🚀 Открыть Пространство развития",
                 web_app=WebAppInfo(url=MINIAPP_URL)
             )]
         ]
@@ -406,7 +406,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             # Фолбэк на прежнюю заглушку, если backend недоступен
             keyboard = [
                 [InlineKeyboardButton(
-                    "🚀 Открыть SpaceGrowth",
+                    "🚀 Открыть Пространство развития",
                     web_app=WebAppInfo(url=MINIAPP_URL)
                 )]
             ]

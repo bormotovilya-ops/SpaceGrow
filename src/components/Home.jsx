@@ -156,7 +156,7 @@ function Home({ onDiagnostics, onTechnologies, onAlchemy, onPortal, onAvatarClic
                     <span className="tech-highlight">(ИИ, Боты, MiniApps и др.)</span>
                   </p>
                   <p className="subtitle-paragraph subtitle-highlight">
-                    IT-Service "SpaceGrowth" превратит привычную стабильность в <strong>управляеый взлет</strong>
+                    IT-Service "Пространство развития" превратит привычную стабильность в <strong>управляеый взлет</strong>
                   </p>
                 </div>
               </div>

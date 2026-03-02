@@ -129,7 +129,7 @@ function PeopleGamesModule() {
       <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0 overflow-hidden">
         <header className="flex-shrink-0 py-1 md:py-0 md:mb-2">
           <h1 className="text-[10px] font-light text-white/40 font-sans tracking-wide">
-            <span className="hidden md:inline">SPACEGROWTH</span>
+            <span className="hidden md:inline">ПРОСТРАНСТВО РАЗВИТИЯ</span>
             <span className="md:hidden">SG</span>
             <span className="mx-1.5 text-white/30" aria-hidden="true">•</span>
             METAMIND
