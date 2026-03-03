@@ -200,58 +200,60 @@ function SalesFunnel() {
         </div>
       </div>
 
-      <div className="funnel-user-list-section">
-        <h3 className="funnel-user-list-title">Пользователи воронки</h3>
-        {userListLoading ? (
-          <div className="funnel-user-list-loading">
-            <div className="loading-spinner" /> Загрузка...
-          </div>
-        ) : (
-          <div className="funnel-user-list-wrapper">
-            <table className="funnel-user-list-table" aria-label="Список пользователей с сегментами">
-              <thead>
-                <tr>
-                  <th>user_id</th>
-                  <th>Пользователь</th>
-                  <th>Ниша</th>
-                  <th>Hunt Ladder</th>
-                  <th>Масштаб</th>
-                  <th>Статус</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userList.length === 0 ? (
+      {false && (
+        <div className="funnel-user-list-section">
+          <h3 className="funnel-user-list-title">Пользователи воронки</h3>
+          {userListLoading ? (
+            <div className="funnel-user-list-loading">
+              <div className="loading-spinner" /> Загрузка...
+            </div>
+          ) : (
+            <div className="funnel-user-list-wrapper">
+              <table className="funnel-user-list-table" aria-label="Список пользователей с сегментами">
+                <thead>
                   <tr>
-                    <td colSpan={6} className="funnel-user-list-empty">Нет данных</td>
+                    <th>user_id</th>
+                    <th>Пользователь</th>
+                    <th>Ниша</th>
+                    <th>Hunt Ladder</th>
+                    <th>Масштаб</th>
+                    <th>Статус</th>
                   </tr>
-                ) : (
-                  userList.map((u) => (
-                    <tr key={u.user_id ?? 'unknown'}>
-                      <td>{u.user_id ?? '—'}</td>
-                      <td>{u.first_name ?? u.username ?? '—'}</td>
-                      <td>{u.segment_motivation ?? '—'}</td>
-                      <td>
-                        <div className="hunt-ladder-cell">
-                          <div className="hunt-ladder-bar" role="progressbar" aria-valuenow={u.segment_hunt_level ?? 0} aria-valuemin={1} aria-valuemax={5}>
-                            <div className="hunt-ladder-fill" style={{ width: u.segment_hunt_level != null && u.segment_hunt_level >= 1 && u.segment_hunt_level <= 5 ? `${(u.segment_hunt_level / 5) * 100}%` : '0%' }} />
-                          </div>
-                          <span className="hunt-ladder-label" title={u.segment_hunt_level != null && u.segment_hunt_level >= 1 && u.segment_hunt_level <= 5 ? ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка'][u.segment_hunt_level] : ''}>{u.segment_hunt_level != null ? `${u.segment_hunt_level}/5` : '—'}</span>
-                        </div>
-                      </td>
-                      <td>{u.segment_scale != null ? ({ solo: 'Индивидуально', team: 'Команда', system: 'Системный', start: 'Первый запуск' }[u.segment_scale] ?? u.segment_scale) : '—'}</td>
-                      <td>
-                        <span className={`segment-status-badge segment-status--${(u.segment_temperature || '').toLowerCase().replace(/\s+/g, '-')}`}>
-                          {u.segment_temperature === 'Hot' ? 'Hot' : u.segment_temperature === 'Warm' ? 'Warm' : u.segment_temperature === 'Needs Reanimation' ? '⚠️ Needs Reanimation' : u.segment_temperature === 'Ice' ? 'В процессе анализа' : u.segment_temperature ?? '—'}
-                        </span>
-                      </td>
+                </thead>
+                <tbody>
+                  {userList.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="funnel-user-list-empty">Нет данных</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                  ) : (
+                    userList.map((u) => (
+                      <tr key={u.user_id ?? 'unknown'}>
+                        <td>{u.user_id ?? '—'}</td>
+                        <td>{u.first_name ?? u.username ?? '—'}</td>
+                        <td>{u.segment_motivation ?? '—'}</td>
+                        <td>
+                          <div className="hunt-ladder-cell">
+                            <div className="hunt-ladder-bar" role="progressbar" aria-valuenow={u.segment_hunt_level ?? 0} aria-valuemin={1} aria-valuemax={5}>
+                              <div className="hunt-ladder-fill" style={{ width: u.segment_hunt_level != null && u.segment_hunt_level >= 1 && u.segment_hunt_level <= 5 ? `${(u.segment_hunt_level / 5) * 100}%` : '0%' }} />
+                            </div>
+                            <span className="hunt-ladder-label" title={u.segment_hunt_level != null && u.segment_hunt_level >= 1 && u.segment_hunt_level <= 5 ? ['', 'Безразличие', 'Осведомлённость', 'Выбор решения', 'Выбор подрядчика', 'Покупка'][u.segment_hunt_level] : ''}>{u.segment_hunt_level != null ? `${u.segment_hunt_level}/5` : '—'}</span>
+                          </div>
+                        </td>
+                        <td>{u.segment_scale != null ? ({ solo: 'Индивидуально', team: 'Команда', system: 'Системный', start: 'Первый запуск' }[u.segment_scale] ?? u.segment_scale) : '—'}</td>
+                        <td>
+                          <span className={`segment-status-badge segment-status--${(u.segment_temperature || '').toLowerCase().replace(/\s+/g, '-')}`}>
+                            {u.segment_temperature === 'Hot' ? 'Hot' : u.segment_temperature === 'Warm' ? 'Warm' : u.segment_temperature === 'Needs Reanimation' ? '⚠️ Needs Reanimation' : u.segment_temperature === 'Ice' ? 'В процессе анализа' : u.segment_temperature ?? '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {showPortfolio && (
         <Portfolio onClose={() => setShowPortfolio(false)} onConsultation={handleConsultation} />
