@@ -1,6 +1,8 @@
 import os
 import logging
 import asyncio
+import socket
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 from aiohttp import web
 import requests
@@ -75,12 +77,50 @@ async def _run_cron_server() -> None:
     logger.info("Cron HTTP-сервер слушает порт %s, путь /internal/run-marketing", port)
 
 
+def _log_miniapp_health(context: str) -> None:
+    """
+    Диагностика доступности MINIAPP_URL:
+    - логируем, какой URL сконфигурирован;
+    - как резолвится домен в IP;
+    - статус-код HTTP и длину ответа.
+    Нужна, чтобы понимать сетевые проблемы (например, ERR_CONNECTION_RESET на стороне домена).
+    """
+    try:
+        parsed = urlparse(MINIAPP_URL)
+        host = parsed.hostname
+        logger.info("MiniApp health check (%s): url=%s, host=%s", context, MINIAPP_URL, host)
+
+        if host:
+            try:
+                ip = socket.gethostbyname(host)
+                logger.info("MiniApp DNS resolve (%s): %s -> %s", context, host, ip)
+            except Exception as e:
+                logger.warning("MiniApp DNS resolve failed (%s) for %s: %s", context, host, e)
+
+        try:
+            resp = requests.get(MINIAPP_URL, timeout=5)
+            logger.info(
+                "MiniApp HTTP check (%s): status=%s, content_length=%s",
+                context,
+                resp.status_code,
+                len(resp.content or b""),
+            )
+        except Exception as e:
+            logger.exception("MiniApp HTTP check error (%s): %s", context, e)
+    except Exception as e:
+        logger.exception("MiniApp health check fatal error (%s): %s", context, e)
+
+
 # URL вашего сайта (MiniApp)
-MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrowth.ru/')
+MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrowth.ru/').strip() or 'https://spacegrowth.ru/'
+if not MINIAPP_URL.endswith('/'):
+    MINIAPP_URL = MINIAPP_URL + '/'
+logger.info("MINIAPP_URL configured: %s", MINIAPP_URL)
 
 # URL Python backend-а с эндпоинтом /api/chat (нейросеть, как на странице Профиля)
 # По умолчанию — локальный backend на 5000 порту, можно переопределить в переменных окружения.
-BACKEND_API_BASE = os.getenv('BACKEND_API_BASE', 'http://localhost:5000')
+BACKEND_API_BASE = os.getenv('BACKEND_API_BASE', 'http://localhost:5000').strip() or 'http://localhost:5000'
+logger.info("BACKEND_API_BASE configured: %s", BACKEND_API_BASE)
 
 # Инициализация БД и сервиса уведомлений
 db = Database()
@@ -117,6 +157,8 @@ async def maintenance_check_handler(update: Update, context: ContextTypes.DEFAUL
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /start. Сохраняет start-параметр (например blog_launch) как utm_source в БД и отправляет в Яндекс.Метрику."""
     user = update.effective_user
+    logger.info("Обработка /start для user_id=%s, username=%s", getattr(user, "id", None), getattr(user, "username", None))
+    _log_miniapp_health("start_command")
     message = update.message
     start_param = None
     if message and message.text and message.text.strip().lower().startswith("/start "):
@@ -206,6 +248,8 @@ async def handle_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def diagnostics_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Открыть диагностику"""
     user = update.effective_user
+    logger.info("Обработка /diagnostics для user_id=%s, username=%s", getattr(user, "id", None), getattr(user, "username", None))
+    _log_miniapp_health("diagnostics_command")
 
     # Отмечаем, что пользователь начал диагностику
     db.mark_diagnostics_started(user.id)
@@ -314,6 +358,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 # Команда /site
 async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Открыть сайт"""
+    logger.info("Обработка /site для user_id=%s, username=%s", getattr(update.effective_user, "id", None), getattr(update.effective_user, "username", None))
+    _log_miniapp_health("site_command")
+
     keyboard = [
         [InlineKeyboardButton(
             "🚀 Открыть Пространство развития",
@@ -380,12 +427,28 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                 "message": text,
                 "promptType": "bot_ai",
             }
+            logger.info(
+                "Запрос к backend /api/chat: url=%s, promptType=%s, message_len=%s",
+                url,
+                payload.get("promptType"),
+                len(payload.get("message") or ""),
+            )
             resp = requests.post(url, json=payload, timeout=30)
+            logger.info(
+                "Ответ backend /api/chat: status=%s, headers=%s",
+                resp.status_code,
+                {k: v for k, v in resp.headers.items() if k.lower() in ("content-type", "server", "date")}
+            )
             if resp.status_code == 200:
-                data = resp.json()
+                try:
+                    data = resp.json()
+                except Exception as e:
+                    logger.exception("Не удалось распарсить JSON из /api/chat: %s, raw_text=%s", e, resp.text[:500])
+                    data = {}
                 raw = (data.get("response") or "").strip()
                 if raw:
                     ai_reply = raw
+                    logger.info("Успешный ответ от /api/chat, длина ответа=%s", len(ai_reply))
                 else:
                     logger.warning("AI /api/chat вернул пустой response: %s", data)
             else:
@@ -419,7 +482,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 # Обработка ошибок
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик ошибок"""
-    logger.error(f"Exception while handling an update: {context.error}")
+    logger.exception(
+        "Exception while handling an update: %s, update=%s",
+        getattr(context, "error", None),
+        update,
+    )
 
 def main() -> None:
     """Запуск бота"""
@@ -490,7 +557,9 @@ def main() -> None:
     application.add_error_handler(error_handler)
     
     # Запускаем бота
-    logger.info("Бот запущен!")
+    logger.info("Бот запущен! MINIAPP_URL=%s, BACKEND_API_BASE=%s", MINIAPP_URL, BACKEND_API_BASE)
+    # Однократная диагностика MiniApp при старте, чтобы сразу увидеть сетевые проблемы домена
+    _log_miniapp_health("startup")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':

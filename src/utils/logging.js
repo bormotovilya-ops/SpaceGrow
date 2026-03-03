@@ -369,3 +369,93 @@ export const cookieUtils = {
   get: (name) => userUtils.getCookieId(),
   set: (name, val) => { document.cookie = `${name}=${val};path=/`; }
 };
+
+/**
+ * DEBUG / DIAGNOSTIC LOGGING
+ * Эти утилиты нужны именно для отладки проблем фронтенда (домены, загрузка бандла, глобальные ошибки),
+ * в т.ч. когда пользователь заходит на сайт не через MiniApp, а напрямую.
+ */
+
+/**
+ * Логирование отладочного события фронтенда в site_events с event_type='debug'.
+ * Не создаёт отдельную сессию; session_id=0 используется как "техническое" значение.
+ */
+export async function logFrontendDebugEvent(eventName, details = {}) {
+  try {
+    if (typeof window === 'undefined') return;
+    const page = window.location?.pathname || null;
+    const metadata = {
+      ...details,
+      href: window.location?.href,
+      origin: window.location?.origin,
+      host: window.location?.host,
+      mode: import.meta.env.MODE,
+      apiUrl: import.meta.env.VITE_API_URL || null,
+      baseUrl: import.meta.env.BASE_URL || null
+    };
+    // session_id = 0, tg_user_id = null — чисто тех. событие для диагностики
+    await trackEvent(0, 'debug', eventName, page, metadata, null);
+  } catch (e) {
+    // В отладочных событиях главное — не уронить приложение
+    console.error('[logFrontendDebugEvent] failed', e);
+  }
+}
+
+/**
+ * Глобальная инициализация логирования фронтенда:
+ * - логирует старт фронта с информацией о домене/окружении;
+ * - подписывается на window.onerror и unhandledrejection.
+ */
+export function initGlobalFrontendLogging() {
+  if (typeof window === 'undefined') return;
+
+  const envInfo = {
+    href: window.location?.href,
+    origin: window.location?.origin,
+    host: window.location?.host,
+    mode: import.meta.env.MODE,
+    apiUrl: import.meta.env.VITE_API_URL || null,
+    baseUrl: import.meta.env.BASE_URL || null,
+    userAgent: navigator.userAgent || ''
+  };
+
+  console.info('[FRONTEND_DEBUG] startup', envInfo);
+  // Отправляем тех. событие в Supabase (если доступен клиент)
+  void logFrontendDebugEvent('frontend_startup', envInfo);
+
+  // Глобальные JS-ошибки и ошибки загрузки ресурсов
+  window.addEventListener('error', (event) => {
+    try {
+      const payload = {
+        message: event.message || null,
+        filename: event.filename || null,
+        lineno: event.lineno || null,
+        colno: event.colno || null,
+        type: event.type || null,
+        // Для resource errors target может быть <script>, <link>, <img> и т.п.
+        resourceTag: event.target?.tagName || null,
+        resourceSrc: event.target?.src || event.target?.href || null
+      };
+      console.error('[FRONTEND_DEBUG] window.error', payload);
+      void logFrontendDebugEvent('window_error', payload);
+    } catch (e) {
+      console.error('[FRONTEND_DEBUG] window.error handler failed', e);
+    }
+  }, true);
+
+  // Неотловленные Promise-ошибки
+  window.addEventListener('unhandledrejection', (event) => {
+    try {
+      const reason = event.reason || {};
+      const payload = {
+        message: typeof reason === 'string' ? reason : (reason.message || null),
+        stack: reason.stack || null,
+        type: 'unhandledrejection'
+      };
+      console.error('[FRONTEND_DEBUG] unhandledrejection', payload);
+      void logFrontendDebugEvent('unhandledrejection', payload);
+    } catch (e) {
+      console.error('[FRONTEND_DEBUG] unhandledrejection handler failed', e);
+    }
+  });
+}

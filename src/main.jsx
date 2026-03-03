@@ -7,6 +7,13 @@ import {
   enableYandexMetricaSpaTracking,
   initYandexMetrica,
 } from './analytics/yandexMetrica'
+import { initGlobalFrontendLogging } from './utils/logging'
+
+// Глобальное логирование фронтенда (старты + JS/ресурсные ошибки),
+// чтобы понимать проблемы даже при прямом заходе на сайт, без MiniApp.
+if (typeof window !== 'undefined') {
+  initGlobalFrontendLogging()
+}
 
 // Аналитику инициализируем после первого кадра, чтобы не блокировать отрисовку.
 // На iOS/Safari requestIdleCallback может срабатывать с большой задержкой — используем setTimeout.
