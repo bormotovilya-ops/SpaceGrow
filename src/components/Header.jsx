@@ -39,7 +39,7 @@ function Header({ onAvatarClick, onConsultation, onBack, onAlchemyClick, onHomeC
   }, [currentMessageIndex, greetingMessages.length])
 
   const menuItems = [
-    { id: 'home', icon: '/images/ПР.png', label: 'Главная', onClick: onHomeClick },
+    { id: 'home', icon: '/images/pr.png', label: 'Главная', onClick: onHomeClick },
     { id: 'profile', icon: '/images/Ava.png', label: 'Илья Бормотов', onClick: onAvatarClick, isProfile: true },
     { id: 'diagnostics', icon: '/images/CTA.png', label: 'Диагностика в подарок', onClick: onConsultation, highlight: true },
     { id: 'portal', icon: '/images/AICP.png', label: 'Что под капотом', onClick: onBack },
