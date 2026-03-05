@@ -112,7 +112,7 @@ def _log_miniapp_health(context: str) -> None:
 
 
 # URL вашего сайта (MiniApp)
-MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrowth.ru/').strip() or 'https://spacegrowth.ru/'
+MINIAPP_URL = os.getenv('MINIAPP_URL', 'https://spacegrowth.vercel.app/').strip() or 'https://spacegrowth.vercel.app/'
 if not MINIAPP_URL.endswith('/'):
     MINIAPP_URL = MINIAPP_URL + '/'
 logger.info("MINIAPP_URL configured: %s", MINIAPP_URL)

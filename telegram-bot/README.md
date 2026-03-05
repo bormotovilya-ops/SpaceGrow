@@ -28,7 +28,7 @@
    - Перейдите в Settings → Variables
    - Добавьте:
      - `TELEGRAM_BOT_TOKEN` = ваш токен от BotFather
-     - `MINIAPP_URL` = `https://spacegrow.vercel.app/`
+     - `MINIAPP_URL` = `https://spacegrowth.vercel.app/`
 
 8. **Деплой:**
    - Railway автоматически задеплоит при push в GitHub
@@ -58,7 +58,7 @@
 4. Выберите "Bot Settings" → "Menu Button"
 5. Выберите "Configure Menu Button"
 6. Введите текст кнопки: `Открыть Пространство развития`
-7. Введите URL: `https://spacegrow.vercel.app/`
+7. Введите URL: `https://spacegrowth.vercel.app/`
 
 Теперь кнопка будет отображаться в меню бота!
 
