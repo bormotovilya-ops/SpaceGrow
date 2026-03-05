@@ -156,7 +156,7 @@ export function BlockDetailRoute() {
       block={block}
       onBack={() => navigate('/funnel')}
       onConsultation={handleStageConsultation}
-      onDiagnostics={handleStageConsultation}
+      onDiagnostics={() => navigate('/diagnostics')}
       onAvatarClick={() => navigate('/profile')}
       onAlchemyClick={() => navigate('/alchemy')}
       onChatClick={() => {}}

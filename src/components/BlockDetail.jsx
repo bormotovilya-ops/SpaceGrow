@@ -355,7 +355,7 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
           >
             <h3 className="process-card-title">Data-Driven Validation</h3>
             <p className="process-card-text">
-              Создаём прелендинги (быстрые точки захвата) и соединяем их через API/Webhooks (Make/n8n) с аналитическими таблицами.
+              Создаём прелендинги (быстрые точки захвата) и соединяем их через API/Webhooks (Бот/Make/n8n) с аналитическими таблицами.
             </p>
           </motion.div>
 
@@ -373,7 +373,7 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
             <div className="flow-arrow">→</div>
             <div className="data-flow-item flow-item-highlight">
               <div className="flow-icon">⚙️</div>
-              <span className="flow-label">Make/n8n</span>
+              <span className="flow-label">Бот/Make/n8n</span>
           </div>
             <div className="flow-arrow">→</div>
             <div className="data-flow-item">
@@ -391,7 +391,7 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
           >
             <img src="/images/me.jpg" alt="Илья Бормотов" className="expert-note-avatar" />
             <div className="expert-note-content">
-              Make/n8n — это «центральный процессор», который мгновенно ловит сигнал о клике и сегментирует клиента в CRM ещё до того, как он оставил заявку.
+              Бот/Make/n8n — это «центральный процессор», который мгновенно ловит сигнал о клике и сегментирует клиента в CRM ещё до того, как он оставил заявку.
                     </div>
           </motion.div>
         </div>
@@ -427,7 +427,7 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
           >
             <div className="tech-badge-icon">🔗</div>
             <div className="tech-badge-label">No-code Automation</div>
-            <div className="tech-badge-tools">Make / n8n</div>
+            <div className="tech-badge-tools">Бот / Make / n8n</div>
           </motion.div>
           
           <motion.div 
@@ -1432,6 +1432,19 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
                 <strong>Premium GetCourse</strong>
                 <p>Готовая платформа с расширенными возможностями для масштабных проектов</p>
               </div>
+                <div className="tech-stack-item">
+                  <strong>CoreApp (coreapp.ai)</strong>
+                  <p>
+                    <a
+                      href="https://coreapp.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Платформа CoreApp
+                    </a>{' '}
+                    — онлайн‑сервис для создания, продвижения и продажи онлайн‑курсов, а также для запуска онлайн‑школ.
+                  </p>
+                </div>
             </div>
           </motion.div>
 
@@ -1455,6 +1468,10 @@ function BlockDetail({ block, onBack, onConsultation, onDiagnostics, onAvatarCli
               <div className="tech-stack-item">
                 <strong>Smart Automation (бот)</strong>
                 <p>Автоматизация прогресса, сбор кейсов, выявление тех, кому нужна поддержка</p>
+                </div>
+                <div className="tech-stack-item">
+                  <strong>SCORM (Sharable Content Object Reference Model)</strong>
+                  <p>Международный стандарт для создания, упаковки и передачи электронных обучающих курсов.</p>
               </div>
             </div>
           </motion.div>
