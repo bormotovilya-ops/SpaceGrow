@@ -4664,10 +4664,34 @@
       var courseMusic = document.getElementById('course-bg-music');
       var musicBtn = document.getElementById('toolbar-music-btn');
       var soundEnabled = true;
+
+      function setupMusicAutoplayFallback() {
+        function startMusicOnce() {
+          if (!courseMusic || !courseMusic.paused) return;
+          try { courseMusic.play().catch(function() {}); } catch (e) {}
+        }
+        document.addEventListener('click', startMusicOnce, { once: true });
+        document.addEventListener('keydown', startMusicOnce, { once: true });
+      }
+
       if (courseMusic && musicBtn) {
         courseMusic.volume = 0.3;
-        try { courseMusic.play().catch(function() {}); } catch (e) {}
+        try {
+          var musicPlayPromise = courseMusic.play();
+          if (musicPlayPromise && typeof musicPlayPromise.then === 'function') {
+            musicPlayPromise.catch(function() {
+              setupMusicAutoplayFallback();
+            });
+          }
+        } catch (e) {
+          setupMusicAutoplayFallback();
+        }
+
         musicBtn.addEventListener('click', function() {
+          if (courseMusic.paused) {
+            try { courseMusic.play().catch(function() {}); } catch (e) {}
+            return;
+          }
           courseMusic.muted = !courseMusic.muted;
           soundEnabled = !courseMusic.muted;
           musicBtn.textContent = courseMusic.muted ? '🔇' : '🎵';
