@@ -4674,6 +4674,12 @@
         document.addEventListener('keydown', startMusicOnce, { once: true });
       }
 
+      function stopCourseMusic() {
+        if (!courseMusic) return;
+        try { courseMusic.pause(); } catch (e) {}
+        try { courseMusic.currentTime = 0; } catch (e) {}
+      }
+
       if (courseMusic && musicBtn) {
         courseMusic.volume = 0.3;
         try {
@@ -5126,6 +5132,7 @@
 
       function goToAlchemy() {
         try {
+          stopCourseMusic();
           var topWin = window.top || window.parent;
           var cabinetUrl = (topWin.location.origin || window.location.origin) + '/cabinet';
           if (topWin !== window) {
