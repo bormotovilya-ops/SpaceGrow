@@ -3787,7 +3787,7 @@
           var raw = localStorage.getItem(STATS_STORAGE_KEY);
           var arr = raw ? JSON.parse(raw) : [];
           if (!Array.isArray(arr)) arr = [];
-          arr.push({
+          var run = {
             ts: Date.now(),
             date: new Date().toISOString().slice(0, 10),
             points: typeof peopleGamesCoursePoints === 'number' ? peopleGamesCoursePoints : 0,
@@ -3795,8 +3795,12 @@
             name: (typeof courseUserName === 'string' && courseUserName.trim()) ? courseUserName.trim() : '',
             chapterPoints: { ch1: ch1RunPoints, ch2: ch2RunPoints, ch3: ch3RunPoints, ch4: ch4RunPoints, ch5: ch5RunPoints },
             wrongByChapter: { ch1: wrongCh1 || 0, ch2: wrongCh2 || 0, ch3: wrongCh3 || 0, ch4: wrongCh4 || 0, ch5: wrongCh5 || 0 }
-          });
+          };
+          arr.push(run);
           localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(arr));
+          if (window.parent && window.parent !== window) {
+            try { window.parent.postMessage({ type: 'PEOPLE_GAMES_RUN_SAVE', run: run }, '*'); } catch (e2) {}
+          }
         } catch (e) {}
       }
 
@@ -3807,6 +3811,9 @@
           if (typeof obj !== 'object' || obj === null) obj = {};
           obj[choiceId] = (obj[choiceId] || 0) + 1;
           localStorage.setItem(WRONG_CHOICES_STORAGE_KEY, JSON.stringify(obj));
+          if (window.parent && window.parent !== window) {
+            try { window.parent.postMessage({ type: 'PEOPLE_GAMES_WRONG_CHOICE', choiceId: choiceId }, '*'); } catch (e2) {}
+          }
         } catch (e) {}
       }
 
@@ -3849,6 +3856,23 @@
         }
       }
 
+      function loadAnalyticsFromAPI() {
+        return fetch('/api/peoplegames/analytics')
+          .then(function(r) { return r.ok ? r.json() : Promise.reject(new Error('fetch failed')); })
+          .then(function(data) {
+            return {
+              runs: Array.isArray(data.runs) ? data.runs : [],
+              wrongChoices: data.wrongChoices && typeof data.wrongChoices === 'object' ? data.wrongChoices : {}
+            };
+          })
+          .catch(function() {
+            return {
+              runs: loadRunStats(),
+              wrongChoices: loadWrongChoices()
+            };
+          });
+      }
+
       function initAnalyticsTabs() {
         var tabs = document.getElementById('analytics-tabs');
         var panels = document.querySelectorAll('.analytics-panel');
@@ -3870,9 +3894,12 @@
       }
 
       function renderStatsSlide() {
-        var stats = loadRunStats();
         var totalEl = document.getElementById('stats-total-runs');
-        var emptyEl = document.getElementById('stats-empty');
+        if (totalEl) totalEl.textContent = 'Загрузка...';
+        loadAnalyticsFromAPI().then(function(data) {
+          var stats = data.runs;
+          var wrongChoicesData = data.wrongChoices;
+          var emptyEl = document.getElementById('stats-empty');
         var daysCanvas = document.getElementById('stats-by-day-canvas');
         var ratingCanvas = document.getElementById('stats-rating-canvas');
         var distCanvas = document.getElementById('stats-points-dist-canvas');
@@ -4082,7 +4109,7 @@
         drawBarChart(distCanvas, distLabels, distValues, '#22c55e');
 
         if (wrongList) {
-          var wrongData = loadWrongChoices();
+          var wrongData = wrongChoicesData;
           var sorted = Object.keys(wrongData).map(function(k) { return { id: k, count: wrongData[k] }; }).sort(function(a, b) { return b.count - a.count; });
           wrongList.innerHTML = '';
           sorted.forEach(function(item) {
@@ -4093,6 +4120,7 @@
           });
           if (!sorted.length) wrongList.innerHTML = '<li class="text-slate-500">Данных пока нет</li>';
         }
+        });
       }
 
       var lastNovellaChoice = -1;

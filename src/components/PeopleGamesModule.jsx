@@ -93,6 +93,27 @@ function PeopleGamesModule() {
         // Уже записано на RESULT; повторно не пишем (loggedResultRef)
         await logSiteEvent('прошел')
       }
+      if (event?.data?.type === 'PEOPLE_GAMES_RUN_SAVE' && event.data.run) {
+        const run = event.data.run
+        const metadata = {
+          ts: run.ts,
+          date: run.date,
+          points: run.points,
+          result: run.result,
+          name: run.name || '',
+          chapterPoints: run.chapterPoints || {},
+          wrongByChapter: run.wrongByChapter || {}
+        }
+        logEvent('training', 'peoplegames_run_complete', { page: '/people-games-module', metadata }).catch((e) =>
+          console.warn('[PeopleGames] run save failed:', e)
+        )
+      }
+      if (event?.data?.type === 'PEOPLE_GAMES_WRONG_CHOICE' && event.data.choiceId) {
+        logEvent('training', 'peoplegames_wrong_choice', {
+          page: '/people-games-module',
+          metadata: { choiceId: event.data.choiceId }
+        }).catch((e) => console.warn('[PeopleGames] wrong choice save failed:', e))
+      }
       if (event?.data?.type === 'PEOPLE_GAMES_EXIT') {
         if (loggedOnUnmount.current) return
         loggedOnUnmount.current = true
