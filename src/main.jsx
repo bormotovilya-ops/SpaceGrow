@@ -17,7 +17,8 @@ if (typeof window !== 'undefined') {
 
 // Аналитику инициализируем после первого кадра, чтобы не блокировать отрисовку.
 // На iOS/Safari requestIdleCallback может срабатывать с большой задержкой — используем setTimeout.
-const YM_COUNTER_ID = import.meta.env.VITE_YM_COUNTER_ID
+// Если VITE_YM_COUNTER_ID не задан, используем дефолтный ID из прод-счётчика.
+const YM_COUNTER_ID = import.meta.env.VITE_YM_COUNTER_ID || '107234648'
 const initAnalytics = () => {
   initYandexMetrica(YM_COUNTER_ID)
   enableYandexMetricaSpaTracking(YM_COUNTER_ID)

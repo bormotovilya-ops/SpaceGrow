@@ -129,10 +129,10 @@ function PeopleGamesModule() {
       <div className="max-w-6xl mx-auto w-full flex flex-col flex-1 min-h-0 overflow-hidden">
         <header className="flex-shrink-0 py-1 md:py-0 md:mb-2">
           <h1 className="text-[10px] font-light text-white/40 font-sans tracking-wide">
-            <span className="hidden md:inline">ПРОСТРАНСТВО РАЗВИТИЯ</span>
-            <span className="md:hidden">SG</span>
-            <span className="mx-1.5 text-white/30" aria-hidden="true">•</span>
-            METAMIND
+            <span className="hidden md:inline">Конструктор интерактивных сценариев</span>
+            <span className="md:hidden">ИНТЕРАКТИВИТИ</span>
+            <span className="hidden md:inline mx-1.5 text-white/30" aria-hidden="true">•</span>
+            <span className="hidden md:inline">ИНТЕРАКТИВИТИ</span>
           </h1>
         </header>
         <div className="relative w-full flex-1 min-h-0 rounded-xl md:rounded-2xl overflow-hidden shadow-2xl ring-1 ring-slate-600/50 bg-slate-900/50">
@@ -142,6 +142,16 @@ function PeopleGamesModule() {
             className="absolute inset-0 w-full h-full border-0"
             allow="fullscreen"
           />
+        </div>
+        <div className="mt-2 mb-1 text-[10px] leading-snug text-slate-500 text-center">
+          <a
+            href="https://docs.google.com/document/d/1rdhH5IrwNAW9O_Vj_aFamzBzqMLMlQ-B/edit?usp=sharing&ouid=117665820562834516912&rtpof=true&sd=true"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 decoration-[0.5px] hover:text-slate-300 transition-colors"
+          >
+            Политика в отношении обработки персональных данных
+          </a>
         </div>
       </div>
     </div>
