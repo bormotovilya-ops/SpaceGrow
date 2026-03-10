@@ -75,6 +75,10 @@
     }
     body::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
+    /* Аналитика: скролл без видимой полосы */
+    .analytics-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    .analytics-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
     /* Один экран — один слайд */
     #slide-container {
       flex: 1;
@@ -3579,7 +3583,7 @@
     </section>
     <!-- Аналитика курса — 4 вкладки -->
     <section class="slide slide-stretch slide-clickable" data-slide="72" id="analytics-slide">
-      <div class="slide-inner flex flex-col min-h-0 p-4 sm:p-6 overflow-y-auto">
+      <div class="slide-inner flex flex-col min-h-0 p-4 sm:p-6 overflow-y-auto analytics-scroll">
         <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Аналитика курса</h2>
         <div class="inline-flex rounded-lg bg-slate-800/80 border border-slate-700/70 p-1 text-xs sm:text-sm mb-3 flex-shrink-0" id="analytics-tabs">
           <button type="button" class="analytics-tab px-3 py-1 rounded-md bg-slate-700 text-slate-50 font-semibold" data-analytics-tab="runs">Прохождения</button>
@@ -3590,7 +3594,7 @@
         <p id="stats-total-runs" class="text-slate-200 text-sm mb-1"></p>
         <p id="stats-empty" class="text-slate-500 text-xs sm:text-sm hidden mb-2">Данных пока нет — завершите хотя бы одно прохождение.</p>
         <!-- Вкладка 1: Прохождения -->
-        <div class="analytics-panel flex-1 min-h-0" data-analytics-panel="runs">
+        <div class="analytics-panel flex-1 min-h-0 overflow-y-auto analytics-scroll" data-analytics-panel="runs">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-4">
             <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[160px]">
               <h3 class="text-slate-100 text-sm font-semibold mb-2">Прохождения по дням</h3>
@@ -3607,7 +3611,7 @@
           </div>
         </div>
         <!-- Вкладка 2: Главы -->
-        <div class="analytics-panel hidden flex-1 min-h-0" data-analytics-panel="chapters">
+        <div class="analytics-panel hidden flex-1 min-h-0 overflow-y-auto analytics-scroll" data-analytics-panel="chapters">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[240px]">
               <h3 class="text-slate-100 text-sm font-semibold mb-2">Вклад глав в баллы</h3>
@@ -3620,7 +3624,7 @@
           </div>
         </div>
         <!-- Вкладка 3: Исходы -->
-        <div class="analytics-panel hidden flex-1 min-h-0" data-analytics-panel="outcomes">
+        <div class="analytics-panel hidden flex-1 min-h-0 overflow-y-auto analytics-scroll" data-analytics-panel="outcomes">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[240px]">
               <h3 class="text-slate-100 text-sm font-semibold mb-2">Исходы курса</h3>
@@ -3633,10 +3637,10 @@
           </div>
         </div>
         <!-- Вкладка 4: Ловушки -->
-        <div class="analytics-panel hidden flex-1 min-h-0" data-analytics-panel="traps">
+        <div class="analytics-panel hidden flex-1 min-h-0 overflow-y-auto analytics-scroll" data-analytics-panel="traps">
           <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[200px]">
             <h3 class="text-slate-100 text-sm font-semibold mb-2">Варианты, где ошибались чаще всего</h3>
-            <ol id="stats-wrong-choices-list" class="text-slate-200 text-xs sm:text-sm space-y-1 list-decimal list-inside overflow-y-auto" style="max-height:280px"></ol>
+            <ol id="stats-wrong-choices-list" class="text-slate-200 text-xs sm:text-sm space-y-1 list-decimal list-inside overflow-y-auto analytics-scroll" style="max-height:280px"></ol>
           </div>
         </div>
         <p class="slide-hint mt-2 flex-shrink-0">Переключайте вкладки сверху</p>
