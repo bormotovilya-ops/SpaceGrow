@@ -39,9 +39,9 @@
           extend: {
             colors: {
               dark: '#0f172a',
-              accent: '#a78bfa',
-              amber: '#f59e0b',
-              'accent-dim': 'rgba(167, 139, 250, 0.15)',
+              accent: '#a5b4fc',
+              amber: '#facc15',
+              'accent-dim': 'rgba(165, 180, 252, 0.15)',
             },
             fontFamily: {
               sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -55,7 +55,7 @@
   <style>
     :root {
       --dark: #0f172a;
-      --accent: #a78bfa;
+      --accent: #a5b4fc;
     }
     html { scroll-behavior: smooth; overflow: hidden; height: 100%; overflow-x: hidden; }
     html::-webkit-scrollbar { width: 0; height: 0; display: none; }
@@ -205,7 +205,7 @@
       text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
     }
     .slide-intro .intro-header h1 .emoji {
-      color: #fbbf24;
+      color: #facc15;
       text-shadow: 0 0 1px rgba(0, 0, 0, 1), 0 1px 2px rgba(0, 0, 0, 1), 0 0 8px rgba(0, 0, 0, 0.9);
     }
     .slide-intro .intro-left {
@@ -256,9 +256,9 @@
     }
     .slide-intro .cta-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.35);
+      box-shadow: 0 8px 24px rgba(250, 204, 21, 0.32);
       filter: brightness(1.02);
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
       color: #0f172a;
     }
     .slide-intro .intro-name-wrap {
@@ -277,7 +277,7 @@
     .slide-intro .intro-name-wrap label {
       font-size: 1.05rem;
       font-weight: 600;
-      color: #fbbf24;
+      color: #facc15;
       text-align: center;
       display: block;
       letter-spacing: 0.02em;
@@ -285,7 +285,7 @@
     }
     .slide-intro .intro-name-wrap input {
       padding: 0.55rem 0.85rem;
-      border: 1px solid rgba(251, 191, 36, 0.4);
+      border: 1px solid rgba(250, 204, 21, 0.36);
       border-radius: 10px;
       background: rgba(15, 23, 42, 0.6);
       color: #f1f5f9;
@@ -303,8 +303,8 @@
     }
     .slide-intro .intro-name-wrap input:focus {
       outline: none;
-      border-color: #fbbf24;
-      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+      border-color: #facc15;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
     }
     /* Нижний блок — описание + CTA; выше — представление (имя) */
     .slide-intro .intro-left { order: 2; }
@@ -643,6 +643,9 @@
     }
     .toolbar-btn:hover { background: rgba(56, 189, 248, 0.35); transform: scale(1.05); }
     .toolbar-btn.hint-available { box-shadow: 0 0 12px rgba(251, 191, 36, 0.6); background: rgba(251, 191, 36, 0.15); }
+    .course-toolbar.toolbar-analytics-mode .toolbar-btn:not(#toolbar-stats-btn),
+    .course-toolbar.toolbar-analytics-mode .toolbar-points { opacity: 0.4; pointer-events: none; }
+    .course-toolbar.toolbar-analytics-mode #toolbar-stats-btn { background: rgba(96, 165, 250, 0.5); box-shadow: 0 0 12px rgba(96, 165, 250, 0.5); }
     .toolbar-btn img { width: 100%; height: 100%; object-fit: contain; padding: 2px; box-sizing: border-box; }
     .toolbar-points {
       display: inline-flex;
@@ -2083,8 +2086,9 @@
       #berne-method .content-column h4 { font-size: 0.75rem !important; margin-bottom: 4px !important; }
       #berne-method .content-column ul { font-size: 0.72rem !important; line-height: 1.38 !important; }
       #berne-method .content-column li { margin-bottom: 0.2rem; }
-      #berne-method .founder-photo { max-height: 140px; margin-bottom: 6px; }
-      #berne-method .quote-box { font-size: 10px; line-height: 1.35; padding-left: 8px; margin-top: 3px; }
+      #berne-method .founder-column { flex-direction: row; align-items: flex-start; gap: 8px; }
+      #berne-method .founder-photo { max-height: 140px; margin-bottom: 0; max-width: 40%; flex: 0 0 auto; }
+      #berne-method .quote-box { font-size: 10px; line-height: 1.35; padding-left: 8px; margin-top: 0; flex: 1 1 auto; }
       #berne-method .book-badge { font-size: 10px; padding: 2px 8px; margin-bottom: 5px; }
     }
     @media (max-width: 480px) {
@@ -2094,7 +2098,7 @@
       #berne-method .content-column > div { padding: 8px !important; }
       #berne-method .content-column h4 { font-size: 0.7rem !important; margin-bottom: 3px !important; }
       #berne-method .content-column ul { font-size: 0.68rem !important; line-height: 1.35 !important; }
-      #berne-method .founder-photo { max-height: 100px; margin-bottom: 4px; }
+      #berne-method .founder-photo { max-height: 90px; margin-bottom: 0; max-width: 40%; }
       #berne-method .quote-box { font-size: 9px; padding-left: 6px; }
       #berne-method .book-badge { font-size: 9px; padding: 2px 6px; margin-bottom: 4px; }
     }
@@ -2215,6 +2219,7 @@
     <button type="button" class="toolbar-btn" id="toolbar-music-btn" title="Выключить музыку" aria-label="Музыка">🎵</button>
     <button type="button" class="toolbar-btn" id="toolbar-hint-btn" title="Подсказка от Эрика Берна" aria-label="Подсказка от Эрика Берна">💡</button>
     <div class="toolbar-points toolbar-awareness" title="Осознанность" aria-label="Осознанность">💎 <span id="toolbar-awareness">0</span></div>
+    <button type="button" class="toolbar-btn" id="toolbar-stats-btn" title="Аналитика" aria-label="Аналитика">📊</button>
     <div class="toolbar-points toolbar-influence hidden" title="Влияние" aria-hidden="true">🔥 <span class="label">Влияние</span> <span id="toolbar-influence">0</span></div>
     <div class="toolbar-points toolbar-resource hidden" title="Ресурс" aria-hidden="true">🔋 <span class="label">Ресурс</span> <span id="toolbar-resource">0</span></div>
   </div>
@@ -2297,9 +2302,9 @@
             <div style="background: rgba(255,255,255,0.03); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
               <h4 style="color:#fbbf24; margin-bottom: 12px; font-size: 18px; text-transform: uppercase;">Мировой статус метода:</h4>
               <ul style="list-style: none; padding: 0; font-size: 17px; line-height: 1.7;">
-                <li>✅ <b>Академическая база:</b> Преподается в университетах Лиги Плюща.</li>
-                <li>✅ <b>Проверка временем:</b> Бестселлер №1 по версии New York Times более 50 лет.</li>
-                <li>✅ <b>Масштаб личности:</b> Эрик Берн (MD, Stanford) — доктор медицины и гений системного анализа.</li>
+                <li><span style="color: #4ade80;">✅</span> <b>Академическая база:</b> Преподается в университетах Лиги Плюща.</li>
+                <li><span style="color: #4ade80;">✅</span> <b>Проверка временем:</b> Бестселлер №1 по версии New York Times более 50 лет.</li>
+                <li><span style="color: #4ade80;">✅</span> <b>Масштаб личности:</b> Эрик Берн (MD, Stanford) — доктор медицины и гений системного анализа.</li>
               </ul>
             </div>
           </div>
@@ -2672,7 +2677,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name">Виктор (Ведущий аналитик)</span>
-                О, вы еще здесь? Я как раз заканчиваю презентацию для совета директоров. Знаете, я не уходил из офиса последние две ночи... Хотел, чтобы данные по филиалам были безупречны. Не мог допустить, чтобы вы вышли к совету с сырыми цифрами.
+                О, вы ещё здесь? Я как раз заканчиваю презентацию для совета директоров. Две ночи почти не уходил из офиса — хотел, чтобы данные по филиалам были безупречны. Не мог допустить, чтобы вы вышли к совету с сырыми цифрами.
               </div>
             </div>
           </div>
@@ -2690,7 +2695,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name">Ремарка</span>
-                <em>*Виктор открывает файл. Вы видите отличные графики, но на титульном листе — логотип конкурентов, а в выводах — грубая опечатка в фамилии гендиректора.*</em>
+                <em>*Виктор открывает файл. Графики отличные, но на титуле — логотип конкурентов, а в выводах — грубая опечатка в фамилии гендиректора.*</em>
               </div>
             </div>
           </div>
@@ -2708,7 +2713,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name"><span id="ch3-user-name">Вы</span></span>
-                Виктор, контент сильный, но тут логотип конкурентов и ошибка в фамилии шефа. Это же катастрофа для завтрашней встречи.
+                Виктор, контент сильный, но тут логотип конкурентов и ошибка в фамилии шефа. Для завтрашней встречи это катастрофа.
               </div>
             </div>
           </div>
@@ -2726,7 +2731,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name">Виктор (Ведущий аналитик)</span>
-                Логотип? Видимо, системный сбой при выгрузке из облака... А опечатка... Знаете, при такой нагрузке, которую я на себя взял, человеческий фактор неизбежен. Я ведь один тяну аналитику за весь отдел.
+                Логотип? Похоже, сбой при выгрузке из облака... А опечатка... При такой нагрузке, которую я на себя взял, человеческий фактор неизбежен. Я ведь один тяну аналитику за весь отдел.
               </div>
             </div>
           </div>
@@ -2776,7 +2781,7 @@
                 <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
                 <div class="berne-hint-text">
                   <div class="berne-hint-title">Подсказка от Эрика Берна</div>
-                  <p class="berne-hint-body">Виктор ведёт игру <strong>«Попался, сукин сын!»</strong>: демонстрирует жертвенность и при этом даёт наживку (ошибки). Гнев сделает из него «мученика», а если взять работу на себя — закрепите за ним право косячить. Ищите вариант, где вы <strong>не входите ни в Преследователя, ни в Спасателя</strong> и не снимаете с него ответственность.</p>
+                  <p class="berne-hint-body">Виктор ведёт игру <strong>«Попался, сукин сын!»</strong>: показывает жертвенность и даёт наживку — ошибки. Гнев сделает из него «мученика», а если взять работу на себя — закрепите за ним право ошибаться. Ищите ход, где вы <strong>не становитесь ни Преследователем, ни Спасателем</strong> и не снимаете с него ответственность.</p>
                 </div>
               </div>
             </div>
@@ -2794,7 +2799,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name">Виктор (Ведущий аналитик)</span>
-                30 минут? Чтобы гарантировать чистоту данных после сбоя CRM, нужно перепроверить все связи.
+                30 минут? Чтобы быть уверенным в данных после сбоя CRM, нужно перепроверить все связи.
               </div>
             </div>
           </div>
@@ -2812,7 +2817,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name">Виктор (Ведущий аналитик)</span>
-                Я на грани выгорания. Если я сейчас полезу в код презентации в такой спешке, я не ручаюсь за результат.
+                Я на грани выгорания. Если сейчас полезу в код презентации в такой спешке, за результат не ручаюсь.
               </div>
             </div>
           </div>
@@ -2830,7 +2835,7 @@
             <div class="scene-content">
               <div class="dialog-box">
                 <span class="dialog-name">Виктор (Ведущий аналитик)</span>
-                Может, попросим стажера Андрея? Хотя... он точно всё испортит, и мне придется переделывать за ним в полночь.
+                Может, попросим стажёра Андрея? Хотя... он точно всё испортит, и мне придётся переделывать за ним в полночь.
               </div>
             </div>
           </div>
@@ -2893,10 +2898,10 @@
         <p class="text-slate-500 text-xs mb-2">Теория к главе 3</p>
         <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Игра «Попался, сукин сын!»</h2>
         <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 mb-0"><strong>Суть игры:</strong> Игрок демонстрирует «сверхкомпетентность» и жертвенность (переработки, безупречность), но при этом допускает заметные ошибки. Ошибки — наживка. Если вы отреагируете <strong>гневом</strong> (Преследователь), он получает роль мученика. Если <strong>возьмёте работу на себя</strong> (Спасатель), закрепите за ним право косячить. Цель — снять с себя ответственность или получить индульгенцию за косяки.</p>
+          <p class="text-slate-300 mb-0"><strong>Суть игры:</strong> Игрок показывает «сверхкомпетентность» и жертвенность (переработки, идеальность), но специально оставляет заметные ошибки. Ошибки — наживка. Гневный разнос делает его мучеником, а если <strong>взять работу на себя</strong>, вы даёте ему индульгенцию на новые косяки.</p>
         </div>
         <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 mb-0"><strong>Выход:</strong> Разделить <em>личность</em> (усталость, вклад) и <em>процесс</em> (ошибка в файле). Подтвердить вклад, но не снимать ответственность за результат. Не кричать, не делать работу за него.</p>
+          <p class="text-slate-300 mb-0"><strong>Выход:</strong> Разделить <em>человека</em> (усталость, вклад) и <em>результат</em> (ошибки в файле). Подтвердить вклад, но оставить ответственность за качество на нём. Не кричать и не делать работу вместо него.</p>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
@@ -2905,12 +2910,12 @@
     <section class="slide slide-stretch slide-clickable" data-slide="35" id="ch3-theory2">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 3</p>
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Разбор ситуации: Виктор и презентация</h2>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-3 reveal" data-reveal>Разбор: Виктор и презентация</h2>
         <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 mb-0"><strong>Ситуация:</strong> Виктор две ночи в офисе, отличные графики, но логотип конкурентов и опечатка в фамилии гендиректора. Он оправдывается «нагрузкой» и «человеческим фактором», предлагает стажера — с намёком, что тот всё испортит.</p>
+          <p class="text-slate-300 mb-0"><strong>Ситуация:</strong> Виктор две ночи в офисе, графики отличные, но логотип конкурентов и опечатка в фамилии гендиректора. Он ссылается на «нагрузку» и «человеческий фактор», предлагает стажёра — с намёком, что тот всё испортит.</p>
         </div>
         <div class="theory-card reveal" data-reveal>
-          <p class="text-slate-300 mb-0"><strong>Правильный ход:</strong> Услышать усталость, но не снимать ответственность. Чёткие рамки: пауза, кофе, дедлайн по файлу, отдельно — обсуждение нагрузки в понедельник. Так вы не играете ни в Преследователя, ни в Спасателя.</p>
+          <p class="text-slate-300 mb-0"><strong>Правильный ход:</strong> признать усталость, но не снимать ответственность. Дать рамки: пауза, кофе, дедлайн по файлу, а нагрузку обсудить отдельно в понедельник. Так вы не входите ни в Преследователя, ни в Спасателя.</p>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
@@ -2948,11 +2953,11 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Ремарка</span>
-                <em>*Вы заходите в кабинет Алисы, арт-директора. Завтра Совет директоров, и вы пришли узнать, как обстоят дела с презентацией к этой встрече.*</em>
+                <em>*Вы заходите в кабинет Алисы, арт‑директора. Завтра Совет директоров, вы пришли проверить, готова ли презентация.*</em>
               </div>
               <div class="dialog-box">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Я закончила правки. Учла ваше замечание о том, что Совет не любит перегруженных таблиц. Я вынесла всю финансовую часть в приложение и оставила только вдохновляющий визуал. Теперь презентация выглядит... дорого. Посмотрите.
+                Я закончила правки. Учла ваше замечание: Совет не любит перегруженные таблицы. Финансовую часть вынесла в приложение, оставила вдохновляющий визуал. Теперь презентация выглядит дорого. Посмотрите.
               </div>
             </div>
           </div>
@@ -2970,7 +2975,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Ремарка</span>
-                <em>*Вы видите, что без таблиц проект выглядит как набор картинок. Денег под это не дадут.*</em>
+                <em>*Без таблиц проект выглядит как набор картинок. Под это денег не дадут.*</em>
               </div>
             </div>
           </div>
@@ -2992,9 +2997,9 @@
             </div>
           </div>
           <div class="novella-choices choices-slide-in" id="ch4-choices-1">
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="parent">Алиса, не перегружать — это про дизайн, а не про удаление сути. Нужно вернуть расчёты.</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="rescuer">Смело, но рискованно. Давай я сам выберу 3 главных цифры, а ты их просто вставишь?</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_1">Эстетично. А как мы ответим Боссу, когда на 3-й минуте он спросит про ROI?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="parent">Алиса, «не перегружать» — про дизайн, а не про вырезание сути. Расчёты нужно вернуть.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="rescuer">Смело, но рискованно. Давай я выберу три ключевые цифры, а ты просто вставишь их?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_1">Эстетично. А что ответим Боссу, когда на третьей минуте он спросит про ROI?</button>
           </div>
           <div class="scene-text-zone">
             <div class="scene-content">
@@ -3002,7 +3007,7 @@
                 <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
                 <div class="berne-hint-text">
                   <div class="berne-hint-title">Подсказка от Эрика Берна</div>
-                  <p class="berne-hint-body">Игра «Посмотри, что ты со мной сделал» — Алиса даёт наживку (стыд, вина). Ищите вариант, который возвращает к цели бизнеса и не входит ни в Преследователя (давление на чувства), ни в Спасателя (взять работу на себя).</p>
+                  <p class="berne-hint-body">Игра «Посмотри, что ты со мной сделал»: Алиса даёт наживку — стыд и вину. Ищите ход, который возвращает к цели бизнеса и не делает вас ни Преследователем (давление на чувства), ни Спасателем (взять всё на себя).</p>
                 </div>
               </div>
             </div>
@@ -3020,7 +3025,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Вчера это был мусор, сегодня — суть. Я ориентируюсь на ваши слова, а не на интуицию. Если я буду сама решать, что важно, зачем тогда мне ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
+                Вчера вы называли это мусором, сегодня — сутью. Я опираюсь на ваши слова, а не на интуицию. Если сама решаю, что важно, зачем тогда ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
               </div>
             </div>
           </div>
@@ -3037,7 +3042,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Вчера это был мусор, сегодня — суть. Я ориентируюсь на ваши слова, а не на интуицию. Если я буду сама решать, что важно, зачем тогда мне ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
+                Вчера вы называли это мусором, сегодня — сутью. Я опираюсь на ваши слова, а не на интуицию. Если сама решаю, что важно, зачем тогда ваши правки? Я просто старалась быть идеальным исполнителем вашей воли.
               </div>
             </div>
           </div>
@@ -3055,7 +3060,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Я полагала, что цифры — ваша часть выступления. Но если вы настаиваете... Я могу их вернуть, но за целостность я не ручаюсь. Будет винегрет, за который мне как дизайнеру будет стыдно. Мы всё равно возвращаем?
+                Я думала, что цифры — ваша часть выступления. Но если настаиваете... Могу их вернуть, но за целостность не ручаюсь. Будет винегрет, за который мне как дизайнеру будет стыдно. Всё равно возвращаем?
               </div>
             </div>
           </div>
@@ -3072,14 +3077,14 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Я полагала, что цифры — ваша часть выступления. Но если вы настаиваете... Я могу их вернуть, но за целостность я не ручаюсь. Будет винегрет, за который мне как дизайнеру будет стыдно. Мы всё равно возвращаем?
+                Я думала, что цифры — ваша часть выступления. Но если настаиваете... Могу их вернуть, но за целостность не ручаюсь. Будет винегрет, за который мне как дизайнеру будет стыдно. Всё равно возвращаем?
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in" id="ch4-choices-adult1">
             <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_shame">Да, возвращаем. Результат важнее твоего стыда.</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_compromise">Я не хочу, чтобы тебе было стыдно. Давай оставим цифры только на одном слайде?</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_2">Твой профессионализм в том и заключается, чтобы упаковать сложные данные красиво. Сколько нужно времени?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_compromise">Не хочу, чтобы тебе было стыдно. Давай оставим цифры только на одном слайде?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_2">Твой профессионализм — упаковывать сложные данные красиво. Сколько тебе нужно времени?</button>
           </div>
         </div>
       </div>
@@ -3094,7 +3099,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Хорошо. Я сделаю красивые таблицы. Но давайте зафиксируем: если завтра Босс скажет, что презентация перегружена, вы подтвердите, что это была ваша прямая просьба — вернуть данные вопреки моему совету?
+                Хорошо, сделаю красивые таблицы. Но давайте зафиксируем: если завтра Босс скажет, что презентация перегружена, вы подтвердите, что это была ваша прямая просьба вернуть данные вопреки моему совету?
               </div>
             </div>
           </div>
@@ -3111,14 +3116,14 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Хорошо. Я сделаю красивые таблицы. Но давайте зафиксируем: если завтра Босс скажет, что презентация перегружена, вы подтвердите, что это была ваша прямая просьба — вернуть данные вопреки моему совету?
+                Хорошо, сделаю красивые таблицы. Но давайте зафиксируем: если завтра Босс скажет, что презентация перегружена, вы подтвердите, что это была ваша прямая просьба вернуть данные вопреки моему совету?
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in" id="ch4-choices-adult2">
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_guarantee">Конечно. Я всегда беру ответственность на себя. Просто делай.</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_weakness">Алиса, мы в одной лодке. К чему эти формальности с фиксацией?</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_3">Моя просьба — не вернуть данные, а защитить проект. Я жду версию, за которую тебе не будет стыдно.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_guarantee">Конечно. Я всегда беру ответственность на себя. Просто сделай.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="trap_weakness">Алиса, мы в одной лодке. Зачем эти формальности с фиксацией?</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="adult_3">Моя просьба — не просто вернуть данные, а защитить проект. Я жду версию, за которую тебе не будет стыдно.</button>
           </div>
         </div>
       </div>
@@ -3137,7 +3142,7 @@
               </div>
               <div class="dialog-box">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Знаете... у меня начинает дико болеть голова. Боюсь, в таком состоянии я наделаю ошибок в этих ваших таблицах. Может, вы сами подправите шрифты в финальной версии? Исходники я скинула.
+                Знаете... у меня дико начинает болеть голова. В таком состоянии я точно наломаю дров в этих таблицах. Может, вы сами подправите шрифты в финальной версии? Исходники я уже скинула.
               </div>
             </div>
           </div>
@@ -3158,14 +3163,14 @@
               </div>
               <div class="dialog-box">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Знаете... у меня начинает дико болеть голова. Боюсь, в таком состоянии я наделаю ошибок в этих ваших таблицах. Может, вы сами подправите шрифты в финальной версии? Исходники я скинула.
+                Знаете... у меня дико начинает болеть голова. В таком состоянии я точно наломаю дров в этих таблицах. Может, вы сами подправите шрифты в финальной версии? Исходники я уже скинула.
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in" id="ch4-choices-adult3">
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="fail_worker">Ох, сочувствую. Иди домой, я сам докручу.</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="fail_tyrant">Утром будет поздно. Выпей таблетку и доделай. Это критически важно.</button>
-            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="win_final">Мигрень — это серьёзно. Давай так: ты отдыхаешь 30 минут, а потом решаешь — доделываешь сейчас или завтра презентуешь пустую версию сама.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="fail_worker">Сочувствую. Иди домой, я сам всё докручу.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="fail_tyrant">Утром будет поздно. Выпей таблетку и доделай, это критически важно.</button>
+            <button type="button" class="novella-choice ch4-choice" data-ch4-branch="win_final">Мигрень — серьёзно. Давай так: ты отдыхаешь 30 минут, а потом решаешь — доделываешь сейчас или завтра сама презентуешь пустую версию.</button>
           </div>
         </div>
       </div>
@@ -3212,20 +3217,20 @@
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 4</p>
         <div class="border-l-4 border-pink-500 pl-5 mb-6">
-          <h2 class="font-display text-xl sm:text-2xl font-bold text-pink-400 mb-1 reveal" data-reveal>Игры по Берну в главе</h2>
-          <p class="text-slate-400 text-base opacity-90 reveal" data-reveal>Название и суть игр, которые были в главе</p>
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-pink-400 mb-1 reveal" data-reveal>Игры по Берну в этой главе</h2>
+          <p class="text-slate-400 text-base opacity-90 reveal" data-reveal>Коротко о сценариях, в которые попадает Алиса</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div class="theory-card reveal" data-reveal>
             <h3 class="text-pink-300 font-bold text-base mb-2">Игра: «Железная дева»</h3>
-            <p class="text-slate-300 text-sm mb-0">Разновидность игры <strong>«Посмотри, что ты со мной сделал»</strong>. Манипулятор подчеркнуто точно выполняет вашу просьбу, доводя её до абсурда, чтобы провалить дело и обвинить вас.</p>
+            <p class="text-slate-300 text-sm mb-0">Вариант игры <strong>«Посмотри, что ты со мной сделал»</strong>. Человек подчёркнуто буквально выполняет вашу просьбу, доводя её до абсурда, чтобы дело провалилось и можно было обвинить вас.</p>
           </div>
           <div class="theory-card reveal" data-reveal>
             <h3 class="text-pink-300 font-bold text-base mb-2">Игра: «У меня лапки»</h3>
-            <p class="text-slate-300 text-sm mb-0">Использование психосоматики (мигрень, стресс), чтобы соскочить с ответственности. Цель — заставить вас выполнять чужую работу из чувства жалости.</p>
+            <p class="text-slate-300 text-sm mb-0">Ссылка на мигрень, стресс и прочие «не могу», чтобы уйти от задачи. Цель — переложить работу на вас через жалость.</p>
           </div>
         </div>
-        <blockquote class="border-l-4 border-slate-500 pl-4 my-4 text-slate-400 italic text-sm opacity-90 reveal" data-reveal>Скрытая транзакция здесь: «Я — беспомощный ребенок, а ты — злой родитель. Вини себя за мои страдания».</blockquote>
+        <blockquote class="border-l-4 border-slate-500 pl-4 my-4 text-slate-400 italic text-sm opacity-90 reveal" data-reveal>Скрытая транзакция: «Я — беспомощный ребёнок, а ты — злой родитель. Вини себя за мои страдания».</blockquote>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
     </section>
@@ -3235,14 +3240,14 @@
         <p class="text-slate-500 text-xs mb-2">Теория к главе 4</p>
         <div class="border-l-4 border-emerald-500 pl-5 mb-6">
           <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Путь Гроссмейстера</h2>
-          <p class="text-slate-400 text-base opacity-90 reveal" data-reveal>Как правильно нужно было действовать</p>
+          <p class="text-slate-400 text-base opacity-90 reveal" data-reveal>Как действовать по-взрослому в подобных сценах</p>
         </div>
         <div class="theory-card bg-emerald-500/10 border border-dashed border-emerald-500/60 rounded-xl p-5 reveal" data-reveal>
           <ol class="text-slate-300 text-sm space-y-3 list-decimal list-inside leading-relaxed">
-            <li><strong>Выход из ролей:</strong> Не становитесь «Преследователем» (гнев) и «Спасателем» (жалость). Оставайтесь в позиции <strong>Взрослого</strong>.</li>
-            <li><strong>Возврат ответственности:</strong> На жалобы об усталости отвечайте сочувствием («Жаль, что ты плохо себя чувствуешь»), но не снимайте задачу («Как мы можем решить вопрос к утру?»).</li>
-            <li><strong>Конфронтация со смыслом:</strong> Вместо обсуждения «кто что сказал», обсуждайте <strong>цель бизнеса</strong>. Манипуляция рассыпается, когда её сталкивают с реальностью (Совет Директоров).</li>
-            <li><strong>Отказ от «индульгенций»:</strong> Никогда не гарантируйте манипулятору, что «не будете ругаться». Ответственность за результат всегда общая.</li>
+            <li><strong>Выйти из треугольника:</strong> Не становитесь Преследователем (гнев) и Спасателем (жалость). Держите позицию <strong>Взрослого</strong>.</li>
+            <li><strong>Вернуть ответственность:</strong> Сочувствуйте состоянию («Жаль, что тебе так тяжело»), но оставляйте задачу: «Как мы решим вопрос к утру?».</li>
+            <li><strong>Говорить о цели:</strong> Меньше обсуждать «кто что сказал», больше — <strong>цель бизнеса</strong>. Манипуляция рассыпается, когда её столкнуть с реальностью (Совет директоров).</li>
+            <li><strong>Без индульгенций:</strong> Не обещайте «не ругаться». Ответственность за результат всегда общая.</li>
           </ol>
         </div>
         <p class="slide-hint mt-4">Нажмите на экран для продолжения</p>
@@ -3284,8 +3289,8 @@
               <div class="dialog-box">
                 <span class="dialog-name">Ремарка</span>
                 <em>Конференц-зал. Сейчас — презентация стратегии на 500 миллионов руководству компании.<br><br>
-Во главе стола — Артур Борисович (CEO): ждёт цифр и решений, настроен жёстко. Рядом — ключевые руководители.<br><br>
-Ваша команда — вы, Алиса (арт-директор) и Виктор (экономист). В зале заметное напряжение: от выступления ждут ясности и обоснований.</em>
+Во главе стола — Артур Борисович (CEO), рядом — ключевые руководители.<br><br>
+Ваша команда — вы, Алиса (арт-директор) и Виктор (экономист). В зале напряжение: от презентации ждут ясных решений.</em>
               </div>
             </div>
           </div>
@@ -3303,7 +3308,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Артур Борисович (CEO)</span>
-                Коллеги, презентация красивая. Но я ищу стратегию на 500 миллионов, а не вдохновение. Виктор, где расчёты окупаемости?
+                Коллеги, презентация красивая. Но мне нужна стратегия на 500 миллионов, а не вдохновение. Виктор, где расчёты окупаемости?
               </div>
               <div class="dialog-box">
                 <span class="dialog-name">Ремарка</span>
@@ -3325,14 +3330,14 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Виктор (Экономист)</span>
-                Полный пакет расчётов был подготовлен. Однако в финальной версии они были признаны избыточными для Совета. Нас попросили не «усыплять» аудиторию цифрами.
+                Полный пакет расчётов был готов. Но в финальной версии их сочли избыточными для Совета. Нас попросили не «усыплять» аудиторию цифрами.
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-1" aria-hidden="true">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="0">Мы решили не перегружать Совет деталями. Наша задача — направление.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="0">Мы решили не перегружать Совет деталями. Сейчас показываем направление.</button>
             <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="0">Если в версии нет расчётов — это мой управленческий просчёт. Готов обсудить.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="1">Расчёты есть. Предлагаю начать с рамки решения, затем перейти к экономике.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="58" data-ch5-correct="1">Расчёты есть. Предлагаю начать с рамки решения и перейти к экономике.</button>
           </div>
           <div class="scene-text-zone">
             <div class="scene-content">
@@ -3340,7 +3345,7 @@
                 <img src="Bern.png" alt="Эрик Берн" class="berne-hint-photo" />
                 <div class="berne-hint-text">
                   <div class="berne-hint-title">Подсказка от Эрика Берна</div>
-                  <p class="berne-hint-body">На презентации важно держать фокус на содержании и стратегии, не уходить в эмоции и оборону. Ищите ответы, которые возвращают к фактам и решениям, а не к перекладыванию вины.</p>
+                  <p class="berne-hint-body">На презентации важно держать фокус на содержании и стратегии, а не на эмоциях и оправданиях. Ищите ответы, которые возвращают к фактам и решениям, а не к перекладыванию вины.</p>
                 </div>
               </div>
             </div>
@@ -3358,7 +3363,7 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (Арт-директор)</span>
-                Мне было сказано сделать легче. Я арт-директор. Я не экономист...
+                Мне сказали сделать легче. Я арт-директор, а не экономист...
               </div>
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Артур Борисович</span>
@@ -3369,7 +3374,7 @@
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-2" aria-hidden="true">
             <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="0">Финальное слово было за мной — я принимаю ответственность.</button>
             <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="0">Мы обсуждали это вместе. Не стоит представлять это как давление.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="1">Вопрос не в том, кто настоял, а в том, достаточна ли версия для принятия решения.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="59" data-ch5-correct="1">Важно, достаточно ли текущей версии для решения, а не кто настоял.</button>
           </div>
         </div>
       </div>
@@ -3384,14 +3389,14 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Виктор (открывает ноутбук)</span>
-                На экране вспыхивает красный график: <strong>Стресс-сценарий: −80 млн.</strong> В зале начинается движение и шёпот.
+                На экране вспыхивает красный график: <strong>Стресс-сценарий: −80 млн.</strong> В зале поднимается шум и шёпот.
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-3" aria-hidden="true">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="0">Любой проект имеет стресс-сценарий. Это не аргумент против.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="0">Если этот риск реален, возможно, нам стоит поставить проект на паузу.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="1">Пессимистичный сценарий — инструмент управления. Давайте разберём факторы.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="0">У любого проекта есть стресс-сценарий. Сам по себе он не аргумент против.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="0">Если этот риск реален, возможно, проект стоит поставить на паузу.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="60" data-ch5-correct="1">Пессимистичный сценарий — инструмент управления. Давайте разберём его факторы.</button>
           </div>
         </div>
       </div>
@@ -3413,7 +3418,7 @@
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-4" aria-hidden="true">
             <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="0">Финальное слово было за мной.</button>
             <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="0">Это коллективное решение проектной группы.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="1">Я отвечаю за формат обсуждения. Команда — за содержание. Оба аспекта представлены.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="61" data-ch5-correct="1">Я отвечаю за формат обсуждения, команда — за содержание. Сейчас оба аспекта учтены.</button>
           </div>
         </div>
       </div>
@@ -3428,14 +3433,14 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Алиса (усиливает драму)</span>
-                Если это ошибка, я готова покинуть проект прямо сейчас... <em>(её голос дрожит)</em>
+                Если это ошибка, я готова уйти из проекта прямо сейчас... <em>(её голос дрожит)</em>
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-5" aria-hidden="true">
             <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="0">Эмоции понятны, но сейчас не об этом.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="0">Если это повлияло на качество, нам стоит пересмотреть роли.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="1">Кадровые решения — отдельная плоскость. Сейчас фокус на стратегии.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="0">Если это сказалось на качестве, нам стоит обсудить роли позже.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="62" data-ch5-correct="1">Кадровые решения — отдельный уровень. Сейчас фокус на стратегии.</button>
           </div>
         </div>
       </div>
@@ -3450,14 +3455,14 @@
             <div class="scene-content">
               <div class="dialog-box mb-2">
                 <span class="dialog-name">Артур Борисович (CEO)</span>
-                Леночка, как вы считаете? Нам стоит доверять этой стратегии? Совет начинает бурно обсуждать риски между собой.
+                Леночка, как вы считаете? Нам стоит доверять этой стратегии? Совет начинает бурно обсуждать риски.
               </div>
             </div>
           </div>
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-6" aria-hidden="true">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="0">Позвольте, я поясню прямо сейчас!</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="0">Молчать и ждать завершения спора.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="1">Коллеги, чтобы обсуждение было продуктивным — какие риски критичны? Зафиксируем.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="0">Позвольте, я поясню прямо сейчас.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="0">Молчать и ждать, пока спор уляжется.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="63" data-ch5-correct="1">Коллеги, чтобы обсуждение было продуктивным: какие риски критичны? Зафиксируем.</button>
           </div>
         </div>
       </div>
@@ -3477,9 +3482,9 @@
             </div>
           </div>
           <div class="novella-choices choices-slide-in hidden" id="ch5-choices-7" aria-hidden="true">
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="0">Да. И именно поэтому мы сейчас обсуждаем риски.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="0">Проект — живой процесс, требующий корректировок.</button>
-            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="1">Контроль — это способность адаптироваться, а не игнорировать риски.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="0">Да. Поэтому мы сейчас и обсуждаем риски.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="0">Проект — живой процесс, он требует корректировок.</button>
+            <button type="button" class="novella-choice ch5-choice" data-ch5-goto="64" data-ch5-correct="1">Контроль — это умение адаптироваться, а не игнорировать риски.</button>
           </div>
         </div>
       </div>
@@ -3489,21 +3494,21 @@
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
         <div class="border-l-4 border-amber-500 pl-5 mb-4">
-          <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-1 reveal" data-reveal>Психологические игры в Главе 5 (по Эрику Берну)</h2>
-          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Игры, применённые в презентации</p>
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-1 reveal" data-reveal>Психологические игры в главе 5</h2>
+          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Какие сценарии Берна проявились на совете</p>
         </div>
         <div class="space-y-4 mb-4">
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-amber-300 font-bold text-base mb-2">«Попался, сукин сын!» <span class="text-slate-500 font-normal text-sm">(Виктор)</span></h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Суть в ожидании ошибки оппонента для публичного разоблачения. Цель — доказать превосходство «Я ОК — ты не ОК».</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Ожидание вашей ошибки ради громкого разоблачения. Посыл: «Я ОК — ты не ОК».</p>
           </div>
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-amber-300 font-bold text-base mb-2">«Смотри, что ты заставил меня сделать» <span class="text-slate-500 font-normal text-sm">(Артур)</span></h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Перенос ответственности за жёсткие решения на подчинённых. Легитимизация агрессии через «ваши ошибки».</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Жёсткие решения подаются как вынужденные из‑за «чужих ошибок». Агрессия оправдывается подчинёнными.</p>
           </div>
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-amber-300 font-bold text-base mb-2">«Меня заставили» <span class="text-slate-500 font-normal text-sm">(Алиса / Леночка)</span></h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Уход от ответственности и давления через позицию «жертвы обстоятельств».</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Снятие ответственности через роль «жертвы обстоятельств»: «я просто выполняла указания».</p>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
@@ -3515,20 +3520,20 @@
         <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
         <div class="border-l-4 border-emerald-500 pl-5 mb-4">
           <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Мета-игра «Испытание на зрелость»</h2>
-          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Что происходило в сцене</p>
+          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Что на самом деле проверяли на совете</p>
         </div>
         <div class="space-y-4 mb-4">
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-emerald-300 font-bold text-base mb-2">Скрытый смысл сцены</h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Виктор выступал в роли «агрессора», проверяя игрока на эмоциональную устойчивость.</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Виктор играл роль «агрессора», проверяя вашу эмоциональную устойчивость.</p>
           </div>
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-emerald-300 font-bold text-base mb-2">Проверка на Взрослого</h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Артур Борисович наблюдал, втянется ли игрок в оправдания (Ребёнок) или ответную агрессию (Родитель).</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Артур Борисович смотрел, уйдёте ли вы в оправдания (Ребёнок) или агрессию (Родитель).</p>
           </div>
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-emerald-300 font-bold text-base mb-2">Выигрыш</h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Сохранение спокойствия и оперирование фактами разрушает чужую игру и переводит коммуникацию в конструктив.</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Спокойствие и опора на факты ломают чужую игру и переводят разговор в конструктив.</p>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
@@ -3539,21 +3544,21 @@
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Теория к главе 5</p>
         <div class="border-l-4 border-emerald-500 pl-5 mb-4">
-          <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Как нужно было отвечать</h2>
-          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Путь Гроссмейстера</p>
+          <h2 class="font-display text-xl sm:text-2xl font-bold text-emerald-400 mb-1 reveal" data-reveal>Как стоило отвечать</h2>
+          <p class="text-slate-400 text-sm opacity-90 reveal" data-reveal>Короткий путь Гроссмейстера</p>
         </div>
         <div class="space-y-4 mb-4">
           <div class="theory-card ch5-game-block reveal" data-reveal>
-            <h3 class="text-emerald-300 font-bold text-base mb-2">Игнорирование «крючков»</h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Не вступать в спор с Виктором, а признавать факты и предлагать решение.</p>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Игнорировать «крючки»</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Не спорить с Виктором, а признавать факты и сразу предлагать решение.</p>
           </div>
           <div class="theory-card ch5-game-block reveal" data-reveal>
-            <h3 class="text-emerald-300 font-bold text-base mb-2">Разрушение сценария</h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Использование позиции «Взрослого»: спокойный тон, прямой взгляд, отсутствие оправданий.</p>
+            <h3 class="text-emerald-300 font-bold text-base mb-2">Ломать сценарий</h3>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">Оставаться во Взрослом: спокойный тон, прямой взгляд, никаких оправданий.</p>
           </div>
           <div class="theory-card ch5-game-block reveal" data-reveal>
             <h3 class="text-emerald-300 font-bold text-base mb-2">Итог</h3>
-            <p class="text-slate-300 text-sm mb-0 leading-relaxed">В большом бизнесе статус получает тот, кто управляет своими реакциями, а не просто делает красивые презентации.</p>
+            <p class="text-slate-300 text-sm mb-0 leading-relaxed">В большом бизнесе ценят тех, кто управляет реакциями, а не только делает красивые презентации.</p>
           </div>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
@@ -3572,15 +3577,80 @@
         <p class="slide-hint mt-2">Нажмите на экран или кнопку выше для продолжения</p>
       </div>
     </section>
+    <!-- Аналитика курса — 4 вкладки -->
+    <section class="slide slide-stretch slide-clickable" data-slide="72" id="analytics-slide">
+      <div class="slide-inner flex flex-col min-h-0 p-4 sm:p-6 overflow-y-auto">
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Аналитика курса</h2>
+        <div class="inline-flex rounded-lg bg-slate-800/80 border border-slate-700/70 p-1 text-xs sm:text-sm mb-3 flex-shrink-0" id="analytics-tabs">
+          <button type="button" class="analytics-tab px-3 py-1 rounded-md bg-slate-700 text-slate-50 font-semibold" data-analytics-tab="runs">Прохождения</button>
+          <button type="button" class="analytics-tab px-3 py-1 rounded-md text-slate-300 hover:text-white" data-analytics-tab="chapters">Главы</button>
+          <button type="button" class="analytics-tab px-3 py-1 rounded-md text-slate-300 hover:text-white" data-analytics-tab="outcomes">Исходы</button>
+          <button type="button" class="analytics-tab px-3 py-1 rounded-md text-slate-300 hover:text-white" data-analytics-tab="traps">Ловушки</button>
+        </div>
+        <p id="stats-total-runs" class="text-slate-200 text-sm mb-1"></p>
+        <p id="stats-empty" class="text-slate-500 text-xs sm:text-sm hidden mb-2">Данных пока нет — завершите хотя бы одно прохождение.</p>
+        <!-- Вкладка 1: Прохождения -->
+        <div class="analytics-panel flex-1 min-h-0" data-analytics-panel="runs">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-4">
+            <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[160px]">
+              <h3 class="text-slate-100 text-sm font-semibold mb-2">Прохождения по дням</h3>
+              <canvas id="stats-by-day-canvas" class="w-full flex-1" style="min-height:140px"></canvas>
+            </div>
+            <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[160px]">
+              <h3 class="text-slate-100 text-sm font-semibold mb-2">Рейтинг по баллам</h3>
+              <canvas id="stats-rating-canvas" class="w-full flex-1" style="min-height:140px"></canvas>
+            </div>
+          </div>
+          <div class="mt-4 bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[160px]">
+            <h3 class="text-slate-100 text-sm font-semibold mb-2">Прогресс по попыткам</h3>
+            <canvas id="stats-progress-canvas" class="w-full flex-1" style="min-height:140px"></canvas>
+          </div>
+        </div>
+        <!-- Вкладка 2: Главы -->
+        <div class="analytics-panel hidden flex-1 min-h-0" data-analytics-panel="chapters">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[240px]">
+              <h3 class="text-slate-100 text-sm font-semibold mb-2">Вклад глав в баллы</h3>
+              <canvas id="stats-chapters-pie" class="w-full flex-1" style="min-height:200px"></canvas>
+            </div>
+            <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[240px]">
+              <h3 class="text-slate-100 text-sm font-semibold mb-2">Сложность глав (ошибки)</h3>
+              <canvas id="stats-chapters-difficulty" class="w-full flex-1" style="min-height:200px"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Вкладка 3: Исходы -->
+        <div class="analytics-panel hidden flex-1 min-h-0" data-analytics-panel="outcomes">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[240px]">
+              <h3 class="text-slate-100 text-sm font-semibold mb-2">Исходы курса</h3>
+              <canvas id="stats-outcomes-pie" class="w-full flex-1" style="min-height:200px"></canvas>
+            </div>
+            <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[240px]">
+              <h3 class="text-slate-100 text-sm font-semibold mb-2">Распределение по баллам</h3>
+              <canvas id="stats-points-dist-canvas" class="w-full flex-1" style="min-height:200px"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Вкладка 4: Ловушки -->
+        <div class="analytics-panel hidden flex-1 min-h-0" data-analytics-panel="traps">
+          <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-3 flex flex-col min-h-[200px]">
+            <h3 class="text-slate-100 text-sm font-semibold mb-2">Варианты, где ошибались чаще всего</h3>
+            <ol id="stats-wrong-choices-list" class="text-slate-200 text-xs sm:text-sm space-y-1 list-decimal list-inside overflow-y-auto" style="max-height:280px"></ol>
+          </div>
+        </div>
+        <p class="slide-hint mt-2 flex-shrink-0">Переключайте вкладки сверху</p>
+      </div>
+    </section>
     <!-- Заключительное слово: только при повышении, 3 слайда -->
     <section class="slide slide-stretch slide-clickable closing-slide" data-slide="68" id="closing-word-1">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-1">Заключительное слово</p>
-        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-2 reveal" data-reveal style="text-shadow: 0 0 24px rgba(251, 191, 36, 0.25);">Жизнь — это не только игра, но и свобода выбора</h2>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-amber-400 mb-2 reveal" data-reveal style="text-shadow: 0 0 24px rgba(251, 191, 36, 0.25);">Жизнь — это не только игра, но и выбор</h2>
         <div class="closing-card reveal" data-reveal>
-          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Поздравляем вас с завершением этого важного этапа! Теперь, когда вы освоили азы Трансакционного анализа и научились распознавать психологические игры в бизнесе (и не только), важно сделать последний, самый главный шаг.</p>
-          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Этот курс не был создан для того, чтобы вы превратились в хладнокровных роботов, всегда действующих только из позиции «Взрослого». Жизнь гораздо богаче, и истинное мастерство — в гибкости.</p>
-          <p class="text-amber-400 font-semibold text-sm mb-0">Вот три главные истины, которые стоит забрать с собой:</p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Поздравляем с завершением важного этапа! Вы освоили основы Трансакционного анализа и научились распознавать психологические игры в бизнесе (и не только) — теперь важен последний шаг.</p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Курс не для того, чтобы вы стали хладнокровными роботами, вечно действующими из позиции «Взрослого». Жизнь богаче, а настоящее мастерство — в гибкости.</p>
+          <p class="text-amber-400 font-semibold text-sm mb-0">Вот три главные истины, которые стоит взять с собой:</p>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
@@ -3588,13 +3658,13 @@
     <section class="slide slide-stretch slide-clickable closing-slide" data-slide="69" id="closing-word-2">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-2">Заключительное слово</p>
-        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>1. Игры — это часть жизни, а не приговор</h2>
+        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>1. Игры — часть жизни, а не приговор</h2>
         <div class="closing-card reveal" data-reveal>
-          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-1">Не стоит демонизировать роли «Ребенка» или «Родителя». <strong class="text-amber-400/90">Ребенок</strong> — источник творчества, радости, интуиции и жизненной энергии. <strong class="text-amber-400/90">Родитель</strong> — умение заботиться, защищать, устанавливать границы. Ключ — не позволять им управлять вами в ситуациях, требующих логики. Включайте «Взрослого» там, где нужны решения, и «Ребенка» там, где нужна страсть.</p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-1">Не стоит демонизировать роли «Ребёнка» и «Родителя». <strong class="text-amber-400/90">Ребёнок</strong> даёт творчество, радость и интуицию. <strong class="text-amber-400/90">Родитель</strong> — заботу, защиту и границы. Главное — не давать им рулить там, где нужна логика: включайте Взрослого для решений, Ребёнка — для страсти.</p>
         </div>
-        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>2. Манипуляция — это всегда комплекс</h2>
+        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>2. Манипуляция — всегда комплекс</h2>
         <div class="closing-card reveal" data-reveal>
-          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-0">Не пытайтесь поймать собеседника на одной фразе. <strong class="text-amber-400/90">Ваше тело — чуткий прибор:</strong> интонация (сарказм, «детские» нотки), язык тела (напряженные плечи, закрытые позы), контекст и свои чувства (беспричинная вина, стыд, страх — вас втягивают в игру). Развивайте «психологическую зоркость».</p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-0">Не ловите собеседника на одной фразе. <strong class="text-amber-400/90">Ваше тело — чуткий прибор:</strong> интонация (сарказм, «детские» нотки), язык тела (напряжённые плечи, закрытые позы), контекст и чувства (вина, стыд, страх — сигнал, что вас втягивают в игру). Развивайте психологическую зоркость.</p>
         </div>
         <p class="slide-hint">Нажмите на экран для продолжения</p>
       </div>
@@ -3602,12 +3672,12 @@
     <section class="slide slide-stretch slide-clickable closing-slide" data-slide="70" id="closing-word-3">
       <div class="slide-inner">
         <p class="text-slate-500 text-xs mb-1">Заключительное слово</p>
-        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>3. Люди манипулируют не от «зла», а от «незнания»</h2>
+        <h2 class="font-display text-base sm:text-lg font-bold text-amber-400 mb-1 reveal" data-reveal>3. Люди манипулируют чаще от «незнания», чем от «зла»</h2>
         <div class="closing-card reveal" data-reveal>
-          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Зачастую те, кто втягивает вас в игру (Виктор, Алиса, Артур Борисович), делают это неосознанно — повторяют сценарии, усвоенные в детстве. Понимание этого — путь к состраданию. Вместо игры «Попался, сукин сын!» или «Жертва» вы можете просто не играть. Оставаясь во «Взрослом», вы помогаете другим выйти из детских ролей.</p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-2">Часто те, кто втягивает вас в игру (Виктор, Алиса, Артур Борисович), делают это неосознанно — повторяют детские сценарии. Понимание этого ведёт к состраданию. Вместо игр «Попался, сукин сын!» и «Жертва» можно просто не играть. Оставаясь во Взрослом, вы помогаете другим выйти из детских ролей.</p>
         </div>
         <div class="closing-card closing-card-final reveal" data-reveal>
-          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-0">Теперь у вас есть суперсила. Вы прошли отличный путь. <span class="text-amber-400 font-display font-bold">Удачи в применении новых знаний.</span> <span class="text-accent font-display font-bold">Ваше пространство развития!</span></p>
+          <p class="text-slate-200 text-xs sm:text-sm leading-relaxed mb-0">Теперь у вас есть новая суперсила. Вы проделали отличный путь. <span class="text-amber-400 font-display font-bold">Удачи в применении знаний.</span> <span class="text-accent font-display font-bold">Ваше пространство развития!</span></p>
         </div>
         <div id="closing-boss-btn-wrap" class="text-center mt-4 flex-shrink-0 hidden">
           <button type="button" id="btn-closing-boss" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-amber-500 hover:bg-amber-400 transition-colors text-sm">Узнать решение Босса</button>
@@ -3629,7 +3699,10 @@
           <p class="text-slate-300 text-sm mb-2">Артур Борисович:</p>
           <p class="text-slate-200 text-base leading-relaxed">«<span id="cert-promoted-name">Коллега</span>, я впечатлен вашей работой! Вы блестяще управляли процессом переговоров. Предлагаю вам должность моего заместителя по стратегическим вопросам!»</p>
         </div>
-        <button type="button" id="btn-complete" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-accent uppercase tracking-wider text-sm mt-6">Сформировать сертификат «Анти-манипулятор»</button>
+        <div class="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
+          <button type="button" id="btn-complete" class="btn-go px-6 py-3 rounded-xl font-display font-bold text-white bg-accent uppercase tracking-wider text-sm">Сформировать сертификат «Анти-манипулятор»</button>
+          <button type="button" id="btn-stats" class="btn-go px-4 py-2 rounded-xl font-display font-semibold text-white bg-slate-700 hover:bg-slate-600 text-xs sm:text-sm">Статистика прохождений</button>
+        </div>
       </div>
     </div>
     <div id="exam-page" style="display:none">
@@ -3689,8 +3762,9 @@
             <span id="cert-overlay-date" class="cert-overlay-value"></span>
           </div>
         </div>
-        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-4" id="final-screen-title">Поздравляем!</h2>
-        <p class="text-slate-200 text-lg mb-6" id="final-screen-subtitle">Твой психолог будет тобой гордиться!</p>
+        <h2 class="font-display text-2xl sm:text-3xl font-bold text-white mb-2" id="final-screen-title">Поздравляем!</h2>
+        <p class="text-slate-200 text-lg mb-4" id="final-screen-subtitle">Твой психолог будет тобой гордиться!</p>
+        <button type="button" id="final-screen-stats-btn" class="btn-go px-4 py-2 rounded-xl font-display font-semibold text-white bg-slate-700 hover:bg-slate-600 text-sm mb-6">Статистика прохождений</button>
         <button type="button" id="final-screen-exit-btn" class="btn-go px-6 py-3 rounded-xl font-display font-semibold text-white bg-accent">Выйти</button>
       </div>
     </div>
@@ -3699,9 +3773,327 @@
     (function() {
       gsap.registerPlugin(ScrollTrigger);
 
-      var TOTAL_SLIDES = 72;
+      var TOTAL_SLIDES = 73;
       var currentSlide = 0;
       var maxSlideReached = 0;
+
+      var runStatsSaved = false;
+      var STATS_STORAGE_KEY = 'peoplegames_run_stats';
+      var WRONG_CHOICES_STORAGE_KEY = 'peoplegames_wrong_choices';
+      var ch1RunPoints = 0, ch2RunPoints = 0, ch3RunPoints = 0, ch4RunPoints = 0, ch5RunPoints = 0;
+
+      function saveRunStats() {
+        try {
+          var raw = localStorage.getItem(STATS_STORAGE_KEY);
+          var arr = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(arr)) arr = [];
+          arr.push({
+            ts: Date.now(),
+            date: new Date().toISOString().slice(0, 10),
+            points: typeof peopleGamesCoursePoints === 'number' ? peopleGamesCoursePoints : 0,
+            result: typeof peopleGamesCourseResult === 'string' ? peopleGamesCourseResult : '',
+            name: (typeof courseUserName === 'string' && courseUserName.trim()) ? courseUserName.trim() : '',
+            chapterPoints: { ch1: ch1RunPoints, ch2: ch2RunPoints, ch3: ch3RunPoints, ch4: ch4RunPoints, ch5: ch5RunPoints },
+            wrongByChapter: { ch1: wrongCh1 || 0, ch2: wrongCh2 || 0, ch3: wrongCh3 || 0, ch4: wrongCh4 || 0, ch5: wrongCh5 || 0 }
+          });
+          localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(arr));
+        } catch (e) {}
+      }
+
+      function trackWrongChoice(choiceId) {
+        try {
+          var raw = localStorage.getItem(WRONG_CHOICES_STORAGE_KEY);
+          var obj = raw ? JSON.parse(raw) : {};
+          if (typeof obj !== 'object' || obj === null) obj = {};
+          obj[choiceId] = (obj[choiceId] || 0) + 1;
+          localStorage.setItem(WRONG_CHOICES_STORAGE_KEY, JSON.stringify(obj));
+        } catch (e) {}
+      }
+
+      function loadWrongChoices() {
+        try {
+          var raw = localStorage.getItem(WRONG_CHOICES_STORAGE_KEY);
+          var obj = raw ? JSON.parse(raw) : {};
+          return typeof obj === 'object' && obj !== null ? obj : {};
+        } catch (e) { return {}; }
+      }
+
+      var WRONG_CHOICE_LABELS = {
+        ch1_0: 'Конечно, Артур Борисович. Я всё сделаю, не переживайте.',
+        ch1_1: 'Опять я?! У меня вообще-то личная жизнь есть!',
+        ch2_1_0: 'Не паникуй. Попробуй выгрузить данные через Power BI...',
+        ch2_2_0: 'Тогда просто скопируй прошлый отчёт и подставь цифры вручную.',
+        ch2_2_1: 'Жаль. Похоже, тебе предстоит непростой вечер. Ладно, я пойду?',
+        ch2_3_0: 'Ладно, давай файл, я быстро гляну формулы.',
+        ch2_3_1: 'Хватит ныть, Лена! Просто сядь и сделай, там работы на час!',
+        ch3_1_0: 'Это твоя ответственность — проверить файл перед показом!',
+        ch3_1_1: 'Ладно, я вижу, ты без сил. Давай флешку, я сам подправлю...',
+        ch3_2_0: 'Хорошо, пусть Андрей поможет. Я прослежу.',
+        ch4_parent: 'Алиса, «не перегружать» — про дизайн, а не про вырезание сути.',
+        ch4_rescuer: 'Смело, но рискованно. Давай я выберу три ключевые цифры...',
+        ch4_trap_shame: 'Да, возвращаем. Результат важнее твоего стыда.',
+        ch4_trap_compromise: 'Не хочу, чтобы тебе было стыдно. Давай оставим цифры только на одном слайде?',
+        ch4_trap_guarantee: 'Конечно. Я всегда беру ответственность на себя. Просто сделай.',
+        ch4_trap_weakness: 'Алиса, мы в одной лодке. Зачем эти формальности с фиксацией?',
+        ch4_fail_worker: 'Сочувствую. Иди домой, я сам всё докручу.',
+        ch4_fail_tyrant: 'Утром будет поздно. Выпей таблетку и доделай...'
+      };
+
+      function loadRunStats() {
+        try {
+          var raw = localStorage.getItem(STATS_STORAGE_KEY);
+          var arr = raw ? JSON.parse(raw) : [];
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function initAnalyticsTabs() {
+        var tabs = document.getElementById('analytics-tabs');
+        var panels = document.querySelectorAll('.analytics-panel');
+        if (!tabs || !panels.length) return;
+        tabs.querySelectorAll('.analytics-tab').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var tab = this.getAttribute('data-analytics-tab');
+            tabs.querySelectorAll('.analytics-tab').forEach(function(b) {
+              b.classList.remove('bg-slate-700', 'text-slate-50', 'font-semibold');
+              b.classList.add('text-slate-300');
+            });
+            this.classList.add('bg-slate-700', 'text-slate-50', 'font-semibold');
+            this.classList.remove('text-slate-300');
+            panels.forEach(function(p) {
+              p.classList.toggle('hidden', p.getAttribute('data-analytics-panel') !== tab);
+            });
+          });
+        });
+      }
+
+      function renderStatsSlide() {
+        var stats = loadRunStats();
+        var totalEl = document.getElementById('stats-total-runs');
+        var emptyEl = document.getElementById('stats-empty');
+        var daysCanvas = document.getElementById('stats-by-day-canvas');
+        var ratingCanvas = document.getElementById('stats-rating-canvas');
+        var distCanvas = document.getElementById('stats-points-dist-canvas');
+        var progressCanvas = document.getElementById('stats-progress-canvas');
+        var chaptersPie = document.getElementById('stats-chapters-pie');
+        var chaptersDiff = document.getElementById('stats-chapters-difficulty');
+        var outcomesPie = document.getElementById('stats-outcomes-pie');
+        var wrongList = document.getElementById('stats-wrong-choices-list');
+
+        if (!totalEl || !emptyEl) return;
+
+        if (!stats.length) {
+          totalEl.textContent = 'Пока ни одного завершённого прохождения.';
+          emptyEl.classList.remove('hidden');
+        } else {
+          emptyEl.classList.add('hidden');
+          totalEl.textContent = 'Всего завершённых прохождений: ' + stats.length;
+        }
+
+        // Подготовка данных по дням
+        var countsByDate = {};
+        stats.forEach(function(s) {
+          var d = s.date || new Date(s.ts || Date.now()).toISOString().slice(0, 10);
+          countsByDate[d] = (countsByDate[d] || 0) + 1;
+        });
+        var dayLabels = Object.keys(countsByDate).sort();
+        var dayValues = dayLabels.map(function(d) { return countsByDate[d]; });
+
+        // Данные по рейтингу
+        var sortedByPoints = stats.slice().sort(function(a, b) { return (b.points || 0) - (a.points || 0); });
+        var ratingLabels = sortedByPoints.map(function(s, idx) {
+          var baseName = (s.name && s.name.trim()) ? s.name.trim() : 'Коллега';
+          return (idx + 1) + '. ' + baseName;
+        });
+        var ratingValues = sortedByPoints.map(function(s) { return s.points || 0; });
+
+        // Прогресс по попыткам (номер попытки -> баллы)
+        var progressLabels = stats.map(function(_, i) { return String(i + 1); });
+        var progressValues = stats.map(function(s) { return s.points || 0; });
+
+        // Распределение по баллам
+        var countsByPoints = {};
+        stats.forEach(function(s) {
+          var p = typeof s.points === 'number' ? s.points : 0;
+          countsByPoints[p] = (countsByPoints[p] || 0) + 1;
+        });
+        var distPointLabels = Object.keys(countsByPoints).map(function(k) { return parseInt(k, 10); }).sort(function(a, b) { return b - a; });
+        var distLabels = distPointLabels.map(function(p) { return String(p); });
+        var distValues = distPointLabels.map(function(p) { return countsByPoints[p]; });
+
+        // Главы: вклад в баллы (chapterPoints)
+        var chLabels = ['Гл.1', 'Гл.2', 'Гл.3', 'Гл.4', 'Гл.5'];
+        var chKeys = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'];
+        var chPieValues = [0, 0, 0, 0, 0];
+        stats.forEach(function(s) {
+          var cp = s.chapterPoints || {};
+          chKeys.forEach(function(k, i) { chPieValues[i] += Math.max(0, cp[k] || 0); });
+        });
+        var chPieTotal = chPieValues.reduce(function(a, b) { return a + b; }, 0);
+        if (chPieTotal === 0) chPieValues = [0, 0, 0, 0, 0];
+
+        // Сложность глав (ошибки)
+        var wrongByCh = [0, 0, 0, 0, 0];
+        stats.forEach(function(s) {
+          var wb = s.wrongByChapter || {};
+          chKeys.forEach(function(k, i) { wrongByCh[i] += wb[k] || 0; });
+        });
+        var wrongChLabels = chLabels.map(function(l, i) { return l + ' (' + wrongByCh[i] + ')'; });
+
+        // Исходы (fired / rewarded / promoted)
+        var outcomeCounts = { fired: 0, rewarded: 0, promoted: 0 };
+        stats.forEach(function(s) {
+          var r = (s.result || '').toLowerCase();
+          if (r === 'fired') outcomeCounts.fired++;
+          else if (r === 'rewarded') outcomeCounts.rewarded++;
+          else if (r === 'promoted') outcomeCounts.promoted++;
+        });
+        var outcomeLabels = ['Уволен', 'Наградили коллег', 'Повышен'];
+        var outcomeValues = [outcomeCounts.fired, outcomeCounts.rewarded, outcomeCounts.promoted];
+
+        function drawPieChart(canvas, labels, values, colors) {
+          if (!canvas) return;
+          var ctx = canvas.getContext('2d');
+          var w = canvas.width = canvas.clientWidth || 280;
+          var h = canvas.height = canvas.clientHeight || 200;
+          ctx.clearRect(0, 0, w, h);
+          var sum = values.reduce(function(a, b) { return a + b; }, 0);
+          if (sum === 0) return;
+          var cols = colors || ['#60a5fa', '#facc15', '#22c55e', '#a5b4fc', '#f472b6'];
+          var legH = Math.min(50, labels.length * 14);
+          var pieH = h - legH - 10;
+          var r = Math.min(w, pieH) / 2 - 12;
+          var cx = w / 2;
+          var cy = (pieH / 2) + 5;
+          var start = -Math.PI / 2;
+          values.forEach(function(v, i) {
+            var sweep = (v / sum) * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, start, start + sweep);
+            ctx.closePath();
+            ctx.fillStyle = cols[i % cols.length];
+            ctx.fill();
+            start += sweep;
+          });
+          ctx.font = '10px system-ui, sans-serif';
+          var legY = h - legH + 8;
+          labels.forEach(function(l, i) {
+            ctx.fillStyle = cols[i % cols.length];
+            ctx.fillRect(8, legY - 6 + i * 14, 10, 8);
+            ctx.fillStyle = 'rgba(226,232,240,0.95)';
+            ctx.fillText((values[i] > 0 ? l + ': ' + values[i] : l), 22, legY + i * 14);
+          });
+        }
+
+        function drawLineChart(canvas, labels, values, color) {
+          var ctx = canvas.getContext('2d');
+          var w = canvas.width = canvas.clientWidth || 320;
+          var h = canvas.height = canvas.clientHeight || 180;
+          ctx.clearRect(0, 0, w, h);
+          if (!labels.length) return;
+          var maxVal = Math.max.apply(null, values);
+          if (maxVal === 0) maxVal = 1;
+          var paddingLeft = 30;
+          var paddingRight = 10;
+          var paddingTop = 10;
+          var paddingBottom = 25;
+          var innerW = w - paddingLeft - paddingRight;
+          var innerH = h - paddingTop - paddingBottom;
+          ctx.strokeStyle = 'rgba(148,163,184,0.4)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(paddingLeft, paddingTop);
+          ctx.lineTo(paddingLeft, h - paddingBottom);
+          ctx.lineTo(w - paddingRight, h - paddingBottom);
+          ctx.stroke();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          labels.forEach(function(_, i) {
+            var x = paddingLeft + (labels.length === 1 ? innerW / 2 : innerW * (i / (labels.length - 1)));
+            var y = paddingTop + innerH * (1 - values[i] / maxVal);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          });
+          ctx.stroke();
+          // подписи по вертикальной оси (0 и максимум)
+          ctx.fillStyle = 'rgba(148,163,184,0.9)';
+          ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.fillText('0', 4, h - paddingBottom + 3);
+          ctx.fillText(String(maxVal), 4, paddingTop + 4);
+          // подписи по оси X (даты) и значения над точками
+          labels.forEach(function(label, i) {
+            var x = paddingLeft + (labels.length === 1 ? innerW / 2 : innerW * (i / (labels.length - 1)));
+            var axisY = h - paddingBottom + 10;
+            ctx.save();
+            ctx.translate(x, axisY);
+            ctx.rotate(-Math.PI / 4);
+            ctx.fillText(label, 0, 0);
+            ctx.restore();
+            var y = paddingTop + innerH * (1 - values[i] / maxVal) - 6;
+            ctx.fillText(values[i].toString(), x - 4, y);
+          });
+        }
+
+        function drawBarChart(canvas, labels, values, color) {
+          var ctx = canvas.getContext('2d');
+          var w = canvas.width = canvas.clientWidth || 320;
+          var h = canvas.height = canvas.clientHeight || 180;
+          ctx.clearRect(0, 0, w, h);
+          if (!labels.length) return;
+          var maxVal = Math.max.apply(null, values);
+          if (maxVal === 0) maxVal = 1;
+          var paddingLeft = 30;
+          var paddingRight = 10;
+          var paddingTop = 10;
+          var paddingBottom = 10;
+          var innerW = w - paddingLeft - paddingRight;
+          var innerH = h - paddingTop - paddingBottom;
+          var barH = innerH / labels.length * 0.6;
+          ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+          values.forEach(function(val, i) {
+            var yCenter = paddingTop + innerH * (i + 0.5) / labels.length;
+            var barWidth = innerW * (val / maxVal);
+            var y = yCenter - barH / 2;
+            ctx.fillStyle = color;
+            ctx.fillRect(paddingLeft, y, barWidth, barH);
+            // подпись слева: место в рейтинге (1,2,3...)
+            ctx.fillStyle = 'rgba(148,163,184,0.9)';
+            ctx.fillText(labels[i], 4, yCenter + 3);
+            // значение баллов — только число, внутри или рядом с баром
+            ctx.fillStyle = 'rgba(15,23,42,0.95)';
+            var textX = paddingLeft + Math.min(barWidth - 16, innerW - 20);
+            if (barWidth < 24) {
+              textX = paddingLeft + barWidth + 4;
+              ctx.fillStyle = 'rgba(226,232,240,0.95)';
+            }
+            ctx.fillText(val.toString(), textX, yCenter + 3);
+          });
+        }
+
+        drawLineChart(daysCanvas, dayLabels, dayValues, '#60a5fa');
+        drawBarChart(ratingCanvas, ratingLabels, ratingValues, '#facc15');
+        drawLineChart(progressCanvas, progressLabels, progressValues, '#a5b4fc');
+        drawPieChart(chaptersPie, chLabels, chPieValues, ['#60a5fa', '#facc15', '#22c55e', '#a5b4fc', '#f472b6']);
+        drawBarChart(chaptersDiff, wrongChLabels, wrongByCh, '#ef4444');
+        drawPieChart(outcomesPie, outcomeLabels, outcomeValues, ['#ef4444', '#f59e0b', '#22c55e']);
+        drawBarChart(distCanvas, distLabels, distValues, '#22c55e');
+
+        if (wrongList) {
+          var wrongData = loadWrongChoices();
+          var sorted = Object.keys(wrongData).map(function(k) { return { id: k, count: wrongData[k] }; }).sort(function(a, b) { return b.count - a.count; });
+          wrongList.innerHTML = '';
+          sorted.forEach(function(item) {
+            var li = document.createElement('li');
+            var label = WRONG_CHOICE_LABELS[item.id] || ('Гл.5, в. ' + (item.id.split('_')[1] || '?') + ' — неверный ответ');
+            li.textContent = (label.length > 55 ? label.slice(0, 52) + '...' : label) + ' — ' + item.count;
+            wrongList.appendChild(li);
+          });
+          if (!sorted.length) wrongList.innerHTML = '<li class="text-slate-500">Данных пока нет</li>';
+        }
+      }
 
       var lastNovellaChoice = -1;
       var lastChapter2Choice = -1;
@@ -3742,7 +4134,7 @@
       var ENDING_FIRED_THRESHOLD = 45;
       var ENDING_OTHERS_REWARDED_THRESHOLD = 100;
 
-      function applyAnswerScore(isCorrect, chapter) {
+      function applyAnswerScore(isCorrect, chapter, choiceId) {
         if (isCorrect) {
           /* +10 начисляется при открытии итогового слайда главы */
         } else {
@@ -3751,6 +4143,7 @@
           else if (chapter === 3) wrongCh3++;
           else if (chapter === 4) wrongCh4++;
           else if (chapter === 5) wrongCh5++;
+          if (choiceId) trackWrongChoice(choiceId);
         }
         if (chapter === 4) {
           ch4AwarenessDelta += isCorrect ? 10 : -10;
@@ -3991,6 +4384,7 @@
         if (i === 10) {
           if (!ch1PointsAwarded) {
             var ch1Net = (lastNovellaChoice === 2 ? 10 : 0) - hintUseCount * 10 - wrongCh1 * 10;
+            ch1RunPoints = ch1Net;
             awarenessPoints += ch1Net;
             ch1PointsAwarded = true;
             updateToolbarPoints();
@@ -4037,6 +4431,7 @@
         if (i === 36) {
           if (!ch3PointsAwarded) {
             var ch3Net = ch3CorrectCount * 10 - hintUseCountCh3 * 10 - wrongCh3 * 10;
+            ch3RunPoints = ch3Net;
             awarenessPoints += ch3Net;
             ch3PointsAwarded = true;
             updateToolbarPoints();
@@ -4072,9 +4467,11 @@
             var ch4IsLose = ch4AwarenessDelta < 0;
             if (ch4IsLose) {
               var ch4NetLose = ch4AwarenessDelta - hintUseCountCh4 * 10 - wrongCh4 * 10;
+              ch4RunPoints = ch4NetLose;
               awarenessPoints += ch4NetLose;
             } else {
               var ch4NetWin = ch4AwarenessDelta - hintUseCountCh4 * 10;
+              ch4RunPoints = ch4NetWin;
               awarenessPoints += ch4NetWin;
             }
             ch4PointsAwarded = true;
@@ -4128,6 +4525,7 @@
         if (i === 67) {
           if (!ch5PointsAwarded) {
             var ch5Net = ch5CorrectCount * 10 - wrongCh5 * 10 - hintUseCountCh5 * 10;
+            ch5RunPoints = ch5Net;
             awarenessPoints += ch5Net;
             ch5PointsAwarded = true;
             updateToolbarPoints();
@@ -4225,10 +4623,15 @@
             }
           } catch (e) {}
         }
+        if (!runStatsSaved && typeof peopleGamesCoursePoints === 'number' && typeof peopleGamesCourseResult === 'string' && (i === 68 || i === 71)) {
+          saveRunStats();
+          runStatsSaved = true;
+        }
         if (i !== 71) stopVictoryEffects();
         if (i === 21) {
           if (!ch2PointsAwarded) {
             var ch2Net = ch2CorrectCount * 10 - hintUseCountCh2 * 10 - wrongCh2 * 10;
+            ch2RunPoints = ch2Net;
             awarenessPoints += ch2Net;
             ch2PointsAwarded = true;
             updateToolbarPoints();
@@ -4279,6 +4682,11 @@
           var ch5Box = document.getElementById('ch5-psychologist-hint-box');
           if (ch5Box) { ch5Box.classList.add('hidden'); ch5Box.setAttribute('aria-hidden', 'true'); }
         }
+        if (i === 72) {
+          renderStatsSlide();
+        }
+        var toolbar = document.querySelector('.course-toolbar');
+        if (toolbar) toolbar.classList.toggle('toolbar-analytics-mode', i === 72);
       }
 
       function runConfetti() {
@@ -4728,7 +5136,7 @@
         });
       }
       document.getElementById('slide-container').addEventListener('click', function(e) {
-        if (e.target.closest('.slide-next') || e.target.closest('input') || e.target.closest('#btn-go-hero') || e.target.closest('.novella-choice') || e.target.closest('.quiz-final-option') || e.target.closest('#btn-complete') || e.target.closest('#pg-exit-link') || e.target.closest('.ch4-goto-battle') || e.target.closest('#btn-ch5-finish-theory') || e.target.closest('#btn-closing-boss')) return;
+        if (e.target.closest('.slide-next') || e.target.closest('input') || e.target.closest('#btn-go-hero') || e.target.closest('.novella-choice') || e.target.closest('.quiz-final-option') || e.target.closest('#btn-complete') || e.target.closest('#btn-stats') || e.target.closest('#toolbar-stats-btn') || e.target.closest('#pg-exit-link') || e.target.closest('.ch4-goto-battle') || e.target.closest('#btn-ch5-finish-theory') || e.target.closest('#btn-closing-boss')) return;
         if (e.target.closest('.slide-clickable')) {
           e.preventDefault();
           goNext();
@@ -4787,7 +5195,7 @@
         lastNovellaChoice = val;
         if (val === 0 || val === 1) choiceChildCount++;
         else if (val === 2) choiceAdultCount++;
-        applyAnswerScore(val === 2, 1);
+        applyAnswerScore(val === 2, 1, val !== 2 ? 'ch1_' + val : undefined);
         document.querySelectorAll('#novella-choices .novella-choice').forEach(function(b) { b.classList.remove('chosen-correct'); b.disabled = true; });
         goToSlide(7);
       });
@@ -4803,6 +5211,7 @@
           choiceParentCount++;
           ch2WrongCount++;
           ch2PendingResourcePenalty += 5;
+          applyAnswerScore(false, 2, 'ch2_1_0');
           goToSlide(14);
         }
       });
@@ -4821,7 +5230,7 @@
           ch2WrongCount++;
           ch2PendingInfluencePenalty += 5;
           ch2PendingResourcePenalty += 10;
-          applyAnswerScore(false, 2);
+          applyAnswerScore(false, 2, 'ch2_2_' + val);
           goToSlide(16);
         }
       });
@@ -4840,7 +5249,7 @@
           lastChapter2Choice = parseInt(val, 10);
           choiceParentCount++;
           ch2WrongCount++;
-          applyAnswerScore(false, 2);
+          applyAnswerScore(false, 2, 'ch2_3_' + val);
           goToSlide(18);
         }
       });
@@ -4855,7 +5264,7 @@
         } else {
           ch3Win = false;
           ch3Branch = (val === '0') ? 'anger' : 'save';
-          applyAnswerScore(false, 3);
+          applyAnswerScore(false, 3, 'ch3_1_' + val);
           goToSlide(34);
         }
       });
@@ -4872,7 +5281,7 @@
         } else {
           ch3Win = false;
           ch3Branch = 'delegate';
-          applyAnswerScore(false, 3);
+          applyAnswerScore(false, 3, 'ch3_2_0');
         }
         goToSlide(34);
       });
@@ -4900,11 +5309,11 @@
         document.querySelectorAll('#ch4-choices-1 .novella-choice').forEach(function(b) { b.disabled = true; });
         ch4Branch = branch || '';
         if (branch === 'parent') {
-          applyAnswerScore(false, 4);
+          applyAnswerScore(false, 4, 'ch4_parent');
           goToSlide(41);
         } else if (branch === 'rescuer') {
           ch4SmoothText = 'Алиса согласно кивает и записывает ваши слова. Разговор продолжается.'; ch4SmoothGoto = 43;
-          applyAnswerScore(false, 4);
+          applyAnswerScore(false, 4, 'ch4_rescuer');
           goToSlide(50);
         } else if (branch === 'adult_1') {
           applyAnswerScore(true, 4);
@@ -4928,7 +5337,7 @@
           goToSlide(45);
         } else {
           ch4SmoothText = 'Алиса замечает вашу реакцию и возвращается к теме презентации.'; ch4SmoothGoto = 45;
-          applyAnswerScore(false, 4);
+          applyAnswerScore(false, 4, 'ch4_' + branch);
           goToSlide(50);
         }
       });
@@ -4943,7 +5352,7 @@
           goToSlide(47);
         } else {
           ch4SmoothText = 'Алиса делает пометку. Разговор переходит к срокам и условиям.'; ch4SmoothGoto = 47;
-          applyAnswerScore(false, 4);
+          applyAnswerScore(false, 4, 'ch4_' + branch);
           goToSlide(50);
         }
       });
@@ -4958,7 +5367,7 @@
           goToSlide(49);
         } else {
           ch4SmoothText = 'Тон разговора задан. Переходим к итогам главы.'; ch4SmoothGoto = 51;
-          applyAnswerScore(false, 4);
+          applyAnswerScore(false, 4, 'ch4_' + branch);
           goToSlide(50);
         }
       });
@@ -4995,7 +5404,15 @@
           if (!btn || btn.disabled) return;
           var goto = parseInt(btn.getAttribute('data-ch5-goto'), 10);
           var correct = btn.getAttribute('data-ch5-correct') === '1';
-          applyAnswerScore(correct, 5);
+          var choiceId;
+          if (!correct) {
+            var blockNum = (container.id || '').replace('ch5-choices-', '') || '0';
+            var btns = container.querySelectorAll('.ch5-choice');
+            var idx = -1;
+            for (var k = 0; k < btns.length; k++) { if (btns[k] === btn) { idx = k; break; } }
+            choiceId = 'ch5_' + blockNum + '_' + (idx >= 0 ? idx : 0);
+          }
+          applyAnswerScore(correct, 5, choiceId);
           container.querySelectorAll('.novella-choice').forEach(function(b) { b.disabled = true; });
           if (correct) btn.classList.add('chosen-correct');
           if (!isNaN(goto)) goToSlide(goto);
@@ -5105,6 +5522,7 @@
       });
 
       goToSlide(0);
+      initAnalyticsTabs();
 
       var STORAGE_NAME_KEY = 'peoplegames_course_user_name';
       var DEFAULT_USER_NAME = 'Коллега';
@@ -5124,8 +5542,8 @@
         var displayName = (name && name.trim()) ? name.trim() : 'Вы';
         var titleEl = document.getElementById('final-screen-title');
         var phrase = (displayName !== 'Вы'
-          ? 'Поздравляем, ' + displayName + '! Твой психолог будет тобой гордиться!'
-          : 'Поздравляем! Твой психолог будет тобой гордиться!');
+          ? 'Поздравляем, ' + displayName + '! Твой психолог бы тобой гордился!'
+          : 'Поздравляем! Твой психолог бы тобой гордился!');
         if (titleEl) titleEl.textContent = phrase;
         var subEl = document.getElementById('final-screen-subtitle');
         if (subEl) subEl.textContent = '';
@@ -5224,6 +5642,34 @@
 
       var btnComplete = document.getElementById('btn-complete');
       var finalScreen = document.getElementById('final-screen');
+      var statsBtnOverlay = document.getElementById('final-screen-stats-btn');
+      var statsBtnSlide = document.getElementById('btn-stats');
+      var statsBtnToolbar = document.getElementById('toolbar-stats-btn');
+      function openStats() {
+        if (finalScreen) finalScreen.classList.remove('final-screen--show');
+        goToSlide(72);
+      }
+      if (statsBtnOverlay) {
+        statsBtnOverlay.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openStats();
+        });
+      }
+      if (statsBtnSlide) {
+        statsBtnSlide.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openStats();
+        });
+      }
+      if (statsBtnToolbar) {
+        statsBtnToolbar.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openStats();
+        });
+      }
       if (btnComplete) {
         btnComplete.addEventListener('click', function() {
           if (!this.hasAttribute('data-cert-eligible')) {
